@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Avatar from "../../../assets/images/userDefaut.jpg";
+import Cart from "./Cart";
 const DesktopMenu = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [userAvatar, setUserAvatar] = useState(Avatar);
+  const [openCart, setOpenCart] = useState(false);
+
+  const handleOpenCart = () => {
+    setOpenCart(true);
+  };
+
+  const handleCloseCart = () => {
+    setOpenCart(false);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,6 +73,25 @@ const DesktopMenu = () => {
       paddingRight: "11px",
       cursor: "pointer",
     },
+    overlay: {
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      background: "rgba(0, 0, 0, 0.5)",
+      zIndex: 999,
+    },
+    cartContainer: {
+      position: "absolute",
+      height: "100vh",
+      width: "390px",
+      top: "0px",
+      right: "0px",
+      zIndex: 1000,
+      background: "#fff",
+  
+    },
   };
 
   return (
@@ -118,13 +145,14 @@ const DesktopMenu = () => {
             <i className="zmdi zmdi-search"></i>
           </div>
 
-          <div
+          <button
             className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart"
             data-notify="2"
             style={styles.iconHeaderItem}
+            onClick={handleOpenCart}
           >
             <i className="zmdi zmdi-shopping-cart"></i>
-          </div>
+          </button>
 
           <Link
             to="/favourite"
@@ -134,16 +162,27 @@ const DesktopMenu = () => {
           >
             <i className="zmdi zmdi-favorite-outline"></i>
           </Link>
-          <Link to="/account">
-            <img
-            className="ml-3"
-              src={userAvatar}
-              style={{ borderRadius: "100%", width: "30px" }}
-              alt="UserIMG"
-            />
-          </Link>
         </div>
       </nav>
+      {openCart && (
+        <>
+          <div style={styles.overlay} onClick={handleCloseCart}></div>
+          <div className="d-flex justify-content-center" style={styles.cartContainer}>
+            <div className="container p-5">
+              <div className="header-cart-title flex-w flex-sb-m p-b-8">
+                <span className="mtext-103 cl2">Your Cart</span>
+                <button
+                  className="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04"
+                  onClick={handleCloseCart}
+                >
+                  <i className="zmdi zmdi-close"></i>
+                </button>
+              </div>
+              <Cart />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

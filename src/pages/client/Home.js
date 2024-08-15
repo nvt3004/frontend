@@ -1,13 +1,11 @@
-import React, {  } from 'react';
-import Slider from '../../components/client/homeItem/Slider'
-import Product from './Product';
-import { Link } from 'react-router-dom';
+import React from "react";
+import Slider from "../../components/client/homeItem/Slider";
+import Product from "./Product";
+import { Link } from "react-router-dom";
 const Home = () => {
-
   return (
     <div>
-     
-     <Slider/>
+      <Slider />
       {/* <!-- Banner --> */}
       <div class="sec-banner bg0 p-t-80">
         <div class="container">
@@ -98,14 +96,12 @@ const Home = () => {
           </div>
         </div>
       </div>
-      <div className='container'>
-      <div className="p-b-10 w-100 pos-absolute">
-            <h3 className="ltext-103 cl5">
-              Product Overview
-            </h3>
-          </div>
+      <div className="container mt-5">
+        <div className="p-b-10 w-100">
+          <h3 className="ltext-103 cl5">Product Overview</h3>
+        </div>
       </div>
-      <Product/>
+      <Product />
     </div>
   );
 };
