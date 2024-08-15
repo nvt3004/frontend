@@ -2,7 +2,7 @@ import React from "react";
 
 const Contact = () => {
   return (
-    <div>
+    <div style={{marginTop:"80px"}}>
       {/* <!-- Title page --> */}
       <section
         class="bg-img1 txt-center p-lr-15 p-tb-92"

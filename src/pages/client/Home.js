@@ -98,6 +98,13 @@ const Home = () => {
           </div>
         </div>
       </div>
+      <div className='container'>
+      <div className="p-b-10 w-100 pos-absolute">
+            <h3 className="ltext-103 cl5">
+              Product Overview
+            </h3>
+          </div>
+      </div>
       <Product/>
     </div>
   );

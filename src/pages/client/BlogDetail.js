@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 const BlogDetail = () => {
   return (
-    <div className="mt-5">
+    <div style={{marginTop:"80px"}}>
       {/* <!-- Content page --> */}
       <section class="bg0 p-t-52 p-b-20">
         <div class="container">

@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 const ProductDetail = () => {
   return (
-    <div className="mt-3">
+    <div style={{marginTop:"80px"}}>
       {/* <!-- Product Detail --> */}
       <section className="sec-product-detail bg0 p-t-65 p-b-60">
         <div className="container">

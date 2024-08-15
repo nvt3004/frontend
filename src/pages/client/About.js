@@ -1,7 +1,7 @@
 import React from "react";
 function About() {
   return (
-    <div>
+    <div style={{marginTop:"80px"}}>
       {/* <!-- Title page --> */}
       <section
         class="bg-img1 txt-center p-lr-15 p-tb-92"

@@ -14,6 +14,9 @@ import ShopingCart from '../pages/client/Shoping-cart';
 import Blog from '../pages/client/Blog';
 import BlogDetail from '../pages/client/BlogDetail';
 import Contact from '../pages/client/Contact';
+import Account from '../pages/client/Account';
+import Favourite from '../pages/client/Favourite';
+import PageNotFound from '../pages/PageNotFound';
 // Admin Pages
 import Dashboard from '../pages/admin/Dashboard'; // Default Pages
 import Settings from '../pages/admin/Settings';
@@ -32,6 +35,8 @@ const router = createBrowserRouter([
       { path: '/blog-detail', element: <BlogDetail /> },
       { path: '/about', element: <About /> },
       { path: '/contact', element: <Contact /> },
+      { path: '/account', element: <Account /> },
+      { path: '/favourite', element: <Favourite /> },
     ],
   },
   {
@@ -54,7 +59,7 @@ const router = createBrowserRouter([
   // },
   {
     path: '*', // Catch-all route for 404 pages
-    element: <div>404 Page Not Found</div>,
+    element: <PageNotFound/>,
   },
 ]);
 

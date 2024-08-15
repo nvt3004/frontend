@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-
+import Avatar from "../../../assets/images/userDefaut.jpg";
 const DesktopMenu = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [userAvatar, setUserAvatar] = useState(Avatar);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,10 +30,13 @@ const DesktopMenu = () => {
       height: "70px",
       top: isScrolled ? "0px" : "40px",
       left: "0",
-      borderBottom: isScrolled ? "1px solid rgba(0,0,0,0.2)" : "1px solid rgba(255,255,255,0.1)",
-      transition: "height 0.3s, background-color 0.3s, top 0.3s, border-bottom 0.3s",
+      borderBottom: isScrolled
+        ? "1px solid rgba(0,0,0,0.2)"
+        : "1px solid rgba(255,255,255,0.1)",
+      transition:
+        "height 0.3s, background-color 0.3s, top 0.3s, border-bottom 0.3s",
     },
-    
+
     limiterMenuDesktop: {
       height: "100%",
       display: "flex",
@@ -123,12 +127,20 @@ const DesktopMenu = () => {
           </div>
 
           <Link
-            to="#"
+            to="/favourite"
             className="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti"
             data-notify="0"
             style={styles.iconHeaderItem}
           >
             <i className="zmdi zmdi-favorite-outline"></i>
+          </Link>
+          <Link to="/account">
+            <img
+            className="ml-3"
+              src={userAvatar}
+              style={{ borderRadius: "100%", width: "30px" }}
+              alt="UserIMG"
+            />
           </Link>
         </div>
       </nav>
