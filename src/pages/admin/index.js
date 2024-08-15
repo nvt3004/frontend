@@ -1,6 +1,4 @@
-// src/pages/admin/DefaultAdminPage.js
 import React from 'react';
-
 function DefaultAdminPage() {
   return <h2>Welcome to the Admin Area</h2>;
 }
