@@ -319,7 +319,7 @@ const Product = () => {
 
                   <Link
                     href="#"
-                    className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
+                    className="text-decoration-none block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
                   >
                     Quick View
                   </Link>
@@ -329,7 +329,7 @@ const Product = () => {
                   <div className="block2-txt-child1 flex-col-l">
                     <Link
                       to="/product-detail"
-                      className="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
+                      className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
                     >
                       Esprit Ruffle Shirt
                     </Link>
@@ -363,19 +363,14 @@ const Product = () => {
           <div className="flex-c-m flex-w w-full p-t-45">
             <Link
               href="#"
-              className="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04"
+              className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04"
             >
               Load More
             </Link>
           </div>
         </div>
       </section>
-      {/* <!-- Back to top --> */}
-      <div className="btn-back-to-top" id="myBtn">
-        <a href="#productTop" className="symbol-btn-back-to-top">
-          <i className="zmdi zmdi-chevron-up"></i>
-        </a>
-      </div>
+    
     </div>
   );
 };

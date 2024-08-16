@@ -1,8 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 const ProductDetail = () => {
+  const style ={
+    m:{marginTop:"80px"}
+  };
   return (
-    <div style={{marginTop:"80px"}}>
+    <div style={style.m}>
       {/* <!-- Product Detail --> */}
       <section className="sec-product-detail bg0 p-t-65 p-b-60">
         <div className="container">
@@ -94,13 +97,16 @@ const ProductDetail = () => {
                     <div className="size-203 flex-c-m respon6">Size</div>
 
                     <div className="size-204 respon6-next">
-                      <div className="rs1-select2 bor8 bg0">
-                        <select className="js-select2" name="time">
+                      <div>
+                        <select
+                          className="w-100 border border-1 p-2 form-select"
+                          aria-label="Default select example"
+                        >
                           <option>Choose an option</option>
-                          <option>Size S</option>
-                          <option>Size M</option>
-                          <option>Size L</option>
-                          <option>Size XL</option>
+                          <option value={"1"}>Size S</option>
+                          <option value={"2"}>Size M</option>
+                          <option value={"3"}>Size L</option>
+                          <option value={"4"}>Size XL</option>
                         </select>
                         <div className="dropDownSelect2"></div>
                       </div>
@@ -111,13 +117,16 @@ const ProductDetail = () => {
                     <div className="size-203 flex-c-m respon6">Color</div>
 
                     <div className="size-204 respon6-next">
-                      <div className="rs1-select2 bor8 bg0">
-                        <select className="js-select2" name="time">
+                      <div>
+                        <select
+                          className="w-100 border border-1 p-2 form-select"
+                          aria-label="Default select example"
+                        >
                           <option>Choose an option</option>
-                          <option>Red</option>
-                          <option>Blue</option>
-                          <option>White</option>
-                          <option>Grey</option>
+                          <option value={"1"}>Red</option>
+                          <option value={"2"}>Blue</option>
+                          <option value={"3"}>White</option>
+                          <option value={"4"}>Grey</option>
                         </select>
                         <div className="dropDownSelect2"></div>
                       </div>
@@ -263,11 +272,15 @@ const ProductDetail = () => {
                         <li className="flex-w flex-t p-b-7">
                           <span className="stext-102 cl3 size-205">Weight</span>
 
-                          <span className="stext-102 cl6 size-206">0.79 kg</span>
+                          <span className="stext-102 cl6 size-206">
+                            0.79 kg
+                          </span>
                         </li>
 
                         <li className="flex-w flex-t p-b-7">
-                          <span className="stext-102 cl3 size-205">Dimensions</span>
+                          <span className="stext-102 cl3 size-205">
+                            Dimensions
+                          </span>
 
                           <span className="stext-102 cl6 size-206">
                             110 x 33 x 100 cm
@@ -275,9 +288,13 @@ const ProductDetail = () => {
                         </li>
 
                         <li className="flex-w flex-t p-b-7">
-                          <span className="stext-102 cl3 size-205">Materials</span>
+                          <span className="stext-102 cl3 size-205">
+                            Materials
+                          </span>
 
-                          <span className="stext-102 cl6 size-206">60% cotton</span>
+                          <span className="stext-102 cl6 size-206">
+                            60% cotton
+                          </span>
                         </li>
 
                         <li className="flex-w flex-t p-b-7">
@@ -428,55 +445,54 @@ const ProductDetail = () => {
 
           {/* <!-- Slide2 --> */}
           <div className="wrap-slick2">
-          <div class="row isotope-grid">
-            <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
-              {/* <!-- Block2 --> */}
-              <div class="block2">
-                <div class="block2-pic hov-img0">
-                  <img src="images/product-01.jpg" alt="IMG-PRODUCT" />
+            <div className="row isotope-grid">
+              <div className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
+                {/* <!-- Block2 --> */}
+                <div className="block2">
+                  <div className="block2-pic hov-img0">
+                    <img src="images/product-01.jpg" alt="IMG-PRODUCT" />
 
-                  <Link
-                    href="#"
-                    class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
-                  >
-                    Quick View
-                  </Link>
-                </div>
-
-                <div class="block2-txt flex-w flex-t p-t-14">
-                  <div class="block2-txt-child1 flex-col-l">
-                    <Link
-                      to="/product-detail"
-                      class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
-                    >
-                      Esprit Ruffle Shirt
-                    </Link>
-
-                    <span class="stext-105 cl3"> $16.64 </span>
-                  </div>
-
-                  <div class="block2-txt-child2 flex-r p-t-3">
                     <Link
                       href="#"
-                      class="btn-addwish-b2 dis-block pos-relative js-addwish-b2"
+                      className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
                     >
-                      <img
-                        class="icon-heart1 dis-block trans-04"
-                        src="images/icons/icon-heart-01.png"
-                        alt="ICON"
-                      />
-                      <img
-                        class="icon-heart2 dis-block trans-04 ab-t-l"
-                        src="images/icons/icon-heart-02.png"
-                        alt="ICON"
-                      />
+                      Quick View
                     </Link>
+                  </div>
+
+                  <div className="block2-txt flex-w flex-t p-t-14">
+                    <div className="block2-txt-child1 flex-col-l">
+                      <Link
+                        to="/product-detail"
+                        className="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
+                      >
+                        Esprit Ruffle Shirt
+                      </Link>
+
+                      <span className="stext-105 cl3"> $16.64 </span>
+                    </div>
+
+                    <div className="block2-txt-child2 flex-r p-t-3">
+                      <Link
+                        href="#"
+                        className="btn-addwish-b2 dis-block pos-relative js-addwish-b2"
+                      >
+                        <img
+                          className="icon-heart1 dis-block trans-04"
+                          src="images/icons/icon-heart-01.png"
+                          alt="ICON"
+                        />
+                        <img
+                          className="icon-heart2 dis-block trans-04 ab-t-l"
+                          src="images/icons/icon-heart-02.png"
+                          alt="ICON"
+                        />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-
-          </div>
           </div>
         </div>
       </section>

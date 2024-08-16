@@ -101,7 +101,7 @@ const DesktopMenu = () => {
         style={styles.limiterMenuDesktop}
       >
         <div>
-          <Link to="/" className="logo" style={styles.logo}>
+          <Link to="/" className="text-decoration-none logo" style={styles.logo}>
             <img src="images/icons/logo4plus.png" alt="IMG-LOGO" />
           </Link>
         </div>
@@ -109,27 +109,27 @@ const DesktopMenu = () => {
         <div className="menu-desktop p-0 " style={styles.menuDesktop}>
           <ul className="main-menu" style={styles.mainMenu}>
             <li className="active-menu">
-              <Link to="/">Home</Link>
+              <Link to="/" className="text-decoration-none">Home</Link>
             </li>
 
             <li>
-              <Link to="/product">Shop</Link>
+              <Link to="/product" className="text-decoration-none">Shop</Link>
             </li>
 
             <li className="label1" data-label1="hot">
-              <Link to="/shoping-cart">Features</Link>
+              <Link to="/shoping-cart" className="text-decoration-none">Features</Link>
             </li>
 
             <li>
-              <Link to="/blog">Blog</Link>
+              <Link to="/blog" className="text-decoration-none">Blog</Link>
             </li>
 
             <li>
-              <Link to="/about">About</Link>
+              <Link to="/about" className="text-decoration-none">About</Link>
             </li>
 
             <li>
-              <Link to="/contact">Contact</Link>
+              <Link to="/contact" className="text-decoration-none">Contact</Link>
             </li>
           </ul>
         </div>

@@ -7,10 +7,10 @@ const TopBar = () => (
         Free shipping for standard order over $100
       </div>
       <div className="right-top-bar flex-w h-full">
-        <Link href="#" className="flex-c-m trans-04 p-lr-25"> Help & FAQs </Link>
-        <Link to="/account" className="flex-c-m trans-04 p-lr-25"> My Account </Link>
-        <Link href="#" className="flex-c-m trans-04 p-lr-25"> EN </Link>
-        <Link href="#" className="flex-c-m trans-04 p-lr-25"> USD </Link>
+        <Link href="#" className="text-decoration-none flex-c-m trans-04 p-lr-25"> Help & FAQs </Link>
+        <Link to="/account" className="text-decoration-none flex-c-m trans-04 p-lr-25"> My Account </Link>
+        <Link href="#" className="text-decoration-none flex-c-m trans-04 p-lr-25"> EN </Link>
+        <Link href="#" className="text-decoration-none flex-c-m trans-04 p-lr-25"> USD </Link>
       </div>
     </div>
   </div>

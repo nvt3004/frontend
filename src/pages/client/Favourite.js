@@ -1,8 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 const Favourite = () => {
+  const style ={
+    m:{marginTop:"80px"}
+  };
   return (
-    <div style={{marginTop:"80px"}}>
+    
+    <div style={style.m}>
       {/* <!-- Product --> */}
       <section className="bg0 p-t-23 p-b-140">
         <div className="container">
@@ -18,7 +22,7 @@ const Favourite = () => {
 
                   <Link
                     href="#"
-                    className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
+                    className="text-decoration-none block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
                   >
                     Quick View
                   </Link>
@@ -28,7 +32,7 @@ const Favourite = () => {
                   <div className="block2-txt-child1 flex-col-l">
                     <Link
                       to="/product-detail"
-                      className="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
+                      className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
                     >
                       Esprit Ruffle Shirt
                     </Link>
@@ -64,7 +68,7 @@ const Favourite = () => {
 
                   <Link
                     href="#"
-                    className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
+                    className="text-decoration-none block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
                   >
                     Quick View
                   </Link>
@@ -74,7 +78,7 @@ const Favourite = () => {
                   <div className="block2-txt-child1 flex-col-l">
                     <Link
                       to="/product-detail"
-                      className="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
+                      className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
                     >
                       Esprit Ruffle Shirt
                     </Link>

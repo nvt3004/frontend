@@ -1,9 +1,11 @@
 import React from "react";
 
 const ShopingCart = () => {
+  const style ={
+    m:{marginTop:"80px"}
+  };
   return (
-    <div style={{marginTop:"80px"}}>
-
+    <div style={style.m}>
       {/* <!-- Shoping Cart --> */}
       <form className="bg0 p-t-75 p-b-85">
         <div className="container">
@@ -129,13 +131,16 @@ const ShopingCart = () => {
                     <div className="p-t-15">
                       <span className="stext-112 cl8">Calculate Shipping</span>
 
-                      <div className="rs1-select2 rs2-select2 bor8 bg0 m-b-12 m-t-9">
-                        <select className="js-select2" name="time">
-                          <option>Select a country...</option>
-                          <option>USA</option>
-                          <option>UK</option>
+                      <div className="mb-3 w-100">
+                        <select
+                          className="w-100 border border-1 p-2 form-select"
+                          aria-label="Default select example"
+                        >
+                          <option selected>Select a country...</option>
+                          <option value="1">One</option>
+                          <option value="2">Two</option>
+                          <option value="3">Three</option>
                         </select>
-                        <div className="dropDownSelect2"></div>
                       </div>
 
                       <div className="bor8 bg0 m-b-12">

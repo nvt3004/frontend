@@ -3,6 +3,9 @@ import Avatar from "../../assets/images/userDefaut.jpg";
 
 const Account = () => {
   const styles = {
+    container: {
+      height: "90vh",
+    },
     accountImg: {
       width: "200px",
       height: "200px",
@@ -26,13 +29,16 @@ const Account = () => {
     mB12: {
       marginBottom: "12px",
     },
+    genderContainer: {
+      borderRadius: "8px",
+      backgroundColor: "#f0f0f0",
+      marginBottom: "12px",
+      padding: "5px",
+    },
   };
 
   return (
-    <div
-      className="container mt-4 mb-5 d-flex align-items-center justify-content-center"
-      style={{ height: "90vh" }}
-    >
+    <div className="container mt-4 mb-5 d-flex align-items-center justify-content-center" style={styles.container}>
       <form className="w-100">
         <div className="row">
           <div className="col-md-5 text-center">
@@ -55,7 +61,7 @@ const Account = () => {
               {/* Editable fields */}
               <div className="mb-3">
                 <label htmlFor="full_name">Full Name</label>
-                <div style={{ ...styles.bor8, ...styles.bg0, ...styles.mB12 }}>
+                <div style={{ ...styles.bor8, ...styles.mB12 }}>
                   <input
                     id="full_name"
                     className="form-control"
@@ -74,7 +80,7 @@ const Account = () => {
 
               <div className="mb-3">
                 <label htmlFor="email">Email</label>
-                <div style={{ ...styles.bor8, ...styles.bg0, ...styles.mB12 }}>
+                <div style={{ ...styles.bor8, ...styles.mB12 }}>
                   <input
                     id="email"
                     className="form-control"
@@ -93,7 +99,7 @@ const Account = () => {
 
               <div className="mb-3">
                 <label htmlFor="phone">Phone</label>
-                <div style={{ ...styles.bor8, ...styles.bg0, ...styles.mB12 }}>
+                <div style={{ ...styles.bor8, ...styles.mB12 }}>
                   <input
                     id="phone"
                     className="form-control"
@@ -112,10 +118,7 @@ const Account = () => {
 
               <div className="mb-3">
                 <label htmlFor="gender">Gender</label>
-                <div
-                  className="d-flex flex-row pl-2"
-                  style={{ ...styles.bor8, ...styles.bg0, ...styles.mB12 }}
-                >
+                <div className="d-flex flex-row pl-2" style={styles.genderContainer}>
                   <div className="form-check" style={{ marginRight: "20px" }}>
                     <input
                       id="gender-male"
@@ -129,10 +132,7 @@ const Account = () => {
                       Male
                     </label>
                   </div>
-                  <div
-                    className="form-check me-3 "
-                    style={{ marginRight: "20px" }}
-                  >
+                  <div className="form-check me-3" style={{ marginRight: "20px" }}>
                     <input
                       id="gender-female"
                       className="form-check-input m-0 mt-1"
@@ -161,7 +161,7 @@ const Account = () => {
 
               <div className="mb-3">
                 <label htmlFor="birthday">Birthday</label>
-                <div style={{ ...styles.bor8, ...styles.bg0, ...styles.mB12 }}>
+                <div style={{ ...styles.bor8, ...styles.mB12 }}>
                   <input
                     id="birthday"
                     className="form-control"
