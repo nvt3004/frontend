@@ -24,7 +24,7 @@ public class Order implements Serializable {
 	private String address;
 
 	@Column(name="coupon_id")
-	private int couponId;
+	private Integer couponId;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="delivery_date")
@@ -43,7 +43,7 @@ public class Order implements Serializable {
 	private Date orderDate;
 
 	@Column(name="payment_status")
-	private byte paymentStatus;
+	private Boolean paymentStatus;
 
 	private String phone;
 
@@ -88,7 +88,7 @@ public class Order implements Serializable {
 		this.address = address;
 	}
 
-	public int getCouponId() {
+	public Integer getCouponId() {
 		return this.couponId;
 	}
 
@@ -136,11 +136,11 @@ public class Order implements Serializable {
 		this.orderDate = orderDate;
 	}
 
-	public byte getPaymentStatus() {
+	public boolean getPaymentStatus() {
 		return this.paymentStatus;
 	}
 
-	public void setPaymentStatus(byte paymentStatus) {
+	public void setPaymentStatus(Boolean paymentStatus) {
 		this.paymentStatus = paymentStatus;
 	}
 
