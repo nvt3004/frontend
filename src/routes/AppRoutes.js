@@ -12,6 +12,8 @@ import About from '../pages/client/About';
 // Admin Pages
 import Dashboard from '../pages/admin/Dashboard';
 import Settings from '../pages/admin/Settings';
+import AddNewUser from '../components/admin/parts/AddNewUser';
+import ManageUsers from '../components/admin/parts/ManageUsers';
 
 // Default Pages
 import DefaultClientPage from '../pages/client/index';
@@ -34,6 +36,13 @@ const router = createBrowserRouter([
       { index: true, element: <DefaultAdminPage /> }, // Trang mặc định cho admin
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'settings', element: <Settings /> },
+      {
+        path: 'users',
+        children: [
+          { path: 'add', element: <AddNewUser /> },
+          { path: 'manage', element: <ManageUsers /> },
+        ],
+      },
     ],
   },
 ]);
