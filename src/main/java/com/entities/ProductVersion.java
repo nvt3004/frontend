@@ -26,6 +26,9 @@ public class ProductVersion implements Serializable {
 
 	@Column(name="wholesale_price")
 	private BigDecimal wholesalePrice;
+	
+	@Column(name = "version_name")
+	private String versionName;
 
 	//bi-directional many-to-one association to AttributeOptionsVersion
 	@OneToMany(mappedBy="productVersion")
@@ -204,5 +207,15 @@ public class ProductVersion implements Serializable {
 
 		return warehous;
 	}
+
+	public String getVersionName() {
+		return versionName;
+	}
+
+	public void setVersionName(String versionName) {
+		this.versionName = versionName;
+	}
+	
+	
 
 }

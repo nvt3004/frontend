@@ -40,7 +40,7 @@ public class User implements Serializable {
 
 	private String phone;
 
-	private byte status;
+	private boolean status;
 
 	private String username;
 
@@ -163,11 +163,11 @@ public class User implements Serializable {
 		this.phone = phone;
 	}
 
-	public byte getStatus() {
+	public boolean isStatus() {
 		return this.status;
 	}
 
-	public void setStatus(byte status) {
+	public void setStatus(boolean status) {
 		this.status = status;
 	}
 

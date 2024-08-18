@@ -32,7 +32,7 @@ public class Product implements Serializable {
 	@Column(name="product_price")
 	private BigDecimal productPrice;
 
-	private String status;
+	private boolean status;
 
 	//bi-directional many-to-one association to Feedback
 	@OneToMany(mappedBy="product")
@@ -97,11 +97,11 @@ public class Product implements Serializable {
 		this.productPrice = productPrice;
 	}
 
-	public String getStatus() {
+	public boolean isStatus() {
 		return this.status;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(boolean status) {
 		this.status = status;
 	}
 
