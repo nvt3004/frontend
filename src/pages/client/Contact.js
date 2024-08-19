@@ -1,7 +1,23 @@
 import React from "react";
+import { GoogleMap, LoadScript } from '@react-google-maps/api';
 
 const Contact = () => {
-
+  
+  // API Key của bạn
+  const API_KEY = 'AIzaSyAKFWBqlKAGCeS1rMVoaNlwyayu0e0YRes';
+  
+  const containerStyle = {
+    width: '100%',
+    height: '400px',
+  };
+  
+  const center = {
+    lat: 10.0452,
+    lng: 105.7460,
+  };
+  
+  
+  
   const style ={
     m:{marginTop:"80px"},
     bkg:{backgroundImage: "url('images/bg-01.jpg')" }
@@ -102,16 +118,15 @@ const Contact = () => {
 
       {/* <!-- Map --> */}
       <div className="map">
-        <div
-          className="size-303"
-          id="google_map"
-          data-map-x="40.691446"
-          data-map-y="-73.886787"
-          data-pin="images/icons/pin.png"
-          data-scrollwhell="0"
-          data-draggable="1"
-          data-zoom="11"
-        ></div>
+      <LoadScript googleMapsApiKey={API_KEY}>
+    <GoogleMap
+      mapContainerStyle={containerStyle}
+      center={center}
+      zoom={11}
+    >
+      {/* Các thành phần khác có thể thêm vào bản đồ ở đây */}
+    </GoogleMap>
+  </LoadScript>
       </div>
     </div>
   );

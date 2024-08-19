@@ -1,76 +1,99 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import "../../assets/style/custom-scroll.css";
+
 const ProductDetail = () => {
-  const style ={
-    m:{marginTop:"80px"}
+  const [rating, setRating] = useState(0); // Trạng thái lưu số sao được chọn
+
+  const handleRating = (index) => {
+    setRating(index); // Cập nhật trạng thái khi người dùng chọn sao
+  };
+  const style = {
+    m: { marginTop: "80px" },
+    w500: { width: "100%" },
+    wh: { width: "100px", height: "126px" },
   };
   return (
-    <div style={style.m}>
+    <div className="container" style={style.m}>
       {/* <!-- Product Detail --> */}
       <section className="sec-product-detail bg0 p-t-65 p-b-60">
-        <div className="container">
+        <div>
           <div className="row">
             <div className="col-md-6 col-lg-7 p-b-30">
-              <div className="p-l-25 p-r-30 p-lr-0-lg">
-                <div className="wrap-slick3 flex-sb flex-w">
-                  <div className="wrap-slick3-dots"></div>
-                  <div className="wrap-slick3-arrows flex-sb-m flex-w"></div>
-
-                  <div className="slick3 gallery-lb">
-                    <div
-                      className="item-slick3"
-                      data-thumb="images/product-detail-01.jpg"
-                    >
-                      <div className="wrap-pic-w pos-relative">
+              <div id="productCarousel" className="carousel slide carousel-fade">
+                <div className="row m-0">
+                  <div className="col-md-2">
+                    {/* Thumbnail Images as Indicators */}
+                    <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
+                      <button
+                        type="button"
+                        data-bs-target="#productCarousel"
+                        data-bs-slide-to="0"
+                        className="active"
+                        aria-current="true"
+                        aria-label="Slide 1"
+                        style={style.wh}
+                      >
                         <img
                           src="images/product-detail-01.jpg"
-                          alt="IMG-PRODUCT"
+                          className="d-block w-100 h-full"
+                          alt=""
                         />
-
-                        <a
-                          className="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04"
-                          href="images/product-detail-01.jpg"
-                        >
-                          <i className="fa fa-expand"></i>
-                        </a>
-                      </div>
-                    </div>
-
-                    <div
-                      className="item-slick3"
-                      data-thumb="images/product-detail-02.jpg"
-                    >
-                      <div className="wrap-pic-w pos-relative">
+                      </button>
+                      <button
+                        type="button"
+                        data-bs-target="#productCarousel"
+                        data-bs-slide-to="1"
+                     
+                        aria-label="Slide 2"
+                        style={style.wh}
+                      >
                         <img
                           src="images/product-detail-02.jpg"
-                          alt="IMG-PRODUCT"
+                          className="d-block w-100"
+                          alt=""
                         />
-
-                        <a
-                          className="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04"
-                          href="images/product-detail-02.jpg"
-                        >
-                          <i className="fa fa-expand"></i>
-                        </a>
-                      </div>
-                    </div>
-
-                    <div
-                      className="item-slick3"
-                      data-thumb="images/product-detail-03.jpg"
-                    >
-                      <div className="wrap-pic-w pos-relative">
+                      </button>
+                      <button
+                        type="button"
+                        data-bs-target="#productCarousel"
+                        data-bs-slide-to="2"
+                     
+                        aria-label="Slide 3"
+                        style={style.wh}
+                      >
                         <img
                           src="images/product-detail-03.jpg"
-                          alt="IMG-PRODUCT"
+                          className="d-block w-100 "
+                          alt=""
                         />
+                      </button>
+                    </div>
+                  </div>
 
-                        <a
-                          className="flex-c-m size-108 how-pos1 bor0 fs-16 cl10 bg0 hov-btn3 trans-04"
-                          href="images/product-detail-03.jpg"
-                        >
-                          <i className="fa fa-expand"></i>
-                        </a>
+                  <div className="col-md-10 p-0">
+                    {/* Large Image Carousel */}
+                    <div className="carousel-inner" style={style.w500}>
+                      <div className="carousel-item active">
+                        <img
+                          src="images/product-detail-01.jpg"
+                          className="d-block w-100"
+                          alt=""
+                        />
+                      </div>
+                      <div className="carousel-item">
+                        <img
+                          src="images/product-detail-02.jpg"
+                          className="d-block w-100"
+                          alt=""
+                        />
+                      </div>
+                      <div className="carousel-item">
+                        <img
+                          src="images/product-detail-03.jpg"
+                          className="d-block w-100"
+                          alt=""
+                        />
                       </div>
                     </div>
                   </div>
@@ -99,7 +122,7 @@ const ProductDetail = () => {
                     <div className="size-204 respon6-next">
                       <div>
                         <select
-                          className="w-100 border border-1 p-2 form-select"
+                          className="pt-3 pb-3 w-100 border border-1 p-2 rounded-0 form-select stext-111"
                           aria-label="Default select example"
                         >
                           <option>Choose an option</option>
@@ -119,7 +142,7 @@ const ProductDetail = () => {
                     <div className="size-204 respon6-next">
                       <div>
                         <select
-                          className="w-100 border border-1 p-2 form-select"
+                          className="pt-3 pb-3 w-100 border border-1 p-2 rounded-0 form-select stext-111"
                           aria-label="Default select example"
                         >
                           <option>Choose an option</option>
@@ -207,7 +230,7 @@ const ProductDetail = () => {
                 <li className="nav-item p-b-10">
                   <a
                     className="nav-link active"
-                    data-toggle="tab"
+                    data-bs-toggle="tab"
                     href="#description"
                     role="tab"
                   >
@@ -218,7 +241,7 @@ const ProductDetail = () => {
                 <li className="nav-item p-b-10">
                   <a
                     className="nav-link"
-                    data-toggle="tab"
+                    data-bs-toggle="tab"
                     href="#information"
                     role="tab"
                   >
@@ -229,7 +252,7 @@ const ProductDetail = () => {
                 <li className="nav-item p-b-10">
                   <a
                     className="nav-link"
-                    data-toggle="tab"
+                    data-bs-toggle="tab"
                     href="#reviews"
                     role="tab"
                   >
@@ -240,7 +263,7 @@ const ProductDetail = () => {
 
               {/* <!-- Tab panes --> */}
               <div className="tab-content p-t-43">
-                {/* <!-- - --> */}
+                {/* <!-- Description Tab --> */}
                 <div
                   className="tab-pane fade show active"
                   id="description"
@@ -264,7 +287,7 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                {/* <!-- - --> */}
+                {/* <!-- Additional Information Tab --> */}
                 <div className="tab-pane fade" id="information" role="tabpanel">
                   <div className="row">
                     <div className="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
@@ -317,7 +340,7 @@ const ProductDetail = () => {
                   </div>
                 </div>
 
-                {/* <!-- - --> */}
+                {/* <!-- Reviews Tab --> */}
                 <div className="tab-pane fade" id="reviews" role="tabpanel">
                   <div className="row">
                     <div className="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
@@ -366,15 +389,23 @@ const ProductDetail = () => {
                             </span>
 
                             <span className="wrap-rating fs-18 cl11 pointer">
-                              <i className="item-rating pointer zmdi zmdi-star-outline"></i>
-                              <i className="item-rating pointer zmdi zmdi-star-outline"></i>
-                              <i className="item-rating pointer zmdi zmdi-star-outline"></i>
-                              <i className="item-rating pointer zmdi zmdi-star-outline"></i>
-                              <i className="item-rating pointer zmdi zmdi-star-outline"></i>
+                              {[...Array(5)].map((_, index) => (
+                                <i
+                                  key={index}
+                                  className={`item-rating pointer zmdi ${
+                                    index < rating
+                                      ? "zmdi-star"
+                                      : "zmdi-star-outline"
+                                  }`}
+                                  onClick={() => handleRating(index + 1)}
+                                ></i>
+                              ))}
                               <input
                                 className="dis-none"
                                 type="number"
                                 name="rating"
+                                value={rating}
+                                readOnly
                               />
                             </span>
                           </div>
@@ -438,7 +469,7 @@ const ProductDetail = () => {
 
       {/* <!-- Related Products --> */}
       <section className="sec-relate-product bg0 p-t-45 p-b-105">
-        <div className="container">
+        <div className="p-3">
           <div className="p-b-45">
             <h3 className="ltext-106 cl5 txt-center">Related Products</h3>
           </div>

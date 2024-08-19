@@ -133,7 +133,7 @@ const ShopingCart = () => {
 
                       <div className="mb-3 w-100">
                         <select
-                          className="w-100 border border-1 p-2 form-select"
+                          className="w-100 border border-1 p-2 rounded-0 form-select stext-111"
                           aria-label="Default select example"
                         >
                           <option selected>Select a country...</option>
