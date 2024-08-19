@@ -6,68 +6,64 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * The persistent class for the orders database table.
  * 
  */
 @Entity
-@Table(name="orders")
-@NamedQuery(name="Order.findAll", query="SELECT o FROM Order o")
+@Table(name = "orders")
+@NamedQuery(name = "Order.findAll", query = "SELECT o FROM Order o")
 public class Order implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="order_id")
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "order_id")
 	private int orderId;
 
 	private String address;
 
-	@Column(name="coupon_id")
-	private Integer couponId;
-
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="delivery_date")
+	@Column(name = "delivery_date")
 	private Date deliveryDate;
 
-	@Column(name="dis_percent")
+	@Column(name = "dis_percent")
 	private BigDecimal disPercent;
 
-	@Column(name="dis_price")
+	@Column(name = "dis_price")
 	private BigDecimal disPrice;
 
 	private String fullname;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="order_date")
+	@Column(name = "order_date")
 	private Date orderDate;
 
-	@Column(name="payment_status")
-	private Boolean paymentStatus;
+	@Column(name = "creator_is_admin")
+	private Boolean isAdminOrder;
 
 	private String phone;
 
-	//bi-directional many-to-one association to OrderDetail
-	@OneToMany(mappedBy="order")
+	// bi-directional many-to-one association to OrderDetail
+	@OneToMany(mappedBy = "order")
 	private List<OrderDetail> orderDetails;
 
-	//bi-directional many-to-one association to OrderHistory
-	@OneToMany(mappedBy="order")
-	private List<OrderHistory> orderHistories;
-
-	//bi-directional many-to-one association to OrderStatus
+	// bi-directional many-to-one association to OrderStatus
 	@ManyToOne
-	@JoinColumn(name="status_id")
+	@JoinColumn(name = "status_id")
 	private OrderStatus orderStatus;
 
-	//bi-directional many-to-one association to User
 	@ManyToOne
-	@JoinColumn(name="user_id")
-	private User user;
+	@JoinColumn(name = "coupon_id")
+	private Coupon coupon;
 
-	//bi-directional many-to-one association to Payment
-	@OneToMany(mappedBy="order")
+	// bi-directional many-to-one association to Payment
+	@OneToMany(mappedBy = "order")
 	private List<Payment> payments;
+
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User user;
 
 	public Order() {
 	}
@@ -88,12 +84,12 @@ public class Order implements Serializable {
 		this.address = address;
 	}
 
-	public Integer getCouponId() {
-		return this.couponId;
+	public Coupon getCoupon() {
+		return this.coupon;
 	}
 
-	public void setCouponId(int couponId) {
-		this.couponId = couponId;
+	public void setCoupon(Coupon coupon) {
+		this.coupon = coupon;
 	}
 
 	public Date getDeliveryDate() {
@@ -136,12 +132,12 @@ public class Order implements Serializable {
 		this.orderDate = orderDate;
 	}
 
-	public boolean getPaymentStatus() {
-		return this.paymentStatus;
+	public User getUser() {
+		return this.user;
 	}
 
-	public void setPaymentStatus(Boolean paymentStatus) {
-		this.paymentStatus = paymentStatus;
+	public void setUser(User user) {
+		this.user = user;
 	}
 
 	public String getPhone() {
@@ -174,42 +170,12 @@ public class Order implements Serializable {
 		return orderDetail;
 	}
 
-	public List<OrderHistory> getOrderHistories() {
-		return this.orderHistories;
-	}
-
-	public void setOrderHistories(List<OrderHistory> orderHistories) {
-		this.orderHistories = orderHistories;
-	}
-
-	public OrderHistory addOrderHistory(OrderHistory orderHistory) {
-		getOrderHistories().add(orderHistory);
-		orderHistory.setOrder(this);
-
-		return orderHistory;
-	}
-
-	public OrderHistory removeOrderHistory(OrderHistory orderHistory) {
-		getOrderHistories().remove(orderHistory);
-		orderHistory.setOrder(null);
-
-		return orderHistory;
-	}
-
 	public OrderStatus getOrderStatus() {
 		return this.orderStatus;
 	}
 
 	public void setOrderStatus(OrderStatus orderStatus) {
 		this.orderStatus = orderStatus;
-	}
-
-	public User getUser() {
-		return this.user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
 	}
 
 	public List<Payment> getPayments() {

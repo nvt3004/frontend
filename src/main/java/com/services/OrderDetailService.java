@@ -21,6 +21,7 @@ import com.models.OrderDetailProductDetailsDTO;
 import com.models.SizeDTO;
 import com.repositories.OrderDetailJPA;
 import com.repositories.ProductVersionJPA;
+import com.utils.UploadService;
 
 @Service
 public class OrderDetailService {
@@ -36,6 +37,9 @@ public class OrderDetailService {
 	
 	@Autowired
     private OrderUtilsService orderUtilsService;
+	
+	@Autowired
+	private UploadService uploadService;
 
     public OrderDetailDTO convertToOrderDetailDTO(List<OrderDetail> orderDetailList) {
         List<OrderDetailProductDetailsDTO> productDetails = createProductDetailsList(orderDetailList);
@@ -45,14 +49,14 @@ public class OrderDetailService {
         String disPrice = formatDiscount(orderDetail.getOrder().getDisPrice());
 
         return new OrderDetailDTO(orderDetail.getOrder().getOrderId(), orderDetail.getOrder().getAddress(),
-                orderDetail.getOrder().getCouponId(), orderDetail.getOrder().getDeliveryDate(), disPercent, disPrice,
+                orderDetail.getOrder().getCoupon().getCouponId(), orderDetail.getOrder().getDeliveryDate(), disPercent, disPrice,
                 orderDetail.getOrder().getFullname(), orderDetail.getOrder().getOrderDate(),
-                orderDetail.getOrder().getPaymentStatus(), orderDetail.getOrder().getPhone(),
+                true, orderDetail.getOrder().getPhone(),
                 orderDetail.getOrder().getOrderStatus().getStatusName(),
                 orderUtilsService.calculateOrderTotal(orderDetail.getOrder()),
                 orderDetail.getOrder().getPayments().stream().findFirst()
                         .map(payment -> payment.getPaymentMethod().getMethodName()).orElse("N/A"),
-                orderDetail.getOrder().getUser().getPhone(), orderDetail.getOrder().getUser().getEmail(),
+                orderDetail.getOrder().getPhone(), orderDetail.getOrder().getUser().getEmail(),
                 productDetails);
     }
 
@@ -85,7 +89,7 @@ public class OrderDetailService {
 
 			productDetails
 					.add(new OrderDetailProductDetailsDTO(item.getProductVersionBean().getProduct().getProductId(),
-							item.getProductVersionBean().getId(), item.getPrice(), item.getQuantity(), imageUrl,
+							item.getProductVersionBean().getId(), item.getPrice(), item.getQuantity(), uploadService.getUrlImage(imageUrl),
 							item.getProductVersionBean().getProduct().getDescription(), total, item.getOrderDetailId(),
 							color, size, attributesList));
 		}

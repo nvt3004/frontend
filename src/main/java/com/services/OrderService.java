@@ -48,7 +48,7 @@ public class OrderService {
 	@Autowired
 	private OrderDetailService orderDetailService;
 
-	public ApiResponse<PageImpl<OrderDTO>> getOrders(String name, String address, String status, int page, int size) {
+	public ApiResponse<PageImpl<OrderDTO>> getClientOrders(String name, String address, String status, int page, int size) {
 		if (name == null) {
 			name = "";
 		}
@@ -60,7 +60,30 @@ public class OrderService {
 		}
 
 		Pageable pageable = PageRequest.of(page, size);
-		Page<Order> ordersPage = orderJpa.findOrdersByCriteria(name, address, status, pageable);
+		Page<Order> ordersPage = orderJpa.findOrdersClientByCriteria(name, address, status, pageable);
+
+		if (ordersPage.isEmpty()) {
+			return new ApiResponse<>(404, "No orders found", null);
+		}
+
+		List<OrderDTO> orderDtos = ordersPage.stream().map(this::createOrderDTO).collect(Collectors.toList());
+		PageImpl<OrderDTO> resultPage = new PageImpl<>(orderDtos, pageable, ordersPage.getTotalElements());
+		return new ApiResponse<>(200, "Orders fetched successfully", resultPage);
+	}
+	
+	public ApiResponse<PageImpl<OrderDTO>> getAdminOrders(String name, String address, String status, int page, int size) {
+		if (name == null) {
+			name = "";
+		}
+		if (address == null) {
+			address = "";
+		}
+		if (status == null) {
+			status = "";
+		}
+
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Order> ordersPage = orderJpa.findOrdersAdminByCriteria(name, address, status, pageable);
 
 		if (ordersPage.isEmpty()) {
 			return new ApiResponse<>(404, "No orders found", null);
@@ -72,15 +95,27 @@ public class OrderService {
 	}
 
 	private OrderDTO createOrderDTO(Order order) {
-		BigDecimal total = orderUtilsService.calculateOrderTotal(order);
-		String paymentMethod = orderUtilsService.getPaymentMethod(order);
-		String numberPhone = orderUtilsService.getPhoneNumber(order);
+	    BigDecimal total = orderUtilsService.calculateOrderTotal(order);
+	    String paymentMethod = orderUtilsService.getPaymentMethod(order);
 
-		String statusName = order.getOrderStatus().getStatusName();
-		return new OrderDTO(order.getOrderId(), order.getAddress(), order.getCouponId(), order.getDeliveryDate(),
-				order.getFullname(), order.getOrderDate(), order.getPaymentStatus(), order.getPhone(), statusName,
-				total, paymentMethod, numberPhone);
+	    String statusName = order.getOrderStatus().getStatusName();
+	    Integer couponId = (order.getCoupon() != null) ? order.getCoupon().getCouponId() : null;
+
+	    return new OrderDTO(
+	        order.getOrderId(),
+	        order.getAddress(),
+	        couponId,
+	        order.getDeliveryDate(),
+	        order.getFullname(),
+	        order.getOrderDate(),
+	        true,
+	        order.getPhone(),
+	        statusName,
+	        total,
+	        paymentMethod
+	    );
 	}
+
 
 	public ApiResponse<Map<String, Object>> getOrderDetails(Integer orderId) {
 		List<OrderDetail> orderDetailList = orderDetailJpa.findByOrderDetailByOrderId(orderId);

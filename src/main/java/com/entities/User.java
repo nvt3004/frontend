@@ -5,31 +5,31 @@ import jakarta.persistence.*;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * The persistent class for the users database table.
  * 
  */
 @Entity
-@Table(name="users")
-@NamedQuery(name="User.findAll", query="SELECT u FROM User u")
+@Table(name = "users")
+@NamedQuery(name = "User.findAll", query = "SELECT u FROM User u")
 public class User implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="user_id")
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "user_id")
 	private int userId;
 
 	@Temporal(TemporalType.DATE)
 	private Date birthday;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="create_date")
+	@Column(name = "create_date")
 	private Date createDate;
 
 	private String email;
 
-	@Column(name="full_name")
+	@Column(name = "full_name")
 	private String fullName;
 
 	private int gender;
@@ -44,48 +44,43 @@ public class User implements Serializable {
 
 	private String username;
 
-	//bi-directional many-to-one association to Address
-	@OneToMany(mappedBy="user")
-	private List<Address> addresses;
-
-	//bi-directional many-to-one association to Cart
-	@OneToMany(mappedBy="user")
-	private List<Cart> carts;
-
-	//bi-directional many-to-one association to Feedback
-	@OneToMany(mappedBy="user")
-	private List<Feedback> feedbacks;
-
-	//bi-directional many-to-one association to Image
-	@OneToMany(mappedBy="user")
-	private List<Image> images;
-
-	//bi-directional many-to-one association to ManagePermission
-	@OneToMany(mappedBy="user")
-	private List<ManagePermission> managePermissions;
-
-	//bi-directional many-to-one association to OrderHistory
-	@OneToMany(mappedBy="user")
-	private List<OrderHistory> orderHistories;
-
-	//bi-directional many-to-one association to Order
-	@OneToMany(mappedBy="user")
+	@OneToMany(mappedBy = "user")
 	private List<Order> orders;
 
-	//bi-directional many-to-one association to Reply
-	@OneToMany(mappedBy="user")
+	// bi-directional many-to-one association to Address
+	@OneToMany(mappedBy = "user")
+	private List<Address> addresses;
+
+	// bi-directional many-to-one association to Cart
+	@OneToMany(mappedBy = "user")
+	private List<Cart> carts;
+
+	// bi-directional many-to-one association to Feedback
+	@OneToMany(mappedBy = "user")
+	private List<Feedback> feedbacks;
+
+	// bi-directional many-to-one association to Image
+	@OneToMany(mappedBy = "user")
+	private List<Image> images;
+
+	// bi-directional many-to-one association to ManagePermission
+	@OneToMany(mappedBy = "user")
+	private List<ManagePermission> managePermissions;
+
+	// bi-directional many-to-one association to Reply
+	@OneToMany(mappedBy = "user")
 	private List<Reply> replies;
 
-	//bi-directional many-to-one association to UserCoupon
-	@OneToMany(mappedBy="user")
+	// bi-directional many-to-one association to UserCoupon
+	@OneToMany(mappedBy = "user")
 	private List<UserCoupon> userCoupons;
 
-	//bi-directional many-to-one association to UserRole
-	@OneToMany(mappedBy="user")
+	// bi-directional many-to-one association to UserRole
+	@OneToMany(mappedBy = "user")
 	private List<UserRole> userRoles;
 
-	//bi-directional many-to-one association to Wishlist
-	@OneToMany(mappedBy="user")
+	// bi-directional many-to-one association to Wishlist
+	@OneToMany(mappedBy = "user")
 	private List<Wishlist> wishlists;
 
 	public User() {
@@ -97,6 +92,14 @@ public class User implements Serializable {
 
 	public void setUserId(int userId) {
 		this.userId = userId;
+	}
+
+	public List<Order> getOrders() {
+		return this.orders;
+	}
+
+	public void setOrders(List<Order> orders) {
+		this.orders = orders;
 	}
 
 	public Date getBirthday() {
@@ -287,50 +290,6 @@ public class User implements Serializable {
 		managePermission.setUser(null);
 
 		return managePermission;
-	}
-
-	public List<OrderHistory> getOrderHistories() {
-		return this.orderHistories;
-	}
-
-	public void setOrderHistories(List<OrderHistory> orderHistories) {
-		this.orderHistories = orderHistories;
-	}
-
-	public OrderHistory addOrderHistory(OrderHistory orderHistory) {
-		getOrderHistories().add(orderHistory);
-		orderHistory.setUser(this);
-
-		return orderHistory;
-	}
-
-	public OrderHistory removeOrderHistory(OrderHistory orderHistory) {
-		getOrderHistories().remove(orderHistory);
-		orderHistory.setUser(null);
-
-		return orderHistory;
-	}
-
-	public List<Order> getOrders() {
-		return this.orders;
-	}
-
-	public void setOrders(List<Order> orders) {
-		this.orders = orders;
-	}
-
-	public Order addOrder(Order order) {
-		getOrders().add(order);
-		order.setUser(this);
-
-		return order;
-	}
-
-	public Order removeOrder(Order order) {
-		getOrders().remove(order);
-		order.setUser(null);
-
-		return order;
 	}
 
 	public List<Reply> getReplies() {

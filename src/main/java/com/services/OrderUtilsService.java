@@ -28,6 +28,6 @@ public class OrderUtilsService {
     }
 
     public String getPhoneNumber(Order order) {
-        return order.getUser().getPhone();
+        return order.getPhone();
     }
 }

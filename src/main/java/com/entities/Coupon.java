@@ -23,6 +23,9 @@ public class Coupon implements Serializable {
 
 	@Column(name="coupon_code")
 	private String couponCode;
+	
+	@OneToMany(mappedBy="coupon", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders;
 
 	@Lob
 	private String description;
