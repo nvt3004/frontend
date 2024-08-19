@@ -8,7 +8,7 @@ const ScrollToTop = () => {
     window.scrollTo(0, 0);
   }, [location]);
 
-  return null; // Thử thêm phần tử để xác nhận
+  return null; 
 };
 
 export default ScrollToTop;

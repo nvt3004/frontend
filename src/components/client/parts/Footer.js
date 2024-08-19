@@ -1,12 +1,31 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-function Footer() {
+const Footer = () => {
   // Tính toán năm hiện tại
   const year = new Date().getFullYear();
-
+  const scrollToTop = () => {
+    window.scrollTo(0, 0);
+  };
+  const style = {
+    scrollToTop: {
+      width: "50px",
+      height: "50px",
+      background: "#6C7AE0",
+    },
+  };
   return (
     <div>
+      {/* <!-- Back to top --> */}
+      <div className=" w-100 d-flex justify-content-end">
+        <div>
+          <button className="me-5" style={style.scrollToTop}>
+            <span className="symbol-btn-back-to-top" onClick={scrollToTop}>
+              <i className="zmdi zmdi-chevron-up"></i>
+            </span>
+          </button>
+        </div>
+      </div>
       {/* Footer */}
       <footer className="bg3 p-t-75 p-b-32">
         <div className="container">
@@ -16,19 +35,39 @@ function Footer() {
 
               <div>
                 <div className="p-b-10">
-                  <Link to="#" className="text-decoration-none stext-107 cl7 hov-cl1 trans-04">Women</Link>
+                  <Link
+                    to="#"
+                    className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
+                  >
+                    Women
+                  </Link>
                 </div>
 
                 <div className="p-b-10">
-                  <Link to="#" className="text-decoration-none stext-107 cl7 hov-cl1 trans-04">Men</Link>
+                  <Link
+                    to="#"
+                    className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
+                  >
+                    Men
+                  </Link>
                 </div>
 
                 <div className="p-b-10">
-                  <Link to="#" className="text-decoration-none stext-107 cl7 hov-cl1 trans-04">Shoes</Link>
+                  <Link
+                    to="#"
+                    className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
+                  >
+                    Shoes
+                  </Link>
                 </div>
 
                 <div className="p-b-10">
-                  <Link to="#" className="text-decoration-none stext-107 cl7 hov-cl1 trans-04">Watches</Link>
+                  <Link
+                    to="#"
+                    className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
+                  >
+                    Watches
+                  </Link>
                 </div>
               </div>
             </div>
@@ -38,19 +77,39 @@ function Footer() {
 
               <div>
                 <div className="p-b-10">
-                  <Link to="#" className="text-decoration-none stext-107 cl7 hov-cl1 trans-04">Track Order</Link>
+                  <Link
+                    to="#"
+                    className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
+                  >
+                    Track Order
+                  </Link>
                 </div>
 
                 <div className="p-b-10">
-                  <Link to="#" className="text-decoration-none stext-107 cl7 hov-cl1 trans-04">Returns</Link>
+                  <Link
+                    to="#"
+                    className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
+                  >
+                    Returns
+                  </Link>
                 </div>
 
                 <div className="p-b-10">
-                  <Link to="#" className="text-decoration-none stext-107 cl7 hov-cl1 trans-04">Shipping</Link>
+                  <Link
+                    to="#"
+                    className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
+                  >
+                    Shipping
+                  </Link>
                 </div>
 
                 <div className="p-b-10">
-                  <Link to="#" className="text-decoration-none stext-107 cl7 hov-cl1 trans-04">FAQs</Link>
+                  <Link
+                    to="#"
+                    className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
+                  >
+                    FAQs
+                  </Link>
                 </div>
               </div>
             </div>
@@ -93,9 +152,7 @@ function Footer() {
                 </div>
 
                 <div className="p-t-18">
-                  <button
-                    className="flex-c-m stext-101 cl0 size-103 bg1 bor1 hov-btn2 p-lr-15 trans-04"
-                  >
+                  <button className="flex-c-m stext-101 cl0 size-103 bg1 bor1 hov-btn2 p-lr-15 trans-04">
                     Subscribe
                   </button>
                 </div>
@@ -127,14 +184,14 @@ function Footer() {
             </div>
 
             <p className="stext-107 cl6 txt-center">
-  &copy; {year} All rights reserved | Proudly crafted by Step to Future
-</p>
-
+              &copy; {year} All rights reserved | Proudly crafted by Step to
+              Future
+            </p>
           </div>
         </div>
       </footer>
     </div>
   );
-}
+};
 
 export default Footer;

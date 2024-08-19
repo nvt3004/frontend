@@ -11,6 +11,7 @@ function ClientLayout() {
         <ScrollToTop />
         <Outlet />
       </main>
+      
       <Footer />
     </div>
   );

@@ -2,7 +2,18 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 const DesktopMenu = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth <= 990);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 40) {
@@ -203,14 +214,14 @@ const DesktopMenu = () => {
       {/* <!-- Header Mobile --> */}
       <div className="wrap-header-mobile">
         {/* <!-- Logo moblie --> */}
-        <div className="logo-mobile">
+        <div className="logo-mobile ">
           <Link to="/home">
-            <img src="images/icons/logo-01.png" alt="IMG-LOGO" />
+          <img src="images/icons/logo4plus.png" alt="IMG-LOGO" />
           </Link>
         </div>
 
         {/* <!-- Icon header --> */}
-        <div className="wrap-icon-header flex-w flex-r-m m-r-15">
+        <div className="wrap-icon-header flex-w flex-r-m m-r-15 ">
           <button
             type="button"
             className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 "
@@ -241,7 +252,7 @@ const DesktopMenu = () => {
         </div>
 
         {/* <!-- Button show menu --> */}
-        <div className="btn-show-menu-mobile hamburger hamburger--squeeze">
+        <div className="btn-show-menu-mobile hamburger hamburger--squeeze ">
           <button
             type="button"
             data-bs-toggle="collapse"
@@ -256,70 +267,71 @@ const DesktopMenu = () => {
         </div>
       </div>
       {/* <!-- Menu Mobile --> */}
-      <div class="collapse" id="collapseExample">
-        <div>
-          <ul className="topbar-mobile m-0 p-0">
-            <li>
-              <div className="left-top-bar">
-                Free shipping for standard order over $100
-              </div>
-            </li>
+      {isSmallScreen ? (
+        <div className="collapse" id="collapseExample">
+          <div>
+            <ul className="topbar-mobile m-0 p-0">
+              <li>
+                <div className="left-top-bar">
+                  Free shipping for standard order over $100
+                </div>
+              </li>
 
-            <li>
-              <div className="right-top-bar flex-w h-full">
-                <Link href="#" className="flex-c-m p-lr-10 trans-04">
-                  Help & FAQs{" "}
+              <li>
+                <div className="right-top-bar flex-w h-full">
+                  <Link href="#" className="text-decoration-none flex-c-m p-lr-10 trans-04">
+                    Help & FAQs{" "}
+                  </Link>
+
+                  <Link to="/account" className="text-decoration-none flex-c-m p-lr-10 trans-04">
+                    My Account{" "}
+                  </Link>
+
+                  <Link href="#" className="text-decoration-none flex-c-m p-lr-10 trans-04">
+                    EN{" "}
+                  </Link>
+
+                  <Link href="#" className="text-decoration-none flex-c-m p-lr-10 trans-04">
+                    USD{" "}
+                  </Link>
+                </div>
+              </li>
+            </ul>
+
+            <ul className="main-menu-m m-0">
+              <li>
+                <Link to="/home" className="text-decoration-none">Home</Link>
+              </li>
+
+              <li>
+                <Link to="/product" className="text-decoration-none">Shop</Link>
+              </li>
+
+              <li>
+                <Link
+                  to="/shoping-cart"
+                  className="text-decoration-none label1 rs1"
+                  data-label1="hot"
+                >
+                  Features
                 </Link>
+              </li>
 
-                <Link to="/account" className="flex-c-m p-lr-10 trans-04">
-                  My Account{" "}
-                </Link>
+              <li>
+                <Link to="/blog" className="text-decoration-none">Blog</Link>
+              </li>
 
-                <Link href="#" className="flex-c-m p-lr-10 trans-04">
-                  EN{" "}
-                </Link>
+              <li>
+                <Link to="/about" className="text-decoration-none">About</Link>
+              </li>
 
-                <Link href="#" className="flex-c-m p-lr-10 trans-04">
-                  USD{" "}
-                </Link>
-              </div>
-            </li>
-          </ul>
-
-          <ul className="main-menu-m m-0">
-            <li>
-              <Link to="/home">Home</Link>
-            </li>
-
-            <li>
-              <Link to="/product">Shop</Link>
-            </li>
-
-            <li>
-              <Link
-                to="/shoping-cart"
-                className="label1 rs1"
-                data-label1="hot"
-              >
-                Features
-              </Link>
-            </li>
-
-            <li>
-              <Link to="/blog">Blog</Link>
-            </li>
-
-            <li>
-              <Link to="/about">About</Link>
-            </li>
-
-            <li>
-              <Link to="/contact">Contact</Link>
-            </li>
-          </ul>
+              <li>
+                <Link to="/contact" className="text-decoration-none">Contact</Link>
+              </li>
+            </ul>
+          </div>
         </div>
-      </div>
-
+      ) : null}
       {/* <!-- Modal --> */}
       <div
         className="modal fade"
@@ -364,7 +376,7 @@ const DesktopMenu = () => {
       {/* <!-- Offcanvas  right --> */}
       <div
         className="offcanvas offcanvas-end"
-        tabindex="-1"
+        tabIndex="-1"
         id="offcanvasRight"
         aria-labelledby="offcanvasRightLabel"
       >

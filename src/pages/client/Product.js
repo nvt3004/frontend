@@ -8,8 +8,6 @@ const Product = () => {
       {/* <!-- Product --> */}
       <section id="productTop" className="bg0 p-t-23 p-b-140">
         <div className="container">
-          
-
           <div className="flex-w flex-sb-m p-b-52">
             <div className="flex-w flex-l-m filter-tope-group m-tb-10">
               <button
@@ -318,7 +316,7 @@ const Product = () => {
                   <img src="images/product-01.jpg" alt="IMG-PRODUCT" />
 
                   <Link
-                      to="/product-detail"
+                    to="/product-detail"
                     className="text-decoration-none block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
                   >
                     View
@@ -370,7 +368,6 @@ const Product = () => {
           </div>
         </div>
       </section>
-    
     </div>
   );
 };
