@@ -10,7 +10,7 @@ const BlogDetail = () => {
       <section className="bg0 p-t-52 p-b-20">
         <div className="container">
           <div className="row">
-            <div className="col-md-8 col-lg-9 p-b-80">
+            <div className="col-md-8 col-lg-9 p-b-64">
               <div className="p-r-45 p-r-0-lg">
                 {/* <!--  --> */}
                 <div className="wrap-pic-w how-pos5-parent">

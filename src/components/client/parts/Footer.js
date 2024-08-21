@@ -17,15 +17,19 @@ const Footer = () => {
   return (
     <div>
       {/* <!-- Back to top --> */}
-      <div className=" w-100 d-flex justify-content-end">
-        <div>
-          <button className="me-5" style={style.scrollToTop}>
-            <span className="symbol-btn-back-to-top" onClick={scrollToTop}>
+     
+        <div className="pos-absolute right-0">
+          <button
+            className="me-5"
+            style={style.scrollToTop}
+            onClick={scrollToTop}
+          >
+            <span className="symbol-btn-back-to-top">
               <i className="zmdi zmdi-chevron-up"></i>
             </span>
           </button>
         </div>
-      </div>
+    
       {/* Footer */}
       <footer className="bg3 p-t-75 p-b-32">
         <div className="container">
@@ -33,85 +37,85 @@ const Footer = () => {
             <div className="col-sm-6 col-lg-3 p-b-50">
               <h4 className="stext-301 cl0 p-b-30">Categories</h4>
 
-              <div>
-                <div className="p-b-10">
+              <ul className="list-unstyled">
+                <li className="p-b-10">
                   <Link
                     to="#"
                     className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
                   >
                     Women
                   </Link>
-                </div>
+                </li>
 
-                <div className="p-b-10">
+                <li className="p-b-10">
                   <Link
                     to="#"
                     className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
                   >
                     Men
                   </Link>
-                </div>
+                </li>
 
-                <div className="p-b-10">
+                <li className="p-b-10">
                   <Link
                     to="#"
                     className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
                   >
                     Shoes
                   </Link>
-                </div>
+                </li>
 
-                <div className="p-b-10">
+                <li className="p-b-10">
                   <Link
                     to="#"
                     className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
                   >
                     Watches
                   </Link>
-                </div>
-              </div>
+                </li>
+              </ul>
             </div>
 
             <div className="col-sm-6 col-lg-3 p-b-50">
               <h4 className="stext-301 cl0 p-b-30">Help</h4>
 
-              <div>
-                <div className="p-b-10">
+              <ul className="list-unstyled">
+                <li className="p-b-10">
                   <Link
                     to="#"
                     className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
                   >
                     Track Order
                   </Link>
-                </div>
+                </li>
 
-                <div className="p-b-10">
+                <li className="p-b-10">
                   <Link
                     to="#"
                     className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
                   >
                     Returns
                   </Link>
-                </div>
+                </li>
 
-                <div className="p-b-10">
+                <li className="p-b-10">
                   <Link
                     to="#"
                     className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
                   >
                     Shipping
                   </Link>
-                </div>
+                </li>
 
-                <div className="p-b-10">
+                <li className="p-b-10">
                   <Link
                     to="#"
                     className="text-decoration-none stext-107 cl7 hov-cl1 trans-04"
                   >
                     FAQs
                   </Link>
-                </div>
-              </div>
+                </li>
+              </ul>
             </div>
 
             <div className="col-sm-6 col-lg-3 p-b-50">

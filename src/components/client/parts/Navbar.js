@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-const DesktopMenu = () => {
+const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
 
@@ -86,7 +86,7 @@ const DesktopMenu = () => {
   };
 
   return (
-    <div>
+    <header>
       <div className="container-menu-desktop">
         <div className="top-bar">
           <div className="content-topbar flex-sb-m h-full container">
@@ -201,12 +201,40 @@ const DesktopMenu = () => {
               </button>
 
               <Link
-                to="/favourite"
+                to="/wishlist"
                 className="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti"
                 data-notify="0"
               >
                 <i className="zmdi zmdi-favorite-outline"></i>
               </Link>
+
+              <div className="btn-group">
+                <button
+                  type="button"
+                  className="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 "
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <i className="zmdi zmdi-account-o"></i>
+                </button>
+                <ul className="dropdown-menu rounded-0">
+                  <li>
+                    <Link to="/account" className="dropdown-item stext-111">
+                      Account
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item stext-111" to="#">
+                      Login
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item stext-111" to="#">
+                      SignUp
+                    </Link>
+                  </li>
+                </ul>
+              </div>
             </div>
           </nav>
         </div>
@@ -216,7 +244,7 @@ const DesktopMenu = () => {
         {/* <!-- Logo moblie --> */}
         <div className="logo-mobile ">
           <Link to="/home">
-          <img src="images/icons/logo4plus.png" alt="IMG-LOGO" />
+            <img src="images/icons/logo4plus.png" alt="IMG-LOGO" />
           </Link>
         </div>
 
@@ -243,7 +271,7 @@ const DesktopMenu = () => {
           </button>
 
           <Link
-            to="/favourite"
+            to="/wishlist"
             className="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti"
             data-notify="0"
           >
@@ -279,56 +307,141 @@ const DesktopMenu = () => {
 
               <li>
                 <div className="right-top-bar flex-w h-full">
-                  <Link href="#" className="text-decoration-none flex-c-m p-lr-10 trans-04">
-                    Help & FAQs{" "}
+                  <Link
+                    href="#"
+                    className="text-decoration-none flex-c-m p-lr-10 trans-04"
+                  >
+                    Help & FAQs
                   </Link>
 
-                  <Link to="/account" className="text-decoration-none flex-c-m p-lr-10 trans-04">
-                    My Account{" "}
+                  <Link
+                    to="/account"
+                    className="text-decoration-none flex-c-m p-lr-10 trans-04"
+                  >
+                    My Account
                   </Link>
 
-                  <Link href="#" className="text-decoration-none flex-c-m p-lr-10 trans-04">
-                    EN{" "}
+                  <Link
+                    href="#"
+                    className="text-decoration-none flex-c-m p-lr-10 trans-04"
+                  >
+                    EN
                   </Link>
 
-                  <Link href="#" className="text-decoration-none flex-c-m p-lr-10 trans-04">
-                    USD{" "}
+                  <Link
+                    href="#"
+                    className="text-decoration-none flex-c-m p-lr-10 trans-04"
+                  >
+                    USD
                   </Link>
                 </div>
               </li>
             </ul>
-
-            <ul className="main-menu-m m-0">
-              <li>
-                <Link to="/home" className="text-decoration-none">Home</Link>
-              </li>
-
-              <li>
-                <Link to="/product" className="text-decoration-none">Shop</Link>
-              </li>
-
-              <li>
-                <Link
-                  to="/shoping-cart"
-                  className="text-decoration-none label1 rs1"
-                  data-label1="hot"
+            <nav>
+              <div className="nav nav-tabs" id="nav-tab" role="tablist">
+                <button
+                  className="nav-link active"
+                  id="nav-home-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#nav-home"
+                  type="button"
+                  role="tab"
+                  aria-controls="nav-home"
+                  aria-selected="true"
                 >
-                  Features
-                </Link>
-              </li>
+                  Menu
+                </button>
+                <button
+                  className="nav-link"
+                  id="nav-profile-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#nav-profile"
+                  type="button"
+                  role="tab"
+                  aria-controls="nav-profile"
+                  aria-selected="false"
+                >
+                  Account
+                </button>
+              </div>
+            </nav>
+            <div className="tab-content" id="nav-tabContent">
+              <div
+                className="tab-pane fade show active"
+                id="nav-home"
+                role="tabpanel"
+                aria-labelledby="nav-home-tab"
+                tabindex="0"
+              >
+                <ul className="main-menu-m m-0">
+                  <li>
+                    <Link to="/home" className="text-decoration-none">
+                      Home
+                    </Link>
+                  </li>
 
-              <li>
-                <Link to="/blog" className="text-decoration-none">Blog</Link>
-              </li>
+                  <li>
+                    <Link to="/product" className="text-decoration-none">
+                      Shop
+                    </Link>
+                  </li>
 
-              <li>
-                <Link to="/about" className="text-decoration-none">About</Link>
-              </li>
+                  <li>
+                    <Link
+                      to="/shoping-cart"
+                      className="text-decoration-none label1 rs1"
+                      data-label1="hot"
+                    >
+                      Features
+                    </Link>
+                  </li>
 
-              <li>
-                <Link to="/contact" className="text-decoration-none">Contact</Link>
-              </li>
-            </ul>
+                  <li>
+                    <Link to="/blog" className="text-decoration-none">
+                      Blog
+                    </Link>
+                  </li>
+
+                  <li>
+                    <Link to="/about" className="text-decoration-none">
+                      About
+                    </Link>
+                  </li>
+
+                  <li>
+                    <Link to="/contact" className="text-decoration-none">
+                      Contact
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              <div
+                className="tab-pane fade"
+                id="nav-profile"
+                role="tabpanel"
+                aria-labelledby="nav-profile-tab"
+                tabindex="0"
+              >
+                <ul className="main-menu-m m-0">
+                  <li>
+                    <Link to="/account" className="text-decoration-none">
+                      Account
+                    </Link>
+                  </li>
+
+                  <li>
+                    <Link to="/" className="text-decoration-none">
+                      Login
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/" className="text-decoration-none">
+                      SignUp
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       ) : null}
@@ -485,8 +598,8 @@ const DesktopMenu = () => {
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 
-export default DesktopMenu;
+export default Navbar;

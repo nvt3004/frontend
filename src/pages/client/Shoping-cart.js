@@ -1,84 +1,139 @@
-import React from "react";
+import React, { useState } from "react";
 
 const ShopingCart = () => {
-  const style ={
-    m:{marginTop:"80px"}
+  // Khởi tạo state cho số lượng sản phẩm bằng một đối tượng
+  const [quantities, setQuantities] = useState({
+    product1: 1,
+    product2: 1,
+  });
+
+  // Hàm giảm số lượng
+  const handleDecrease = (productId) => {
+    setQuantities((prevQuantities) => ({
+      ...prevQuantities,
+      [productId]:
+        prevQuantities[productId] > 1 ? prevQuantities[productId] - 1 : 1,
+    }));
+  };
+
+  // Hàm tăng số lượng
+  const handleIncrease = (productId) => {
+    setQuantities((prevQuantities) => ({
+      ...prevQuantities,
+      [productId]: prevQuantities[productId] + 1,
+    }));
+  };
+
+  // Hàm xử lý khi người dùng nhập số lượng trực tiếp
+  const handleChange = (event, productId) => {
+    const value = parseInt(event.target.value);
+    if (!isNaN(value) && value > 0) {
+      setQuantities((prevQuantities) => ({
+        ...prevQuantities,
+        [productId]: value,
+      }));
+    }
+  };
+  const style = {
+    m: { marginTop: "40px" },
   };
   return (
     <div style={style.m}>
       {/* <!-- Shoping Cart --> */}
-      <form className="bg0 p-t-75 p-b-85">
+      <form className="bg0 p-t-75 p-b-64">
         <div className="container">
           <div className="row">
             <div className="col-lg-10 col-xl-7 m-lr-auto m-b-50">
               <div className="m-l-25 m-r--38 m-lr-0-xl">
                 <div className="wrap-table-shopping-cart">
                   <table className="table-shopping-cart">
-                    <tr className="table_head">
-                      <th className="column-1">Product</th>
-                      <th className="column-2"></th>
-                      <th className="column-3">Price</th>
-                      <th className="column-4">Quantity</th>
-                      <th className="column-5">Total</th>
-                    </tr>
+                    <thead>
+                      <tr className="table_head">
+                        <th className="column-1">Product</th>
+                        <th className="column-2"></th>
+                        <th className="column-3">Price</th>
+                        <th className="column-4">Quantity</th>
+                        <th className="column-5">Total</th>
+                      </tr>
+                    </thead>
 
-                    <tr className="table_row">
-                      <td className="column-1">
-                        <div className="how-itemcart1">
-                          <img src="images/item-cart-04.jpg" alt="" />
-                        </div>
-                      </td>
-                      <td className="column-2">Fresh Strawberries</td>
-                      <td className="column-3">$ 36.00</td>
-                      <td className="column-4">
-                        <div className="wrap-num-product flex-w m-l-auto m-r-0">
-                          <div className="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
-                            <i className="fs-16 zmdi zmdi-minus"></i>
+                    <tbody>
+                      <tr className="table_row">
+                        <td className="column-1">
+                          <div className="how-itemcart1">
+                            <img
+                              src="images/item-cart-04.jpg"
+                              alt="Product 1"
+                            />
                           </div>
+                        </td>
+                        <td className="column-2">Fresh Strawberries</td>
+                        <td className="column-3">$ 36.00</td>
+                        <td className="column-4">
+                          <div className="wrap-num-product flex-w m-l-auto m-r-0">
+                            <div
+                              className="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m"
+                              onClick={() => handleDecrease("product1")}
+                            >
+                              <i className="fs-16 zmdi zmdi-minus"></i>
+                            </div>
 
-                          <input
-                            className="mtext-104 cl3 txt-center num-product"
-                            type="number"
-                            name="num-product1"
-                            value="1"
-                          />
+                            <input
+                              className="mtext-104 cl3 txt-center num-product"
+                              type="number"
+                              value={quantities["product1"]}
+                              onChange={(e) => handleChange(e, "product1")}
+                            />
 
-                          <div className="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
-                            <i className="fs-16 zmdi zmdi-plus"></i>
+                            <div
+                              className="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m"
+                              onClick={() => handleIncrease("product1")}
+                            >
+                              <i className="fs-16 zmdi zmdi-plus"></i>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="column-5">$ 36.00</td>
-                    </tr>
-
-                    <tr className="table_row">
-                      <td className="column-1">
-                        <div className="how-itemcart1">
-                          <img src="images/item-cart-05.jpg" alt="IMG" />
-                        </div>
-                      </td>
-                      <td className="column-2">Lightweight Jacket</td>
-                      <td className="column-3">$ 16.00</td>
-                      <td className="column-4">
-                        <div className="wrap-num-product flex-w m-l-auto m-r-0">
-                          <div className="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
-                            <i className="fs-16 zmdi zmdi-minus"></i>
+                        </td>
+                        <td className="column-5">$ 36.00</td>
+                      </tr>
+                      {/* .................... */}
+                      <tr className="table_row">
+                        <td className="column-1">
+                          <div className="how-itemcart1">
+                            <img
+                              src="images/item-cart-05.jpg"
+                              alt="Product 2"
+                            />
                           </div>
+                        </td>
+                        <td className="column-2">Lightweight Jacket</td>
+                        <td className="column-3">$ 16.00</td>
+                        <td className="column-4">
+                          <div className="wrap-num-product flex-w m-l-auto m-r-0">
+                            <div
+                              className="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m"
+                              onClick={() => handleDecrease("product2")}
+                            >
+                              <i className="fs-16 zmdi zmdi-minus"></i>
+                            </div>
 
-                          <input
-                            className="mtext-104 cl3 txt-center num-product"
-                            type="number"
-                            name="num-product2"
-                            value="1"
-                          />
+                            <input
+                              className="mtext-104 cl3 txt-center num-product"
+                              type="number"
+                              value={quantities["product2"]}
+                              onChange={(e) => handleChange(e, "product2")}
+                            />
 
-                          <div className="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
-                            <i className="fs-16 zmdi zmdi-plus"></i>
+                            <div
+                              className="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m"
+                              onClick={() => handleIncrease("product2")}
+                            >
+                              <i className="fs-16 zmdi zmdi-plus"></i>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="column-5">$ 16.00</td>
-                    </tr>
+                        </td>
+                        <td className="column-5">$ 16.00</td>
+                      </tr>
+                    </tbody>
                   </table>
                 </div>
 

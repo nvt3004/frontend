@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-const Favourite = () => {
+const WishList = () => {
   const style ={
     m:{marginTop:"80px"}
   };
@@ -118,4 +118,4 @@ const Favourite = () => {
     </div>
   );
 };
-export default Favourite;
+export default WishList;

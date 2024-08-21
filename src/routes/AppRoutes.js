@@ -15,7 +15,7 @@ import Blog from '../pages/client/Blog';
 import BlogDetail from '../pages/client/BlogDetail';
 import Contact from '../pages/client/Contact';
 import Account from '../pages/client/Account';
-import Favourite from '../pages/client/Favourite';
+import WishList from '../pages/client/WishList';
 import PageNotFound from '../pages/PageNotFound';
 // Admin Pages
 import Dashboard from '../pages/admin/Dashboard'; // Default Pages
@@ -36,7 +36,7 @@ const router = createBrowserRouter([
       { path: '/about', element: <About /> },
       { path: '/contact', element: <Contact /> },
       { path: '/account', element: <Account /> },
-      { path: '/favourite', element: <Favourite /> },
+      { path: '/wishlist', element: <WishList /> },
     ],
   },
   {

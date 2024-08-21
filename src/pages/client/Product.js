@@ -1,12 +1,12 @@
 import React from "react";
 
 import { Link } from "react-router-dom";
-
+import QuickViewProdDetail from "../../components/client/Modal/QuickViewProdDetail";
 const Product = () => {
   return (
     <div style={{ marginTop: "40px" }}>
       {/* <!-- Product --> */}
-      <section id="productTop" className="bg0 p-t-23 p-b-140">
+      <section id="productTop" className="bg0 p-t-23 p-b-64">
         <div className="container">
           <div className="flex-w flex-sb-m p-b-52">
             <div className="flex-w flex-l-m filter-tope-group m-tb-10">
@@ -54,254 +54,343 @@ const Product = () => {
             </div>
 
             <div className="flex-w flex-c-m m-tb-10">
-              <div className="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
-                <i className="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
-                <i className="icon-close-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-                Filter
-              </div>
-
-              <div className="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 js-show-search">
-                <i className="icon-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-search"></i>
-                <i className="icon-close-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-                Search
-              </div>
-            </div>
-
-            {/* <!-- Search product --> */}
-            <div className="dis-none panel-search w-full p-t-10 p-b-15">
-              <div className="bor8 dis-flex p-l-15">
-                <button className="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
-                  <i className="zmdi zmdi-search"></i>
+              <div>
+                <button
+                  className=" flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#flush-collapseOne"
+                  aria-expanded="false"
+                  aria-controls="flush-collapseOne"
+                >
+                  <i className="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
+                  {/* <i className="icon-close-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i> */}
+                  Filter
                 </button>
+              </div>
 
-                <input
-                  className="mtext-107 cl2 size-114 plh2 p-r-15"
-                  type="text"
-                  name="search-product"
-                  placeholder="Search"
-                />
+              <div>
+                <button
+                  className="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 js-show-search"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#flush-collapseTwo"
+                  aria-expanded="false"
+                  aria-controls="flush-collapseTwo"
+                >
+                  <i className="icon-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-search"></i>
+                  {/* <i className="icon-close-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i> */}
+                  Search
+                </button>
               </div>
             </div>
 
-            {/* <!-- Filter --> */}
-            <div className="dis-none panel-filter w-full p-t-10">
-              <div className="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
-                <div className="filter-col1 p-r-15 p-b-27">
-                  <div className="mtext-102 cl2 p-b-15">Sort By</div>
+            {/* accordion của search và filter */}
+            <div
+              className="accordion accordion-flush w-100"
+              id="accordionFlushExample"
+            >
+              <div className="accordion-item border border-0">
+                <div
+                  id="flush-collapseOne"
+                  className="accordion-collapse collapse"
+                  data-bs-parent="#accordionFlushExample"
+                >
+                  <div className="accordion-body p-0">
+                    {/* <!-- Filter --> */}
+                    <div className="panel-filter w-full p-t-10">
+                      <div className="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
+                        <div className="filter-col1 p-r-15 p-b-27">
+                          <div className="mtext-102 cl2 p-b-15">Sort By</div>
 
-                  <ul>
-                    <li className="p-b-6">
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        Default
-                      </Link>
-                    </li>
+                          <ul className="list-unstyled">
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                Default
+                              </Link>
+                            </li>
 
-                    <li className="p-b-6">
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        Popularity
-                      </Link>
-                    </li>
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                Popularity
+                              </Link>
+                            </li>
 
-                    <li className="p-b-6">
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        Average rating
-                      </Link>
-                    </li>
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                Average rating
+                              </Link>
+                            </li>
 
-                    <li className="p-b-6">
-                      <Link
-                        href="#"
-                        className="filter-link stext-106 trans-04 filter-link-active"
-                      >
-                        Newness
-                      </Link>
-                    </li>
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04 filter-link-active"
+                              >
+                                Newness
+                              </Link>
+                            </li>
 
-                    <li className="p-b-6">
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        Price: Low to High
-                      </Link>
-                    </li>
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                Price: Low to High
+                              </Link>
+                            </li>
 
-                    <li className="p-b-6">
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        Price: High to Low
-                      </Link>
-                    </li>
-                  </ul>
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                Price: High to Low
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="filter-col2 p-r-15 p-b-27">
+                          <div className="mtext-102 cl2 p-b-15">Price</div>
+
+                          <ul className="list-unstyled">
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04 filter-link-active"
+                              >
+                                All
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                $0.00 - $50.00
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                $50.00 - $100.00
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                $100.00 - $150.00
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                $150.00 - $200.00
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                $200.00+
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="filter-col3 p-r-15 p-b-27">
+                          <div className="mtext-102 cl2 p-b-15">Color</div>
+
+                          <ul>
+                            <li className="p-b-6">
+                              <span
+                                className="fs-15 lh-12 m-r-6"
+                                style={{ color: "#222" }}
+                              >
+                                <i className="zmdi zmdi-circle"></i>
+                              </span>
+
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                Black
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <span
+                                className="fs-15 lh-12 m-r-6"
+                                style={{ color: "#4272d7" }}
+                              >
+                                <i className="zmdi zmdi-circle"></i>
+                              </span>
+
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04 filter-link-active"
+                              >
+                                Blue
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <span
+                                className="fs-15 lh-12 m-r-6"
+                                style={{ color: " #b3b3b3" }}
+                              >
+                                <i className="zmdi zmdi-circle"></i>
+                              </span>
+
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                Grey
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <span
+                                className="fs-15 lh-12 m-r-6"
+                                style={{ color: " #00ad5f" }}
+                              >
+                                <i className="zmdi zmdi-circle"></i>
+                              </span>
+
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                Green
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <span
+                                className="fs-15 lh-12 m-r-6"
+                                style={{ color: " #fa4251" }}
+                              >
+                                <i className="zmdi zmdi-circle"></i>
+                              </span>
+
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                              
+                                Red
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <span
+                                className=" fs-15 lh-12 m-r-6"
+                                style={{ color: " #aaa" }}
+                              >
+                                <i className="zmdi zmdi-circle-o"></i>
+                              </span>
+
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                White
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="filter-col4 p-b-27">
+                          <div className="mtext-102 cl2 p-b-15">Tags</div>
+
+                          <div className="flex-w p-t-4 m-r--5">
+                            <Link
+                              href="#"
+                              className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
+                            >
+                              Fashion
+                            </Link>
+
+                            <Link
+                              href="#"
+                              className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
+                            >
+                              Lifestyle
+                            </Link>
+
+                            <Link
+                              href="#"
+                              className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
+                            >
+                              Denim
+                            </Link>
+
+                            <Link
+                              href="#"
+                              className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
+                            >
+                              Streetstyle
+                            </Link>
+
+                            <Link
+                              href="#"
+                              className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
+                            >
+                              Crafts
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
 
-                <div className="filter-col2 p-r-15 p-b-27">
-                  <div className="mtext-102 cl2 p-b-15">Price</div>
+              <div className="accordion-item">
+                <div
+                  id="flush-collapseTwo"
+                  className="accordion-collapse collapse"
+                  data-bs-parent="#accordionFlushExample"
+                >
+                  <div className="accordion-body p-0">
+                    {/* <!-- Search product --> */}
+                    <div className="panel-search w-full p-t-10 p-b-15">
+                      <div className="bor8 dis-flex p-l-15">
+                        <button className="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
+                          <i className="zmdi zmdi-search"></i>
+                        </button>
 
-                  <ul>
-                    <li className="p-b-6">
-                      <Link
-                        href="#"
-                        className="filter-link stext-106 trans-04 filter-link-active"
-                      >
-                        All
-                      </Link>
-                    </li>
-
-                    <li className="p-b-6">
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        $0.00 - $50.00
-                      </Link>
-                    </li>
-
-                    <li className="p-b-6">
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        $50.00 - $100.00
-                      </Link>
-                    </li>
-
-                    <li className="p-b-6">
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        $100.00 - $150.00
-                      </Link>
-                    </li>
-
-                    <li className="p-b-6">
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        $150.00 - $200.00
-                      </Link>
-                    </li>
-
-                    <li className="p-b-6">
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        $200.00+
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="filter-col3 p-r-15 p-b-27">
-                  <div className="mtext-102 cl2 p-b-15">Color</div>
-
-                  <ul>
-                    <li className="p-b-6">
-                      <span
-                        className="fs-15 lh-12 m-r-6"
-                        style={{ color: "#222" }}
-                      >
-                        <i className="zmdi zmdi-circle"></i>
-                      </span>
-
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        Black
-                      </Link>
-                    </li>
-
-                    <li className="p-b-6">
-                      <span
-                        className="fs-15 lh-12 m-r-6"
-                        style={{ color: "#4272d7" }}
-                      >
-                        <i className="zmdi zmdi-circle"></i>
-                      </span>
-
-                      <Link
-                        href="#"
-                        className="filter-link stext-106 trans-04 filter-link-active"
-                      >
-                        Blue
-                      </Link>
-                    </li>
-
-                    <li className="p-b-6">
-                      <span
-                        className="fs-15 lh-12 m-r-6"
-                        style={{ color: " #b3b3b3" }}
-                      >
-                        <i className="zmdi zmdi-circle"></i>
-                      </span>
-
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        Grey
-                      </Link>
-                    </li>
-
-                    <li className="p-b-6">
-                      <span
-                        className="fs-15 lh-12 m-r-6"
-                        style={{ color: " #00ad5f" }}
-                      >
-                        <i className="zmdi zmdi-circle"></i>
-                      </span>
-
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        Green
-                      </Link>
-                    </li>
-
-                    <li className="p-b-6">
-                      <span
-                        className="fs-15 lh-12 m-r-6"
-                        style={{ color: " #fa4251" }}
-                      >
-                        <i className="zmdi zmdi-circle"></i>
-                      </span>
-
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        {" "}
-                        Red{" "}
-                      </Link>
-                    </li>
-
-                    <li className="p-b-6">
-                      <span
-                        className="fs-15 lh-12 m-r-6"
-                        style={{ color: " #aaa" }}
-                      >
-                        <i className="zmdi zmdi-circle-o"></i>
-                      </span>
-
-                      <Link href="#" className="filter-link stext-106 trans-04">
-                        White
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-
-                <div className="filter-col4 p-b-27">
-                  <div className="mtext-102 cl2 p-b-15">Tags</div>
-
-                  <div className="flex-w p-t-4 m-r--5">
-                    <Link
-                      href="#"
-                      className="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
-                    >
-                      Fashion
-                    </Link>
-
-                    <Link
-                      href="#"
-                      className="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
-                    >
-                      Lifestyle
-                    </Link>
-
-                    <Link
-                      href="#"
-                      className="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
-                    >
-                      Denim
-                    </Link>
-
-                    <Link
-                      href="#"
-                      className="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
-                    >
-                      Streetstyle
-                    </Link>
-
-                    <Link
-                      href="#"
-                      className="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
-                    >
-                      Crafts
-                    </Link>
+                        <input
+                          className="mtext-107 cl2 size-114 plh2 p-r-15"
+                          type="text"
+                          name="search-product"
+                          placeholder="Search"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -315,12 +404,8 @@ const Product = () => {
                 <div className="block2-pic hov-img0">
                   <img src="images/product-01.jpg" alt="IMG-PRODUCT" />
 
-                  <Link
-                    to="/product-detail"
-                    className="text-decoration-none block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
-                  >
-                    View
-                  </Link>
+                  {/* Quick View */}
+                  <QuickViewProdDetail />
                 </div>
 
                 <div className="block2-txt flex-w flex-t p-t-14">
@@ -358,7 +443,7 @@ const Product = () => {
           </div>
 
           {/* <!-- Load more --> */}
-          <div className="flex-c-m flex-w w-full p-t-45">
+          <div className="flex-c-m flex-w w-full ">
             <Link
               href="#"
               className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04"

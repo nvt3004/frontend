@@ -1,9 +1,29 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../../assets/style/custom-scroll.css";
-
+import QuickViewProdDetail from "../../components/client/Modal/QuickViewProdDetail";
 const ProductDetail = () => {
   const [rating, setRating] = useState(0); // Trạng thái lưu số sao được chọn
+  // Khởi tạo state cho số lượng sản phẩm
+  const [quantity, setQuantity] = useState(1);
+
+  // Hàm giảm số lượng
+  const handleDecrease = () => {
+    setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+  };
+
+  // Hàm tăng số lượng
+  const handleIncrease = () => {
+    setQuantity((prevQuantity) => prevQuantity + 1);
+  };
+
+  // Hàm xử lý khi người dùng nhập số lượng trực tiếp
+  const handleChange = (event) => {
+    const value = parseInt(event.target.value);
+    if (!isNaN(value) && value > 0) {
+      setQuantity(value);
+    }
+  };
 
   const handleRating = (index) => {
     setRating(index); // Cập nhật trạng thái khi người dùng chọn sao
@@ -20,7 +40,10 @@ const ProductDetail = () => {
         <div>
           <div className="row">
             <div className="col-md-6 col-lg-7 p-b-30">
-              <div id="productCarousel" className="carousel slide carousel-fade">
+              <div
+                id="productCarousel"
+                className="carousel slide carousel-fade"
+              >
                 <div className="row m-0">
                   <div className="col-md-2">
                     {/* Thumbnail Images as Indicators */}
@@ -44,7 +67,6 @@ const ProductDetail = () => {
                         type="button"
                         data-bs-target="#productCarousel"
                         data-bs-slide-to="1"
-                     
                         aria-label="Slide 2"
                         style={style.wh}
                       >
@@ -58,7 +80,6 @@ const ProductDetail = () => {
                         type="button"
                         data-bs-target="#productCarousel"
                         data-bs-slide-to="2"
-                     
                         aria-label="Slide 3"
                         style={style.wh}
                       >
@@ -126,10 +147,10 @@ const ProductDetail = () => {
                           aria-label="Default select example"
                         >
                           <option>Choose an option</option>
-                          <option value={"1"}>Size S</option>
-                          <option value={"2"}>Size M</option>
-                          <option value={"3"}>Size L</option>
-                          <option value={"4"}>Size XL</option>
+                          <option value="1">Size S</option>
+                          <option value="2">Size M</option>
+                          <option value="3">Size L</option>
+                          <option value="4">Size XL</option>
                         </select>
                         <div className="dropDownSelect2"></div>
                       </div>
@@ -158,19 +179,26 @@ const ProductDetail = () => {
 
                   <div className="flex-w flex-r-m p-b-10">
                     <div className="size-204 flex-w flex-m respon6-next">
-                      <div className="wrap-num-product flex-w m-r-20 m-tb-10">
-                        <div className="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
+                    <div className="wrap-num-product flex-w m-r-20 m-tb-10">
+                        <div
+                          className="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m"
+                          onClick={handleDecrease}
+                        >
                           <i className="fs-16 zmdi zmdi-minus"></i>
                         </div>
 
                         <input
                           className="mtext-104 cl3 txt-center num-product"
                           type="number"
-                          name="num-product"
-                          value="1"
+                          name="num-product1"
+                          value={quantity}
+                          onChange={handleChange}
                         />
 
-                        <div className="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
+                        <div
+                          className="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m"
+                          onClick={handleIncrease}
+                        >
                           <i className="fs-16 zmdi zmdi-plus"></i>
                         </div>
                       </div>
@@ -483,19 +511,15 @@ const ProductDetail = () => {
                   <div className="block2-pic hov-img0">
                     <img src="images/product-01.jpg" alt="IMG-PRODUCT" />
 
-                    <Link
-                      href="#"
-                      className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
-                    >
-                      Quick View
-                    </Link>
+                   {/* Quick View */}
+                   <QuickViewProdDetail />
                   </div>
 
                   <div className="block2-txt flex-w flex-t p-t-14">
                     <div className="block2-txt-child1 flex-col-l">
                       <Link
                         to="/product-detail"
-                        className="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
+                        className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
                       >
                         Esprit Ruffle Shirt
                       </Link>
@@ -523,7 +547,17 @@ const ProductDetail = () => {
                   </div>
                 </div>
               </div>
+              {/* ADD PRODUCT chỗ này */}
             </div>
+          </div>
+            {/* <!-- Load more --> */}
+            <div className="flex-c-m flex-w w-full p-t-45">
+            <Link
+              href="#"
+              className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04"
+            >
+              Load More
+            </Link>
           </div>
         </div>
       </section>

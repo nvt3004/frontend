@@ -21,7 +21,7 @@ const Blog = () => {
       <section className="bg0 p-t-62 p-b-60">
         <div className="container">
           <div className="row">
-            <div className="col-md-8 col-lg-9 p-b-80">
+            <div className="col-md-8 col-lg-9 p-b-64">
               <div className="p-r-45 p-r-0-lg">
                 {/* <!-- item blog --> */}
                 <div className="p-b-63">

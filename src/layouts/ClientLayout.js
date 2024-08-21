@@ -1,12 +1,12 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import Header from "../components/client/parts/Header";
+import Navbar from "../components/client/parts/Navbar";
 import Footer from "../components/client/parts/Footer";
 import ScrollToTop from "../components/utils/ScrollToTop";
 function ClientLayout() {
   return (
     <div>
-      <Header />
+      <Navbar />
       <main>
         <ScrollToTop />
         <Outlet />
