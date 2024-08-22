@@ -6,6 +6,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 /**
  * The persistent class for the orders database table.
  * 
@@ -47,23 +50,33 @@ public class Order implements Serializable {
 
 	// bi-directional many-to-one association to OrderDetail
 	@OneToMany(mappedBy = "order")
+	@JsonManagedReference
+
 	private List<OrderDetail> orderDetails;
 
 	// bi-directional many-to-one association to OrderStatus
 	@ManyToOne
 	@JoinColumn(name = "status_id")
+	@JsonBackReference
+
 	private OrderStatus orderStatus;
 
 	@ManyToOne
 	@JoinColumn(name = "coupon_id")
+	@JsonBackReference
+
 	private Coupon coupon;
 
 	// bi-directional many-to-one association to Payment
 	@OneToMany(mappedBy = "order")
+	@JsonManagedReference
+
 	private List<Payment> payments;
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")
+	@JsonBackReference
+
 	private User user;
 
 	public Order() {

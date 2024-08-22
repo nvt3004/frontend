@@ -1,6 +1,9 @@
 package com.entities;
 
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 
@@ -21,11 +24,15 @@ public class ProductCategory implements Serializable {
 	//bi-directional many-to-one association to Category
 	@ManyToOne
 	@JoinColumn(name="category_id")
+	@JsonBackReference
+
 	private Category category;
 
 	//bi-directional many-to-one association to Product
 	@ManyToOne
 	@JoinColumn(name="product_id")
+	@JsonBackReference
+
 	private Product product;
 
 	public ProductCategory() {

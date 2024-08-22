@@ -1,6 +1,9 @@
 package com.entities;
 
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 
@@ -20,11 +23,15 @@ public class UserRole implements Serializable {
 	//bi-directional many-to-one association to Role
 	@ManyToOne
 	@JoinColumn(name="role_id")
+	@JsonBackReference
+
 	private Role role;
 
 	//bi-directional many-to-one association to User
 	@ManyToOne
 	@JoinColumn(name="user_id")
+	@JsonBackReference
+
 	private User user;
 
 	public UserRole() {

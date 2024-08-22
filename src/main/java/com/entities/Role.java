@@ -4,6 +4,8 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the roles database table.
@@ -24,6 +26,8 @@ public class Role implements Serializable {
 
 	//bi-directional many-to-one association to UserRole
 	@OneToMany(mappedBy="role")
+	@JsonManagedReference
+
 	private List<UserRole> userRoles;
 
 	public Role() {

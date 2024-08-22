@@ -4,6 +4,8 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the permissions database table.
@@ -24,6 +26,8 @@ public class Permission implements Serializable {
 
 	//bi-directional many-to-one association to ManagePermission
 	@OneToMany(mappedBy="permission")
+	@JsonManagedReference
+
 	private List<ManagePermission> managePermissions;
 
 	public Permission() {

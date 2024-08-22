@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the products database table.
@@ -36,22 +38,32 @@ public class Product implements Serializable {
 
 	//bi-directional many-to-one association to Feedback
 	@OneToMany(mappedBy="product")
+	@JsonManagedReference
+
 	private List<Feedback> feedbacks;
 
 	//bi-directional many-to-one association to ProductCategory
-	@OneToMany(mappedBy="product")
+	@OneToMany(mappedBy="product") 
+	@JsonManagedReference
+
 	private List<ProductCategory> productCategories;
 
 	//bi-directional many-to-one association to ProductSale
 	@OneToMany(mappedBy="product")
+	@JsonManagedReference
+
 	private List<ProductSale> productSales;
 
 	//bi-directional many-to-one association to ProductVersion
 	@OneToMany(mappedBy="product")
+	@JsonManagedReference
+
 	private List<ProductVersion> productVersions;
 
 	//bi-directional many-to-one association to Wishlist
 	@OneToMany(mappedBy="product")
+	@JsonManagedReference
+
 	private List<Wishlist> wishlists;
 
 	public Product() {

@@ -1,6 +1,9 @@
 package com.entities;
 
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 
@@ -21,11 +24,15 @@ public class UserCoupon implements Serializable {
 	//bi-directional many-to-one association to Coupon
 	@ManyToOne
 	@JoinColumn(name="coupon_id")
+	@JsonBackReference
+
 	private Coupon coupon;
 
 	//bi-directional many-to-one association to User
 	@ManyToOne
 	@JoinColumn(name="user_id")
+	@JsonBackReference
+
 	private User user;
 
 	public UserCoupon() {

@@ -2,6 +2,8 @@ package com.entities;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 
@@ -28,6 +30,7 @@ public class Address implements Serializable {
 	//bi-directional many-to-one association to User
 	@ManyToOne 
 	@JoinColumn(name="user_id")
+	@JsonBackReference
 	private User user;
 
 	public Address() {

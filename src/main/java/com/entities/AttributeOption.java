@@ -4,6 +4,9 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the attribute_options database table.
@@ -23,10 +26,14 @@ public class AttributeOption implements Serializable {
 
 	//bi-directional many-to-one association to Attribute
 	@ManyToOne
+	@JsonBackReference
+
 	private Attribute attribute;
 
 	//bi-directional many-to-one association to AttributeOptionsVersion
 	@OneToMany(mappedBy="attributeOption")
+	@JsonManagedReference
+
 	private List<AttributeOptionsVersion> attributeOptionsVersions;
 
 	public AttributeOption() {

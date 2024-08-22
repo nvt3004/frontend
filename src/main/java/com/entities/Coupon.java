@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the coupons database table.
@@ -25,7 +27,9 @@ public class Coupon implements Serializable {
 	private String couponCode;
 	
 	@OneToMany(mappedBy="coupon", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Order> orders;
+	@JsonManagedReference
+
+	private List<Order> orders;
 
 	@Lob
 	private String description;
@@ -53,6 +57,8 @@ public class Coupon implements Serializable {
 
 	//bi-directional many-to-one association to UserCoupon
 	@OneToMany(mappedBy="coupon")
+	@JsonManagedReference
+
 	private List<UserCoupon> userCoupons;
 
 	public Coupon() {

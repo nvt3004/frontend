@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 /**
  * The persistent class for the users database table.
  * 
@@ -45,42 +47,53 @@ public class User implements Serializable {
 	private String username;
 
 	@OneToMany(mappedBy = "user")
+	@JsonManagedReference
+
 	private List<Order> orders;
 
 	// bi-directional many-to-one association to Address
 	@OneToMany(mappedBy = "user")
+	@JsonManagedReference
 	private List<Address> addresses;
 
 	// bi-directional many-to-one association to Cart
 	@OneToMany(mappedBy = "user")
+	@JsonManagedReference
 	private List<Cart> carts;
 
 	// bi-directional many-to-one association to Feedback
 	@OneToMany(mappedBy = "user")
+	@JsonManagedReference
 	private List<Feedback> feedbacks;
 
 	// bi-directional many-to-one association to Image
 	@OneToMany(mappedBy = "user")
+	@JsonManagedReference
 	private List<Image> images;
 
 	// bi-directional many-to-one association to ManagePermission
 	@OneToMany(mappedBy = "user")
+	@JsonManagedReference
 	private List<ManagePermission> managePermissions;
 
 	// bi-directional many-to-one association to Reply
 	@OneToMany(mappedBy = "user")
+	@JsonManagedReference
 	private List<Reply> replies;
 
 	// bi-directional many-to-one association to UserCoupon
 	@OneToMany(mappedBy = "user")
+	@JsonManagedReference
 	private List<UserCoupon> userCoupons;
 
 	// bi-directional many-to-one association to UserRole
 	@OneToMany(mappedBy = "user")
+	@JsonManagedReference
 	private List<UserRole> userRoles;
 
 	// bi-directional many-to-one association to Wishlist
 	@OneToMany(mappedBy = "user")
+	@JsonManagedReference
 	private List<Wishlist> wishlists;
 
 	public User() {
