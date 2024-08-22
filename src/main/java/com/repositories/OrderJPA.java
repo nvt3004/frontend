@@ -31,6 +31,15 @@ public interface OrderJPA extends JpaRepository<Order, Integer> {
 	        + "ORDER BY o.orderStatus.sortOrder ASC")
 	Page<Order> findOrdersAdminByCriteria(@Param("name") String name, @Param("address") String address,
 	        @Param("status") String status, Pageable pageable);
+	
+	@Query("SELECT o FROM Order o "
+	        + "WHERE "
+	        + "(:name IS NULL OR :name = '' OR o.fullname LIKE %:name%) AND "
+	        + "(:address IS NULL OR :address = '' OR o.address LIKE %:address%) AND "
+	        + "(:status IS NULL OR :status = '' OR o.orderStatus.statusName = :status) "
+	        + "ORDER BY o.orderStatus.sortOrder ASC")
+	Page<Order> findAllOrdersCriteria(@Param("name") String name, @Param("address") String address,
+	        @Param("status") String status, Pageable pageable);
 
 
 	@Transactional

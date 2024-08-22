@@ -36,7 +36,8 @@ public class Order implements Serializable {
 	private String fullname;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "order_date")
+//	 DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+	@Column(name = "order_date", nullable = false, updatable = false, insertable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
 	private Date orderDate;
 
 	@Column(name = "creator_is_admin")
@@ -114,6 +115,14 @@ public class Order implements Serializable {
 
 	public void setDisPrice(BigDecimal disPrice) {
 		this.disPrice = disPrice;
+	}
+
+	public Boolean isCreator() {
+		return this.isAdminOrder;
+	}
+
+	public void setIsCreator(Boolean isCreator) {
+		this.isAdminOrder = isCreator;
 	}
 
 	public String getFullname() {

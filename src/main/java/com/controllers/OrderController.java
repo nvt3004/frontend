@@ -9,7 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,6 +20,7 @@ import com.entities.OrderDetail;
 import com.entities.OrderStatus;
 import com.errors.ApiResponse;
 import com.models.AttributeDTO;
+import com.models.OrderCreateDTO;
 import com.models.OrderDTO;
 import com.services.AttributesService;
 import com.services.OrderDetailService;
@@ -39,6 +42,24 @@ public class OrderController {
 
 	@Autowired
 	private OrderStatusService orderStatusService;
+
+	@PostMapping
+	public ResponseEntity<ApiResponse<?>> createOrder(@RequestBody OrderCreateDTO orderCreateDTO) {
+		ApiResponse<?> response = orderService.createOrder(orderCreateDTO);
+		return ResponseEntity.status(HttpStatus.valueOf(response.getErrorCode())).body(response);
+	}
+
+	@GetMapping
+	public ResponseEntity<ApiResponse<?>> getAllOrders(@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "address", required = false) String address,
+			@RequestParam(value = "status", required = false) String status,
+			@RequestParam(value = "page", defaultValue = "0") int page,
+			@RequestParam(value = "size", defaultValue = "5") int size) {
+
+		ApiResponse<PageImpl<OrderDTO>> response = orderService.getAllOrders(name, address, status, page, size);
+
+		return ResponseEntity.status(HttpStatus.valueOf(response.getErrorCode())).body(response);
+	}
 
 	@GetMapping("/client")
 	public ResponseEntity<ApiResponse<?>> getClientOrders(@RequestParam(value = "name", required = false) String name,
@@ -63,16 +84,16 @@ public class OrderController {
 
 		return ResponseEntity.status(HttpStatus.valueOf(response.getErrorCode())).body(response);
 	}
-	
-	@GetMapping("/product-version")
-	public ResponseEntity<AttributeDTO> getAttributes(@RequestParam("productVersionId") Integer productVersionId) {
-		if (productVersionId == null) {
-			return ResponseEntity.badRequest().body(null);
-		}
 
-		AttributeDTO attributes = attributeService.getAttributesByProductVersionId(productVersionId);
-		return ResponseEntity.ok(attributes);
-	}
+//	@GetMapping("/product-version")
+//	public ResponseEntity<AttributeDTO> getAttributes(@RequestParam("productVersionId") Integer productVersionId) {
+//		if (productVersionId == null) {
+//			return ResponseEntity.badRequest().body(null);
+//		}
+//
+//		AttributeDTO attributes = attributeService.getAttributesByProductVersionId(productVersionId);
+//		return ResponseEntity.ok(attributes);
+//	}
 
 	@GetMapping("/statuses")
 	public ResponseEntity<ApiResponse<List<OrderStatus>>> getOrderStatus() {
