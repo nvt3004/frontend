@@ -33,6 +33,8 @@ function ManageUsers() {
   };
 
   const handleShowModal = (user) => {
+    console.log('show modal');
+
     setSelectedUser(user);
     setShowModal(true);
   };
@@ -93,18 +95,18 @@ function ManageUsers() {
       <div className="mb-3">
         <input
           type="text"
-          className="form-control mb-2 rounded-5 px-3 py-2"
+          className="form-control mb-2 rounded-5 px-3 py-2 border-danger-subtle"
           placeholder="Search users"
           value={searchTerm}
           onChange={handleSearchChange}
         />
         <div className="d-flex mb-3">
-          <select className="form-select me-2 rounded-5 px-3 py-2" value={genderFilter} onChange={handleGenderChange}>
+          <select className="form-select me-2 rounded-5 px-3 py-2 border-danger-subtle" value={genderFilter} onChange={handleGenderChange}>
             <option value="all">All Genders</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
           </select>
-          <select className="form-select rounded-5 px-3 py-2" value={roleFilter} onChange={handleRoleChange}>
+          <select className="form-select rounded-5 px-3 py-2 border-danger-subtle" value={roleFilter} onChange={handleRoleChange}>
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
             <option value="customer">Customer</option>
@@ -177,7 +179,11 @@ function ManageUsers() {
       </nav>
 
       {/* User Modal */}
-      {showModal && <UserModal user={selectedUser} onClose={handleCloseModal} />}
+      <UserModal
+        show={showModal}
+        handleClose={handleCloseModal}
+        userData={selectedUser}
+      />
     </div>
   );
 }

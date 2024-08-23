@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 import Swal from 'sweetalert2';
-import './ThoLHCSS.css'
+import './ThoLHCSS.css';
+import BootstrapToast from './Toast';
 
 
 const LabelHover = styled.label`
@@ -78,6 +79,28 @@ function AddNewUser() {
     height: '120px',
   };
 
+  const [showToast, setShowToast] = useState(false);
+  const [toastContent, setToastContent] = useState({ title: '', text: '', color: '' });
+
+  const addNewUserHandle = () => {
+    Swal.fire({
+      title: 'Are you sure ?',
+      text: 'Make sure you fill it right infomations !',
+      showConfirmButton: true,
+      confirmButtonText: `Yes, I'm sure !`,
+      showCancelButton: true
+    }).then((response) => {
+      if (response.isConfirmed) {
+        setToastContent({
+          title: 'Added a new user !',
+          text: 'Check it in the manage table.',
+          color: 'success'
+        });
+        setShowToast(true);
+      }
+    });
+  }
+
   return (
     <div className="container mt-3 w-50">
       <div className='row'>
@@ -90,7 +113,7 @@ function AddNewUser() {
             style={{ display: 'none' }} // Hide the default file input
             id='avatarUpload'
           />
-          <LabelHover htmlFor='avatarUpload' className='btn btn-warning text-white mt-2'>CHOOSE FILE</LabelHover>
+          <LabelHover htmlFor='avatarUpload' className='btn btn-warning opacity-75 text-white mt-2'>CHOOSE FILE</LabelHover>
         </div>
         <div className='col-8'>
           <form onSubmit={handleSubmit(onSubmit)}>
@@ -168,8 +191,11 @@ function AddNewUser() {
               </select>
               {errors.role && <p className="text-danger">{errors.role.message}</p>}
             </div>
-            <ButtonHover type='submit' className="btn rounded-5 w-25 fs-5 text-white" style={buttonStyle}>Submit</ButtonHover>
+            <ButtonHover type='button' className="btn rounded-5 w-25 fs-5 text-white btn-success opacity-75" onClick={addNewUserHandle}>Submit</ButtonHover>
           </form>
+        </div>
+        <div>
+          <BootstrapToast show={showToast} close={() => setShowToast(false)} title={toastContent.title} text={toastContent.text} color={toastContent.color}/>
         </div>
       </div>
     </div>

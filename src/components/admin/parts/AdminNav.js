@@ -57,6 +57,23 @@ function AdminNav() {
             Manage Orders
           </StyledLink>
         </div>
+        <button
+          className="list-group-item list-group-item-action bg-white"
+          data-bs-toggle="collapse"
+          data-bs-target="#suppliersManagementCollapse"
+          aria-expanded="false"
+          aria-controls="suppliersManagementCollapse"
+        >
+          Suppliers Management
+        </button>
+        <div className="collapse" id="suppliersManagementCollapse">
+          <StyledLink to="/admin/orders/manage" className="list-group-item text-center bg-secondary-subtle">
+            Add New Suppliers
+          </StyledLink>
+          <StyledLink to="/admin/suppliers/manage" className="list-group-item text-center bg-secondary-subtle">
+            Manage Suppliers
+          </StyledLink>
+        </div>
       </div>
     </nav>
   );

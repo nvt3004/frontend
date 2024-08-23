@@ -14,6 +14,8 @@ import Dashboard from '../pages/admin/Dashboard';
 import Settings from '../pages/admin/Settings';
 import AddNewUser from '../components/admin/parts/AddNewUser';
 import ManageUsers from '../components/admin/parts/ManageUsers';
+import OrderManagement from '../components/admin/parts/OrderManagement';
+import SupplierManagement from '../components/admin/parts/SuppliersManagement';
 
 // Default Pages
 import DefaultClientPage from '../pages/client/index';
@@ -41,6 +43,19 @@ const router = createBrowserRouter([
         children: [
           { path: 'add', element: <AddNewUser /> },
           { path: 'manage', element: <ManageUsers /> },
+          {path: 'orders', element: <OrderManagement/>}
+        ],
+      },
+      {
+        path: 'orders',
+        children: [
+          { path: 'manage', element: <OrderManagement/>}
+        ],
+      },
+      {
+        path: 'suppliers',
+        children: [
+          { path: 'manage', element: <SupplierManagement/>}
         ],
       },
     ],
