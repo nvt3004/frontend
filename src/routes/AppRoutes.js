@@ -26,6 +26,11 @@ import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
+import AddNewUser from '../components/admin/parts/AddNewUser';
+import ManageUsers from '../components/admin/parts/ManageUsers';
+import OrderManagement from '../components/admin/parts/OrderManagement';
+
+
 
 const router = createBrowserRouter([
   {
@@ -52,6 +57,21 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> }, // Trang mặc định cho admin
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'settings', element: <Settings /> },
+      {
+        path: 'users',
+        children: [
+          { path: 'add', element: <AddNewUser /> },
+          { path: 'manage', element: <ManageUsers /> },
+          {path: 'orders', element: <OrderManagement/>}
+        ],
+      },
+      {
+        path: 'orders',
+        children: [
+          { path: 'manage', element: <OrderManagement/>}
+        ],
+      },
+    
     ],
   },
   {
