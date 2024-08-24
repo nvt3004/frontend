@@ -2,35 +2,11 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 const ShopingCart = () => {
-  const [selectedProductIds, setSelectedProductIds] = useState([]);
-  const [selectAll, setSelectAll] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState("");
 
   const handleSelectCoupon = (event) => {
     setSelectedCoupon(event.target.textContent);
   };
-  const handleSelectAll = () => {
-    if (!selectAll) {
-      setSelectedProductIds(["product1", "product2"]); // Thêm tất cả ID sản phẩm
-    } else {
-      setSelectedProductIds([]); // Bỏ chọn tất cả
-    }
-    setSelectAll(!selectAll);
-  };
-
-  const handleSelectProduct = (productId) => {
-    let newSelectedProductIds;
-    if (selectedProductIds.includes(productId)) {
-      newSelectedProductIds = selectedProductIds.filter(
-        (id) => id !== productId
-      );
-    } else {
-      newSelectedProductIds = [...selectedProductIds, productId];
-    }
-    setSelectedProductIds(newSelectedProductIds);
-    setSelectAll(newSelectedProductIds.length === 2); // Kiểm tra nếu tất cả sản phẩm đều được chọn
-  };
-
   // Khởi tạo state cho số lượng sản phẩm bằng một đối tượng
   const [quantities, setQuantities] = useState({
     product1: 1,
@@ -70,7 +46,7 @@ const ShopingCart = () => {
   return (
     <div style={style.m}>
       {/* <!-- Shoping Cart --> */}
-      <form className="bg0 p-t-75 p-b-64">
+      <div className="bg0 p-t-75 p-b-64">
         <div className="container">
           <div className="row">
             <div className="col-lg-10 col-xl-7 m-lr-auto m-b-50">
@@ -80,12 +56,7 @@ const ShopingCart = () => {
                     <thead>
                       <tr className="table_head">
                         <th className="p-4">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            checked={selectAll}
-                            onChange={handleSelectAll}
-                          />
+                          <input type="checkbox" className="form-check-input" />
                         </th>
                         <th>Product</th>
                         <th></th>
@@ -98,12 +69,7 @@ const ShopingCart = () => {
                     <tbody>
                       <tr className="table_row">
                         <td className="p-4 pt-0">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            checked={selectedProductIds.includes("product1")}
-                            onChange={() => handleSelectProduct("product1")}
-                          />
+                          <input type="checkbox" className="form-check-input" />
                         </td>
                         <td>
                           <div className="how-itemcart1">
@@ -113,7 +79,19 @@ const ShopingCart = () => {
                             />
                           </div>
                         </td>
-                        <td>Fresh Strawberries</td>
+                        <td>
+                          <div>
+                            <h6>Fresh Strawberries</h6>
+                            <button
+                              type="button"
+                              className="  stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
+                              data-bs-toggle="modal"
+                              data-bs-target="#exampleModal"
+                            >
+                              Black - M (<i className="zmdi zmdi-edit"></i>)
+                            </button>
+                          </div>
+                        </td>
                         <td>$ 36.00</td>
                         <td>
                           <div className="wrap-num-product flex-w ">
@@ -139,23 +117,17 @@ const ShopingCart = () => {
                         </td>
                         <td>$ 36.00</td>
                         <td className="">
-                          {" "}
                           <button
                             type="button"
-                            class="btn btn-danger rounded-0"
+                            className="btn btn-danger rounded-0"
                           >
-                            <i class="zmdi zmdi-delete"></i>
+                            <i className="zmdi zmdi-delete"></i>
                           </button>
                         </td>
                       </tr>
                       <tr className="table_row">
                         <td className="p-4 pt-0">
-                          <input
-                            type="checkbox"
-                            className="form-check-input"
-                            checked={selectedProductIds.includes("product2")}
-                            onChange={() => handleSelectProduct("product2")}
-                          />
+                          <input type="checkbox" className="form-check-input" />
                         </td>
                         <td>
                           <div className="how-itemcart1">
@@ -165,7 +137,19 @@ const ShopingCart = () => {
                             />
                           </div>
                         </td>
-                        <td>Lightweight Jacket</td>
+                        <td>
+                          <div>
+                            <h6>Lightweight Jacket</h6>
+                            <button
+                              type="button"
+                              className="  stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
+                              data-bs-toggle="modal"
+                              data-bs-target="#exampleModal"
+                            >
+                              Black - M (<i className="zmdi zmdi-edit"></i>)
+                            </button>
+                          </div>
+                        </td>
                         <td>$ 16.00</td>
                         <td>
                           <div className="wrap-num-product flex-w">
@@ -193,9 +177,9 @@ const ShopingCart = () => {
                         <td className="">
                           <button
                             type="button"
-                            class="btn btn-danger rounded-0"
+                            className="btn btn-danger rounded-0"
                           >
-                            <i class="zmdi zmdi-delete"></i>
+                            <i className="zmdi zmdi-delete"></i>
                           </button>
                         </td>
                       </tr>
@@ -295,11 +279,11 @@ const ShopingCart = () => {
                 </div>
 
                 <div className="flex-w flex-t p-t-27 p-b-33">
-                  <div className="size-208">
+                  <div className="size-208 ps-3">
                     <span className="mtext-101 cl2">Total:</span>
                   </div>
 
-                  <div className="size-209 p-t-1">
+                  <div className="size-209 p-t-1 text-end pe-3">
                     <span className="mtext-110 cl2">$79.65</span>
                   </div>
                 </div>
@@ -311,7 +295,85 @@ const ShopingCart = () => {
             </div>
           </div>
         </div>
-      </form>
+        {/* <!-- Modal --> */}
+        <div
+          className="modal fade"
+          id="exampleModal"
+          tabIndex="-1"
+          aria-labelledby="exampleModalLabel"
+          aria-hidden="true"
+        >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header pb-1 pt-2">
+                <h1
+                  className="modal-title  stext-101 cl5 size-103 d-flex align-items-center"
+                  id="exampleModalLabel"
+                >
+                  Edit Version
+                </h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div className="modal-body">
+              <div>
+  <div className="form-group mb-3">
+    <div className="row">
+      <div className="col-md-6 mb-2">
+        <select
+          className="form-select rounded-0"
+          aria-label="Select Color"
+        >
+          <option className="stext-110" selected>
+            Select Color
+          </option>
+          <option className="stext-110" value="red">
+            Red
+          </option>
+          <option className="stext-110" value="blue">
+            Blue
+          </option>
+          <option className="stext-110" value="green">
+            Green
+          </option>
+        </select>
+      </div>
+      <div className="col-md-6 mb-2">
+        <select
+          className="form-select rounded-0"
+          aria-label="Select Size"
+        >
+          <option className="stext-110" selected>
+            Select Size
+          </option>
+          <option className="stext-110" value="small">
+            Small
+          </option>
+          <option className="stext-110" value="medium">
+            Medium
+          </option>
+          <option className="stext-110" value="large">
+            Large
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button className="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
+    Save
+  </button>
+</div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
