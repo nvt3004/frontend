@@ -224,13 +224,16 @@ const Navbar = () => {
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item stext-111" to="#">
+                    <Link className="dropdown-item stext-111" to="/auth/login">
                       Login
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item stext-111" to="#">
-                      SignUp
+                    <Link
+                      className="dropdown-item stext-111"
+                      to="/auth/register"
+                    >
+                      Register
                     </Link>
                   </li>
                 </ul>
@@ -430,13 +433,13 @@ const Navbar = () => {
                   </li>
 
                   <li>
-                    <Link to="/" className="text-decoration-none">
+                    <Link to="/auth/login" className="text-decoration-none">
                       Login
                     </Link>
                   </li>
                   <li>
-                    <Link to="/" className="text-decoration-none">
-                      SignUp
+                    <Link to="/auth/register" className="text-decoration-none">
+                      Register
                     </Link>
                   </li>
                 </ul>
