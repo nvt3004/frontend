@@ -223,7 +223,7 @@ const Product = () => {
                         <div className="filter-col3 p-r-15 p-b-27">
                           <div className="mtext-102 cl2 p-b-15">Color</div>
 
-                          <ul>
+                          <ul className="list-unstyled">
                             <li className="p-b-6">
                               <span
                                 className="fs-15 lh-12 m-r-6"

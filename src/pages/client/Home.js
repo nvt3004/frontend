@@ -4,6 +4,24 @@ import { Link } from "react-router-dom";
 import QuickViewProdDetail from "../../components/client/Modal/QuickViewProdDetail";
 const Home = () => {
   // SuccessAlert({ title: 'Product Added', text: 'The product was added to your cart!' });
+ 
+  // const handleAction = async () => {
+  //   const confirmed = await ConfirmAlert({
+  //     title: "Delete this item?",
+  //     text: "This action cannot be undone.",
+  //     confirmText: "Delete",
+  //     cancelText: "Cancel",
+  //   });
+  
+  //   if (confirmed) {
+  //     console.log("Action confirmed!");
+  //     // Thực hiện hành động khi người dùng xác nhận
+  //   } else {
+  //     console.log("Action cancelled!");
+  //     // Thực hiện hành động khi người dùng hủy
+  //   }
+  // };
+  
   return (
     <div>
       <Slider />

@@ -205,7 +205,7 @@ const Account = () => {
           aria-labelledby="exampleModalLabel"
           aria-hidden="true"
         >
-          <div className="modal-dialog">
+          <div className="modal-dialog modal-lg">
             <div className="modal-content rounded-0 ">
               <div className="modal-header pb-1 pt-2">
                 <h1
@@ -222,23 +222,101 @@ const Account = () => {
                 ></button>
               </div>
               <div className="modal-body">
-              
-                <form>
+                <div>
+                  <table className="table table-bordered">
+                    <thead className="thead-dark">
+                      <tr>
+                        <th className="stext-110" scope="col">#</th>
+                        <th className="stext-110" scope="col">Country</th>
+                        <th className="stext-110" scope="col">City</th>
+                        <th className="stext-110" scope="col">District</th>
+                        <th className="stext-110" scope="col">Detailed Address</th>
+                        <th className="stext-110" scope="col">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {/* Example row 1 */}
+                      <tr>
+                        <th className="stext-110" scope="row">1</th>
+                        <td className="stext-110">Vietnam</td>
+                        <td className="stext-110">Ho Chi Minh</td>
+                        <td className="stext-110">District 1</td>
+                        <td className="stext-110">123 Main St</td>
+                        <td >
+                          <button className="btn btn-primary stext-110 rounded-0">Edit</button>
+                        </td>
+                      </tr>
+                      {/* Example row 2 */}
+                      <tr>
+                        <th className="stext-110" scope="row">2</th>
+                        <td className="stext-110">USA</td>
+                        <td className="stext-110">New York</td>
+                        <td className="stext-110">Manhattan</td>
+                        <td className="stext-110">456 Broadway</td>
+                        <td>
+                          <button className="btn btn-primary stext-110 rounded-0">Edit</button>
+                        </td>
+                      </tr>
+                      {/* Additional rows as needed */}
+                    </tbody>
+                  </table>
+                </div>
+                <div>
                   <div className="form-group mb-3">
-                    <label htmlFor="addressInput">Address</label>
+                    <label className="stext-110" htmlFor="addressInput">Address</label>
+                    <div className="row">
+                      <div className="col-md-4 mb-2">
+                        <select
+                          className="form-select rounded-0"
+                          aria-label="Select Country"
+                        >
+                          <option className="stext-110" selected >Select Country</option>
+                          <option className="stext-110" value="vietnam">Vietnam</option>
+                          <option className="stext-110" value="usa">USA</option>
+                          <option className="stext-110" value="japan">Japan</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4 mb-2">
+                        <select
+                          className="form-select rounded-0"
+                          aria-label="Select City"
+                        >
+                          <option className="stext-110" selected>Select City</option>
+                          <option className="stext-110" value="hcm">Ho Chi Minh</option>
+                          <option className="stext-110" value="hanoi">Hanoi</option>
+                          <option className="stext-110" value="danang">Da Nang</option>
+                        </select>
+                      </div>
+                      <div className="col-md-4 mb-2">
+                        <select
+                          className="form-select rounded-0"
+                          aria-label="Select District"
+                        >
+                          <option className="stext-110" selected>Select District</option>
+                          <option className="stext-110" value="district1">District 1</option>
+                          <option className="stext-110" value="district2">District 2</option>
+                          <option className="stext-110" value="tanbinh">Tan Binh</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="form-group mb-3">
+                    <label className="stext-110" htmlFor="detailedAddressInput">
+                      Detailed Address
+                    </label>
                     <input
                       type="text"
-                      className="form-control"
-                      id="addressInput"
+                      className="stext-110 form-control rounded-0"
+                      id="detailedAddressInput"
+                      placeholder="House number, street, etc."
                     />
                   </div>
-                  <button
-                    type="submit"
-                    className="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer"
-                  >
+
+                  <button className="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
                     Save
                   </button>
-                </form>
+                </div>
               </div>
             </div>
           </div>
@@ -270,26 +348,40 @@ const Account = () => {
               <div className="modal-body">
                 <form className="w-100">
                   <div className="row">
-                    <div className="col-md-5 text-center">
-                      {/* Image */}
-                      <img
-                        src={Avatar}
-                        alt="User IMG"
-                        style={styles.accountImg}
-                        className="account-img"
-                      />
-                      {/* Read-only fields */}
-                      <div className="mb-4">
-                        <h5 className="mb-2">Username: johndoe</h5>
-                        <p>Create Date: 2023-08-15</p>
-                      </div>
-                    </div>
+                  <div className="col-md-5 text-center">
+  {/* Image */}
+  <img
+    src={Avatar}
+    alt="User IMG"
+    style={styles.accountImg}
+    className="account-img mb-3"
+  />
+
+  {/* Button to select a new image */}
+  <div className="mb-4">
+    <input type="file" id="fileInput" className="d-none" />
+    <label
+      htmlFor="fileInput"
+      className="btn btn-outline-primary rounded-0 stext-110"
+      style={{ cursor: 'pointer' }}
+    >
+      Choose Image
+    </label>
+  </div>
+
+  {/* Read-only fields */}
+  <div className="mb-4">
+    <h5 className="mb-2 stext-110">Username: johndoe</h5>
+    <p className="stext-111">Create Date: 2023-08-15</p>
+  </div>
+</div>
+
 
                     <div className="col-md-7">
                       <div className="">
                         {/* Editable fields */}
                         <div className="mb-3">
-                          <label htmlFor="full_name">Full Name</label>
+                          <label className="stext-110" htmlFor="full_name">Full Name</label>
                           <div style={{ ...styles.bor8, ...styles.mB12 }}>
                             <input
                               id="full_name"
@@ -308,7 +400,7 @@ const Account = () => {
                         </div>
 
                         <div className="mb-3">
-                          <label htmlFor="email">Email</label>
+                          <label className="stext-110" htmlFor="email">Email</label>
                           <div style={{ ...styles.bor8, ...styles.mB12 }}>
                             <input
                               id="email"
@@ -327,7 +419,7 @@ const Account = () => {
                         </div>
 
                         <div className="mb-3">
-                          <label htmlFor="phone">Phone</label>
+                          <label className="stext-110" htmlFor="phone">Phone</label>
                           <div style={{ ...styles.bor8, ...styles.mB12 }}>
                             <input
                               id="phone"
@@ -346,7 +438,7 @@ const Account = () => {
                         </div>
 
                         <div className="mb-3">
-                          <label htmlFor="gender">Gender</label>
+                          <label className="stext-110" htmlFor="gender">Gender</label>
                           <div className="d-flex flex-row pl-2 p-2">
                             <div
                               className="form-check"
@@ -404,7 +496,7 @@ const Account = () => {
                         </div>
 
                         <div className="mb-3">
-                          <label htmlFor="birthday">Birthday</label>
+                          <label className="stext-110" htmlFor="birthday">Birthday</label>
                           <div style={{ ...styles.bor8, ...styles.mB12 }}>
                             <input
                               id="birthday"
