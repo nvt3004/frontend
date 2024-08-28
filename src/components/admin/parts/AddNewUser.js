@@ -5,27 +5,26 @@ import Swal from 'sweetalert2';
 import './ThoLHCSS.css';
 import BootstrapToast from './Toast';
 
-
 const LabelHover = styled.label`
-&:hover {
-  transform: scale(1.1); /* Điều chỉnh kích thước khi hover */
-  opacity: 0.75; /* Độ trong suốt khi hover */
-}
-transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  &:hover {
+    transform: scale(1.1);
+    opacity: 0.75;
+  }
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
 `;
 
 const ButtonHover = styled.button`
-&:hover {
-transform: scale(1.1); /* Điều chỉnh kích thước khi hover */
-opacity: 0.75; /* Độ trong suốt khi hover */
-}
-transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  &:hover {
+    transform: scale(1.1);
+    opacity: 0.75;
+  }
+  transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
 `;
 
-function AddNewUser() {
+const AddNewUser = () => {
   const [avatar, setAvatar] = useState(process.env.PUBLIC_URL + '/images/DefaultAvatar.png');
 
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors }, watch } = useForm();
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -49,50 +48,20 @@ function AddNewUser() {
     return age;
   };
 
-  const onSubmit = (data) => {
-    const age = calculateAge(data.birthday);
-    if (age < 18) {
-      // Cập nhật lỗi cho ngày sinh không hợp lệ
-      Swal.fire(
-        {
-          customClass: {
-            title: 'swal-title'
-          },
-          title: 'THE INFOMATION MAY NOT CORRECT !!',
-          text: 'Your age must be older than 18 ! Plase check again.',
-          icon: 'error',
-          showCloseButton: true,
-        }
-      );
-      return;
-    }
-    // Xử lý dữ liệu form hợp lệ
-    console.log(data);
-  };
-
-  const buttonStyle = {
-    backgroundColor: '#63c790',
-  };
-
-  const avatarStyle = {
-    width: '120px',
-    height: '120px',
-  };
-
   const [showToast, setShowToast] = useState(false);
   const [toastContent, setToastContent] = useState({ title: '', text: '', color: '' });
 
   const addNewUserHandle = () => {
     Swal.fire({
-      title: 'Are you sure ?',
-      text: 'Make sure you fill it right infomations !',
+      title: 'Are you sure?',
+      text: 'Make sure you fill in the correct information!',
       showConfirmButton: true,
-      confirmButtonText: `Yes, I'm sure !`,
+      confirmButtonText: `Yes, I'm sure!`,
       showCancelButton: true
     }).then((response) => {
       if (response.isConfirmed) {
         setToastContent({
-          title: 'Added a new user !',
+          title: 'Added a new user!',
           text: 'Check it in the manage table.',
           color: 'success'
         });
@@ -105,18 +74,18 @@ function AddNewUser() {
     <div className="container mt-3 w-50">
       <div className='row'>
         <div className='col-4 d-flex flex-column align-items-center'>
-          <img src={avatar} alt='user avatar' style={avatarStyle} />
+          <img src={avatar} alt='user avatar' style={{ width: '120px', height: '120px' }} />
           <input
             type='file'
             accept='image/*'
             onChange={handleFileChange}
-            style={{ display: 'none' }} // Hide the default file input
+            style={{ display: 'none' }}
             id='avatarUpload'
           />
           <LabelHover htmlFor='avatarUpload' className='btn btn-warning opacity-75 text-white mt-2'>CHOOSE FILE</LabelHover>
         </div>
         <div className='col-8'>
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(addNewUserHandle)}>
             <div className="mb-3">
               <label htmlFor="username" className="form-label">Username</label>
               <input
@@ -149,7 +118,15 @@ function AddNewUser() {
                 type="date"
                 className="form-control rounded-5 px-3 py-2"
                 id="birthday"
-                {...register('birthday', { required: 'Birthday is required' })}
+                {...register('birthday', { 
+                  required: 'Birthday is required',
+                  validate: {
+                    validAge: value => {
+                      const age = calculateAge(value);
+                      return (age >= 18 && age <= 65) || 'Age must be between 18 and 65';
+                    }
+                  }
+                })}
               />
               {errors.birthday && <p className="text-danger">{errors.birthday.message}</p>}
             </div>
@@ -173,7 +150,13 @@ function AddNewUser() {
                 type="email"
                 className="form-control rounded-5 px-3 py-2"
                 id="email"
-                {...register('email', { required: 'Email is required' })}
+                {...register('email', { 
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^\S+@\S+\.\S+$/,
+                    message: 'Invalid email address'
+                  }
+                })}
               />
               {errors.email && <p className="text-danger">{errors.email.message}</p>}
             </div>
@@ -191,7 +174,7 @@ function AddNewUser() {
               </select>
               {errors.role && <p className="text-danger">{errors.role.message}</p>}
             </div>
-            <ButtonHover type='button' className="btn rounded-5 w-25 fs-5 text-white btn-success opacity-75" onClick={addNewUserHandle}>Submit</ButtonHover>
+            <ButtonHover type='submit' className="btn rounded-5 w-25 fs-5 text-white btn-success opacity-75">Submit</ButtonHover>
           </form>
         </div>
         <div>

@@ -16,6 +16,12 @@ import AddNewUser from '../components/admin/parts/AddNewUser';
 import ManageUsers from '../components/admin/parts/ManageUsers';
 import OrderManagement from '../components/admin/parts/OrderManagement';
 import SupplierManagement from '../components/admin/parts/SuppliersManagement';
+import AddNewSupplier from '../components/admin/parts/AddNewSupplier';
+import WarehouseManagement from '../components/admin/parts/WarehouseManagement';
+import AddNewWarehouse from '../components/admin/parts/AddNewWarehouse';
+import PermissionManagement from '../components/admin/parts/PermissionManagement';
+import NewPermission from '../components/admin/parts/NewPermission';
+import FeedbackManagement from '../components/admin/parts/FeedbackManagement';
 
 // Default Pages
 import DefaultClientPage from '../pages/client/index';
@@ -43,7 +49,6 @@ const router = createBrowserRouter([
         children: [
           { path: 'add', element: <AddNewUser /> },
           { path: 'manage', element: <ManageUsers /> },
-          {path: 'orders', element: <OrderManagement/>}
         ],
       },
       {
@@ -55,7 +60,28 @@ const router = createBrowserRouter([
       {
         path: 'suppliers',
         children: [
-          { path: 'manage', element: <SupplierManagement/>}
+          { path: 'manage', element: <SupplierManagement/>},
+          { path: 'add', element: <AddNewSupplier /> },
+        ],
+      },
+      {
+        path: 'warehouse',
+        children: [
+          { path: 'manage', element: <WarehouseManagement/>},
+          { path: 'add', element: <AddNewWarehouse /> },
+        ],
+      },
+      {
+        path: 'permission',
+        children: [
+          { path: 'manage', element: <PermissionManagement/>},
+          { path: 'add', element: <NewPermission/> },
+        ],
+      },
+      {
+        path: 'feedback',
+        children: [
+          { path: 'manage', element: <FeedbackManagement/>},
         ],
       },
     ],
