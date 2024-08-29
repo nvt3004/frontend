@@ -62,146 +62,105 @@ public class OrderService {
 	@Autowired
 	private OrderDetailService orderDetailService;
 
-	@Autowired
-	private CouponJPA couponJpa;
+//	@Autowired
+//	private CouponJPA couponJpa;
+//
+//	@Autowired
+//	private PaymentMethodJPA paymentMethodJpa;
+//
+//	@Autowired
+//	private UserJPA userJpa;
+//
+//	@Autowired
+//	private AddressJPA addressJpa;
+//
+//	@Autowired
+//	private PaymentJPA paymentJpa;
 
-	@Autowired
-	private PaymentMethodJPA paymentMethodJpa;
+//	public ApiResponse<?> createOrder(OrderCreateDTO orderCreateDTO) {
+//		Optional<OrderStatus> orderStatus = orderStatusJpa.findById(orderCreateDTO.getStatusId());
+//		Optional<Coupon> coupon = couponJpa.findById(orderCreateDTO.getCouponId());
+//		Optional<PaymentMethod> paymentMethod = paymentMethodJpa.findById(orderCreateDTO.getPaymentMethodId());
+//		Optional<User> user = userJpa.findById(1); // User được lấy từ Token
+//		Optional<Address> address = addressJpa.findById(orderCreateDTO.getAddress());
+//		Payment payment = new Payment();
+//		Order order = new Order();
+//		order.setOrderId(orderCreateDTO.getOrderId());
+//		order.setFullname(user.get().getFullName());
+//		order.setPhone(user.get().getPhone());
+//		order.setDisPercent(coupon.get().getDisPercent());
+//		order.setAddress(address.get().getAddressLine());
+//		order.setOrderStatus(orderStatus.get());
+//		order.setCoupon(coupon.get());
+//		order.setDeliveryDate(orderCreateDTO.getDeliveryDate());
+//		order.setIsCreator(true);
+//
+//		Order savedOrder = orderJpa.save(order);
+//
+//		payment.setOrder(savedOrder);
+//		payment.setPaymentMethod(paymentMethod.get());
+//		paymentJpa.save(payment);
+//
+//		OrderDetailCreateDTO orderDetailCreateDTO = orderCreateDTO.getOrderDetailCreateDTO();
+//		if (orderDetailCreateDTO != null) {
+//			List<OrderDetail> orderDetails = new ArrayList<>();
+//			List<Integer> productVersionIds = orderDetailCreateDTO.getProductVersionId();
+//			List<Integer> quantities = orderDetailCreateDTO.getQuantity();
+//
+//			for (int i = 0; i < productVersionIds.size(); i++) {
+//				Integer productVersionId = productVersionIds.get(i);
+//				Integer quantity = quantities.get(i);
+//
+//				Optional<ProductVersion> productVersion = productVersionJpa.findById(productVersionId);
+//				if (productVersion.isPresent()) {
+//					OrderDetail detail = new OrderDetail();
+//					detail.setOrder(savedOrder);
+//					detail.setProductVersionBean(productVersion.get());
+//					detail.setQuantity(quantity);
+//					detail.setPrice(productVersion.get().getRetailPrice());
+//					orderDetails.add(detail);
+//				} else {
+//
+//				}
+//			}
+//
+//			orderDetailJpa.saveAll(orderDetails);
+//		}
+//
+//		return new ApiResponse<>(HttpStatus.OK.value(), "Order created successfully", savedOrder);
+//	}
 
-	@Autowired
-	private UserJPA userJpa;
-
-	@Autowired
-	private AddressJPA addressJpa;
-	
-	@Autowired
-	private PaymentJPA paymentJpa;
-
-	public ApiResponse<?> createOrder(OrderCreateDTO orderCreateDTO) {
-		Optional<OrderStatus> orderStatus = orderStatusJpa.findById(orderCreateDTO.getStatusId());
-		Optional<Coupon> coupon = couponJpa.findById(orderCreateDTO.getCouponId());
-		Optional<PaymentMethod> paymentMethod = paymentMethodJpa.findById(orderCreateDTO.getPaymentMethodId());
-		Optional<User> user = userJpa.findById(1); // User được lấy từ Token
-		Optional<Address> address = addressJpa.findById(orderCreateDTO.getAddress());
-		Payment payment = new Payment();
-		Order order = new Order();
-		order.setOrderId(orderCreateDTO.getOrderId());
-		order.setFullname(user.get().getFullName());
-		order.setPhone(user.get().getPhone());
-		order.setDisPercent(coupon.get().getDisPercent());
-		order.setDisPrice(coupon.get().getRefPercent());
-		order.setAddress(address.get().getAddressLine());
-		order.setOrderStatus(orderStatus.get());
-		order.setCoupon(coupon.get());
-		order.setDeliveryDate(orderCreateDTO.getDeliveryDate());
-		order.setIsCreator(true);
-
-		Order savedOrder = orderJpa.save(order);
+	public ApiResponse<PageImpl<OrderDTO>> getAllOrders(Boolean isAdminOrder, String keyword,
+	        String status, int page, int size) {
 		
-		payment.setOrder(savedOrder);
-		payment.setPaymentMethod(paymentMethod.get());
-		paymentJpa.save(payment);
+	    if (keyword == null) {
+	    	keyword = "";
+	    }
 
-		OrderDetailCreateDTO orderDetailCreateDTO = orderCreateDTO.getOrderDetailCreateDTO();
-		if (orderDetailCreateDTO != null) {
-			List<OrderDetail> orderDetails = new ArrayList<>();
-			List<Integer> productVersionIds = orderDetailCreateDTO.getProductVersionId();
-			List<Integer> quantities = orderDetailCreateDTO.getQuantity();
+	    if (status == null) {
+	        status = "";
+	    }
 
-			for (int i = 0; i < productVersionIds.size(); i++) {
-				Integer productVersionId = productVersionIds.get(i);
-				Integer quantity = quantities.get(i);
+	    if (page < 0) {
+	        return new ApiResponse<>(400, "Invalid page number. It must be greater than or equal to 0.", null);
+	    }
 
-				Optional<ProductVersion> productVersion = productVersionJpa.findById(productVersionId);
-				if (productVersion.isPresent()) {
-					OrderDetail detail = new OrderDetail();
-					detail.setOrder(savedOrder);
-					detail.setProductVersionBean(productVersion.get());
-					detail.setQuantity(quantity);
-					detail.setPrice(productVersion.get().getRetailPrice());
-					orderDetails.add(detail);
-				} else {
+	    if (size < 1) {
+	        return new ApiResponse<>(400, "Invalid size. It must be greater than or equal to 1.", null);
+	    }
 
-				}
-			}
+	    Pageable pageable = PageRequest.of(page, size);
+	    Page<Order> ordersPage = orderJpa.findOrdersByCriteria(isAdminOrder, keyword, status, pageable);
 
-			orderDetailJpa.saveAll(orderDetails);
-		}
+	    if (ordersPage.isEmpty()) {
+	        return new ApiResponse<>(404, "No orders found", null);
+	    }
 
-		return new ApiResponse<>(HttpStatus.OK.value(), "Order created successfully", savedOrder);
+	    List<OrderDTO> orderDtos = ordersPage.stream().map(this::createOrderDTO).collect(Collectors.toList());
+	    PageImpl<OrderDTO> resultPage = new PageImpl<>(orderDtos, pageable, ordersPage.getTotalElements());
+	    return new ApiResponse<>(200, "Orders fetched successfully", resultPage);
 	}
 
-	public ApiResponse<PageImpl<OrderDTO>> getAllOrders(String name, String address, String status, int page,
-			int size) {
-		if (name == null) {
-			name = "";
-		}
-		if (address == null) {
-			address = "";
-		}
-		if (status == null) {
-			status = "";
-		}
-
-		Pageable pageable = PageRequest.of(page, size);
-		Page<Order> ordersPage = orderJpa.findAllOrdersCriteria(name, address, status, pageable);
-
-		if (ordersPage.isEmpty()) {
-			return new ApiResponse<>(404, "No orders found", null);
-		}
-
-		List<OrderDTO> orderDtos = ordersPage.stream().map(this::createOrderDTO).collect(Collectors.toList());
-		PageImpl<OrderDTO> resultPage = new PageImpl<>(orderDtos, pageable, ordersPage.getTotalElements());
-		return new ApiResponse<>(200, "Orders fetched successfully", resultPage);
-	}
-
-	public ApiResponse<PageImpl<OrderDTO>> getClientOrders(String name, String address, String status, int page,
-			int size) {
-		if (name == null) {
-			name = "";
-		}
-		if (address == null) {
-			address = "";
-		}
-		if (status == null) {
-			status = "";
-		}
-
-		Pageable pageable = PageRequest.of(page, size);
-		Page<Order> ordersPage = orderJpa.findOrdersClientByCriteria(name, address, status, pageable);
-
-		if (ordersPage.isEmpty()) {
-			return new ApiResponse<>(404, "No orders found", null);
-		}
-
-		List<OrderDTO> orderDtos = ordersPage.stream().map(this::createOrderDTO).collect(Collectors.toList());
-		PageImpl<OrderDTO> resultPage = new PageImpl<>(orderDtos, pageable, ordersPage.getTotalElements());
-		return new ApiResponse<>(200, "Orders fetched successfully", resultPage);
-	}
-
-	public ApiResponse<PageImpl<OrderDTO>> getAdminOrders(String name, String address, String status, int page,
-			int size) {
-		if (name == null) {
-			name = "";
-		}
-		if (address == null) {
-			address = "";
-		}
-		if (status == null) {
-			status = "";
-		}
-
-		Pageable pageable = PageRequest.of(page, size);
-		Page<Order> ordersPage = orderJpa.findOrdersAdminByCriteria(name, address, status, pageable);
-
-		if (ordersPage.isEmpty()) {
-			return new ApiResponse<>(404, "No orders found", null);
-		}
-
-		List<OrderDTO> orderDtos = ordersPage.stream().map(this::createOrderDTO).collect(Collectors.toList());
-		PageImpl<OrderDTO> resultPage = new PageImpl<>(orderDtos, pageable, ordersPage.getTotalElements());
-		return new ApiResponse<>(200, "Orders fetched successfully", resultPage);
-	}
 
 	private OrderDTO createOrderDTO(Order order) {
 		BigDecimal total = orderUtilsService.calculateOrderTotal(order);

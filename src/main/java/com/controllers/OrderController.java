@@ -19,10 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.entities.OrderDetail;
 import com.entities.OrderStatus;
 import com.errors.ApiResponse;
-import com.models.AttributeDTO;
 import com.models.OrderCreateDTO;
 import com.models.OrderDTO;
-import com.services.AttributesService;
 import com.services.OrderDetailService;
 import com.services.OrderService;
 import com.services.OrderStatusService;
@@ -38,62 +36,29 @@ public class OrderController {
 	private OrderDetailService orderDetailService;
 
 	@Autowired
-	private AttributesService attributeService;
-
-	@Autowired
 	private OrderStatusService orderStatusService;
 
-	@PostMapping
-	public ResponseEntity<ApiResponse<?>> createOrder(@RequestBody OrderCreateDTO orderCreateDTO) {
-		ApiResponse<?> response = orderService.createOrder(orderCreateDTO);
-		return ResponseEntity.status(HttpStatus.valueOf(response.getErrorCode())).body(response);
-	}
+	// Trạng thái thanh toán online mặc định là Confirmed
+	// Truyền product version theo đơn hàng cùng ProductVersion
+
+//	@PostMapping
+//	public ResponseEntity<ApiResponse<?>> createOrder(@RequestBody OrderCreateDTO orderCreateDTO) {
+//		ApiResponse<?> response = orderService.createOrder(orderCreateDTO);
+//		return ResponseEntity.status(HttpStatus.valueOf(response.getErrorCode())).body(response);
+//	}
 
 	@GetMapping
-	public ResponseEntity<ApiResponse<?>> getAllOrders(@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "address", required = false) String address,
+	public ResponseEntity<ApiResponse<?>> getAllOrders(
+			@RequestParam(value = "isAdminOrder", required = false) Boolean isAdminOrder,
+			@RequestParam(value = "keyword", required = false) String keyword,
 			@RequestParam(value = "status", required = false) String status,
 			@RequestParam(value = "page", defaultValue = "0") int page,
 			@RequestParam(value = "size", defaultValue = "5") int size) {
 
-		ApiResponse<PageImpl<OrderDTO>> response = orderService.getAllOrders(name, address, status, page, size);
+		ApiResponse<PageImpl<OrderDTO>> response = orderService.getAllOrders(isAdminOrder, keyword, status, page, size);
 
 		return ResponseEntity.status(HttpStatus.valueOf(response.getErrorCode())).body(response);
 	}
-
-	@GetMapping("/client")
-	public ResponseEntity<ApiResponse<?>> getClientOrders(@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "address", required = false) String address,
-			@RequestParam(value = "status", required = false) String status,
-			@RequestParam(value = "page", defaultValue = "0") int page,
-			@RequestParam(value = "size", defaultValue = "5") int size) {
-
-		ApiResponse<PageImpl<OrderDTO>> response = orderService.getClientOrders(name, address, status, page, size);
-
-		return ResponseEntity.status(HttpStatus.valueOf(response.getErrorCode())).body(response);
-	}
-
-	@GetMapping("/admin")
-	public ResponseEntity<ApiResponse<?>> getAdminOrders(@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "address", required = false) String address,
-			@RequestParam(value = "status", required = false) String status,
-			@RequestParam(value = "page", defaultValue = "0") int page,
-			@RequestParam(value = "size", defaultValue = "5") int size) {
-
-		ApiResponse<PageImpl<OrderDTO>> response = orderService.getAdminOrders(name, address, status, page, size);
-
-		return ResponseEntity.status(HttpStatus.valueOf(response.getErrorCode())).body(response);
-	}
-
-//	@GetMapping("/product-version")
-//	public ResponseEntity<AttributeDTO> getAttributes(@RequestParam("productVersionId") Integer productVersionId) {
-//		if (productVersionId == null) {
-//			return ResponseEntity.badRequest().body(null);
-//		}
-//
-//		AttributeDTO attributes = attributeService.getAttributesByProductVersionId(productVersionId);
-//		return ResponseEntity.ok(attributes);
-//	}
 
 	@GetMapping("/statuses")
 	public ResponseEntity<ApiResponse<List<OrderStatus>>> getOrderStatus() {
@@ -161,7 +126,7 @@ public class OrderController {
 	}
 
 	@GetMapping("/order-details")
-	public ResponseEntity<ApiResponse<?>> getOrder(@RequestParam Integer orderId) {
+	public ResponseEntity<ApiResponse<?>> getOrderDetail(@RequestParam Integer orderId) {
 		if (orderId == null) {
 			ApiResponse<String> response = new ApiResponse<>(400, "Order ID is required", null);
 			return ResponseEntity.badRequest().body(response);

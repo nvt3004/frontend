@@ -6,53 +6,48 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-
 /**
  * The persistent class for the coupons database table.
  * 
  */
 @Entity
-@Table(name="coupons")
-@NamedQuery(name="Coupon.findAll", query="SELECT c FROM Coupon c")
+@Table(name = "coupons")
+@NamedQuery(name = "Coupon.findAll", query = "SELECT c FROM Coupon c")
 public class Coupon implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="coupon_id")
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "coupon_id")
 	private int couponId;
 
-	@Column(name="coupon_code")
+	@Column(name = "coupon_code")
 	private String couponCode;
-	
-	@OneToMany(mappedBy="coupon", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Order> orders;
+
+	@OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Order> orders;
 
 	@Lob
 	private String description;
 
-	@Column(name="dis_percent")
+	@Column(name = "dis_percent")
 	private BigDecimal disPercent;
 
-	@Column(name="dis_price")
+	@Column(name = "dis_price")
 	private BigDecimal disPrice;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="end_date")
+	@Column(name = "end_date")
 	private Date endDate;
 
 	private int quantity;
 
-	@Column(name="ref_percent")
-	private BigDecimal refPercent;
-
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="start_date")
+	@Column(name = "start_date")
 	private Date startDate;
 
-	private byte status;
-
-	//bi-directional many-to-one association to UserCoupon
-	@OneToMany(mappedBy="coupon")
+	// bi-directional many-to-one association to UserCoupon
+	@OneToMany(mappedBy = "coupon")
 	private List<UserCoupon> userCoupons;
 
 	public Coupon() {
@@ -114,28 +109,12 @@ public class Coupon implements Serializable {
 		this.quantity = quantity;
 	}
 
-	public BigDecimal getRefPercent() {
-		return this.refPercent;
-	}
-
-	public void setRefPercent(BigDecimal refPercent) {
-		this.refPercent = refPercent;
-	}
-
 	public Date getStartDate() {
 		return this.startDate;
 	}
 
 	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
-	}
-
-	public byte getStatus() {
-		return this.status;
-	}
-
-	public void setStatus(byte status) {
-		this.status = status;
 	}
 
 	public List<UserCoupon> getUserCoupons() {
