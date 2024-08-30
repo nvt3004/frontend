@@ -1,11 +1,10 @@
 package com.models;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -31,20 +30,20 @@ public class CouponCreate {
 
     @NotNull(message = "Start date cannot be null.")
     @FutureOrPresent(message = "Start date must be today or in the future.")
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private Date startDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime startDate;
 
     @NotNull(message = "End date cannot be null.")
     @Future(message = "End date must be in the future.")
-    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
-    private Date endDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime endDate;
 
     @NotNull(message = "Quantity cannot be null.")
     @Min(value = 1, message = "Quantity must be at least 1.")
     private Integer quantity;
     
     public boolean isDatesValid() {
-        return startDate != null && endDate != null && startDate.before(endDate);
+        return startDate != null && endDate != null && startDate.isBefore(endDate);
     }
     public boolean isDiscountValid() {
         return (disPercent == null && disPrice != null) || (disPercent != null && disPrice == null);

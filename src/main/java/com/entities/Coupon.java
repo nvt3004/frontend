@@ -1,10 +1,22 @@
 package com.entities;
 
 import java.io.Serializable;
-import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 /**
  * The persistent class for the coupons database table.
@@ -36,15 +48,13 @@ public class Coupon implements Serializable {
 	@Column(name = "dis_price")
 	private BigDecimal disPrice;
 
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "end_date")
-	private Date endDate;
+	private LocalDateTime endDate;
 
 	private int quantity;
 
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "start_date")
-	private Date startDate;
+	private LocalDateTime startDate;
 
 	// bi-directional many-to-one association to UserCoupon
 	@OneToMany(mappedBy = "coupon")
@@ -93,11 +103,11 @@ public class Coupon implements Serializable {
 		this.disPrice = disPrice;
 	}
 
-	public Date getEndDate() {
+	public LocalDateTime getEndDate() {
 		return this.endDate;
 	}
 
-	public void setEndDate(Date endDate) {
+	public void setEndDate(LocalDateTime endDate) {
 		this.endDate = endDate;
 	}
 
@@ -109,11 +119,11 @@ public class Coupon implements Serializable {
 		this.quantity = quantity;
 	}
 
-	public Date getStartDate() {
+	public LocalDateTime getStartDate() {
 		return this.startDate;
 	}
 
-	public void setStartDate(Date startDate) {
+	public void setStartDate(LocalDateTime startDate) {
 		this.startDate = startDate;
 	}
 
