@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 import Swal from 'sweetalert2';
 import './ThoLHCSS.css';
 import BootstrapToast from './Toast';
+import PermissionModal from './PermissionModal';
 
 const LabelHover = styled.label`
   &:hover {
@@ -70,6 +71,18 @@ const AddNewUser = () => {
     });
   }
 
+  const userRoleRef = useRef('');
+  const [showModal, setShowModal] = useState(false);
+  const openModal = () => {
+    console.log(userRoleRef?.current?.value);
+    if (userRoleRef?.current?.value === "staff") {
+      setShowModal(true);
+    }
+  }
+  const hideModal = () => {
+    setShowModal(false);
+  }
+
   return (
     <div className="container mt-3 w-50">
       <div className='row'>
@@ -118,7 +131,7 @@ const AddNewUser = () => {
                 type="date"
                 className="form-control rounded-5 px-3 py-2"
                 id="birthday"
-                {...register('birthday', { 
+                {...register('birthday', {
                   required: 'Birthday is required',
                   validate: {
                     validAge: value => {
@@ -150,7 +163,7 @@ const AddNewUser = () => {
                 type="email"
                 className="form-control rounded-5 px-3 py-2"
                 id="email"
-                {...register('email', { 
+                {...register('email', {
                   required: 'Email is required',
                   pattern: {
                     value: /^\S+@\S+\.\S+$/,
@@ -166,6 +179,8 @@ const AddNewUser = () => {
                 className="form-select rounded-5 px-3 py-2"
                 id="role"
                 {...register('role', { required: 'Role is required' })}
+                ref={userRoleRef}
+                onChange={openModal}
               >
                 <option value="">Select role</option>
                 <option value="admin">Admin</option>
@@ -178,7 +193,10 @@ const AddNewUser = () => {
           </form>
         </div>
         <div>
-          <BootstrapToast show={showToast} close={() => setShowToast(false)} title={toastContent.title} text={toastContent.text} color={toastContent.color}/>
+          <BootstrapToast show={showToast} close={() => setShowToast(false)} title={toastContent.title} text={toastContent.text} color={toastContent.color} />
+        </div>
+        <div>
+          <PermissionModal show={showModal} handleClose={hideModal} />
         </div>
       </div>
     </div>
