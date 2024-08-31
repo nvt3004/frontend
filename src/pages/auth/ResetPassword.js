@@ -1,17 +1,35 @@
 import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
+import { resetPassword } from "../../services/api/OAuthApi";
 
 const ResetPassword = () => {
-  const { token } = useParams(); // Token từ URL
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const token = queryParams.get("token"); // Lấy token từ query params
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Xử lý cập nhật mật khẩu ở đây
-    console.log("Reset password with token:", token);
-    console.log("New password:", password);
-    // Gửi yêu cầu cập nhật mật khẩu đến server
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    try {
+      const response = await resetPassword(token, password);
+      if (response) {
+        setSuccess("Password reset successfully");
+      } else {
+        setError("Password reset failed");
+      }
+    } catch (error) {
+      setError(`Password reset failed: ${error.message}`);
+    }
   };
 
   return (
@@ -53,6 +71,8 @@ const ResetPassword = () => {
                 <button type="submit" className="btn btn-primary w-100">
                   Reset Password
                 </button>
+                {error && <div className="alert alert-danger mt-3">{error}</div>}
+                {success && <div className="alert alert-success mt-3">{success}</div>}
               </form>
               <div className="d-flex justify-content-between mt-3">
                 <Link
