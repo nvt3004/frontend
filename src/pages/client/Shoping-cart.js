@@ -320,55 +320,54 @@ const ShopingCart = () => {
                 ></button>
               </div>
               <div className="modal-body">
-              <div>
-  <div className="form-group mb-3">
-    <div className="row">
-      <div className="col-md-6 mb-2">
-        <select
-          className="form-select rounded-0"
-          aria-label="Select Color"
-        >
-          <option className="stext-110" selected>
-            Select Color
-          </option>
-          <option className="stext-110" value="red">
-            Red
-          </option>
-          <option className="stext-110" value="blue">
-            Blue
-          </option>
-          <option className="stext-110" value="green">
-            Green
-          </option>
-        </select>
-      </div>
-      <div className="col-md-6 mb-2">
-        <select
-          className="form-select rounded-0"
-          aria-label="Select Size"
-        >
-          <option className="stext-110" selected>
-            Select Size
-          </option>
-          <option className="stext-110" value="small">
-            Small
-          </option>
-          <option className="stext-110" value="medium">
-            Medium
-          </option>
-          <option className="stext-110" value="large">
-            Large
-          </option>
-        </select>
-      </div>
-    </div>
-  </div>
+                <div>
+                  <div className="form-group mb-3">
+                    <div className="row">
+                      <div className="col-md-6 mb-2">
+                        <select
+                          className="form-select rounded-0"
+                          aria-label="Select Color"
+                        >
+                          <option className="stext-110" selected>
+                            Select Color
+                          </option>
+                          <option className="stext-110" value="red">
+                            Red
+                          </option>
+                          <option className="stext-110" value="blue">
+                            Blue
+                          </option>
+                          <option className="stext-110" value="green">
+                            Green
+                          </option>
+                        </select>
+                      </div>
+                      <div className="col-md-6 mb-2">
+                        <select
+                          className="form-select rounded-0"
+                          aria-label="Select Size"
+                        >
+                          <option className="stext-110" selected>
+                            Select Size
+                          </option>
+                          <option className="stext-110" value="small">
+                            Small
+                          </option>
+                          <option className="stext-110" value="medium">
+                            Medium
+                          </option>
+                          <option className="stext-110" value="large">
+                            Large
+                          </option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
 
-  <button className="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
-    Save
-  </button>
-</div>
-
+                  <button className="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
+                    Save
+                  </button>
+                </div>
               </div>
             </div>
           </div>

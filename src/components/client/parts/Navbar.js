@@ -184,8 +184,7 @@ const Navbar = () => {
               <button
                 type="button"
                 className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 "
-                data-bs-toggle="modal"
-                data-bs-target="#staticBackdrop"
+               
               >
                 <i className="zmdi zmdi-search"></i>
               </button>
@@ -256,8 +255,7 @@ const Navbar = () => {
           <button
             type="button"
             className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 "
-            data-bs-toggle="modal"
-            data-bs-target="#staticBackdrop"
+         
           >
             <i className="zmdi zmdi-search"></i>
           </button>
@@ -448,47 +446,7 @@ const Navbar = () => {
           </div>
         </div>
       ) : null}
-      {/* <!-- Modal --> */}
-      <div
-        className="modal fade"
-        id="staticBackdrop"
-        data-bs-backdrop="static"
-        data-bs-keyboard="false"
-        tabIndex="-1"
-        aria-labelledby="staticBackdropLabel"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog modal-xl h-75">
-          <div
-            className="modal-content h-100 border border-0"
-            style={styles.customBg}
-          >
-            <div className="d-flex align-items-center justify-content-center h-100">
-              <div className="w-100">
-                <div className="d-flex justify-content-end mb-3 w-auto ">
-                  <button
-                    type="button"
-                    className="trans-04 btn-close bg-body-tertiary"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                  ></button>
-                </div>
-                <form className="wrap-search-header flex-w p-l-15 w-auto">
-                  <button className="flex-c-m trans-04">
-                    <i className="zmdi zmdi-search"></i>
-                  </button>
-                  <input
-                    className="plh3 w-auto"
-                    type="text"
-                    name="search"
-                    placeholder="Search..."
-                  />
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+   
       {/* <!-- Offcanvas  right --> */}
       <div
         className="offcanvas offcanvas-end"
