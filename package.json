@@ -9,7 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.7.4",
     "bootstrap": "^5.3.3",
-    "firebase": "^10.13.0",
+    "firebase": "^10.13.1",
     "firebase-admin": "^12.4.0",
     "frontend": "file:",
     "js-cookie": "^3.0.5",
