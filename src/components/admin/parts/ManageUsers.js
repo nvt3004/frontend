@@ -3,7 +3,7 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 import users from '../data/userData';
 import UserModal from './UserModal';
 
-function ManageUsers() {
+const ManageUsers = () => {
   const usersPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);

@@ -7,7 +7,7 @@ import { ButtonHover } from './StyledButton';
 import Swal from 'sweetalert2';
 import BootstrapToast from './Toast';
 
-function OrderManagement() {
+const OrderManagement = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);

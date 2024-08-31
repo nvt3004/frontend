@@ -3,7 +3,7 @@ import React from 'react';
 // import styled from 'styled-components';
 import StyledLink from './StyledLink';
 
-function AdminNav() {
+const AdminNav = () => {
   return (
     <nav className="bg-white border-right" id="sidebar-wrapper">
       <div className="list-group list-group-flush">
@@ -18,7 +18,7 @@ function AdminNav() {
         </button>
         <div className="collapse" id="userManagementCollapse">
           <StyledLink to="/admin/users/add" className="list-group-item text-center bg-secondary-subtle">
-            Add New User
+            New User
           </StyledLink>
           <StyledLink to="/admin/users/manage" className="list-group-item text-center bg-secondary-subtle">
             Manage Users
@@ -36,7 +36,7 @@ function AdminNav() {
         </button>
         <div className="collapse" id="productManagementCollapse">
           <StyledLink to="/admin/products/add" className="list-group-item text-center bg-secondary-subtle">
-            Add New Product
+            New Product
           </StyledLink>
           <StyledLink to="/admin/products/manage" className="list-group-item text-center bg-secondary-subtle">
             Manage Products
@@ -67,11 +67,59 @@ function AdminNav() {
           Suppliers Management
         </button>
         <div className="collapse" id="suppliersManagementCollapse">
-          <StyledLink to="/admin/orders/manage" className="list-group-item text-center bg-secondary-subtle">
-            Add New Suppliers
+          <StyledLink to="/admin/suppliers/add" className="list-group-item text-center bg-secondary-subtle">
+            New Suppliers
           </StyledLink>
           <StyledLink to="/admin/suppliers/manage" className="list-group-item text-center bg-secondary-subtle">
             Manage Suppliers
+          </StyledLink>
+        </div>
+        <button
+          className="list-group-item list-group-item-action bg-white"
+          data-bs-toggle="collapse"
+          data-bs-target="#warehouseManagementCollapse"
+          aria-expanded="false"
+          aria-controls="warehouseManagementCollapse"
+        >
+          Warehouse Management
+        </button>
+        <div className="collapse" id="warehouseManagementCollapse">
+          <StyledLink to="/admin/warehouse/add" className="list-group-item text-center bg-secondary-subtle">
+            New Warehouses
+          </StyledLink>
+          <StyledLink to="/admin/warehouse/manage" className="list-group-item text-center bg-secondary-subtle">
+            Manage Warehouses
+          </StyledLink>
+        </div>
+        <button
+          className="list-group-item list-group-item-action bg-white"
+          data-bs-toggle="collapse"
+          data-bs-target="#permissionsManagementCollapse"
+          aria-expanded="false"
+          aria-controls="permissionsManagementCollapse"
+        >
+            Permissions Management
+        </button>
+        <div className="collapse" id="permissionsManagementCollapse">
+          <StyledLink to="/admin/permission/add" className="list-group-item text-center bg-secondary-subtle">
+            New Permissiosn
+          </StyledLink>
+          <StyledLink to="/admin/permission/manage" className="list-group-item text-center bg-secondary-subtle">
+            Manage Permissions
+          </StyledLink>
+        </div>
+        <button
+          className="list-group-item list-group-item-action bg-white"
+          data-bs-toggle="collapse"
+          data-bs-target="#feedbacksManagementCollapse"
+          aria-expanded="false"
+          aria-controls="feedbacksManagementCollapse"
+        >
+          Feedbacks Management
+        </button>
+        <div className="collapse" id="feedbacksManagementCollapse">
+          <StyledLink to="/admin/feedback/manage" className="list-group-item text-center bg-secondary-subtle">
+            Manage Feedbacks
           </StyledLink>
         </div>
       </div>

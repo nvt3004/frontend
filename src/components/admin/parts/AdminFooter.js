@@ -8,7 +8,7 @@ const Footer = styled.footer`
   box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
 `;
 
-function AdminFooter() {
+const AdminFooter = () => {
   return (
     <Footer>
       MADE BY STF COMPANY

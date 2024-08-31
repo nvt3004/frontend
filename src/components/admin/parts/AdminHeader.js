@@ -48,7 +48,7 @@ const DropdownContent = styled.div`
   }
 `;
 
-function AdminHeader() {
+const AdminHeader = () => {
   return (
     <Header>
       <SearchInput type="text" placeholder="Search..."  className='py-2 px-3 rounded-5' style={{minWidth: '350px'}}/>
