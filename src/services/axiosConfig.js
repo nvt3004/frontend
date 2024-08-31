@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 // Tạo một instance của Axios với cấu hình mặc định
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080/api", // URL gốc của API
+  baseURL: "http://localhost:8080", // URL gốc của API
   timeout: 10000, // Thời gian chờ tối đa là 10 giây
   headers: {
     "Content-Type": "application/json",
@@ -29,7 +29,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => {
    if(response && response.data){
-    return response.data;
+    return response;
    }
    return response;
   },
