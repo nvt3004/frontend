@@ -23,15 +23,12 @@ public class ManagePermission implements Serializable {
 	//bi-directional many-to-one association to Permission
 	@ManyToOne
 	@JoinColumn(name="permission_id")
-	@JsonBackReference
-
+	// @JsonBackReference
 	private Permission permission;
 
 	//bi-directional many-to-one association to User
 	@ManyToOne
 	@JoinColumn(name="user_id")
-	@JsonBackReference
-
 	private User user;
 
 	public ManagePermission() {

@@ -1,7 +1,9 @@
 package com.services;
 
+
 import java.util.ArrayList;
 import java.util.List;
+
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,10 @@ import com.responsedto.ProductDetailResponse;
 import com.responsedto.ProductHomeResponse;
 import com.responsedto.Version;
 import com.utils.UploadService;
+
+import com.entities.Product;
+import com.repositories.ProductJPA;
+
 
 
 @Service

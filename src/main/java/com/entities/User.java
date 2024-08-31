@@ -1,396 +1,464 @@
 package com.entities;
 
 import java.io.Serializable;
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * The persistent class for the users database table.
- * 
  */
 @Entity
 @Table(name = "users")
 @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u")
-public class User implements Serializable {
-	private static final long serialVersionUID = 1L;
+public class User implements UserDetails, Serializable {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_id")
-	private int userId;
+    private static final long serialVersionUID = 1L;
 
-	@Temporal(TemporalType.DATE)
-	private Date birthday;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private int userId;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "create_date")
-	private Date createDate;
+    @Temporal(TemporalType.DATE)
+    private Date birthday;
 
-	private String email;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "create_date")
+    private Date createDate;
 
-	@Column(name = "full_name")
-	private String fullName;
+    private String email;
 
-	private int gender;
+    @Column(name = "full_name")
+    private String fullName;
 
-	private String image;
+    private int gender;
 
-	private String password;
+    private String image;
 
-	private String phone;
+    private String password;
 
-	private boolean status;
+    private String phone;
 
-	private String username;
+    private byte status;
 
-	@OneToMany(mappedBy = "user")
-	@JsonManagedReference
+    private String username;
 
-	private List<Order> orders;
+    private String resetToken;
 
-	// bi-directional many-to-one association to Address
-	@OneToMany(mappedBy = "user")
-	@JsonManagedReference
-	private List<Address> addresses;
+    @Column(name = "provider")
+    private String provider;
 
-	// bi-directional many-to-one association to Cart
-	@OneToMany(mappedBy = "user")
-	@JsonManagedReference
-	private List<Cart> carts;
+    @Column(name = "token_expiry_date")
+    private LocalDateTime tokenExpiryDate;
 
-	// bi-directional many-to-one association to Feedback
-	@OneToMany(mappedBy = "user")
-	@JsonManagedReference
-	private List<Feedback> feedbacks;
+    // Bi-directional many-to-one association to Address
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses;
 
-	// bi-directional many-to-one association to Image
-	@OneToMany(mappedBy = "user")
-	@JsonManagedReference
-	private List<Image> images;
+    // Bi-directional many-to-one association to Cart
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Cart> carts;
 
-	// bi-directional many-to-one association to ManagePermission
-	@OneToMany(mappedBy = "user")
-	@JsonManagedReference
-	private List<ManagePermission> managePermissions;
+    // Bi-directional many-to-one association to Feedback
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Feedback> feedbacks;
 
-	// bi-directional many-to-one association to Reply
-	@OneToMany(mappedBy = "user")
-	@JsonManagedReference
-	private List<Reply> replies;
+    // Bi-directional many-to-one association to Image
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> images;
 
-	// bi-directional many-to-one association to UserCoupon
-	@OneToMany(mappedBy = "user")
-	@JsonManagedReference
-	private List<UserCoupon> userCoupons;
+    // Bi-directional many-to-one association to ManagePermission
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ManagePermission> managePermissions;
 
-	// bi-directional many-to-one association to UserRole
-	@OneToMany(mappedBy = "user")
-	@JsonManagedReference
-	private List<UserRole> userRoles;
 
-	// bi-directional many-to-one association to Wishlist
-	@OneToMany(mappedBy = "user")
-	@JsonManagedReference
-	private List<Wishlist> wishlists;
+    // Bi-directional many-to-one association to Order
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Order> orders;
 
-	public User() {
-	}
+    // Bi-directional many-to-one association to Reply
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reply> replies;
 
-	public int getUserId() {
-		return this.userId;
-	}
+    // Bi-directional many-to-one association to UserCoupon
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserCoupon> userCoupons;
 
-	public void setUserId(int userId) {
-		this.userId = userId;
-	}
+    // Bi-directional many-to-one association to UserRole
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<UserRole> userRoles;
 
-	public List<Order> getOrders() {
-		return this.orders;
-	}
+    // Bi-directional many-to-one association to Wishlist
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Wishlist> wishlists;
 
-	public void setOrders(List<Order> orders) {
-		this.orders = orders;
-	}
+    public User() {
+    }
 
-	public Date getBirthday() {
-		return this.birthday;
-	}
+    // Getters and Setters
+    public int getUserId() {
+        return userId;
+    }
 
-	public void setBirthday(Date birthday) {
-		this.birthday = birthday;
-	}
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
-	public Date getCreateDate() {
-		return this.createDate;
-	}
+    public String getProvider() {
+        return provider;
+    }
 
-	public void setCreateDate(Date createDate) {
-		this.createDate = createDate;
-	}
-
-	public String getEmail() {
-		return this.email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public String getFullName() {
-		return this.fullName;
-	}
-
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
-
-	public int getGender() {
-		return this.gender;
-	}
-
-	public void setGender(int gender) {
-		this.gender = gender;
-	}
-
-	public String getImage() {
-		return this.image;
-	}
-
-	public void setImage(String image) {
-		this.image = image;
-	}
-
-	public String getPassword() {
-		return this.password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public String getPhone() {
-		return this.phone;
-	}
-
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-
-	public boolean isStatus() {
-		return this.status;
-	}
-
-	public void setStatus(boolean status) {
-		this.status = status;
-	}
-
-	public String getUsername() {
-		return this.username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public List<Address> getAddresses() {
-		return this.addresses;
-	}
-
-	public void setAddresses(List<Address> addresses) {
-		this.addresses = addresses;
-	}
-
-	public Address addAddress(Address address) {
-		getAddresses().add(address);
-		address.setUser(this);
-
-		return address;
-	}
-
-	public Address removeAddress(Address address) {
-		getAddresses().remove(address);
-		address.setUser(null);
-
-		return address;
-	}
-
-	public List<Cart> getCarts() {
-		return this.carts;
-	}
-
-	public void setCarts(List<Cart> carts) {
-		this.carts = carts;
-	}
-
-	public Cart addCart(Cart cart) {
-		getCarts().add(cart);
-		cart.setUser(this);
-
-		return cart;
-	}
-
-	public Cart removeCart(Cart cart) {
-		getCarts().remove(cart);
-		cart.setUser(null);
-
-		return cart;
-	}
-
-	public List<Feedback> getFeedbacks() {
-		return this.feedbacks;
-	}
-
-	public void setFeedbacks(List<Feedback> feedbacks) {
-		this.feedbacks = feedbacks;
-	}
-
-	public Feedback addFeedback(Feedback feedback) {
-		getFeedbacks().add(feedback);
-		feedback.setUser(this);
-
-		return feedback;
-	}
-
-	public Feedback removeFeedback(Feedback feedback) {
-		getFeedbacks().remove(feedback);
-		feedback.setUser(null);
-
-		return feedback;
-	}
-
-	public List<Image> getImages() {
-		return this.images;
-	}
-
-	public void setImages(List<Image> images) {
-		this.images = images;
-	}
-
-	public Image addImage(Image image) {
-		getImages().add(image);
-		image.setUser(this);
-
-		return image;
-	}
-
-	public Image removeImage(Image image) {
-		getImages().remove(image);
-		image.setUser(null);
-
-		return image;
-	}
-
-	public List<ManagePermission> getManagePermissions() {
-		return this.managePermissions;
-	}
-
-	public void setManagePermissions(List<ManagePermission> managePermissions) {
-		this.managePermissions = managePermissions;
-	}
-
-	public ManagePermission addManagePermission(ManagePermission managePermission) {
-		getManagePermissions().add(managePermission);
-		managePermission.setUser(this);
-
-		return managePermission;
-	}
-
-	public ManagePermission removeManagePermission(ManagePermission managePermission) {
-		getManagePermissions().remove(managePermission);
-		managePermission.setUser(null);
-
-		return managePermission;
-	}
-
-	public List<Reply> getReplies() {
-		return this.replies;
-	}
-
-	public void setReplies(List<Reply> replies) {
-		this.replies = replies;
-	}
-
-	public Reply addReply(Reply reply) {
-		getReplies().add(reply);
-		reply.setUser(this);
-
-		return reply;
-	}
-
-	public Reply removeReply(Reply reply) {
-		getReplies().remove(reply);
-		reply.setUser(null);
-
-		return reply;
-	}
-
-	public List<UserCoupon> getUserCoupons() {
-		return this.userCoupons;
-	}
-
-	public void setUserCoupons(List<UserCoupon> userCoupons) {
-		this.userCoupons = userCoupons;
-	}
-
-	public UserCoupon addUserCoupon(UserCoupon userCoupon) {
-		getUserCoupons().add(userCoupon);
-		userCoupon.setUser(this);
-
-		return userCoupon;
-	}
-
-	public UserCoupon removeUserCoupon(UserCoupon userCoupon) {
-		getUserCoupons().remove(userCoupon);
-		userCoupon.setUser(null);
-
-		return userCoupon;
-	}
-
-	public List<UserRole> getUserRoles() {
-		return this.userRoles;
-	}
-
-	public void setUserRoles(List<UserRole> userRoles) {
-		this.userRoles = userRoles;
-	}
-
-	public UserRole addUserRole(UserRole userRole) {
-		getUserRoles().add(userRole);
-		userRole.setUser(this);
-
-		return userRole;
-	}
-
-	public UserRole removeUserRole(UserRole userRole) {
-		getUserRoles().remove(userRole);
-		userRole.setUser(null);
-
-		return userRole;
-	}
-
-	public List<Wishlist> getWishlists() {
-		return this.wishlists;
-	}
-
-	public void setWishlists(List<Wishlist> wishlists) {
-		this.wishlists = wishlists;
-	}
-
-	public Wishlist addWishlist(Wishlist wishlist) {
-		getWishlists().add(wishlist);
-		wishlist.setUser(this);
-
-		return wishlist;
-	}
-
-	public Wishlist removeWishlist(Wishlist wishlist) {
-		getWishlists().remove(wishlist);
-		wishlist.setUser(null);
-
-		return wishlist;
-	}
-
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public Date getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(Date birthday) {
+        this.birthday = birthday;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public int getGender() {
+        return gender;
+    }
+
+    public void setGender(int gender) {
+        this.gender = gender;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    // public String getPassword() {
+    // return password;
+    // }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public byte getStatus() {
+        return status;
+    }
+
+    public void setStatus(byte status) {
+        this.status = status;
+    }
+
+    // public String getUsername() {
+    // return username;
+    // }
+
+    public String getResetToken() {
+        return resetToken;
+    }
+    
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
+    }
+    
+    public LocalDateTime getTokenExpiryDate() {
+        return tokenExpiryDate;
+    }
+    
+    public void setTokenExpiryDate(LocalDateTime tokenExpiryDate) {
+        this.tokenExpiryDate = tokenExpiryDate;
+    }
+    
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public List<Address> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(List<Address> addresses) {
+        this.addresses = addresses;
+    }
+
+    public Address addAddress(Address address) {
+        getAddresses().add(address);
+        address.setUser(this);
+        return address;
+    }
+
+    public Address removeAddress(Address address) {
+        getAddresses().remove(address);
+        address.setUser(null);
+        return address;
+    }
+
+    public List<Cart> getCarts() {
+        return carts;
+    }
+
+    public void setCarts(List<Cart> carts) {
+        this.carts = carts;
+    }
+
+    public Cart addCart(Cart cart) {
+        getCarts().add(cart);
+        cart.setUser(this);
+        return cart;
+    }
+
+    public Cart removeCart(Cart cart) {
+        getCarts().remove(cart);
+        cart.setUser(null);
+        return cart;
+    }
+
+    public List<Feedback> getFeedbacks() {
+        return feedbacks;
+    }
+
+    public void setFeedbacks(List<Feedback> feedbacks) {
+        this.feedbacks = feedbacks;
+    }
+
+    public Feedback addFeedback(Feedback feedback) {
+        getFeedbacks().add(feedback);
+        feedback.setUser(this);
+        return feedback;
+    }
+
+    public Feedback removeFeedback(Feedback feedback) {
+        getFeedbacks().remove(feedback);
+        feedback.setUser(null);
+        return feedback;
+    }
+
+    public List<Image> getImages() {
+        return images;
+    }
+
+    public void setImages(List<Image> images) {
+        this.images = images;
+    }
+
+    public Image addImage(Image image) {
+        getImages().add(image);
+        image.setUser(this);
+        return image;
+    }
+
+    public Image removeImage(Image image) {
+        getImages().remove(image);
+        image.setUser(null);
+        return image;
+    }
+
+    public List<ManagePermission> getManagePermissions() {
+        return managePermissions;
+    }
+
+    public void setManagePermissions(List<ManagePermission> managePermissions) {
+        this.managePermissions = managePermissions;
+    }
+
+    public ManagePermission addManagePermission(ManagePermission managePermission) {
+        getManagePermissions().add(managePermission);
+        managePermission.setUser(this);
+        return managePermission;
+    }
+
+    public ManagePermission removeManagePermission(ManagePermission managePermission) {
+        getManagePermissions().remove(managePermission);
+        managePermission.setUser(null);
+        return managePermission;
+    }
+
+
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
+    }
+
+    public Order addOrder(Order order) {
+        getOrders().add(order);
+        order.setUser(this);
+        return order;
+    }
+
+    public Order removeOrder(Order order) {
+        getOrders().remove(order);
+        order.setUser(null);
+        return order;
+    }
+
+    public List<Reply> getReplies() {
+        return replies;
+    }
+
+    public void setReplies(List<Reply> replies) {
+        this.replies = replies;
+    }
+
+    public Reply addReply(Reply reply) {
+        getReplies().add(reply);
+        reply.setUser(this);
+        return reply;
+    }
+
+    public Reply removeReply(Reply reply) {
+        getReplies().remove(reply);
+        reply.setUser(null);
+        return reply;
+    }
+
+    public List<UserCoupon> getUserCoupons() {
+        return userCoupons;
+    }
+
+    public void setUserCoupons(List<UserCoupon> userCoupons) {
+        this.userCoupons = userCoupons;
+    }
+
+    public UserCoupon addUserCoupon(UserCoupon userCoupon) {
+        getUserCoupons().add(userCoupon);
+        userCoupon.setUser(this);
+        return userCoupon;
+    }
+
+    public UserCoupon removeUserCoupon(UserCoupon userCoupon) {
+        getUserCoupons().remove(userCoupon);
+        userCoupon.setUser(null);
+        return userCoupon;
+    }
+
+    public List<UserRole> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(List<UserRole> userRoles) {
+        this.userRoles = userRoles;
+    }
+
+    public UserRole addUserRole(UserRole userRole) {
+        getUserRoles().add(userRole);
+        userRole.setUser(this);
+        return userRole;
+    }
+
+    public UserRole removeUserRole(UserRole userRole) {
+        getUserRoles().remove(userRole);
+        userRole.setUser(null);
+        return userRole;
+    }
+
+    public List<Wishlist> getWishlists() {
+        return wishlists;
+    }
+
+    public void setWishlists(List<Wishlist> wishlists) {
+        this.wishlists = wishlists;
+    }
+
+    public Wishlist addWishlist(Wishlist wishlist) {
+        getWishlists().add(wishlist);
+        wishlist.setUser(this);
+        return wishlist;
+    }
+
+    public Wishlist removeWishlist(Wishlist wishlist) {
+        getWishlists().remove(wishlist);
+        wishlist.setUser(null);
+        return wishlist;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Optional.ofNullable(userRoles)
+                .orElse(Collections.emptyList()).stream()
+                .map(userRole -> new SimpleGrantedAuthority(userRole.getRole().getRoleName()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        // Implement as necessary
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        // Implement as necessary
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        // Implement as necessary
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        // Implement as necessary
+        return status == 1;
+    }
 }

@@ -104,7 +104,7 @@ public class FeedbackController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		if (!user.isStatus()) {
+		if (user.getStatus() == 0) {
 			response.setCode(403);
 			response.setMessage("Account locked");
 
@@ -264,7 +264,7 @@ public class FeedbackController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		if (!user.isStatus()) {
+		if (user.getStatus() == 0) {
 			response.setCode(403);
 			response.setMessage("Account locked");
 

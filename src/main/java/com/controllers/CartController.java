@@ -128,7 +128,7 @@ public class CartController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		if (!user.isStatus()) {
+		if (user.getStatus() == 0) {
 			response.setCode(403);
 			response.setMessage("Account locked");
 
@@ -208,13 +208,13 @@ public class CartController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		if (!user.isStatus()) {
+		if (user.getStatus() == 0) {
 			response.setCode(403);
 			response.setMessage("Account locked");
 
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
 		}
-
+		
 		List<CartItemResponse> items = cartService.getAllCartItemByUser(user.getUserId());
 
 		response.setCode(200);
@@ -256,7 +256,7 @@ public class CartController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		if (!user.isStatus()) {
+		if (user.getStatus() == 0) {
 			response.setCode(403);
 			response.setMessage("Account locked");
 
@@ -332,7 +332,7 @@ public class CartController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		if (!user.isStatus()) {
+		if (user.getStatus() == 0) {
 			response.setCode(403);
 			response.setMessage("Account locked");
 
@@ -508,7 +508,7 @@ public class CartController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 		}
 
-		if (!user.isStatus()) {
+		if (user.getStatus() == 0) {
 			response.setCode(403);
 			response.setMessage("Account locked");
 
