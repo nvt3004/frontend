@@ -5,56 +5,111 @@ import {
   auth,
   googleProvider,
   facebookProvider,
-} from "../../googleSignin/config";
-import { fetchSignInMethodsForEmail, signInWithPopup } from "firebase/auth";
-import { loginSocial, loginWithEmail } from "../../services/api/ExamProdApi";
+} from "../../config/FirebaseConfig";
+import {
+  getAdditionalUserInfo,
+  sendEmailVerification,
+  signInWithPopup,
+} from "firebase/auth";
+import { loginSocial, loginWithEmail } from "../../services/api/OAuthApi";
 
 const Login = () => {
   const [username, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [value, setValue] = useState("");
 
+  // const fetchUserProfile = async (accessToken) => {
+  //   try {
+  //     const response = await fetch(
+  //       "https://people.googleapis.com/v1/people/me?personFields=birthdays,gender,phoneNumbers",
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${accessToken}`,
+  //         },
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     console.log("User Profile:", data);
+  //     return data;
+  //   } catch (error) {
+  //     console.error("Error fetching user profile:", error);
+  //   }
+  // };
+
   const handleGoogleLogin = async () => {
     try {
+      googleProvider.addScope("email");
+      googleProvider.addScope("profile");
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      const userEmail = user.email;
       const userId = user.uid;
       const provider = "Google";
+      const fullName = user.displayName;
+      const photoURL = user.photoURL;
+      const phone = user.phoneNumber;
+      // const accessToken = await user.getIdToken(); 
+ 
+      // Lấy thông tin bổ sung
+      // const profileData = await fetchUserProfile(accessToken);
 
-      console.log("User Email:", userEmail);
-      console.log("Username:", userId);
+      const additionalUserInfo = getAdditionalUserInfo(result);
 
-      const userData = {
-        email: userEmail,
-        username: userId,
-        provider: provider,
-      };
-      await loginSocial(userData);
+      // Xử lý thông tin bổ sung từ Google People API nếu có
+      const userEmail = user.email || additionalUserInfo.profile.email;
+
+      if (userEmail) {
+        const userData = {
+          fullName: fullName,
+          email: userEmail,
+          username: userId,
+          provider: provider,
+          image: photoURL,
+          phone: phone,
+        };
+        await loginSocial(userData);
+      } else {
+        console.log("Email is null. Request user to provide their email.");
+        // Gửi email xác minh nếu cần thiết
+        await sendEmailVerification(user);
+        // Cập nhật trạng thái UI hoặc thông báo cho người dùng
+      }
     } catch (error) {
       console.error("Error during Google login:", error);
     }
   };
 
+  // Hàm xử lý đăng nhập với Facebook
   const handleFacebookLogin = async () => {
-
     try {
-      facebookProvider.addScope("email")
+      facebookProvider.addScope("email");
       const result = await signInWithPopup(auth, facebookProvider);
       const user = result.user;
-      const userEmail = user.email;
       const userId = user.uid;
-      const provider = "Facebook";
+      const providerName = "Facebook";
+      const fullName = user.displayName;
+      const photoURL = user.photoURL;
+      const phone = user.phoneNumber;
 
-      const userData = {
-        email: userEmail,
-        username: userId,
-        provider: provider,
-      };
+      // Lấy thông tin bổ sung
+      const additionalUserInfo = getAdditionalUserInfo(result);
+      const userEmail = user.email || additionalUserInfo.profile.email;
 
-      console.log("email: " + userEmail);
-
-      await loginSocial(userData);
+      if (userEmail) {
+        const userData = {
+          fullName: fullName,
+          email: userEmail,
+          username: userId,
+          provider: providerName,
+          image: photoURL,
+          phone: phone,
+        };
+        await loginSocial(userData);
+      } else {
+        console.log("Email is null. Request user to provide their email.");
+        // Gửi email xác minh nếu cần thiết
+        await sendEmailVerification(user);
+        // Cập nhật trạng thái UI hoặc thông báo cho người dùng
+      }
     } catch (error) {
       if (error.code === "auth/account-exists-with-different-credential") {
         console.log("Email đã được liên kết với một phương thức khác.");

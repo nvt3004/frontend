@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { resetPassword } from "../../services/api/ExamProdApi"; // Import hàm từ api
+import { resetPassword } from "../../services/api/OAuthApi";
 
 const ResetPassword = () => {
   const location = useLocation();

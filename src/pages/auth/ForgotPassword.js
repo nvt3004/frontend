@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import {
   sendResetPasswordEmail,
-  // Remove the duplicate function or import the correct one
   // sendResetPasswordSMS, 
-} from "../../services/api/ExamProdApi";
+} from "../../services/api/OAuthApi";
 import { Link } from "react-router-dom";
 
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-import { auth } from "../../googleSignin/config";
+import { auth } from "../../config/FirebaseConfig";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");

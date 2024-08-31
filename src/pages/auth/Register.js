@@ -1,7 +1,6 @@
-// src/pages/auth/Register.js
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { registerUser } from "../../services/api/ExamProdApi"; // Import hàm registerUser
+import { registerUser } from "../../services/api/OAuthApi";
 
 const Register = () => {
   const [fullName, setFullName] = useState('');

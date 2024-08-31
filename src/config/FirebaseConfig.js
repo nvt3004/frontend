@@ -18,6 +18,5 @@ const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 
 // // Optional: Add any scopes you need here
-// facebookProvider.addScope('email'); 
 
 export { auth, googleProvider, facebookProvider };
