@@ -39,13 +39,6 @@ public class OrderController {
 	private OrderStatusService orderStatusService;
 
 	// Trạng thái thanh toán online mặc định là Confirmed
-	// Truyền product version theo đơn hàng cùng ProductVersion
-
-//	@PostMapping
-//	public ResponseEntity<ApiResponse<?>> createOrder(@RequestBody OrderCreateDTO orderCreateDTO) {
-//		ApiResponse<?> response = orderService.createOrder(orderCreateDTO);
-//		return ResponseEntity.status(HttpStatus.valueOf(response.getErrorCode())).body(response);
-//	}
 
 	@GetMapping
 	public ResponseEntity<ApiResponse<?>> getAllOrders(
@@ -70,16 +63,16 @@ public class OrderController {
 
 	@PutMapping("/update-order-detail")
 	public ResponseEntity<ApiResponse<?>> updateOrderDetail(@RequestParam("orderDetailId") Integer orderDetailId,
-			@RequestParam("productId") Integer productId, @RequestParam("colorName") String colorName,
-			@RequestParam("sizeName") String sizeName) {
+			@RequestParam("productId") Integer productId, @RequestParam("colorId") Integer colorId,
+			@RequestParam("sizeId") Integer sizeId) {
 
-		if (orderDetailId == null || productId == null || colorName == null || sizeName == null) {
+		if (orderDetailId == null || productId == null || colorId == null || sizeId == null) {
 			return ResponseEntity.badRequest()
 					.body(new ApiResponse<>(400, "Invalid parameters", "Some required parameters are missing."));
 		}
 
-		ApiResponse<OrderDetail> response = orderDetailService.updateOrderDetail(orderDetailId, productId, colorName,
-				sizeName);
+		ApiResponse<OrderDetail> response = orderDetailService.updateOrderDetail(orderDetailId, productId, colorId,
+				sizeId);
 
 		if (response.getErrorCode() == 200) {
 			return ResponseEntity.ok(response);

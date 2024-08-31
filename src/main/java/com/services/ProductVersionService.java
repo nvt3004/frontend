@@ -14,11 +14,7 @@ public class ProductVersionService {
 	@Autowired
     private ProductVersionJPA productVersionJpa;
 
-    public Optional<ProductVersion> getProductVersionByAttributes(Integer productVersionId, String color, String size) {
-        return productVersionJpa.findByProductAttributes(productVersionId, color, size);
-    }
-
-    public ProductVersion saveProductVersion(ProductVersion productVersion) {
-        return productVersionJpa.save(productVersion);
+    public Optional<ProductVersion> getProductVersionByAttributes(Integer productVersionId, Integer colorId, Integer sizeId) {
+        return productVersionJpa.findByProductAttributes(productVersionId, colorId, sizeId);
     }
 }

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -15,14 +16,13 @@ import lombok.Data;
 
 @Data
 public class CouponCreate {
-    @NotNull(message = "Coupon code cannot be null.")
-    @Size(min = 1, max = 50, message = "Coupon code must be between 1 and 50 characters.")
-    private String couponCode;
 
-    @DecimalMin(value = "0.0", message = "Discount percentage must be a positive value.")
+    @DecimalMin(value = "5.0", message = "Discount percentage must be at least 5%.")
+    @DecimalMax(value = "50.0", message = "Discount percentage cannot exceed 50%.")
     private BigDecimal disPercent;
 
-    @DecimalMin(value = "0.0", message = "Discount price must be a positive value.")
+    @DecimalMin(value = "5000.0", message = "Discount price must be at least 5000.0.")
+    @DecimalMax(value = "100000.0", message = "Discount price cannot exceed 100,000 units.")
     private BigDecimal disPrice;
 
     @Size(max = 255, message = "Description cannot exceed 255 characters.")
@@ -41,13 +41,12 @@ public class CouponCreate {
     @NotNull(message = "Quantity cannot be null.")
     @Min(value = 1, message = "Quantity must be at least 1.")
     private Integer quantity;
-    
+
     public boolean isDatesValid() {
         return startDate != null && endDate != null && startDate.isBefore(endDate);
     }
+
     public boolean isDiscountValid() {
         return (disPercent == null && disPrice != null) || (disPercent != null && disPrice == null);
     }
-    
 }
-

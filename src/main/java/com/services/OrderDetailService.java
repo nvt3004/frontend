@@ -158,15 +158,16 @@ public class OrderDetailService {
 	}
 
 	public boolean isValidOrderStatus(String status) {
+		System.out.println(status + " status");
 		return "Pending".equalsIgnoreCase(status);
 	}
 
-	public Optional<ProductVersion> getProductVersion(Integer productId, String colorName, String sizeName) {
-		return productVersionService.getProductVersionByAttributes(productId, colorName, sizeName);
+	public Optional<ProductVersion> getProductVersion(Integer productId, Integer colorId, Integer sizeId) {
+		return productVersionService.getProductVersionByAttributes(productId, colorId, sizeId);
 	}
 
-	public ApiResponse<OrderDetail> updateOrderDetail(Integer orderDetailId, Integer productId, String colorName,
-			String sizeName) {
+	public ApiResponse<OrderDetail> updateOrderDetail(Integer orderDetailId, Integer productId, Integer colorId,
+			Integer sizeId) {
 		Optional<OrderDetail> existingOrderDetail = findOrderDetailById(orderDetailId);
 		if (!existingOrderDetail.isPresent()) {
 			return new ApiResponse<>(404, "Order detail not found", null);
@@ -179,7 +180,7 @@ public class OrderDetailService {
 			return new ApiResponse<>(400, "Order cannot be updated in its current state", null);
 		}
 
-		Optional<ProductVersion> newProductVersion = getProductVersion(productId, colorName, sizeName);
+		Optional<ProductVersion> newProductVersion = getProductVersion(productId, colorId, sizeId);
 		if (!newProductVersion.isPresent()) {
 			return new ApiResponse<>(400, "The provided color and size combination is not valid.", null);
 		}

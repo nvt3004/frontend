@@ -16,7 +16,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 
 import com.entities.Coupon;
-import com.entities.UserCoupon;
 import com.errors.FieldErrorDTO;
 import com.errors.InvalidException;
 import com.models.CouponCreate;
@@ -24,6 +23,7 @@ import com.models.CouponDTO;
 import com.repositories.CouponJPA;
 import com.repositories.OrderJPA;
 import com.repositories.UserCouponJPA;
+import com.utils.RandomStringUtils;
 
 @Service
 public class CouponService {
@@ -36,6 +36,10 @@ public class CouponService {
 
 	@Autowired
 	private UserCouponJPA userCouponJpa;
+
+	public boolean isCouponCodeExists(String couponCode) {
+		return couponJpa.existsByCouponCode(couponCode);
+	}
 
 	public List<FieldErrorDTO> validateCoupon(CouponCreate couponCreate, BindingResult errors) {
 		List<FieldErrorDTO> fieldErrors = new ArrayList<>();
@@ -61,12 +65,14 @@ public class CouponService {
 
 	public Coupon saveCoupon(CouponCreate couponCreate) {
 		Coupon coupon = new Coupon();
-		coupon.setCouponCode(couponCreate.getCouponCode());
-		BigDecimal disPercent = null;
-		BigDecimal disPrice = null;
+		String couponCode;
+		do {
+			couponCode = RandomStringUtils.randomAlphanumeric(10);
+		} while (couponJpa.existsByCouponCode(couponCode));
+		coupon.setCouponCode(couponCode);
 
-		coupon.setDisPercent(disPercent);
-		coupon.setDisPrice(disPrice);
+		coupon.setDisPercent(couponCreate.getDisPercent());
+		coupon.setDisPrice(couponCreate.getDisPrice());
 		coupon.setDescription(couponCreate.getDescription());
 		coupon.setStartDate(couponCreate.getStartDate());
 		coupon.setEndDate(couponCreate.getEndDate());
@@ -77,19 +83,30 @@ public class CouponService {
 
 	public Coupon updateCoupon(Integer id, CouponCreate couponCreate) throws InvalidException {
 
-		Coupon existingCoupon = couponJpa.findById(id)
-				.orElseThrow(() -> new InvalidException("Coupon with ID " + id + " not found"));
+	    Coupon existingCoupon = couponJpa.findById(id)
+	            .orElseThrow(() -> new InvalidException("Coupon with ID " + id + " not found"));
 
-		existingCoupon.setCouponCode(couponCreate.getCouponCode());
-		existingCoupon.setDisPercent(couponCreate.getDisPercent());
-		existingCoupon.setDisPrice(couponCreate.getDisPrice());
-		existingCoupon.setDescription(couponCreate.getDescription());
-		existingCoupon.setStartDate(couponCreate.getStartDate());
-		existingCoupon.setEndDate(couponCreate.getEndDate());
-		existingCoupon.setQuantity(couponCreate.getQuantity());
+	    boolean isCouponApplied = orderJpa.existsByCouponId(id);
 
-		return couponJpa.save(existingCoupon);
+	    if (isCouponApplied) {
+	        if (!(existingCoupon.getQuantity() == (couponCreate.getQuantity()))) {
+	            throw new InvalidException("Cannot update quantity because the coupon has already been applied to an order.");
+	        }
+	    }
+
+	    existingCoupon.setDisPercent(couponCreate.getDisPercent());
+	    existingCoupon.setDisPrice(couponCreate.getDisPrice());
+	    existingCoupon.setDescription(couponCreate.getDescription());
+	    existingCoupon.setStartDate(couponCreate.getStartDate());
+	    existingCoupon.setEndDate(couponCreate.getEndDate());
+
+	    if (!isCouponApplied) {
+	        existingCoupon.setQuantity(couponCreate.getQuantity());
+	    }
+
+	    return couponJpa.save(existingCoupon);
 	}
+
 
 	public void deleteCoupon(Integer id) {
 		if (!couponJpa.existsById(id)) {

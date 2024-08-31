@@ -28,4 +28,5 @@ public interface OrderJPA extends JpaRepository<Order, Integer> {
 
 	@Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END FROM Order o WHERE o.coupon.id = :couponId")
 	boolean existsByCouponId(@Param("couponId") Integer couponId);
+
 }
