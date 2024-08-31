@@ -1,28 +1,33 @@
 package com.services;
 
 import com.models.AuthDTO;
+import com.models.EmailRequestDTO;
 import com.entities.User;
 import com.entities.Role;
 import com.entities.UserRole;
 import com.repositories.RoleRepo;
 import com.repositories.UsersRepo;
+import com.utils.DateTimeUtil;
 import com.utils.JWTUtils;
 import com.repositories.UserRoleRepo;
 
-import jakarta.transaction.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -41,6 +46,10 @@ public class AuthManagementService {
     private AuthenticationManager authenticationManager;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private MailService mailService;
+
+    Date datecurrent = DateTimeUtil.getCurrentDateInVietnam();
 
     public AuthDTO register(AuthDTO registrationRequest) {
         AuthDTO resp = new AuthDTO();
@@ -98,7 +107,8 @@ public class AuthManagementService {
             ourUser.setEmail(username.matches(emailRegex) ? username : null);
             ourUser.setPhone(username.matches(phoneRegex) ? username : null);
             ourUser.setFullName(registrationRequest.getFullName());
-            ourUser.setUsername(username); 
+            ourUser.setUsername(username);
+            ourUser.setCreateDate(datecurrent);
             ourUser.setProvider("Guest");
             ourUser.setStatus((byte) (registrationRequest.getIsActive()));
             ourUser.setPassword(passwordEncoder.encode(registrationRequest.getPassword()));
@@ -133,28 +143,28 @@ public class AuthManagementService {
         return resp;
     }
 
-    public AuthDTO login(AuthDTO loginRequest) {
+    public ResponseEntity<AuthDTO> login(AuthDTO loginRequest) {
         AuthDTO response = new AuthDTO();
         try {
             // Tìm kiếm người dùng dựa trên email và provider
             Optional<User> optionalUser = usersRepo.findByEmailAndProvider(loginRequest.getUsername(), "Guest");
-    
+
             if (optionalUser.isEmpty()) {
                 response.setStatusCode(401);
                 response.setError("Login fail: username or password incorrect");
-                return response;
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
-    
+
             User user = optionalUser.get();
-    
+
             // Xác thực người dùng
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-    
+
             // Tạo token và refresh token
             String jwt = jwtUtils.generateToken(user);
             String refreshToken = jwtUtils.generateRefreshToken(new HashMap<>(), user);
-    
+
             // Cập nhật thông tin người dùng vào phản hồi
             response.setStatusCode(200);
             response.setToken(jwt);
@@ -162,26 +172,31 @@ public class AuthManagementService {
             response.setFullName(user.getFullName());
             response.setEmail(user.getEmail());
             response.setPhone(user.getPhone());
-            response.setIsActive(user.getStatus());
-            response.setRoles(user.getUserRoles().stream().map(UserRole::getRole).map(Role::getRoleName)
+            // response.setIsActive(user.getStatus());
+            response.setRoles(user.getUserRoles().stream()
+                    .map(UserRole::getRole)
+                    .map(Role::getRoleName)
                     .collect(Collectors.toList()));
-    
+
+            return ResponseEntity.ok(response);
+
         } catch (BadCredentialsException e) {
             response.setStatusCode(401);
-            response.setError("Invalid credentials");
-        } catch (AuthenticationException e) { 
-            response.setStatusCode(401); 
             response.setError("Login fail");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        } catch (AuthenticationException e) {
+            response.setStatusCode(401);
+            response.setError("Invalid credentials");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         } catch (Exception e) {
             System.out.println("Username: " + loginRequest.getUsername());
             System.out.println("An error occurred: " + e.getMessage());
             e.printStackTrace();
             response.setStatusCode(500);
             response.setError("An error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-        return response;
     }
-    
 
     public AuthDTO refreshToken(AuthDTO refreshTokenReqiest) {
         AuthDTO response = new AuthDTO();
@@ -311,6 +326,7 @@ public class AuthManagementService {
                 return reqRes;
             }
             newUser.setStatus((byte) 1);
+            newUser.setCreateDate(datecurrent);
             // Lưu người dùng mới vào cơ sở dữ liệu
             User savedUser = usersRepo.save(newUser);
 
@@ -365,4 +381,71 @@ public class AuthManagementService {
         return reqRes;
 
     }
+
+    public ResponseEntity<String> sendResetPasswordEmail(EmailRequestDTO emailRequest) {
+        String email = emailRequest.getTo();
+        Optional<User> userOptional = usersRepo.findByEmail(email);
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            String jwt = jwtUtils.generateToken(user);
+            user.setResetToken(jwt);
+            user.setTokenExpiryDate(LocalDateTime.now().plusHours(1)); // Token hết hạn sau 1 giờ
+            usersRepo.save(user);
+
+            // Tạo link reset password
+            String resetLink = "http://localhost:3000/auth/reset-password?token=" + jwt;
+
+            // Gửi email
+            mailService.sendEmail(email, "Reset Password", "Click the link to reset your password: " + resetLink);
+
+            return ResponseEntity.ok("Reset password email sent successfully");
+        } else {
+            return ResponseEntity.status(404).body("Email not found");
+        }
+    }
+
+    public ResponseEntity<String> resetPassword(Map<String, String> payload) {
+        String token = payload.get("token");
+        String newPassword = payload.get("newPassword");
+
+        String passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+
+        // Kiểm tra token có được cung cấp không
+        if (token == null) {
+            return ResponseEntity.status(400).body("Token is required");
+        }
+
+        // Xác thực token
+        String username = jwtUtils.extractUsername(token);
+        if (username == null || !jwtUtils.isTokenValid(token,
+                new org.springframework.security.core.userdetails.User(username, "", new ArrayList<>()))) {
+            return ResponseEntity.status(400).body("Invalid or expired token");
+        }
+
+        // Kiểm tra người dùng có tồn tại không
+        Optional<User> userOptional = usersRepo.findByEmail(username);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        // Kiểm tra mật khẩu mới có được cung cấp không
+        if (newPassword == null || newPassword.isEmpty()) {
+            return ResponseEntity.status(400).body("New password is required");
+        }
+
+        // Kiểm tra định dạng mật khẩu mới
+        if (!newPassword.matches(passwordRegex)) {
+            return ResponseEntity.status(400).body(
+                    "Password must be at least 8 characters long, contain one uppercase letter, one lowercase letter, one number, and one special character");
+        }
+
+        // Cập nhật mật khẩu mới cho người dùng
+        User user = userOptional.get();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        usersRepo.save(user);
+        return ResponseEntity.ok("Password reset successfully");
+    }
+
 }
