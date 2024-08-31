@@ -40,6 +40,23 @@ public class OrderDetailService {
 	
 	@Autowired
 	private UploadService uploadService;
+	
+	@Autowired
+	OrderDetailJPA orderDetailJPA;
+	
+	public OrderDetail createOrderDetail(OrderDetail orderDetail) {
+		return orderDetailJPA.save(orderDetail);
+	}
+	
+	public boolean deleteAllOrderDetail(List<OrderDetail> orderDetails){
+		try {
+			orderDetailJPA.deleteAll(orderDetails);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 
     public OrderDetailDTO convertToOrderDetailDTO(List<OrderDetail> orderDetailList) {
         List<OrderDetailProductDetailsDTO> productDetails = createProductDetailsList(orderDetailList);
