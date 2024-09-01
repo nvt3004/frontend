@@ -22,7 +22,13 @@ public class AuthController {
 
     @PostMapping("/api/register")
     public ResponseEntity<AuthDTO> regeister(@RequestBody AuthDTO reg) {
-    	System.out.println("Vô res");
+    	System.out.println("Vô resgfdgfdgdfsgdfgfdsgdffffffffffffffffffffff");
+        return ResponseEntity.ok(usersManagementService.register(reg));
+    }
+    
+    @PostMapping("/api/te")
+    public ResponseEntity<AuthDTO> regeisterh(@RequestBody AuthDTO reg) {
+    	System.out.println("Vô resgfdgfdgdfsgdfgfdsgdffffffffffffffffffffff");
         return ResponseEntity.ok(usersManagementService.register(reg));
     }
 

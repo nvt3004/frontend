@@ -96,7 +96,7 @@ public class FeedbackService {
 				User user = fb.getReplies().get(0).getUser();
 
 				ReplyResponseDTO replyResponseDTO = new ReplyResponseDTO();
-				String tempImg = uploadService.getUrlImage(user.getImages().get(0).getImageUrl());
+				String tempImg = uploadService.getUrlImage(user.getImage());
 				replyResponseDTO.setReplyId(fb.getReplies().get(0).getId());
 				replyResponseDTO.setContent(fb.getReplies().get(0).getContent());
 				replyResponseDTO.setReplyDate(fb.getReplies().get(0).getReplyDate());
