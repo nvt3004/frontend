@@ -96,8 +96,7 @@ public class OrderDetailService {
 			productDetails.add(new OrderDetailProductDetailsDTO(
 					item.getProductVersionBean().getProduct().getProductId(), item.getProductVersionBean().getId(),
 					item.getPrice(), item.getQuantity(), uploadService.getUrlImage(imageUrl),
-					item.getProductVersionBean().getProduct().getDescription(), total, item.getOrderDetailId(),
-					attributeProductVersion, attributesProducts));
+					item.getProductVersionBean().getProduct().getDescription(), total, item.getOrderDetailId(), attributeProductVersion, attributesProducts));
 		}
 		return productDetails;
 	}

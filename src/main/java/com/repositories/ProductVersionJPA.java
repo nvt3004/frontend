@@ -11,15 +11,30 @@ import com.entities.ProductVersion;
 
 public interface ProductVersionJPA extends JpaRepository<ProductVersion, Integer> {
 
-	@Query("SELECT pv FROM ProductVersion pv " + "JOIN pv.product p " + "JOIN pv.attributeOptionsVersions aov "
-			+ "JOIN aov.attributeOption ao " + "JOIN ao.attribute a " + "WHERE p.id = :productId " + "AND EXISTS ("
-			+ "    SELECT 1 " + "    FROM pv.attributeOptionsVersions aov1 " + "    JOIN aov1.attributeOption ao1 "
-			+ "    JOIN ao1.attribute a1 " + "    WHERE a1.attributeName = 'Color' AND ao1.id = :color "
-			+ ") " + "AND EXISTS (" + "    SELECT 1 " + "    FROM pv.attributeOptionsVersions aov2 "
-			+ "    JOIN aov2.attributeOption ao2 " + "    JOIN ao2.attribute a2 "
-			+ "    WHERE a2.attributeName = 'Size' AND ao2.id = :size " + ")")
-	Optional<ProductVersion> findByProductAttributes(@Param("productId") Integer productId,
-			@Param("color") Integer color, @Param("size") Integer size);
+	@Query("SELECT pv FROM ProductVersion pv " +
+		       "JOIN pv.product p " +
+		       "JOIN pv.attributeOptionsVersions aov " +
+		       "JOIN aov.attributeOption ao " +
+		       "JOIN ao.attribute a " +
+		       "WHERE p.id = :productId " +
+		       "AND EXISTS (" +
+		       "    SELECT 1 " +
+		       "    FROM pv.attributeOptionsVersions aov1 " +
+		       "    JOIN aov1.attributeOption ao1 " +
+		       "    JOIN ao1.attribute a1 " +
+		       "    WHERE a1.attributeName = 'Color' AND ao1.id = :colorId " +
+		       ") " +
+		       "AND EXISTS (" +
+		       "    SELECT 1 " +
+		       "    FROM pv.attributeOptionsVersions aov2 " +
+		       "    JOIN aov2.attributeOption ao2 " +
+		       "    JOIN ao2.attribute a2 " +
+		       "    WHERE a2.attributeName = 'Size' AND ao2.id = :sizeId " +
+		       ")")
+		Optional<ProductVersion> findByProductAttributes(@Param("productId") Integer productId,
+		                                                 @Param("colorId") Integer colorId,
+		                                                 @Param("sizeId") Integer sizeId);
+
 
 	@Query("SELECT pv FROM ProductVersion pv WHERE pv.id =:productVersionId")
 	List<ProductVersion> findProductVersionById(@Param("productVersionId") Integer productVersionId);

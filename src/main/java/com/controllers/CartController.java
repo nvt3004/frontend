@@ -602,12 +602,12 @@ public class CartController {
 				return response;
 			}
 
-			long now = new Date().getTime();
-			if (now < coupon.getStartDate().getTime() || now > coupon.getEndDate().getTime()) {
-				response.setCode(402);
-				response.setMessage("Coupon code expired");
-				return response;
-			}
+//			long now = new Date().getTime();
+//			if (now < coupon.getStartDate().getTime() || now > coupon.getEndDate().getTime()) {
+//				response.setCode(402);
+//				response.setMessage("Coupon code expired");
+//				return response;
+//			}
 		}
 
 		response.setCode(200);
