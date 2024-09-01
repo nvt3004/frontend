@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 
 /**
  * The persistent class for the payments database table.
@@ -29,11 +31,15 @@ public class Payment implements Serializable {
 	//bi-directional many-to-one association to Order
 	@ManyToOne
 	@JoinColumn(name="order_id")
+	@JsonBackReference
+
 	private Order order;
 
 	//bi-directional many-to-one association to PaymentMethod
 	@ManyToOne
 	@JoinColumn(name="payment_method_id")
+	@JsonBackReference
+
 	private PaymentMethod paymentMethod;
 
 	public Payment() {

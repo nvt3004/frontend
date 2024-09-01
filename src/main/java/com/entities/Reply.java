@@ -4,6 +4,8 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 
 /**
  * The persistent class for the replies database table.
@@ -28,11 +30,15 @@ public class Reply implements Serializable {
 	//bi-directional many-to-one association to Feedback
 	@ManyToOne
 	@JoinColumn(name="feedback_id")
+	@JsonBackReference
+
 	private Feedback feedback;
 
 	//bi-directional many-to-one association to User
 	@ManyToOne
 	@JoinColumn(name="user_id")
+	@JsonBackReference
+
 	private User user;
 
 	public Reply() {

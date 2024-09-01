@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the product_version database table.
@@ -26,30 +28,45 @@ public class ProductVersion implements Serializable {
 
 	@Column(name="wholesale_price")
 	private BigDecimal wholesalePrice;
+	
+	@Column(name = "version_name")
+	private String versionName;
 
 	//bi-directional many-to-one association to AttributeOptionsVersion
 	@OneToMany(mappedBy="productVersion")
+	@JsonManagedReference
+
 	private List<AttributeOptionsVersion> attributeOptionsVersions;
 
 	//bi-directional many-to-one association to CartProduct
 	@OneToMany(mappedBy="productVersionBean")
+	@JsonManagedReference
+
 	private List<CartProduct> cartProducts;
 
 	//bi-directional many-to-one association to Image
 	@OneToMany(mappedBy="productVersion")
+	@JsonManagedReference
+
 	private List<Image> images;
 
 	//bi-directional many-to-one association to OrderDetail
 	@OneToMany(mappedBy="productVersionBean")
+	@JsonManagedReference
+
 	private List<OrderDetail> orderDetails;
 
 	//bi-directional many-to-one association to Product
 	@ManyToOne
 	@JoinColumn(name="product_id")
+	@JsonManagedReference
+
 	private Product product;
 
 	//bi-directional many-to-one association to Warehous
 	@OneToMany(mappedBy="productVersionBean")
+	@JsonManagedReference
+
 	private List<Warehous> warehouses;
 
 	public ProductVersion() {
@@ -204,5 +221,15 @@ public class ProductVersion implements Serializable {
 
 		return warehous;
 	}
+
+	public String getVersionName() {
+		return versionName;
+	}
+
+	public void setVersionName(String versionName) {
+		this.versionName = versionName;
+	}
+	
+	
 
 }

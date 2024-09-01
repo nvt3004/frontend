@@ -4,6 +4,8 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 
 /**
  * The persistent class for the product_sales database table.
@@ -31,6 +33,8 @@ public class ProductSale implements Serializable {
 	//bi-directional many-to-one association to Product
 	@ManyToOne
 	@JoinColumn(name="product_id")
+	@JsonBackReference
+
 	private Product product;
 
 	public ProductSale() {

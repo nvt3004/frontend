@@ -13,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 /**
  * The persistent class for the user_coupons database table.
@@ -29,15 +30,19 @@ public class UserCoupon implements Serializable {
     @Column(name="user_coupon_id")
     private int userCouponId;
 
-    //bi-directional many-to-one association to Coupon
-    @ManyToOne
-    @JoinColumn(name="coupon_id")
-    private Coupon coupon;
+	//bi-directional many-to-one association to Coupon
+	@ManyToOne
+	@JoinColumn(name="coupon_id")
+	@JsonBackReference
 
-    //bi-directional many-to-one association to User
-    @ManyToOne
-    @JoinColumn(name="user_id")
-    private User user;
+	private Coupon coupon;
+
+	//bi-directional many-to-one association to User
+	@ManyToOne
+	@JoinColumn(name="user_id")
+	@JsonBackReference
+
+	private User user;
 
     @Column(name="retrieval_date", nullable = false, updatable = false, insertable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime retrievalDate;

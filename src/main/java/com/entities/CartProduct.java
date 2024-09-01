@@ -4,6 +4,8 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 
 /**
  * The persistent class for the cart_products database table.
@@ -28,11 +30,15 @@ public class CartProduct implements Serializable {
 	//bi-directional many-to-one association to Cart
 	@ManyToOne
 	@JoinColumn(name="cart_id")
+	@JsonBackReference
+
 	private Cart cart;
 
 	//bi-directional many-to-one association to ProductVersion
 	@ManyToOne
 	@JoinColumn(name="product_version")
+	@JsonBackReference
+
 	private ProductVersion productVersionBean;
 
 	public CartProduct() {

@@ -1,6 +1,9 @@
 package com.entities;
 
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 
@@ -20,6 +23,7 @@ public class ManagePermission implements Serializable {
 	//bi-directional many-to-one association to Permission
 	@ManyToOne
 	@JoinColumn(name="permission_id")
+	// @JsonBackReference
 	private Permission permission;
 
 	//bi-directional many-to-one association to User

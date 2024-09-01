@@ -230,5 +230,20 @@ public class OrderDetailService {
 		orderDetail.setQuantity(quantity);
 		return orderDetailJpa.save(orderDetail);
 	}
+	
+	//ty
+	public OrderDetail createOrderDetail(OrderDetail orderDetail) {
+		return orderDetailJpa.save(orderDetail);
+	}
+	
+	public boolean deleteAllOrderDetail(List<OrderDetail> orderDetails){
+		try {
+			orderDetailJpa.deleteAll(orderDetails);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 
 }

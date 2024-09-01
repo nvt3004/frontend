@@ -280,4 +280,34 @@ public class OrderService {
 			return new ApiResponse<>(500, "An error occurred while deleting the OrderDetail. Please try again.", null);
 		}
 	}
+	
+	public Order createOrderCart(Order order) {
+		return orderJpa.save(order);
+	}
+	
+	public boolean deleteOrderById(int id) {
+		try {
+			orderJpa.deleteById(id);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public Order getOrderById(int id) {
+		return orderJpa.findById(id).orElse(null);
+	}
+
+	public BigDecimal getAmountByOrderId(int id) {
+		Order order = orderJpa.findById(id).get();
+
+		BigDecimal total = BigDecimal.ZERO;
+
+		for (OrderDetail detail : order.getOrderDetails()) {
+			total = total.add(detail.getPrice());
+		}
+
+		return total;
+	}
 }

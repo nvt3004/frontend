@@ -35,14 +35,14 @@ public interface ProductVersionJPA extends JpaRepository<ProductVersion, Integer
 		                                                 @Param("colorId") Integer colorId,
 		                                                 @Param("sizeId") Integer sizeId);
 
+
 	@Query("SELECT pv FROM ProductVersion pv WHERE pv.id =:productVersionId")
 	List<ProductVersion> findProductVersionById(@Param("productVersionId") Integer productVersionId);
-    
+
 	@Query(value = "SELECT o.productVersion FROM AttributeOptionsVersion o WHERE o.productVersion.product.productId =:idProduct AND o.attributeOption.attributeValue LIKE :attributeValue")
 	public List<ProductVersion> getVersion(@Param("attributeValue") String attributeValue,
 			@Param("idProduct") int idProduct);
-	
-	@Query("SELECT pv FROM ProductVersion pv WHERE pv.product.productId = :productId")
-    List<ProductVersion> findByProductId(@Param("productId") Integer productId);
-}
 
+	@Query("SELECT pv FROM ProductVersion pv WHERE pv.product.productId = :productId")
+	List<ProductVersion> findByProductId(@Param("productId") Integer productId);
+}

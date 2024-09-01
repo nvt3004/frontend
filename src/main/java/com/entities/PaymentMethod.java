@@ -4,6 +4,8 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the payment_methods database table.
@@ -24,6 +26,8 @@ public class PaymentMethod implements Serializable {
 
 	//bi-directional many-to-one association to Payment
 	@OneToMany(mappedBy="paymentMethod")
+	@JsonManagedReference
+
 	private List<Payment> payments;
 
 	public PaymentMethod() {

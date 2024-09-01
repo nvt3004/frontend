@@ -4,6 +4,8 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the suppliers database table.
@@ -36,6 +38,8 @@ public class Supplier implements Serializable {
 
 	//bi-directional many-to-one association to Warehous
 	@OneToMany(mappedBy="supplier")
+	@JsonManagedReference
+
 	private List<Warehous> warehouses;
 
 	public Supplier() {

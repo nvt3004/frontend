@@ -1,6 +1,9 @@
 package com.entities;
 
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 
 
@@ -20,11 +23,16 @@ public class AttributeOptionsVersion implements Serializable {
 	//bi-directional many-to-one association to AttributeOption
 	@ManyToOne
 	@JoinColumn(name="attribute_options_id")
+	@JsonBackReference
+
+
 	private AttributeOption attributeOption;
 
 	//bi-directional many-to-one association to ProductVersion
 	@ManyToOne
 	@JoinColumn(name="version_id")
+	@JsonBackReference
+
 	private ProductVersion productVersion;
 
 	public AttributeOptionsVersion() {

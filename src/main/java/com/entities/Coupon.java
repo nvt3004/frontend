@@ -3,7 +3,6 @@ package com.entities;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
@@ -17,6 +16,8 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the coupons database table.
@@ -35,8 +36,9 @@ public class Coupon implements Serializable {
 
 	@Column(name = "coupon_code")
 	private String couponCode;
-
 	@OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+	@JsonManagedReference
+
 	private List<Order> orders;
 
 	@Lob
@@ -55,9 +57,9 @@ public class Coupon implements Serializable {
 
 	@Column(name = "start_date")
 	private LocalDateTime startDate;
-
-	// bi-directional many-to-one association to UserCoupon
-	@OneToMany(mappedBy = "coupon")
+	
+	@OneToMany(mappedBy="coupon")
+	@JsonManagedReference
 	private List<UserCoupon> userCoupons;
 
 	public Coupon() {

@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the feedbacks database table.
@@ -32,19 +35,27 @@ public class Feedback implements Serializable {
 	//bi-directional many-to-one association to Product
 	@ManyToOne
 	@JoinColumn(name="product_id")
+	@JsonBackReference
+
 	private Product product;
 
 	//bi-directional many-to-one association to User
 	@ManyToOne
 	@JoinColumn(name="user_id")
+	@JsonBackReference
+
 	private User user;
 
 	//bi-directional many-to-one association to Image
 	@OneToMany(mappedBy="feedback")
+	@JsonManagedReference
+
 	private List<Image> images;
 
 	//bi-directional many-to-one association to Reply
 	@OneToMany(mappedBy="feedback")
+	@JsonManagedReference
+
 	private List<Reply> replies;
 
 	public Feedback() {

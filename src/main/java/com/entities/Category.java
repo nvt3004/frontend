@@ -4,6 +4,8 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 /**
  * The persistent class for the categories database table.
@@ -24,6 +26,8 @@ public class Category implements Serializable {
 
 	//bi-directional many-to-one association to ProductCategory
 	@OneToMany(mappedBy="category")
+	@JsonManagedReference
+
 	private List<ProductCategory> productCategories;
 
 	public Category() {

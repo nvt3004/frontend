@@ -1,6 +1,5 @@
 package com.services;
 
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -145,4 +144,12 @@ public class CouponService {
 		return new PageImpl<>(couponDTOs, pageable, couponPage.getTotalElements());
 	}
 
+
+	public Coupon getCouponByCode(String code) {
+		if(code == null) {
+			return null;
+		}
+		
+		return couponJpa.getCouponByCode(code);
+	}
 }

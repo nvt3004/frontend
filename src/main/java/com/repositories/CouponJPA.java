@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 import com.entities.Coupon;
 
 public interface CouponJPA extends JpaRepository<Coupon, Integer> {
-	// Thêm ngày lấy
+
 	@Query("SELECT c FROM Coupon c WHERE " + "(:startDate IS NULL OR c.startDate >= :startDate) AND "
 			+ "(:endDate IS NULL OR c.endDate <= :endDate) AND " + "(:discountType IS NULL OR " + "(CASE :discountType "
 			+ "WHEN 'disPercent' THEN c.disPercent IS NOT NULL AND c.disPrice IS NULL "
@@ -21,5 +21,7 @@ public interface CouponJPA extends JpaRepository<Coupon, Integer> {
 			@Param("discountType") String discountType, Pageable pageable);
 
 	boolean existsByCouponCode(String couponCode);
-	
+
+	@Query("SELECT o FROM Coupon o WHERE o.couponCode =:code")
+	public Coupon getCouponByCode(@Param("code") String code);
 }

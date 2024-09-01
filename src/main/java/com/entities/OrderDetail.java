@@ -4,6 +4,8 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 
 /**
  * The persistent class for the order_details database table.
@@ -26,11 +28,15 @@ public class OrderDetail implements Serializable {
 	//bi-directional many-to-one association to Order
 	@ManyToOne
 	@JoinColumn(name="order_id")
+	@JsonBackReference
+
 	private Order order;
 
 	//bi-directional many-to-one association to ProductVersion
 	@ManyToOne
 	@JoinColumn(name="product_version")
+	@JsonBackReference
+
 	private ProductVersion productVersionBean;
 
 	public OrderDetail() {

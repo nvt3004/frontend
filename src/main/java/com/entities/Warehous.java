@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 
 /**
  * The persistent class for the warehouses database table.
@@ -39,11 +41,15 @@ public class Warehous implements Serializable {
 	//bi-directional many-to-one association to ProductVersion
 	@ManyToOne
 	@JoinColumn(name="product_version")
+	@JsonBackReference
+
 	private ProductVersion productVersionBean;
 
 	//bi-directional many-to-one association to Supplier
 	@ManyToOne
 	@JoinColumn(name="supplier_id")
+	@JsonBackReference
+
 	private Supplier supplier;
 
 	public Warehous() {
