@@ -39,7 +39,7 @@ public class UserCoupon implements Serializable {
     @JoinColumn(name="user_id")
     private User user;
 
-    @Column(name="retrieval_date")
+    @Column(name="retrieval_date", nullable = false, updatable = false, insertable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime retrievalDate;
 
     public UserCoupon() {

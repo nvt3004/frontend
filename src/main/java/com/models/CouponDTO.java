@@ -14,5 +14,7 @@ public class CouponDTO {
     private LocalDateTime endDate;
     private BigDecimal disPercent;
     private BigDecimal disPrice;
+    private String fullname;
+    private LocalDateTime retrievalDate;
 
 }
