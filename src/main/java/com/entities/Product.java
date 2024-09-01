@@ -34,7 +34,9 @@ public class Product implements Serializable {
 	@Column(name="product_price")
 	private BigDecimal productPrice;
 
-	private boolean status;
+	@Column(name = "status")
+	private Boolean status;
+
 
 	//bi-directional many-to-one association to Feedback
 	@OneToMany(mappedBy="product")
