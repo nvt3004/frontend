@@ -17,21 +17,19 @@ import jakarta.persistence.*;
 public class UserRole implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+	@Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="id")
+    private int id;
 
-	//bi-directional many-to-one association to Role
 	@ManyToOne
 	@JoinColumn(name="role_id")
-	@JsonBackReference
-
+	@JsonBackReference(value = "roleReference")
 	private Role role;
-
-	//bi-directional many-to-one association to User
+	
 	@ManyToOne
 	@JoinColumn(name="user_id")
-	@JsonBackReference
-
+	@JsonBackReference(value = "userReference")
 	private User user;
 
 	public UserRole() {

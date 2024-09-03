@@ -15,13 +15,12 @@ public class OrderDetailProductDetailsDTO {
 	private String description;
 	private BigDecimal total;
 	private Integer orderDetailId;
-	private String color;
-	private String size;
-	private List<AttributeDTO> attributeDetails;
+	private AttributeDTO attributeProductVersion;
+	private List<AttributeDTO> attributeProducts;
 
 	public OrderDetailProductDetailsDTO(Integer productId, Integer productVersionId, BigDecimal price, Integer quantity,
-			String imageUrl, String description, BigDecimal total, Integer orderDetailId, String color, String size,
-			List<AttributeDTO> attributeDetails) {
+			String imageUrl, String description, BigDecimal total, Integer orderDetailId,AttributeDTO attributeProductVersion,
+			List<AttributeDTO> attributeProducts) {
 		this.productId = productId;
 		this.productVersionId = productVersionId;
 		this.price = price;
@@ -30,8 +29,7 @@ public class OrderDetailProductDetailsDTO {
 		this.description = description;
 		this.total = total;
 		this.orderDetailId = orderDetailId;
-		this.color = color;
-		this.size = size;
-		this.attributeDetails = attributeDetails;
+		this.attributeProductVersion = attributeProductVersion;
+		this.attributeProducts = attributeProducts;
 	}
 }

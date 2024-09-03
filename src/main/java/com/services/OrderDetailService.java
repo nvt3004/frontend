@@ -28,53 +28,59 @@ public class OrderDetailService {
 
 	@Autowired
 	private OrderDetailJPA orderDetailJpa;
-	
+
 	@Autowired
 	ProductVersionJPA productVersionJpa;
 
 	@Autowired
 	private ProductVersionService productVersionService;
-	
+
 	@Autowired
-    private OrderUtilsService orderUtilsService;
-	
+	private OrderUtilsService orderUtilsService;
+
 	@Autowired
 	private UploadService uploadService;
 
-    public OrderDetailDTO convertToOrderDetailDTO(List<OrderDetail> orderDetailList) {
-        List<OrderDetailProductDetailsDTO> productDetails = createProductDetailsList(orderDetailList);
+	public OrderDetailDTO convertToOrderDetailDTO(List<OrderDetail> orderDetailList) {
+		List<OrderDetailProductDetailsDTO> productDetails = createProductDetailsList(orderDetailList);
 
-        OrderDetail orderDetail = orderDetailList.get(0);
-        String disPercent = formatDiscount(orderDetail.getOrder().getDisPercent());
-        String disPrice = formatDiscount(orderDetail.getOrder().getDisPrice());
+		OrderDetail orderDetail = orderDetailList.get(0);
+		String disPercent = formatDiscount(orderDetail.getOrder().getDisPercent());
+		String disPrice = formatDiscount(orderDetail.getOrder().getDisPrice());
 
-        return new OrderDetailDTO(orderDetail.getOrder().getOrderId(), orderDetail.getOrder().getAddress(),
-                orderDetail.getOrder().getCoupon().getCouponId(), orderDetail.getOrder().getDeliveryDate(), disPercent, disPrice,
-                orderDetail.getOrder().getFullname(), orderDetail.getOrder().getOrderDate(),
-                true, orderDetail.getOrder().getPhone(),
-                orderDetail.getOrder().getOrderStatus().getStatusName(),
-                orderUtilsService.calculateOrderTotal(orderDetail.getOrder()),
-                orderDetail.getOrder().getPayments().stream().findFirst()
-                        .map(payment -> payment.getPaymentMethod().getMethodName()).orElse("N/A"),
-                orderDetail.getOrder().getPhone(), orderDetail.getOrder().getUser().getEmail(),
-                productDetails);
-    }
+		return new OrderDetailDTO(orderDetail.getOrder().getOrderId(), orderDetail.getOrder().getAddress(),
+				orderDetail.getOrder().getCoupon().getCouponId(), orderDetail.getOrder().getDeliveryDate(), disPercent,
+				disPrice, orderDetail.getOrder().getFullname(), orderDetail.getOrder().getOrderDate(), true,
+				orderDetail.getOrder().getPhone(), orderDetail.getOrder().getOrderStatus().getStatusName(),
+				orderUtilsService.calculateOrderTotal(orderDetail.getOrder()),
+				orderDetail.getOrder().getPayments().stream().findFirst()
+						.map(payment -> payment.getPaymentMethod().getMethodName()).orElse("N/A"),
+				orderDetail.getOrder().getPhone(), orderDetail.getOrder().getUser().getEmail(), productDetails);
+	}
 
-    private List<OrderDetailProductDetailsDTO> createProductDetailsList(List<OrderDetail> orderDetails) {
+	private List<OrderDetailProductDetailsDTO> createProductDetailsList(List<OrderDetail> orderDetails) {
 		List<OrderDetailProductDetailsDTO> productDetails = new ArrayList<>();
-		String color = "";
-		String size = "";
 
+		ColorDTO color = new ColorDTO();
+		SizeDTO size = new SizeDTO();
 		for (OrderDetail item : orderDetails) {
 			for (AttributeOptionsVersion aov : item.getProductVersionBean().getAttributeOptionsVersions()) {
 				String attributeName = aov.getAttributeOption().getAttribute().getAttributeName();
 				if ("Color".equalsIgnoreCase(attributeName)) {
-					color = aov.getAttributeOption().getAttributeValue();
+
+					color.setColor(aov.getAttributeOption().getAttributeValue());
+					color.setColorId(aov.getAttributeOption().getId());
 				} else if ("Size".equalsIgnoreCase(attributeName)) {
-					size = aov.getAttributeOption().getAttributeValue();
+
+					size.setSizeId(aov.getAttributeOption().getId());
+					size.setSize(aov.getAttributeOption().getAttributeValue());
+
 				}
 			}
-			List<AttributeDTO> attributesList = createAttributeListByProductId(
+
+			AttributeDTO attributeProductVersion = new AttributeDTO(color, size);
+
+			List<AttributeDTO> attributesProducts = createAttributeListByProductId(
 					item.getProductVersionBean().getProduct().getProductId());
 
 			BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
@@ -87,15 +93,15 @@ public class OrderDetailService {
 				imageUrl = images.get(0).getImageUrl();
 			}
 
-			productDetails
-					.add(new OrderDetailProductDetailsDTO(item.getProductVersionBean().getProduct().getProductId(),
-							item.getProductVersionBean().getId(), item.getPrice(), item.getQuantity(), uploadService.getUrlImage(imageUrl),
-							item.getProductVersionBean().getProduct().getDescription(), total, item.getOrderDetailId(),
-							color, size, attributesList));
+			productDetails.add(new OrderDetailProductDetailsDTO(
+					item.getProductVersionBean().getProduct().getProductId(), item.getProductVersionBean().getId(),
+					item.getPrice(), item.getQuantity(), uploadService.getUrlImage(imageUrl),
+					item.getProductVersionBean().getProduct().getDescription(), total, item.getOrderDetailId(), attributeProductVersion, attributesProducts));
 		}
 		return productDetails;
 	}
-    private List<AttributeDTO> createAttributeListByProductId(Integer productId) {
+
+	private List<AttributeDTO> createAttributeListByProductId(Integer productId) {
 		List<AttributeDTO> attributeList = new ArrayList<>();
 		List<ColorDTO> colorList = new ArrayList<>();
 		List<SizeDTO> sizeList = new ArrayList<>();
@@ -106,13 +112,15 @@ public class OrderDetailService {
 				for (AttributeOptionsVersion aov : productVersion.getAttributeOptionsVersions()) {
 					String attributeName = aov.getAttributeOption().getAttribute().getAttributeName();
 					String attributeValue = aov.getAttributeOption().getAttributeValue();
-
+					Integer attributeId = aov.getAttributeOption().getId();
 					if ("Color".equalsIgnoreCase(attributeName)) {
 						ColorDTO colorDTO = new ColorDTO();
+						colorDTO.setColorId(attributeId);
 						colorDTO.setColor(attributeValue);
 						colorList.add(colorDTO);
 					} else if ("Size".equalsIgnoreCase(attributeName)) {
 						SizeDTO sizeDTO = new SizeDTO();
+						sizeDTO.setSizeId(attributeId);
 						sizeDTO.setSize(attributeValue);
 						sizeList.add(sizeDTO);
 					}
@@ -150,15 +158,16 @@ public class OrderDetailService {
 	}
 
 	public boolean isValidOrderStatus(String status) {
+		System.out.println(status + " status");
 		return "Pending".equalsIgnoreCase(status);
 	}
 
-	public Optional<ProductVersion> getProductVersion(Integer productId, String colorName, String sizeName) {
-		return productVersionService.getProductVersionByAttributes(productId, colorName, sizeName);
+	public Optional<ProductVersion> getProductVersion(Integer productId, Integer colorId, Integer sizeId) {
+		return productVersionService.getProductVersionByAttributes(productId, colorId, sizeId);
 	}
 
-	public ApiResponse<OrderDetail> updateOrderDetail(Integer orderDetailId, Integer productId, String colorName,
-			String sizeName) {
+	public ApiResponse<OrderDetail> updateOrderDetail(Integer orderDetailId, Integer productId, Integer colorId,
+			Integer sizeId) {
 		Optional<OrderDetail> existingOrderDetail = findOrderDetailById(orderDetailId);
 		if (!existingOrderDetail.isPresent()) {
 			return new ApiResponse<>(404, "Order detail not found", null);
@@ -171,7 +180,7 @@ public class OrderDetailService {
 			return new ApiResponse<>(400, "Order cannot be updated in its current state", null);
 		}
 
-		Optional<ProductVersion> newProductVersion = getProductVersion(productId, colorName, sizeName);
+		Optional<ProductVersion> newProductVersion = getProductVersion(productId, colorId, sizeId);
 		if (!newProductVersion.isPresent()) {
 			return new ApiResponse<>(400, "The provided color and size combination is not valid.", null);
 		}
@@ -183,11 +192,6 @@ public class OrderDetailService {
 		OrderDetail updatedOrderDetail = orderDetailJpa.save(orderDetail);
 
 		return new ApiResponse<>(200, "Order detail updated successfully", updatedOrderDetail);
-	}
-
-	public boolean isQuantityUpdateAllowed(String orderStatusName) {
-		return !("Delivered".equalsIgnoreCase(orderStatusName) || "Cancelled".equalsIgnoreCase(orderStatusName)
-				|| "Shipped".equalsIgnoreCase(orderStatusName));
 	}
 
 	public boolean isValidQuantity(Integer quantity) {
@@ -208,10 +212,9 @@ public class OrderDetailService {
 		OrderDetail orderDetail = existingOrderDetail.get();
 		String orderStatusName = orderDetail.getOrder().getOrderStatus().getStatusName();
 
-		if (!isQuantityUpdateAllowed(orderStatusName)) {
-			return new ApiResponse<OrderDetail>(400, "Quantity update not allowed", null);
+		if (!isValidOrderStatus(orderStatusName)) {
+			return new ApiResponse<>(400, "Order cannot be updated in its current state", null);
 		}
-
 		if (!isValidQuantity(quantity)) {
 			return new ApiResponse<OrderDetail>(400, "Quantity must be positive.", null);
 		}
@@ -226,6 +229,21 @@ public class OrderDetailService {
 	public OrderDetail updateOrderDetailQuantity(OrderDetail orderDetail, Integer quantity) {
 		orderDetail.setQuantity(quantity);
 		return orderDetailJpa.save(orderDetail);
+	}
+	
+	//ty
+	public OrderDetail createOrderDetail(OrderDetail orderDetail) {
+		return orderDetailJpa.save(orderDetail);
+	}
+	
+	public boolean deleteAllOrderDetail(List<OrderDetail> orderDetails){
+		try {
+			orderDetailJpa.deleteAll(orderDetails);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 }

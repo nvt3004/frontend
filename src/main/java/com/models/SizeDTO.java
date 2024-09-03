@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SizeDTO {
+	private Integer sizeId;
     private String size;
-
 }

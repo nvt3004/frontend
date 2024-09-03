@@ -10,8 +10,12 @@ import com.repositories.UserJPA;
 public class UserService {
 	@Autowired
 	UserJPA userJPA;
-	
+
 	public User getUserByUsername(String username) {
 		return userJPA.getUserByUsername(username);
+	}
+
+	public User createUser(User user) {		
+		return userJPA.save(user);
 	}
 }

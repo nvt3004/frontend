@@ -25,7 +25,7 @@ import com.services.JWTService;
 import com.services.ProductService;
 
 @RestController
-@RequestMapping("/home")
+@RequestMapping("api/home")
 @CrossOrigin("*")
 public class ProductHomeController {
 
@@ -39,8 +39,6 @@ public class ProductHomeController {
 	ProductService productService;
 
 
-	// @RequestHeader("Authorization") Optional<String> authHeader
-
 	@GetMapping("/products")
 	public ResponseEntity<ResponseAPI<PageCustom<ProductHomeResponse>>> getAllProduct(
 			@RequestParam("idCategory") Optional<Integer> idCategory, @RequestParam("page") Optional<Integer> page) {
@@ -49,9 +47,7 @@ public class ProductHomeController {
 		int size = 10;
 
 		if (!page.isPresent()) {
-			response.setCode(400);
-			response.setMessage("Bad Request");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+			products = productService.getProducts(1, size);
 		} else if (idCategory.isPresent()) {
 			products = productService.getProducts(page.get(), size, idCategory.get());
 		} else {

@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class ProductDetailResponse {
 	private ProductHomeResponse product;
 	private List<Version> versions;
+	List<AttributeProductResponse> attributes;
 }
