@@ -18,6 +18,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+
 /**
  * The persistent class for the coupons database table.
  * 
@@ -35,7 +36,6 @@ public class Coupon implements Serializable {
 
 	@Column(name = "coupon_code")
 	private String couponCode;
-	
 	@OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference("coupon-orders")
 	private List<Order> orders;
@@ -56,8 +56,8 @@ public class Coupon implements Serializable {
 
 	@Column(name = "start_date")
 	private LocalDateTime startDate;
-
-	@OneToMany(mappedBy = "coupon")
+	
+	@OneToMany(mappedBy="coupon")
 	@JsonManagedReference("coupon-userCoupons")
 	private List<UserCoupon> userCoupons;
 

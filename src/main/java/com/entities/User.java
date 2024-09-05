@@ -14,6 +14,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 /**
  * The persistent class for the users database table.
  */
@@ -63,43 +65,53 @@ public class User implements UserDetails, Serializable {
 
     // Bi-directional many-to-one association to Address
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-addresses")
     private List<Address> addresses;
 
     // Bi-directional many-to-one association to Cart
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-carts")
     private List<Cart> carts;
 
     // Bi-directional many-to-one association to Feedback
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-feedbacks")
     private List<Feedback> feedbacks;
 
     // Bi-directional many-to-one association to Image
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-images")
     private List<Image> images;
 
     // Bi-directional many-to-one association to ManagePermission
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-managePermissions")
     private List<ManagePermission> managePermissions;
 
 
     // Bi-directional many-to-one association to Order
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-orders")
     private List<Order> orders;
 
     // Bi-directional many-to-one association to Reply
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-replies")
     private List<Reply> replies;
 
     // Bi-directional many-to-one association to UserCoupon
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-userCoupons")
     private List<UserCoupon> userCoupons;
 
     // Bi-directional many-to-one association to UserRole
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference("user-userRoles")
     private List<UserRole> userRoles;
 
     // Bi-directional many-to-one association to Wishlist
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("user-wishlists")
     private List<Wishlist> wishlists;
 
     public User() {

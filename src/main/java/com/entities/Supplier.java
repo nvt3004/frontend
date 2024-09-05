@@ -38,8 +38,7 @@ public class Supplier implements Serializable {
 
 	//bi-directional many-to-one association to Warehous
 	@OneToMany(mappedBy="supplier")
-	@JsonManagedReference
-
+	@JsonManagedReference("supplier-warehouses")
 	private List<Warehous> warehouses;
 
 	public Supplier() {
