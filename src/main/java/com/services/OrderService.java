@@ -120,14 +120,15 @@ public class OrderService {
 		return new ApiResponse<>(200, "Order details fetched successfully", responseMap);
 	}
 
-	public ApiResponse<?> updateOrderStatus(int orderId, String statusName) {
-		if (statusName == null || statusName.isEmpty()) {
-			return new ApiResponse<>(400, "Invalid status name", "Status name is required.");
+	public ApiResponse<?> updateOrderStatus(Integer orderId, Integer statusId) {
+		if (statusId == null) {
+			return new ApiResponse<>(400, "Invalid status", "Status is required.");
 		}
 
-		Optional<OrderStatus> newOrderStatus = orderStatusJpa.findByStatusName(statusName);
+		Optional<OrderStatus> newOrderStatus = orderStatusJpa.findById(statusId);
+		System.out.println(newOrderStatus.get().getStatusName() + " StatusName");
 		if (newOrderStatus.isEmpty()) {
-			return new ApiResponse<>(400, "Invalid status name", "The provided status name does not exist.");
+			return new ApiResponse<>(400, "Invalid status", "The provided status name does not exist.");
 		}
 
 		Optional<Order> updatedOrder = orderJpa.findById(orderId);
@@ -136,13 +137,12 @@ public class OrderService {
 		}
 
 		Order order = updatedOrder.get();
-		if (isOrderStatusChanged(order, statusName)) {
+		if (isOrderStatusChanged(order, newOrderStatus.get().getStatusName())) {
 			order.setOrderStatus(newOrderStatus.get());
 			orderJpa.save(order);
-
-			if ("Processing".equalsIgnoreCase(statusName)) {
+			if ("Processing".equalsIgnoreCase(order.getOrderStatus().getStatusName())) {
 				updateProductVersionsForOrder(order.getOrderDetails());
-			} else if ("Cancelled".equalsIgnoreCase(statusName)) {
+			} else if ("Cancelled".equalsIgnoreCase(order.getOrderStatus().getStatusName())) {
 				revertProductVersionsForCancelledOrder(order.getOrderDetails());
 			}
 		}

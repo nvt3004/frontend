@@ -277,7 +277,7 @@ public class OrderController {
 
 	@PutMapping("/update-status")
 	public ResponseEntity<ApiResponse<?>> updateOrderStatus(@RequestParam("orderId") int orderId,
-			@RequestParam("statusName") String statusName,
+			@RequestParam("statusId") Integer statusId,
 			@RequestHeader("Authorization") Optional<String> authHeader) {
 
 		ApiResponse<String> errorResponse = new ApiResponse<>();
@@ -318,7 +318,7 @@ public class OrderController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
 		}
 
-		ApiResponse<?> response = orderService.updateOrderStatus(orderId, statusName);
+		ApiResponse<?> response = orderService.updateOrderStatus(orderId, statusId);
 
 		if (response.getErrorCode() == 200) {
 			return ResponseEntity.ok(response);
@@ -331,47 +331,47 @@ public class OrderController {
 	public ResponseEntity<ApiResponse<?>> getOrderDetail(@RequestParam Integer orderId,
 			@RequestHeader("Authorization") Optional<String> authHeader) {
 
-		ApiResponse<String> errorResponse = new ApiResponse<>();
-
-		if (!authHeader.isPresent()) {
-			errorResponse.setErrorCode(400);
-			errorResponse.setMessage("Authorization header is missing");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-		}
-
-		String token = authService.readTokenFromHeader(authHeader);
-
-		try {
-			jwtService.extractUsername(token);
-		} catch (Exception e) {
-			errorResponse.setErrorCode(400);
-			errorResponse.setMessage("Invalid token format");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-		}
-
-		if (jwtService.isTokenExpired(token)) {
-			errorResponse.setErrorCode(401);
-			errorResponse.setMessage("Token expired");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-		}
-
-		String username = jwtService.extractUsername(token);
-		User user = userService.getUserByUsername(username);
-		if (user == null) {
-			errorResponse.setErrorCode(404);
-			errorResponse.setMessage("Account not found");
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-		}
-
-		if (user.getStatus() == 0) {
-			errorResponse.setErrorCode(403);
-			errorResponse.setMessage("Account locked");
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
-		}
-		if (orderId == null) {
-			ApiResponse<String> response = new ApiResponse<>(400, "Order ID is required", null);
-			return ResponseEntity.badRequest().body(response);
-		}
+//		ApiResponse<String> errorResponse = new ApiResponse<>();
+//
+//		if (!authHeader.isPresent()) {
+//			errorResponse.setErrorCode(400);
+//			errorResponse.setMessage("Authorization header is missing");
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+//		}
+//
+//		String token = authService.readTokenFromHeader(authHeader);
+//
+//		try {
+//			jwtService.extractUsername(token);
+//		} catch (Exception e) {
+//			errorResponse.setErrorCode(400);
+//			errorResponse.setMessage("Invalid token format");
+//			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+//		}
+//
+//		if (jwtService.isTokenExpired(token)) {
+//			errorResponse.setErrorCode(401);
+//			errorResponse.setMessage("Token expired");
+//			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+//		}
+//
+//		String username = jwtService.extractUsername(token);
+//		User user = userService.getUserByUsername(username);
+//		if (user == null) {
+//			errorResponse.setErrorCode(404);
+//			errorResponse.setMessage("Account not found");
+//			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+//		}
+//
+//		if (user.getStatus() == 0) {
+//			errorResponse.setErrorCode(403);
+//			errorResponse.setMessage("Account locked");
+//			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+//		}
+//		if (orderId == null) {
+//			ApiResponse<String> response = new ApiResponse<>(400, "Order ID is required", null);
+//			return ResponseEntity.badRequest().body(response);
+//		}
 
 		ApiResponse<Map<String, Object>> response = orderService.getOrderDetails(orderId);
 

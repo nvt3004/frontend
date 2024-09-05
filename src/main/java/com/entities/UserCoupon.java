@@ -40,8 +40,7 @@ public class UserCoupon implements Serializable {
 	//bi-directional many-to-one association to User
 	@ManyToOne
 	@JoinColumn(name="user_id")
-	@JsonBackReference
-
+	@JsonBackReference("coupon-userCoupons")
 	private User user;
 
     @Column(name="retrieval_date", nullable = false, updatable = false, insertable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
