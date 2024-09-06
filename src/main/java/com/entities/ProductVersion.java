@@ -4,72 +4,56 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-
-/**
- * The persistent class for the product_version database table.
- * 
- */
 @Entity
 @Table(name="product_version")
 @NamedQuery(name="ProductVersion.findAll", query="SELECT p FROM ProductVersion p")
 public class ProductVersion implements Serializable {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
 
-	private int quantity;
+    private int quantity;
 
-	@Column(name="retail_price")
-	private BigDecimal retailPrice;
+    @Column(name="retail_price")
+    private BigDecimal retailPrice;
 
-	@Column(name="wholesale_price")
-	private BigDecimal wholesalePrice;
-	
-	@Column(name = "version_name")
-	private String versionName;
+    @Column(name="wholesale_price")
+    private BigDecimal wholesalePrice;
+    
+    @Column(name = "version_name")
+    private String versionName;
 
-	//bi-directional many-to-one association to AttributeOptionsVersion
-	@OneToMany(mappedBy="productVersion")
-	@JsonManagedReference
+    @OneToMany(mappedBy="productVersion")
+    @JsonManagedReference("productVersion-attributeOptionsVersions")
+    private List<AttributeOptionsVersion> attributeOptionsVersions;
 
-	private List<AttributeOptionsVersion> attributeOptionsVersions;
+    @OneToMany(mappedBy="productVersionBean")
+    @JsonManagedReference("productVersionBean-productVersion")
+    private List<CartProduct> cartProducts;
 
-	//bi-directional many-to-one association to CartProduct
-	@OneToMany(mappedBy="productVersionBean")
-	@JsonManagedReference
+    @OneToMany(mappedBy="productVersion")
+    @JsonManagedReference("productVersion-images")
+    private List<Image> images;
 
-	private List<CartProduct> cartProducts;
+    @OneToMany(mappedBy="productVersionBean")
+    @JsonManagedReference("productVersionBean-orderDetails")
+    private List<OrderDetail> orderDetails;
 
-	//bi-directional many-to-one association to Image
-	@OneToMany(mappedBy="productVersion")
-	@JsonManagedReference
+    @ManyToOne
+    @JoinColumn(name="product_id")
+    @JsonBackReference("product-productVersions")
+    private Product product;
 
-	private List<Image> images;
+    @OneToMany(mappedBy="productVersionBean")
+    @JsonManagedReference("productVersionBean-warehouses")
+    private List<Warehous> warehouses;
 
-	//bi-directional many-to-one association to OrderDetail
-	@OneToMany(mappedBy="productVersionBean")
-	@JsonManagedReference
-
-	private List<OrderDetail> orderDetails;
-
-	//bi-directional many-to-one association to Product
-	@ManyToOne
-	@JoinColumn(name="product_id")
-	@JsonManagedReference
-
-	private Product product;
-
-	//bi-directional many-to-one association to Warehous
-	@OneToMany(mappedBy="productVersionBean")
-	@JsonManagedReference
-
-	private List<Warehous> warehouses;
-
-	public ProductVersion() {
+    public ProductVersion() {
 	}
 
 	public int getId() {
@@ -229,7 +213,4 @@ public class ProductVersion implements Serializable {
 	public void setVersionName(String versionName) {
 		this.versionName = versionName;
 	}
-	
-	
-
 }

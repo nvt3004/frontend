@@ -41,15 +41,13 @@ public class Warehous implements Serializable {
 	//bi-directional many-to-one association to ProductVersion
 	@ManyToOne
 	@JoinColumn(name="product_version")
-	@JsonBackReference
-
+	@JsonBackReference("productVersionBean-warehouses")
 	private ProductVersion productVersionBean;
 
 	//bi-directional many-to-one association to Supplier
 	@ManyToOne
 	@JoinColumn(name="supplier_id")
-	@JsonBackReference
-
+	@JsonBackReference("supplier-warehouses")
 	private Supplier supplier;
 
 	public Warehous() {
