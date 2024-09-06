@@ -17,6 +17,7 @@ public interface OrderStatusJPA extends JpaRepository<OrderStatus, Integer> {
 	@Query("UPDATE Order o SET o.orderStatus = :newOrderStatus WHERE o.orderId = :orderId")
 	int updateOrderStatus(@Param("orderId") int orderId, @Param("newOrderStatus") OrderStatus newOrderStatus);
 	
+	Optional<OrderStatus> findByStatusName(String statusName);
 	
     @Query("SELECT s.statusName FROM OrderStatus s ORDER BY s.sortOrder ASC")
     List<String> getStatusOrder();

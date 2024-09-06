@@ -39,7 +39,7 @@ public class Advertisement implements Serializable {
 
 	// bi-directional many-to-one association to Image
 	@OneToMany(mappedBy = "advertisement")
-	@JsonManagedReference("advertisement-images")
+	@JsonManagedReference
 	private List<Image> images;
 
 	public Advertisement() {

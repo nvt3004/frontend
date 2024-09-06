@@ -30,7 +30,7 @@ public class Address implements Serializable {
 	//bi-directional many-to-one association to User
 	@ManyToOne 
 	@JoinColumn(name="user_id")
-	@JsonBackReference("user-addresses")
+	@JsonBackReference
 	private User user;
 
 	public Address() {

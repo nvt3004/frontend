@@ -15,11 +15,11 @@ public class OrderDetailProductDetailsDTO {
 	private String description;
 	private BigDecimal total;
 	private Integer orderDetailId;
-	private AttributeProductVersionDTO attributeProductVersion;
+	private AttributeDTO attributeProductVersion;
 	private List<AttributeDTO> attributeProducts;
 
 	public OrderDetailProductDetailsDTO(Integer productId, Integer productVersionId, BigDecimal price, Integer quantity,
-			String imageUrl, String description, BigDecimal total, Integer orderDetailId,AttributeProductVersionDTO attributeProductVersion,
+			String imageUrl, String description, BigDecimal total, Integer orderDetailId,AttributeDTO attributeProductVersion,
 			List<AttributeDTO> attributeProducts) {
 		this.productId = productId;
 		this.productVersionId = productVersionId;

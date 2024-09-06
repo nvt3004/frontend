@@ -1,14 +1,15 @@
 package com.errors;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
-@AllArgsConstructor
 public class ApiResponse<T> {
     private int errorCode;
     private String message;
     private T data;
+
+    public ApiResponse(int errorCode, String message, T data) {
+        this.errorCode = errorCode;
+        this.message = message;
+        this.data = data;
+    }
 
     public int getErrorCode() {
         return errorCode;

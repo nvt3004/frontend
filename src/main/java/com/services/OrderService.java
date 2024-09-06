@@ -62,6 +62,74 @@ public class OrderService {
 	@Autowired
 	private OrderDetailService orderDetailService;
 
+//	@Autowired
+//	private CouponJPA couponJpa;
+//
+//	@Autowired
+//	private PaymentMethodJPA paymentMethodJpa;
+//
+//	@Autowired
+//	private UserJPA userJpa;
+//
+//	@Autowired
+//	private AddressJPA addressJpa;
+//
+//	@Autowired
+//	private PaymentJPA paymentJpa;
+
+//	public ApiResponse<?> createOrder(OrderCreateDTO orderCreateDTO) {
+//		Optional<OrderStatus> orderStatus = orderStatusJpa.findById(orderCreateDTO.getStatusId());
+//		Optional<Coupon> coupon = couponJpa.findById(orderCreateDTO.getCouponId());
+//		Optional<PaymentMethod> paymentMethod = paymentMethodJpa.findById(orderCreateDTO.getPaymentMethodId());
+//		Optional<User> user = userJpa.findById(1); // User được lấy từ Token
+//		Optional<Address> address = addressJpa.findById(orderCreateDTO.getAddress());
+//		Payment payment = new Payment();
+//		Order order = new Order();
+//		order.setOrderId(orderCreateDTO.getOrderId());
+//		order.setFullname(user.get().getFullName());
+//		order.setPhone(user.get().getPhone());
+//		order.setDisPercent(coupon.get().getDisPercent());
+//		order.setAddress(address.get().getAddressLine());
+//		order.setOrderStatus(orderStatus.get());
+//		order.setCoupon(coupon.get());
+//		order.setDeliveryDate(orderCreateDTO.getDeliveryDate());
+//		order.setIsCreator(true);
+//
+//		Order savedOrder = orderJpa.save(order);
+//
+//		payment.setOrder(savedOrder);
+//		payment.setPaymentMethod(paymentMethod.get());
+//		paymentJpa.save(payment);
+//
+//		OrderDetailCreateDTO orderDetailCreateDTO = orderCreateDTO.getOrderDetailCreateDTO();
+//		if (orderDetailCreateDTO != null) {
+//			List<OrderDetail> orderDetails = new ArrayList<>();
+//			List<Integer> productVersionIds = orderDetailCreateDTO.getProductVersionId();
+//			List<Integer> quantities = orderDetailCreateDTO.getQuantity();
+//
+//			for (int i = 0; i < productVersionIds.size(); i++) {
+//				Integer productVersionId = productVersionIds.get(i);
+//				Integer quantity = quantities.get(i);
+//
+//				Optional<ProductVersion> productVersion = productVersionJpa.findById(productVersionId);
+//				if (productVersion.isPresent()) {
+//					OrderDetail detail = new OrderDetail();
+//					detail.setOrder(savedOrder);
+//					detail.setProductVersionBean(productVersion.get());
+//					detail.setQuantity(quantity);
+//					detail.setPrice(productVersion.get().getRetailPrice());
+//					orderDetails.add(detail);
+//				} else {
+//
+//				}
+//			}
+//
+//			orderDetailJpa.saveAll(orderDetails);
+//		}
+//
+//		return new ApiResponse<>(HttpStatus.OK.value(), "Order created successfully", savedOrder);
+//	}
+
 	public ApiResponse<PageImpl<OrderDTO>> getAllOrders(Boolean isAdminOrder, String keyword,
 	        String status, int page, int size) {
 		
@@ -120,15 +188,14 @@ public class OrderService {
 		return new ApiResponse<>(200, "Order details fetched successfully", responseMap);
 	}
 
-	public ApiResponse<?> updateOrderStatus(Integer orderId, Integer statusId) {
-		if (statusId == null) {
-			return new ApiResponse<>(400, "Invalid status", "Status is required.");
+	public ApiResponse<?> updateOrderStatus(int orderId, String statusName) {
+		if (statusName == null || statusName.isEmpty()) {
+			return new ApiResponse<>(400, "Invalid status name", "Status name is required.");
 		}
 
-		Optional<OrderStatus> newOrderStatus = orderStatusJpa.findById(statusId);
-		System.out.println(newOrderStatus.get().getStatusName() + " StatusName");
+		Optional<OrderStatus> newOrderStatus = orderStatusJpa.findByStatusName(statusName);
 		if (newOrderStatus.isEmpty()) {
-			return new ApiResponse<>(400, "Invalid status", "The provided status name does not exist.");
+			return new ApiResponse<>(400, "Invalid status name", "The provided status name does not exist.");
 		}
 
 		Optional<Order> updatedOrder = orderJpa.findById(orderId);
@@ -137,12 +204,13 @@ public class OrderService {
 		}
 
 		Order order = updatedOrder.get();
-		if (isOrderStatusChanged(order, newOrderStatus.get().getStatusName())) {
+		if (isOrderStatusChanged(order, statusName)) {
 			order.setOrderStatus(newOrderStatus.get());
 			orderJpa.save(order);
-			if ("Processing".equalsIgnoreCase(order.getOrderStatus().getStatusName())) {
+
+			if ("Processing".equalsIgnoreCase(statusName)) {
 				updateProductVersionsForOrder(order.getOrderDetails());
-			} else if ("Cancelled".equalsIgnoreCase(order.getOrderStatus().getStatusName())) {
+			} else if ("Cancelled".equalsIgnoreCase(statusName)) {
 				revertProductVersionsForCancelledOrder(order.getOrderDetails());
 			}
 		}

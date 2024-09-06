@@ -27,25 +27,29 @@ public class Image implements Serializable {
 	//bi-directional many-to-one association to Advertisement
 	@ManyToOne
 	@JoinColumn(name="adv_id")
-	@JsonBackReference("advertisement-images")
+	@JsonBackReference
+
 	private Advertisement advertisement;
 
 	//bi-directional many-to-one association to Feedback
 	@ManyToOne
 	@JoinColumn(name="feedback_id")
-	@JsonBackReference("feedback-images")
+	@JsonBackReference
+
 	private Feedback feedback;
 
 	//bi-directional many-to-one association to ProductVersion
 	@ManyToOne
 	@JoinColumn(name="product_version_id")
-	@JsonBackReference("productVersion-images")
+	@JsonBackReference
+
 	private ProductVersion productVersion;
 
 	//bi-directional many-to-one association to User
 	@ManyToOne
 	@JoinColumn(name="user_id")
-	@JsonBackReference("user-images")
+	@JsonBackReference
+
 	private User user;
 
 	public Image() {

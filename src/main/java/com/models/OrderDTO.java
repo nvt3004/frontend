@@ -3,13 +3,9 @@ package com.models;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.springframework.data.web.config.EnableSpringDataWebSupport;
-import org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode;
-
 import lombok.Data;
 
 @Data
-@EnableSpringDataWebSupport(pageSerializationMode = PageSerializationMode.VIA_DTO)
 public class OrderDTO {
 	private int orderId;
 	private String fullname;

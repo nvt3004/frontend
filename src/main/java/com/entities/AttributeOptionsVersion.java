@@ -23,13 +23,16 @@ public class AttributeOptionsVersion implements Serializable {
 	//bi-directional many-to-one association to AttributeOption
 	@ManyToOne
 	@JoinColumn(name="attribute_options_id")
-	@JsonBackReference("attributeOption-attributeOptionsVersions")
+	@JsonBackReference
+
+
 	private AttributeOption attributeOption;
 
 	//bi-directional many-to-one association to ProductVersion
 	@ManyToOne
 	@JoinColumn(name="version_id")
-	@JsonBackReference("productVersion-attributeOptionsVersions")
+	@JsonBackReference
+
 	private ProductVersion productVersion;
 
 	public AttributeOptionsVersion() {

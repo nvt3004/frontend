@@ -30,13 +30,15 @@ public class CartProduct implements Serializable {
 	//bi-directional many-to-one association to Cart
 	@ManyToOne
 	@JoinColumn(name="cart_id")
-	@JsonBackReference("cart-cartProducts")
+	@JsonBackReference
+
 	private Cart cart;
 
 	//bi-directional many-to-one association to ProductVersion
 	@ManyToOne
 	@JoinColumn(name="product_version")
-	@JsonBackReference("productVersionBean-productVersion")
+	@JsonBackReference
+
 	private ProductVersion productVersionBean;
 
 	public CartProduct() {

@@ -31,14 +31,15 @@ public class Supplier implements Serializable {
 
 	private String phone;
 
-	private Boolean status;
+	private byte status;
 
 	@Column(name="supplier_name")
 	private String supplierName;
 
 	//bi-directional many-to-one association to Warehous
 	@OneToMany(mappedBy="supplier")
-	@JsonManagedReference("supplier-warehouses")
+	@JsonManagedReference
+
 	private List<Warehous> warehouses;
 
 	public Supplier() {
@@ -84,11 +85,11 @@ public class Supplier implements Serializable {
 		this.phone = phone;
 	}
 
-	public Boolean getStatus() {
+	public byte getStatus() {
 		return this.status;
 	}
 
-	public void setStatus(Boolean status) {
+	public void setStatus(byte status) {
 		this.status = status;
 	}
 

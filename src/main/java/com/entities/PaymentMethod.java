@@ -26,7 +26,8 @@ public class PaymentMethod implements Serializable {
 
 	//bi-directional many-to-one association to Payment
 	@OneToMany(mappedBy="paymentMethod")
-	@JsonManagedReference("paymentMethod-payments")
+	@JsonManagedReference
+
 	private List<Payment> payments;
 
 	public PaymentMethod() {

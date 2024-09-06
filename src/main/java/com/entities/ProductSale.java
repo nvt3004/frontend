@@ -33,7 +33,8 @@ public class ProductSale implements Serializable {
 	//bi-directional many-to-one association to Product
 	@ManyToOne
 	@JoinColumn(name="product_id")
-	@JsonBackReference("product-productSales")
+	@JsonBackReference
+
 	private Product product;
 
 	public ProductSale() {

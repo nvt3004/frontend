@@ -22,13 +22,15 @@ public class Wishlist implements Serializable {
 	//bi-directional many-to-one association to Product
 	@ManyToOne
 	@JoinColumn(name="product_id")
-	@JsonBackReference("product-wishlists")
+	@JsonBackReference
+
 	private Product product;
 
 	//bi-directional many-to-one association to User
 	@ManyToOne
 	@JoinColumn(name="user_id")
-	@JsonBackReference("user-wishlists")
+	@JsonBackReference
+
 	private User user;
 
 	public Wishlist() {

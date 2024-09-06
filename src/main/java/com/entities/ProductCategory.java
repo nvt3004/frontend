@@ -24,13 +24,15 @@ public class ProductCategory implements Serializable {
 	//bi-directional many-to-one association to Category
 	@ManyToOne
 	@JoinColumn(name="category_id")
-	@JsonBackReference("category-productCategories")
+	@JsonBackReference
+
 	private Category category;
 
 	//bi-directional many-to-one association to Product
 	@ManyToOne
 	@JoinColumn(name="product_id")
-	@JsonBackReference("product-productCategories")
+	@JsonBackReference
+
 	private Product product;
 
 	public ProductCategory() {

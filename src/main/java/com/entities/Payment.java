@@ -31,13 +31,15 @@ public class Payment implements Serializable {
 	//bi-directional many-to-one association to Order
 	@ManyToOne
 	@JoinColumn(name="order_id")
-	@JsonBackReference("order-payments")
+	@JsonBackReference
+
 	private Order order;
 
 	//bi-directional many-to-one association to PaymentMethod
 	@ManyToOne
 	@JoinColumn(name="payment_method_id")
-	@JsonBackReference("paymentMethod-payments")
+	@JsonBackReference
+
 	private PaymentMethod paymentMethod;
 
 	public Payment() {

@@ -28,13 +28,15 @@ public class OrderDetail implements Serializable {
 	//bi-directional many-to-one association to Order
 	@ManyToOne
 	@JoinColumn(name="order_id")
-	@JsonBackReference("order-orderDetails")
+	@JsonBackReference
+
 	private Order order;
 
 	//bi-directional many-to-one association to ProductVersion
 	@ManyToOne
 	@JoinColumn(name="product_version")
-	@JsonBackReference("productVersionBean-orderDetails")
+	@JsonBackReference
+
 	private ProductVersion productVersionBean;
 
 	public OrderDetail() {

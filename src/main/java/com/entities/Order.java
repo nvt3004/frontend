@@ -50,28 +50,33 @@ public class Order implements Serializable {
 
 	// bi-directional many-to-one association to OrderDetail
 	@OneToMany(mappedBy = "order")
-	@JsonManagedReference("order-orderDetails")
+	@JsonManagedReference
+
 	private List<OrderDetail> orderDetails;
 
 	// bi-directional many-to-one association to OrderStatus
 	@ManyToOne
 	@JoinColumn(name = "status_id")
-	@JsonBackReference("orderStatus-orders")
+	@JsonBackReference
+
 	private OrderStatus orderStatus;
 
 	@ManyToOne
 	@JoinColumn(name = "coupon_id")
-	@JsonBackReference("coupon-orders")
+	@JsonBackReference
+
 	private Coupon coupon;
 
 	// bi-directional many-to-one association to Payment
 	@OneToMany(mappedBy = "order")
-	@JsonManagedReference("order-payments")
+	@JsonManagedReference
+
 	private List<Payment> payments;
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")
-	@JsonBackReference("user-orders")
+	@JsonBackReference
+
 	private User user;
 
 	public Order() {

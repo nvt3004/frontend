@@ -26,12 +26,14 @@ public class AttributeOption implements Serializable {
 
 	//bi-directional many-to-one association to Attribute
 	@ManyToOne
-	@JsonBackReference("attribute-attributeOptions")
+	@JsonBackReference
+
 	private Attribute attribute;
 
 	//bi-directional many-to-one association to AttributeOptionsVersion
 	@OneToMany(mappedBy="attributeOption")
-	@JsonManagedReference("attributeOption-attributeOptionsVersions")
+	@JsonManagedReference
+
 	private List<AttributeOptionsVersion> attributeOptionsVersions;
 
 	public AttributeOption() {
