@@ -28,6 +28,7 @@ public class AuthDTO {
     private User listData;
     private List<User> userList;
     private List<String> roles;  // Thêm trường roles vào đây
+    private String tokenType;
 
     // Thêm setter cho roles
     public void setRoles(List<String> roles) {
