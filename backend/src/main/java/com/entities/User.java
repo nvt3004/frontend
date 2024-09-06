@@ -60,9 +60,6 @@ public class User implements UserDetails, Serializable {
     @Column(name = "provider")
     private String provider;
 
-    @Column(name = "token_expiry_date")
-    private LocalDateTime tokenExpiryDate;
-
     // Bi-directional many-to-one association to Address
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("user-addresses")
@@ -216,14 +213,6 @@ public class User implements UserDetails, Serializable {
     
     public void setResetToken(String resetToken) {
         this.resetToken = resetToken;
-    }
-    
-    public LocalDateTime getTokenExpiryDate() {
-        return tokenExpiryDate;
-    }
-    
-    public void setTokenExpiryDate(LocalDateTime tokenExpiryDate) {
-        this.tokenExpiryDate = tokenExpiryDate;
     }
     
 

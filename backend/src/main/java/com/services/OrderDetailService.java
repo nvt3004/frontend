@@ -15,6 +15,7 @@ import com.entities.OrderDetail;
 import com.entities.ProductVersion;
 import com.errors.ApiResponse;
 import com.models.AttributeDTO;
+import com.models.AttributeProductVersionDTO;
 import com.models.ColorDTO;
 import com.models.OrderDetailDTO;
 import com.models.OrderDetailProductDetailsDTO;
@@ -78,7 +79,7 @@ public class OrderDetailService {
 				}
 			}
 
-			AttributeDTO attributeProductVersion = new AttributeDTO(color, size);
+			AttributeProductVersionDTO attributeProductVersion = new AttributeProductVersionDTO(color, size);
 
 			List<AttributeDTO> attributesProducts = createAttributeListByProductId(
 					item.getProductVersionBean().getProduct().getProductId());

@@ -3,6 +3,7 @@ package com.services;
 import com.models.AuthDTO;
 import com.models.EmailRequestDTO;
 import com.entities.User;
+import com.entities.Cart;
 import com.entities.Role;
 import com.entities.UserRole;
 import com.repositories.RoleRepo;
@@ -50,6 +51,9 @@ public class AuthManagementService {
     private MailService mailService;
 
     Date datecurrent = DateTimeUtil.getCurrentDateInVietnam();
+
+    @Autowired
+    private CartService cartRepo;
 
     public AuthDTO register(AuthDTO registrationRequest) {
         AuthDTO resp = new AuthDTO();
@@ -126,6 +130,10 @@ public class AuthManagementService {
             }).collect(Collectors.toList());
 
             userRoleRepo.saveAll(userRoles);
+
+            Cart newCart = new Cart();
+            newCart.setUser(ourUsersResult);
+            cartRepo.addCart(newCart);
 
             if (ourUsersResult.getUserId() > 0) {
                 resp.setListData(ourUsersResult);
@@ -391,7 +399,7 @@ public class AuthManagementService {
 
             String jwt = jwtUtils.generateToken(user);
             user.setResetToken(jwt);
-            user.setTokenExpiryDate(LocalDateTime.now().plusHours(1)); // Token hết hạn sau 1 giờ
+
             usersRepo.save(user);
 
             // Tạo link reset password
