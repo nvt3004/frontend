@@ -39,7 +39,6 @@ public class Product implements Serializable {
 	//bi-directional many-to-one association to Feedback
 	@OneToMany(mappedBy="product")
 	@JsonManagedReference
-
 	private List<Feedback> feedbacks;
 
 	//bi-directional many-to-one association to ProductCategory
