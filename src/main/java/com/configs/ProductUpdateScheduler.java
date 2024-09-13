@@ -22,8 +22,10 @@ public class ProductUpdateScheduler {
 	@Autowired
 	private ProductInforService inforService;
 
+	//@Scheduled(cron = "*/10 * * * * ?") // 10s
 	// Lên lịch thực hiện mỗi ngày vào lúc 23:55
-	@Scheduled(cron = "0 55 23 * * ?") // Giờ - Phút - Giây, mỗi ngày vào lúc 23:55
+	@Scheduled(cron = "0 55 23 * * ?") // Giờ - Phút - Giây, mỗi ngày vào lúc
+	// 23:55
 	public void updateProductsToAlgolia() {
 		try {
 			// Lấy danh sách tất cả các sản phẩm từ dịch vụ

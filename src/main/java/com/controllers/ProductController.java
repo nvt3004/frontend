@@ -35,7 +35,6 @@ public class ProductController {
         	for (ProductDTO dto : inforService.getALLInforProduct()) {
         		 algoliaProductService.addProduct(dto);
 			}
-           
             return ResponseEntity.ok("Sản phẩm đã được thêm thành công.");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Lỗi khi thêm sản phẩm: " + e.getMessage());
