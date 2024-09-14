@@ -1,45 +1,132 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const ShopingCart = () => {
-  const [selectedCoupon, setSelectedCoupon] = useState("");
+  const Products = [
+    {
+      id: 1,
+      name: "Fresh Strawberries",
+      img: "images/item-cart-04.jpg",
+      price: 36.0,
+    },
+    {
+      id: 2,
+      name: "Lightweight Jacket",
+      img: "images/item-cart-05.jpg",
+      price: 16.0,
+    },
+  ];
 
-  const handleSelectCoupon = (event) => {
-    setSelectedCoupon(event.target.textContent);
+  //ví dụ
+  const [ProductID, setProductID] = useState(1);
+  const [VersionID, setVersionID] = useState([1, 2, 3]);
+  //
+  const [Coupon, setCoupon] = useState("");
+  //
+  const [Address, setAddress] = useState("");
+  const [Note, setNote] = useState("");
+  //==========================================
+  // State để lưu trữ trạng thái của checkbox tổng
+  const [selectAll, setSelectAll] = useState(false);
+
+  // State để lưu trữ trạng thái của từng checkbox con, và VersionID
+  const [selectedItems, setSelectedItems] = useState([]);
+
+  const handleProceedToCheckout = async () => {
+    if (!VersionID) return;
+
+    const formData = new FormData();
+    formData.append("ProductID", ProductID);
+    formData.append("VersionID", VersionID);
+    //
+    formData.append("Coupon", Coupon);
+    //
+    formData.append("Address", Address);
+    formData.append("Note", Note);
+
+    //xem dữ liệu
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
   };
-  // Khởi tạo state cho số lượng sản phẩm bằng một đối tượng
-  const [quantities, setQuantities] = useState({
-    product1: 1,
-    product2: 1,
-  });
+
+  const handleCoupon = (event) => {
+    setCoupon(event.target.value);
+  };
+  //
+  const navigate = useNavigate();
+  const handleAddress = (e) => {
+    setAddress(e.target.value);
+    if (e.target.value === "add-new") {
+      // Điều hướng đến trang thêm địa chỉ mới hoặc mở modal
+      navigate("/account");
+    }
+  };
+  //
+  const handleNote = (event) => {
+    setNote(event.target.value);
+  };
 
   // Hàm giảm số lượng
-  const handleDecrease = (productId) => {
-    setQuantities((prevQuantities) => ({
-      ...prevQuantities,
-      [productId]:
-        prevQuantities[productId] > 1 ? prevQuantities[productId] - 1 : 1,
-    }));
+  const handleDecrease = (Id) => {
+    //call api giam so luong
   };
 
   // Hàm tăng số lượng
-  const handleIncrease = (productId) => {
-    setQuantities((prevQuantities) => ({
-      ...prevQuantities,
-      [productId]: prevQuantities[productId] + 1,
-    }));
+  const handleIncrease = (Id) => {
+    //call api giam so luong
   };
 
   // Hàm xử lý khi người dùng nhập số lượng trực tiếp
-  const handleChange = (event, productId) => {
-    const value = parseInt(event.target.value);
-    if (!isNaN(value) && value > 0) {
-      setQuantities((prevQuantities) => ({
-        ...prevQuantities,
-        [productId]: value,
-      }));
+  const handleChange = (event, Id) => {
+    // cái này là productID nếu có sd thì set dô
+    setProductID("1");
+    //Id la id cua productversion
+    //event.target.value laf du lieu
+  };
+
+  // Danh sách sản phẩm với ID và các thông tin cần thiết
+  const products = [
+    { id: 1, name: "Fresh Strawberries", price: 36.0 },
+    { id: 2, name: "Lightweight Jacket", price: 16.0 },
+  ];
+
+  // Hàm xử lý khi checkbox tổng được click
+  const handleSelectAll = () => {
+    const newSelectAll = !selectAll;
+    setSelectAll(newSelectAll);
+
+    // Nếu select all được chọn, tất cả sản phẩm sẽ được chọn, ngược lại thì bỏ chọn
+    if (newSelectAll) {
+      setSelectedItems(products.map((product) => product.id));
+      setVersionID(products.map((product) => product.id));
+    } else {
+      setSelectedItems([]);
+      setVersionID([]);
     }
   };
+
+  // Hàm xử lý khi checkbox con được click
+  const handleSelectItem = (id) => {
+    let newSelectedItems = [...selectedItems];
+
+    if (newSelectedItems.includes(id)) {
+      newSelectedItems = newSelectedItems.filter((item) => item !== id); // Bỏ chọn
+    } else {
+      newSelectedItems.push(id); // Chọn thêm
+    }
+
+    setSelectedItems(newSelectedItems);
+    setVersionID(newSelectedItems); // Cập nhật VersionID
+
+    // Nếu tất cả checkbox con được chọn thì checkbox tổng sẽ tự động được chọn
+    if (newSelectedItems.length === products.length) {
+      setSelectAll(true);
+    } else {
+      setSelectAll(false);
+    }
+  };
+
   const style = {
     m: { marginTop: "40px" },
   };
@@ -56,7 +143,12 @@ const ShopingCart = () => {
                     <thead>
                       <tr className="table_head">
                         <th className="p-4">
-                          <input type="checkbox" className="form-check-input" />
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={selectAll}
+                            onChange={handleSelectAll} // Xử lý khi checkbox tổng được click
+                          />
                         </th>
                         <th>Product</th>
                         <th></th>
@@ -67,122 +159,53 @@ const ShopingCart = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="table_row">
-                        <td className="p-4 pt-0">
-                          <input type="checkbox" className="form-check-input" />
-                        </td>
-                        <td>
-                          <div className="how-itemcart1">
-                            <img
-                              src="images/item-cart-04.jpg"
-                              alt="Product 1"
+                      {Products.map((product) => (
+                        <tr className="table_row" key={product.id}>
+                          <td className="p-4 pt-0">
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={selectedItems.includes(product.id)}
+                              onChange={() => handleSelectItem(product.id)} // Xử lý khi checkbox con được click
                             />
-                          </div>
-                        </td>
-                        <td>
-                          <div>
-                            <h6>Fresh Strawberries</h6>
+                          </td>
+                          <td>
+                            <div className="how-itemcart1">
+                              <img src={product.img} alt={product.name} />
+                            </div>
+                          </td>
+                          <td>
+                            <h6>{product.name}</h6>
+                          </td>
+                          <td>${product.price}</td>
+                          <td>
+                            {/* Giả lập số lượng sản phẩm */}
+                            <div className="wrap-num-product flex-w">
+                              <div className="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
+                                <i className="fs-16 zmdi zmdi-minus"></i>
+                              </div>
+                              <input
+                                className="mtext-104 cl3 txt-center num-product"
+                                type="number"
+                                value={1} // Giả lập giá trị
+                                onChange={() => {}} // Sử dụng hàm xử lý riêng nếu cần thay đổi số lượng
+                              />
+                              <div className="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
+                                <i className="fs-16 zmdi zmdi-plus"></i>
+                              </div>
+                            </div>
+                          </td>
+                          <td>${product.price}</td>
+                          <td>
                             <button
                               type="button"
-                              className="  stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
-                              data-bs-toggle="modal"
-                              data-bs-target="#exampleModal"
+                              className="btn btn-danger rounded-0"
                             >
-                              Black - M (<i className="zmdi zmdi-edit"></i>)
+                              <i className="zmdi zmdi-delete"></i>
                             </button>
-                          </div>
-                        </td>
-                        <td>$ 36.00</td>
-                        <td>
-                          <div className="wrap-num-product flex-w ">
-                            <div
-                              className="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m"
-                              onClick={() => handleDecrease("product1")}
-                            >
-                              <i className="fs-16 zmdi zmdi-minus"></i>
-                            </div>
-                            <input
-                              className="mtext-104 cl3 txt-center num-product"
-                              type="number"
-                              value={quantities["product1"]}
-                              onChange={(e) => handleChange(e, "product1")}
-                            />
-                            <div
-                              className="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m"
-                              onClick={() => handleIncrease("product1")}
-                            >
-                              <i className="fs-16 zmdi zmdi-plus"></i>
-                            </div>
-                          </div>
-                        </td>
-                        <td>$ 36.00</td>
-                        <td className="">
-                          <button
-                            type="button"
-                            className="btn btn-danger rounded-0"
-                          >
-                            <i className="zmdi zmdi-delete"></i>
-                          </button>
-                        </td>
-                      </tr>
-                      <tr className="table_row">
-                        <td className="p-4 pt-0">
-                          <input type="checkbox" className="form-check-input" />
-                        </td>
-                        <td>
-                          <div className="how-itemcart1">
-                            <img
-                              src="images/item-cart-05.jpg"
-                              alt="Product 2"
-                            />
-                          </div>
-                        </td>
-                        <td>
-                          <div>
-                            <h6>Lightweight Jacket</h6>
-                            <button
-                              type="button"
-                              className="  stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
-                              data-bs-toggle="modal"
-                              data-bs-target="#exampleModal"
-                            >
-                              Black - M (<i className="zmdi zmdi-edit"></i>)
-                            </button>
-                          </div>
-                        </td>
-                        <td>$ 16.00</td>
-                        <td>
-                          <div className="wrap-num-product flex-w">
-                            <div
-                              className="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m"
-                              onClick={() => handleDecrease("product2")}
-                            >
-                              <i className="fs-16 zmdi zmdi-minus"></i>
-                            </div>
-                            <input
-                              className="mtext-104 cl3 txt-center num-product"
-                              type="number"
-                              value={quantities["product2"]}
-                              onChange={(e) => handleChange(e, "product2")}
-                            />
-                            <div
-                              className="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m"
-                              onClick={() => handleIncrease("product2")}
-                            >
-                              <i className="fs-16 zmdi zmdi-plus"></i>
-                            </div>
-                          </div>
-                        </td>
-                        <td>$ 16.00</td>
-                        <td className="">
-                          <button
-                            type="button"
-                            className="btn btn-danger rounded-0"
-                          >
-                            <i className="zmdi zmdi-delete"></i>
-                          </button>
-                        </td>
-                      </tr>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -192,8 +215,8 @@ const ShopingCart = () => {
                     <div>
                       <select
                         className="flex-c-m stext-101 cl2 size-119 bg8 bor13 p-lr-15 trans-04 pointer m-tb-5 form-select rounded-start-5"
-                        onChange={(e) => setSelectedCoupon(e.target.value)}
-                        value={selectedCoupon}
+                        onChange={handleCoupon}
+                        value={Coupon}
                       >
                         <option value="" disabled selected>
                           Select a coupon...
@@ -207,7 +230,8 @@ const ShopingCart = () => {
                       type="text"
                       className="form-control stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5 rounded-end-5"
                       aria-label="Text input with dropdown button"
-                      value={selectedCoupon}
+                      onChange={handleCoupon}
+                      value={Coupon}
                     />
                   </div>
                   <div className="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10">
@@ -238,14 +262,24 @@ const ShopingCart = () => {
                       <span className="stext-110 cl2">Address*:</span>
                       <div className="mt-2">
                         <select
-                          className="w-100 border border-1 p-2 rounded-0 form-select stext-111"
+                          className="w-100 border border-1 p-2 form-select stext-111"
                           aria-label="Default select example"
+                          onChange={handleAddress}
+                          value={Address}
                         >
-                          <option selected>Select a country...</option>
-                          <option value="1">Ninh Kiều</option>
-                          <option value="2">An Giang</option>
-                          <option value="3">TP HCM</option>
+                          <option value="" selected>
+                            Select a Address...
+                          </option>
+                          <option value="ninkieu">Ninh Kiều</option>
+                          <option value="angiang">An Giang</option>
+                          <option value="hcm">TP HCM</option>
+                          <option value="add-new" className="font-weight-bold">
+                            {" "}
+                            ADD NEW ADDRESS
+                          </option>{" "}
+                          {/* Giá trị đặc biệt để điều hướng */}
                         </select>
+
                         <div className=" w-full d-flex justify-content-between mt-1">
                           <span className="stext-111 cl2">Delivery fee:</span>
                           <span className="stext-110 cl2">+ $10.65</span>
@@ -273,6 +307,7 @@ const ShopingCart = () => {
                         className="form-control rounded-0 stext-110"
                         rows="5"
                         placeholder="Enter additional information..."
+                        onChange={handleNote}
                       ></textarea>
                     </div>
                   </div>
@@ -288,7 +323,10 @@ const ShopingCart = () => {
                   </div>
                 </div>
 
-                <button className="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
+                <button
+                  className="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer"
+                  onClick={handleProceedToCheckout}
+                >
                   Proceed to Checkout
                 </button>
               </div>
