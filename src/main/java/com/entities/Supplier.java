@@ -4,6 +4,7 @@ import java.io.Serializable;
 import jakarta.persistence.*;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 
@@ -35,12 +36,11 @@ public class Supplier implements Serializable {
 
 	@Column(name="supplier_name")
 	private String supplierName;
-
-	//bi-directional many-to-one association to Warehous
-	@OneToMany(mappedBy="supplier")
-	@JsonManagedReference("supplier-warehouses")
-	private List<Warehous> warehouses;
-
+	
+	@OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL)
+	@JsonManagedReference("supplier-receipt")
+	@JsonIgnore
+	private List<Receipt> receipts;
 	public Supplier() {
 	}
 
@@ -98,28 +98,6 @@ public class Supplier implements Serializable {
 
 	public void setSupplierName(String supplierName) {
 		this.supplierName = supplierName;
-	}
-
-	public List<Warehous> getWarehouses() {
-		return this.warehouses;
-	}
-
-	public void setWarehouses(List<Warehous> warehouses) {
-		this.warehouses = warehouses;
-	}
-
-	public Warehous addWarehous(Warehous warehous) {
-		getWarehouses().add(warehous);
-		warehous.setSupplier(this);
-
-		return warehous;
-	}
-
-	public Warehous removeWarehous(Warehous warehous) {
-		getWarehouses().remove(warehous);
-		warehous.setSupplier(null);
-
-		return warehous;
 	}
 
 }

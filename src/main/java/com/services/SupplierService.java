@@ -1,9 +1,10 @@
 package com.services;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.entities.Supplier;
@@ -16,9 +17,10 @@ public class SupplierService {
     @Autowired
     private SupplierJPA supplierRepository;
 
-    public List<Supplier> getAllSuppliers() {
-        return supplierRepository.findAll();
+    public Page<Supplier> getAllSuppliers(Pageable pageable) {
+        return supplierRepository.findAll(pageable);
     }
+
 
     public Optional<Supplier> getSupplierById(int id) {
         return supplierRepository.findById(id);
@@ -26,7 +28,6 @@ public class SupplierService {
 
     public Supplier createSupplier(SupplierModel supplierDetails) {
         Supplier supplier = new Supplier();
-        supplier.setSupplierId(supplierDetails.getSupplierId());
         supplier.setAddress(supplierDetails.getAddress());
         supplier.setContactName(supplierDetails.getContactName());
         supplier.setEmail(supplierDetails.getEmail());
