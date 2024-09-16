@@ -6,39 +6,74 @@ import productApi from "../../services/api/ProductApi";
 
 const Product = () => {
   const [Categories, setCategories] = useState([]);
+  const [Colors, setColor] = useState([]);
+  const [Sizes, setSize] = useState([]);
   const [Products, setProducts] = useState([]);
   //
   const [searchTerm, setSearchTerm] = useState(""); // Từ khóa tìm kiếm của người dùng
-  //const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(""); // Từ khóa sau khi debounce
-  const [ErrorCode, setErrorCode] = useState("204");
-  const [ErrorMessage, setErrorMessage] = useState("No products found");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(""); // Từ khóa sau khi debounce
 
+  const [categoryId, setCategoryId] = useState(-1);
+
+  const [ErrorCode, setErrorCode] = useState("404");
+  const [ErrorMessage, setErrorMessage] = useState("No products found");
   useEffect(() => {
-    const fetchProductAndCategories = async () => {
+    const fetchCategorieAndColorAndSize = async () => {
       try {
         const response = await productApi.getAllCategory();
         setCategories(response.data);
       } catch (error) {
         console.error("Error fetching categories:", error.message);
       }
+      try {
+        const response = await productApi.getAllColor();
+        setColor(response.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error.message);
+      }
+      try {
+        const response = await productApi.getAllSize();
+        setSize(response.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error.message);
+      }
+      console.log(Colors);
     };
 
-    fetchProductAndCategories();
+    fetchCategorieAndColorAndSize();
   }, []);
   useEffect(() => {
+    const fetchProduct = async () => {
+      if (!searchTerm) {
+        try {
+          const response = await productApi.getAllProductByCategoryId(
+            categoryId
+          );
+          setProducts(response.data);
+        } catch (error) {
+          console.error("Error fetching categories:", error.message);
+        }
+      } else {
+        setProducts([]);
+      }
+    };
+    fetchProduct();
+  }, [categoryId, searchTerm]);
+
+  useEffect(() => {
     const handler = setTimeout(() => {
-      handleSearch(searchTerm);
+      setDebouncedSearchTerm(searchTerm);
     }, 400);
     return () => {
       clearTimeout(handler);
     };
   }, [searchTerm]);
 
-  // useEffect(() => {
-  //   if (debouncedSearchTerm) {
-  //     handleSearch(debouncedSearchTerm);
-  //   }
-  // }, [debouncedSearchTerm]);
+  useEffect(() => {
+    if (debouncedSearchTerm) {
+      handleSearch(debouncedSearchTerm);
+    }
+  }, [debouncedSearchTerm]);
   const handleSearch = async (keywork) => {
     try {
       const response = await productApi.searchProduct(keywork);
@@ -53,6 +88,10 @@ const Product = () => {
       console.log("Handle search error:" + error);
     }
   };
+  const handleChangeCategory = async (id) => {
+    setCategoryId(id);
+    setSearchTerm("");
+  };
   const style = {
     m: { marginTop: "40px" },
   };
@@ -63,13 +102,17 @@ const Product = () => {
         <div className="container">
           <div className="flex-w flex-sb-m p-b-52">
             <div className="flex-w flex-l-m filter-tope-group m-tb-10">
-              <button className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1">
+              <button
+                className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1"
+                onClick={() => handleChangeCategory(-1)}
+              >
                 All Products
               </button>
               {Categories.map((category) => (
                 <button
-                  key={category.id}
+                  key={category.categoryId}
                   className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1"
+                  onClick={() => handleChangeCategory(category.categoryId)}
                 >
                   {category.categoryName}
                 </button>
@@ -123,6 +166,105 @@ const Product = () => {
                     {/* <!-- Filter --> */}
                     <div className="panel-filter w-full p-t-10">
                       <div className="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
+                        <div className="filter-col2 p-r-15 p-b-27">
+                          <div className="mtext-102 cl2 p-b-15">Price</div>
+
+                          <ul className="list-unstyled">
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04 filter-link-active"
+                              >
+                                All
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                0.000 VND - 200.000 VND
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                200.000 VND - 400.000 VND
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                400.000 VND - 600.000 VND
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                600.000 VND - 800.000 VND
+                              </Link>
+                            </li>
+
+                            <li className="p-b-6">
+                              <Link
+                                href="#"
+                                className="text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                1.000.000 VNĐ +
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="filter-col3 p-r-15 p-b-27">
+                          <div className="mtext-102 cl2 p-b-15">Color</div>
+
+                          <ul className="list-unstyled">
+                            {Colors.map((color) => (
+                              <li key={color.id} className="p-b-6">
+                                <span
+                                  className="fs-15 lh-12 m-r-6"
+                                  style={{ color: "#222" }}
+                                >
+                                  <i className="zmdi zmdi-circle"></i>
+                                </span>
+
+                                <Link
+                                  href="#"
+                                  className="text-decoration-none filter-link stext-106 trans-04"
+                                >
+                                  {color.attributeValue}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="filter-col4 p-b-27 pe-5">
+                          <div className="mtext-102 cl2 p-b-15">Sizes</div>
+
+                          <div className="flex-w p-t-4 m-r--5">
+                            {Sizes.map((size) => (
+                              <Link
+                                key={size.id}
+                                href="#"
+                                className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
+                              >
+                                {size.attributeValue}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
                         <div className="filter-col1 p-r-15 p-b-27">
                           <div className="mtext-102 cl2 p-b-15">Sort By</div>
 
@@ -182,209 +324,6 @@ const Product = () => {
                             </li>
                           </ul>
                         </div>
-
-                        <div className="filter-col2 p-r-15 p-b-27">
-                          <div className="mtext-102 cl2 p-b-15">Price</div>
-
-                          <ul className="list-unstyled">
-                            <li className="p-b-6">
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04 filter-link-active"
-                              >
-                                All
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                $0.00 - $50.00
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                $50.00 - $100.00
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                $100.00 - $150.00
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                $150.00 - $200.00
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                $200.00+
-                              </Link>
-                            </li>
-                          </ul>
-                        </div>
-
-                        <div className="filter-col3 p-r-15 p-b-27">
-                          <div className="mtext-102 cl2 p-b-15">Color</div>
-
-                          <ul className="list-unstyled">
-                            <li className="p-b-6">
-                              <span
-                                className="fs-15 lh-12 m-r-6"
-                                style={{ color: "#222" }}
-                              >
-                                <i className="zmdi zmdi-circle"></i>
-                              </span>
-
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                Black
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <span
-                                className="fs-15 lh-12 m-r-6"
-                                style={{ color: "#4272d7" }}
-                              >
-                                <i className="zmdi zmdi-circle"></i>
-                              </span>
-
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04 filter-link-active"
-                              >
-                                Blue
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <span
-                                className="fs-15 lh-12 m-r-6"
-                                style={{ color: " #b3b3b3" }}
-                              >
-                                <i className="zmdi zmdi-circle"></i>
-                              </span>
-
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                Grey
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <span
-                                className="fs-15 lh-12 m-r-6"
-                                style={{ color: " #00ad5f" }}
-                              >
-                                <i className="zmdi zmdi-circle"></i>
-                              </span>
-
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                Green
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <span
-                                className="fs-15 lh-12 m-r-6"
-                                style={{ color: " #fa4251" }}
-                              >
-                                <i className="zmdi zmdi-circle"></i>
-                              </span>
-
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                Red
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <span
-                                className=" fs-15 lh-12 m-r-6"
-                                style={{ color: " #aaa" }}
-                              >
-                                <i className="zmdi zmdi-circle-o"></i>
-                              </span>
-
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                White
-                              </Link>
-                            </li>
-                          </ul>
-                        </div>
-
-                        <div className="filter-col4 p-b-27">
-                          <div className="mtext-102 cl2 p-b-15">Tags</div>
-
-                          <div className="flex-w p-t-4 m-r--5">
-                            <Link
-                              href="#"
-                              className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
-                            >
-                              Fashion
-                            </Link>
-
-                            <Link
-                              href="#"
-                              className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
-                            >
-                              Lifestyle
-                            </Link>
-
-                            <Link
-                              href="#"
-                              className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
-                            >
-                              Denim
-                            </Link>
-
-                            <Link
-                              href="#"
-                              className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
-                            >
-                              Streetstyle
-                            </Link>
-
-                            <Link
-                              href="#"
-                              className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
-                            >
-                              Crafts
-                            </Link>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -438,7 +377,7 @@ const Product = () => {
                           alt="IMG-PRODUCT"
                         />
                       ) : (
-                        <img src="images/product-01.jpg" alt="IMG-PRODUCT" />
+                        <img src="images/product-04.jpg" alt="IMG-PRODUCT" />
                       )}
                       {/* Quick View */}
                       <QuickViewProdDetail />
@@ -454,7 +393,7 @@ const Product = () => {
                         </Link>
 
                         <span className="stext-105 cl3">
-                          {`$${product.minPrice} ~ $${product.maxPrice}`}
+                          {`${product.minPrice}VND ~ ${product.maxPrice}VND`}
                         </span>
                       </div>
 
