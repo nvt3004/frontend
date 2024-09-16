@@ -19,7 +19,7 @@ const ShopingCart = () => {
 
   //ví dụ
   const [ProductID, setProductID] = useState(1);
-  const [VersionID, setVersionID] = useState([1, 2, 3]);
+  const [VersionID, setVersionID] = useState([]);
   //
   const [Coupon, setCoupon] = useState("");
   //

@@ -1,56 +1,79 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import { Link } from "react-router-dom";
 import QuickViewProdDetail from "../../components/client/Modal/QuickViewProdDetail";
+import productApi from "../../services/api/ProductApi";
+
 const Product = () => {
+  const [Categories, setCategories] = useState([]);
+  const [Products, setProducts] = useState([]);
+  //
+  const [searchTerm, setSearchTerm] = useState(""); // Từ khóa tìm kiếm của người dùng
+  //const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(""); // Từ khóa sau khi debounce
+  const [ErrorCode, setErrorCode] = useState("204");
+  const [ErrorMessage, setErrorMessage] = useState("No products found");
+
+  useEffect(() => {
+    const fetchProductAndCategories = async () => {
+      try {
+        const response = await productApi.getAllCategory();
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error.message);
+      }
+    };
+
+    fetchProductAndCategories();
+  }, []);
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      handleSearch(searchTerm);
+    }, 400);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
+
+  // useEffect(() => {
+  //   if (debouncedSearchTerm) {
+  //     handleSearch(debouncedSearchTerm);
+  //   }
+  // }, [debouncedSearchTerm]);
+  const handleSearch = async (keywork) => {
+    try {
+      const response = await productApi.searchProduct(keywork);
+      if (response && response.data) {
+        setProducts(response.data);
+      } else {
+        setProducts([]);
+        setErrorCode(response.code);
+        setErrorMessage(response.message);
+      }
+    } catch (error) {
+      console.log("Handle search error:" + error);
+    }
+  };
+  const style = {
+    m: { marginTop: "40px" },
+  };
   return (
-    <div style={{ marginTop: "40px" }}>
+    <div style={style.m}>
       {/* <!-- Product --> */}
       <section id="productTop" className="bg0 p-t-23 p-b-64">
         <div className="container">
           <div className="flex-w flex-sb-m p-b-52">
             <div className="flex-w flex-l-m filter-tope-group m-tb-10">
-              <button
-                className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1"
-                data-filter="*"
-              >
+              <button className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1">
                 All Products
               </button>
-
-              <button
-                className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5"
-                data-filter=".women"
-              >
-                Women
-              </button>
-
-              <button
-                className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5"
-                data-filter=".men"
-              >
-                Men
-              </button>
-
-              <button
-                className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5"
-                data-filter=".bag"
-              >
-                Bag
-              </button>
-
-              <button
-                className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5"
-                data-filter=".shoes"
-              >
-                Shoes
-              </button>
-
-              <button
-                className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5"
-                data-filter=".watches"
-              >
-                Watches
-              </button>
+              {Categories.map((category) => (
+                <button
+                  key={category.id}
+                  className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1"
+                >
+                  {category.categoryName}
+                </button>
+              ))}
             </div>
 
             <div className="flex-w flex-c-m m-tb-10">
@@ -300,7 +323,6 @@ const Product = () => {
                                 href="#"
                                 className="text-decoration-none filter-link stext-106 trans-04"
                               >
-                              
                                 Red
                               </Link>
                             </li>
@@ -379,14 +401,18 @@ const Product = () => {
                     {/* <!-- Search product --> */}
                     <div className="panel-search w-full p-t-10 p-b-15">
                       <div className="bor8 dis-flex p-l-15">
-                        <button className="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
+                        <button
+                          className="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04"
+                          onClick={() => handleSearch(searchTerm)}
+                        >
                           <i className="zmdi zmdi-search"></i>
                         </button>
 
                         <input
                           className="mtext-107 cl2 size-114 plh2 p-r-15"
-                          type="text"
+                          type="search"
                           name="search-product"
+                          onChange={(e) => setSearchTerm(e.target.value)}
                           placeholder="Search"
                         />
                       </div>
@@ -396,52 +422,75 @@ const Product = () => {
               </div>
             </div>
           </div>
-
           <div className="row isotope-grid">
-            <div className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
-              {/* <!-- Block2 --> */}
-              <div className="block2">
-                <div className="block2-pic hov-img0">
-                  <img src="images/product-01.jpg" alt="IMG-PRODUCT" />
+            {Products.length ? (
+              Products.map((product) => (
+                <div
+                  key={product.objectID}
+                  className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
+                >
+                  <div className="block2">
+                    <div className="block2-pic hov-img0">
+                      {/* Hiển thị ảnh sản phẩm */}
+                      {product.images.length > 0 ? (
+                        <img
+                          src={`images/${product.images[0]}`}
+                          alt="IMG-PRODUCT"
+                        />
+                      ) : (
+                        <img src="images/product-01.jpg" alt="IMG-PRODUCT" />
+                      )}
+                      {/* Quick View */}
+                      <QuickViewProdDetail />
+                    </div>
 
-                  {/* Quick View */}
-                  <QuickViewProdDetail />
+                    <div className="block2-txt flex-w flex-t p-t-14">
+                      <div className="block2-txt-child1 flex-col-l">
+                        <Link
+                          to={`/product-detail/${product.id}`}
+                          className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
+                        >
+                          {product.name}
+                        </Link>
+
+                        <span className="stext-105 cl3">
+                          {`$${product.minPrice} ~ $${product.maxPrice}`}
+                        </span>
+                      </div>
+
+                      <div className="block2-txt-child2 flex-r p-t-3">
+                        <Link
+                          to="#"
+                          className="btn-addwish-b2 dis-block pos-relative js-addwish-b2"
+                        >
+                          <img
+                            className="icon-heart1 dis-block trans-04"
+                            src="images/icons/icon-heart-01.png"
+                            alt="ICON"
+                          />
+                          <img
+                            className="icon-heart2 dis-block trans-04 ab-t-l"
+                            src="images/icons/icon-heart-02.png"
+                            alt="ICON"
+                          />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="block2-txt flex-w flex-t p-t-14">
-                  <div className="block2-txt-child1 flex-col-l">
-                    <Link
-                      to="/product-detail"
-                      className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
-                    >
-                      Esprit Ruffle Shirt
-                    </Link>
-
-                    <span className="stext-105 cl3"> $16.64 </span>
-                  </div>
-
-                  <div className="block2-txt-child2 flex-r p-t-3">
-                    <Link
-                      href="#"
-                      className="btn-addwish-b2 dis-block pos-relative js-addwish-b2"
-                    >
-                      <img
-                        className="icon-heart1 dis-block trans-04"
-                        src="images/icons/icon-heart-01.png"
-                        alt="ICON"
-                      />
-                      <img
-                        className="icon-heart2 dis-block trans-04 ab-t-l"
-                        src="images/icons/icon-heart-02.png"
-                        alt="ICON"
-                      />
-                    </Link>
-                  </div>
+              ))
+            ) : (
+              <div className="d-flex justify-content-center mt-5 mb-5">
+                <div className=" pt-5 pb-5 opacity-50">
+                  <h3 className="display-6 fw-bold">{`Code: ${ErrorCode}`}</h3>
+                  <p className="fs-4 text-muted mt-3">
+                    {" "}
+                    Message: {ErrorMessage}
+                  </p>
                 </div>
               </div>
-            </div>
+            )}
           </div>
-
           {/* <!-- Load more --> */}
           <div className="flex-c-m flex-w w-full ">
             <Link
