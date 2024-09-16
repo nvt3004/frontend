@@ -3,16 +3,21 @@ package com.services;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.entities.AttributeOption;
+import com.entities.Category;
 import com.entities.Feedback;
 import com.entities.Image;
 import com.entities.Product;
 import com.entities.ProductCategory;
 import com.entities.ProductVersion;
+import com.repositories.AttributeOptionJPA;
+import com.repositories.CategoryJPA;
 import com.repositories.ProductJPA;
 import com.responsedto.ProductDTO;
 
@@ -20,6 +25,118 @@ import com.responsedto.ProductDTO;
 public class ProductInforService {
 	@Autowired
 	ProductJPA productJPA;
+	@Autowired
+	CategoryJPA categoryJPA;
+	@Autowired
+	AttributeOptionJPA attributeOptionJPA;
+
+	public List<ProductDTO> getListProductByCategoryId(int id) {
+		if (id == -1) {
+			return getALLProduct();
+		}
+		Optional<Category> category = categoryJPA.findById(id);
+
+		List<ProductDTO> productDTOs = new ArrayList<>();
+		if (category != null) {
+			List<ProductCategory> list = category.get().getProductCategories();
+			for (ProductCategory productCategory : list) {
+
+				ProductDTO productDTO = new ProductDTO();
+				productDTO.setId(String.valueOf(productCategory.getProduct().getProductId()));
+				productDTO.setName(productCategory.getProduct().getProductName());
+				BigDecimal minPrice = new BigDecimal("0.00");
+				BigDecimal maxPrice = new BigDecimal("0.00");
+				List<String> images = new ArrayList<>();
+				for (ProductVersion productVer : productCategory.getProduct().getProductVersions()) {
+
+					// Cập nhật minPrice và maxPrice
+					if (minPrice.equals(BigDecimal.ZERO) || productVer.getRetailPrice().compareTo(minPrice) < 0) {
+						minPrice = productVer.getRetailPrice();
+					}
+					if (productVer.getRetailPrice().compareTo(maxPrice) > 0) {
+						maxPrice = productVer.getRetailPrice();
+					}
+					// Xử lý danh sách hình ảnh
+					for (Image img : productVer.getImages()) {
+						images.add(img.getImageUrl());
+					}
+				}
+				productDTO.setMinPrice(minPrice);
+				productDTO.setMaxPrice(maxPrice);
+				productDTO.setImages(images);
+				// Thêm productDTO vào danh sách
+				productDTOs.add(productDTO);
+			}
+			return productDTOs;
+		}
+		return productDTOs;
+
+	}
+	public List<AttributeOption> getListByAttributeName(String attributeName) {
+		List<AttributeOption> attributeOptions = new ArrayList<>();
+		for (AttributeOption attOp : attributeOptionJPA.findAll()) {
+			if (attOp.getAttribute().getAttributeName().equalsIgnoreCase(attributeName)) {
+				attributeOptions.add(attOp);
+			}
+			attOp.setAttributeOptionsVersions(null);
+		}
+		return attributeOptions;
+	}
+
+	public List<AttributeOption> getListColor() {
+		return getListByAttributeName("color");
+	}
+
+	public List<AttributeOption> getListSize() {
+		return getListByAttributeName("size");
+	}
+
+	public List<Category> getListCategory() {
+		return categoryJPA.findAll();
+	}
+
+	public List<ProductDTO> getALLProduct() {
+		List<ProductDTO> productDTOs = new ArrayList<>();
+		try {
+			List<Product> products = productJPA.findAll();
+			if (products == null || products.isEmpty()) {
+				return productDTOs; // Trả về danh sách trống nếu không có sản phẩm
+			}
+			for (Product product : products) {
+				// Tạo đối tượng ProductDTO mới
+
+				ProductDTO productDTO = new ProductDTO();
+				productDTO.setId(String.valueOf(product.getProductId()));
+				productDTO.setName(product.getProductName());
+				BigDecimal minPrice = new BigDecimal("0.00");
+				BigDecimal maxPrice = new BigDecimal("0.00");
+				List<String> images = new ArrayList<>();
+				for (ProductVersion productVer : product.getProductVersions()) {
+
+					// Cập nhật minPrice và maxPrice
+					if (minPrice.equals(BigDecimal.ZERO) || productVer.getRetailPrice().compareTo(minPrice) < 0) {
+						minPrice = productVer.getRetailPrice();
+					}
+					if (productVer.getRetailPrice().compareTo(maxPrice) > 0) {
+						maxPrice = productVer.getRetailPrice();
+					}
+					// Xử lý danh sách hình ảnh
+					for (Image img : productVer.getImages()) {
+						images.add(img.getImageUrl());
+					}
+				}
+				productDTO.setMinPrice(minPrice);
+				productDTO.setMaxPrice(maxPrice);
+				productDTO.setImages(images);
+				// Thêm productDTO vào danh sách
+				productDTOs.add(productDTO);
+			}
+			return productDTOs;
+		} catch (Exception e) {
+			System.out.println("Error: " + e);
+			return productDTOs;
+		}
+	}
 
 	public List<ProductDTO> getALLInforProduct() {
 		List<ProductDTO> productDTOs = new ArrayList<>();
@@ -127,9 +244,8 @@ public class ProductInforService {
 			return productDTOs;
 		} catch (Exception e) {
 			System.out.println("Error: " + e);
-			return productDTOs; // Trả về danh sách trống nếu có lỗi
+			return productDTOs;
 		}
-		// Tiếp tục xử lý...
 	}
 
 }

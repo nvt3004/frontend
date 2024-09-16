@@ -37,14 +37,13 @@ public class Product implements Serializable {
 	private boolean status;
 
 	//bi-directional many-to-one association to Feedback
-	@OneToMany(mappedBy="product")
+	@OneToMany(fetch = FetchType.EAGER, mappedBy="product")
 	@JsonManagedReference
 	private List<Feedback> feedbacks;
 
 	//bi-directional many-to-one association to ProductCategory
-	@OneToMany(mappedBy="product") 
+	@OneToMany(fetch = FetchType.EAGER, mappedBy="product") 
 	@JsonManagedReference
-
 	private List<ProductCategory> productCategories;
 
 	//bi-directional many-to-one association to ProductSale
@@ -54,7 +53,7 @@ public class Product implements Serializable {
 	private List<ProductSale> productSales;
 
 	//bi-directional many-to-one association to ProductVersion
-	@OneToMany(mappedBy="product")
+	@OneToMany(fetch = FetchType.EAGER,mappedBy="product")
 	@JsonManagedReference
 
 	private List<ProductVersion> productVersions;

@@ -33,7 +33,7 @@ public class ProductVersion implements Serializable {
 	private String versionName;
 
 	//bi-directional many-to-one association to AttributeOptionsVersion
-	@OneToMany(mappedBy="productVersion")
+	@OneToMany(fetch = FetchType.EAGER,mappedBy="productVersion")
 	@JsonManagedReference
 
 	private List<AttributeOptionsVersion> attributeOptionsVersions;
@@ -45,7 +45,7 @@ public class ProductVersion implements Serializable {
 	private List<CartProduct> cartProducts;
 
 	//bi-directional many-to-one association to Image
-	@OneToMany(mappedBy="productVersion")
+	@OneToMany(fetch = FetchType.EAGER,mappedBy="productVersion")
 	@JsonManagedReference
 
 	private List<Image> images;

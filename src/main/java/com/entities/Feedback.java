@@ -35,27 +35,23 @@ public class Feedback implements Serializable {
 	//bi-directional many-to-one association to Product
 	@ManyToOne
 	@JoinColumn(name="product_id")
-	@JsonBackReference
-
+	@JsonBackReference()
 	private Product product;
 
 	//bi-directional many-to-one association to User
 	@ManyToOne
 	@JoinColumn(name="user_id")
 	@JsonBackReference
-
 	private User user;
 
 	//bi-directional many-to-one association to Image
 	@OneToMany(mappedBy="feedback")
 	@JsonManagedReference
-
 	private List<Image> images;
 
 	//bi-directional many-to-one association to Reply
 	@OneToMany(mappedBy="feedback")
 	@JsonManagedReference
-
 	private List<Reply> replies;
 
 	public Feedback() {
