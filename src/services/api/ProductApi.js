@@ -85,6 +85,29 @@ const getAllSize = async () => {
     }
   }
 };
+const filter = async (categoryId,minPrice, maxPrice, color, size, sortPrice) => {
+  try {
+    const response = await axiosInstance.get("/product/filtered", {
+      params: {
+        categoryId,
+        minPrice,
+        maxPrice,
+        color,
+        size,
+        sortPrice
+      }
+    });
+    return response; 
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    if (error.response && error.response.status === 404) {
+      console.warn("No products found");
+    } else {
+      console.error("An unexpected error occurred");
+    }
+  }
+};
+
 const productApi = {
   searchProduct,
   getAllCategory,
@@ -92,5 +115,6 @@ const productApi = {
   getAllProductByCategoryId,
   getAllColor,
   getAllSize,
+  filter
 };
 export default productApi;

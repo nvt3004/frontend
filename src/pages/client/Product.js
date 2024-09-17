@@ -6,17 +6,25 @@ import productApi from "../../services/api/ProductApi";
 
 const Product = () => {
   const [Categories, setCategories] = useState([]);
-  const [Colors, setColor] = useState([]);
-  const [Sizes, setSize] = useState([]);
+  const [Colors, setColors] = useState([]);
+  const [Sizes, setSizes] = useState([]);
   const [Products, setProducts] = useState([]);
   //
   const [searchTerm, setSearchTerm] = useState(""); // Từ khóa tìm kiếm của người dùng
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(""); // Từ khóa sau khi debounce
-
-  const [categoryId, setCategoryId] = useState(-1);
+  //
+  const [categoryId, setCategoryId] = useState(null);
+  const [minPrice, setMinPrice] = useState(null);
+  const [maxPrice, setMaxPrice] = useState(null);
+  const [color, setColor] = useState(null);
+  const [size, setSize] = useState(null);
+  const [sortPrice, setSortPrice] = useState("ASC");
+  const [up, setUp] = useState(false);
+  //
 
   const [ErrorCode, setErrorCode] = useState("404");
   const [ErrorMessage, setErrorMessage] = useState("No products found");
+
   useEffect(() => {
     const fetchCategorieAndColorAndSize = async () => {
       try {
@@ -27,38 +35,49 @@ const Product = () => {
       }
       try {
         const response = await productApi.getAllColor();
-        setColor(response.data);
+        setColors(response.data);
       } catch (error) {
-        console.error("Error fetching categories:", error.message);
+        console.error("Error fetching colors:", error.message);
       }
       try {
         const response = await productApi.getAllSize();
-        setSize(response.data);
+        setSizes(response.data);
       } catch (error) {
-        console.error("Error fetching categories:", error.message);
+        console.error("Error fetching sizes:", error.message);
       }
-      console.log(Colors);
     };
 
     fetchCategorieAndColorAndSize();
   }, []);
+
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchFilter = async () => {
       if (!searchTerm) {
         try {
-          const response = await productApi.getAllProductByCategoryId(
-            categoryId
+          const response = await productApi.filter(
+            categoryId,
+            minPrice,
+            maxPrice,
+            color,
+            size,
+            sortPrice
           );
-          setProducts(response.data);
+          if (response.data || !response.data == null) {
+            setProducts(response.data);
+          } else {
+            setProducts([]);
+          }
         } catch (error) {
-          console.error("Error fetching categories:", error.message);
+          console.error("Error fetching filter:", error.message);
         }
       } else {
         setProducts([]);
       }
+      setUp(false);
     };
-    fetchProduct();
-  }, [categoryId, searchTerm]);
+
+    fetchFilter();
+  }, [up, size, color, sortPrice, searchTerm, categoryId]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -171,57 +190,81 @@ const Product = () => {
 
                           <ul className="list-unstyled">
                             <li className="p-b-6">
-                              <Link
-                                href="#"
+                              <span
                                 className="text-decoration-none filter-link stext-106 trans-04 filter-link-active"
+                                onClick={() => {
+                                  setMinPrice(null);
+                                  setMaxPrice(null);
+                                  setUp(true);
+                                }}
                               >
                                 All
-                              </Link>
+                              </span>
                             </li>
 
                             <li className="p-b-6">
-                              <Link
-                                href="#"
+                              <span
                                 className="text-decoration-none filter-link stext-106 trans-04"
+                                onClick={() => {
+                                  setMinPrice(0);
+                                  setMaxPrice(200000);
+                                  setUp(true);
+                                }}
                               >
                                 0.000 VND - 200.000 VND
-                              </Link>
+                              </span>
                             </li>
 
                             <li className="p-b-6">
-                              <Link
-                                href="#"
+                              <span
                                 className="text-decoration-none filter-link stext-106 trans-04"
+                                onClick={() => {
+                                  setMinPrice(200000);
+                                  setMaxPrice(400000);
+                                  setUp(true);
+                                }}
                               >
                                 200.000 VND - 400.000 VND
-                              </Link>
+                              </span>
                             </li>
 
                             <li className="p-b-6">
-                              <Link
-                                href="#"
+                              <span
                                 className="text-decoration-none filter-link stext-106 trans-04"
+                                onClick={() => {
+                                  setMinPrice(400000);
+                                  setMaxPrice(600000);
+                                  setUp(true);
+                                }}
                               >
                                 400.000 VND - 600.000 VND
-                              </Link>
+                              </span>
                             </li>
 
                             <li className="p-b-6">
-                              <Link
-                                href="#"
+                              <span
                                 className="text-decoration-none filter-link stext-106 trans-04"
+                                onClick={() => {
+                                  setMinPrice(600000);
+                                  setMaxPrice(800000);
+                                  setUp(true);
+                                }}
                               >
                                 600.000 VND - 800.000 VND
-                              </Link>
+                              </span>
                             </li>
 
                             <li className="p-b-6">
-                              <Link
-                                href="#"
+                              <span
                                 className="text-decoration-none filter-link stext-106 trans-04"
+                                onClick={() => {
+                                  setMinPrice(1000000);
+                                  setMaxPrice(null);
+                                  setUp(true);
+                                }}
                               >
                                 1.000.000 VNĐ +
-                              </Link>
+                              </span>
                             </li>
                           </ul>
                         </div>
@@ -230,6 +273,23 @@ const Product = () => {
                           <div className="mtext-102 cl2 p-b-15">Color</div>
 
                           <ul className="list-unstyled">
+                            <li className="p-b-6">
+                              <span
+                                className="fs-15 lh-12 m-r-6"
+                                style={{ color: "#222" }}
+                              >
+                                <i className="zmdi zmdi-circle"></i>
+                              </span>
+
+                              <span
+                                onClick={() => {
+                                  setColor(null);
+                                }}
+                                className="filter-link-active text-decoration-none filter-link stext-106 trans-04"
+                              >
+                                All
+                              </span>
+                            </li>
                             {Colors.map((color) => (
                               <li key={color.id} className="p-b-6">
                                 <span
@@ -239,12 +299,14 @@ const Product = () => {
                                   <i className="zmdi zmdi-circle"></i>
                                 </span>
 
-                                <Link
-                                  href="#"
+                                <span
                                   className="text-decoration-none filter-link stext-106 trans-04"
+                                  onClick={() => {
+                                    setColor(color.id);
+                                  }}
                                 >
                                   {color.attributeValue}
-                                </Link>
+                                </span>
                               </li>
                             ))}
                           </ul>
@@ -254,14 +316,24 @@ const Product = () => {
                           <div className="mtext-102 cl2 p-b-15">Sizes</div>
 
                           <div className="flex-w p-t-4 m-r--5">
+                            <span
+                              className=" text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 rounded-0"
+                              onClick={() => {
+                                setSize(null);
+                              }}
+                            >
+                              All
+                            </span>
                             {Sizes.map((size) => (
-                              <Link
+                              <span
                                 key={size.id}
-                                href="#"
-                                className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5"
+                                className="text-decoration-none flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 rounded-0"
+                                onClick={() => {
+                                  setSize(size.id);
+                                }}
                               >
                                 {size.attributeValue}
-                              </Link>
+                              </span>
                             ))}
                           </div>
                         </div>
@@ -270,57 +342,25 @@ const Product = () => {
 
                           <ul className="list-unstyled">
                             <li className="p-b-6">
-                              <Link
-                                href="#"
+                              <span
                                 className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                Default
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                Popularity
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
-                              >
-                                Average rating
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04 filter-link-active"
-                              >
-                                Newness
-                              </Link>
-                            </li>
-
-                            <li className="p-b-6">
-                              <Link
-                                href="#"
-                                className="text-decoration-none filter-link stext-106 trans-04"
+                                onClick={() => {
+                                  setSortPrice("ASC");
+                                }}
                               >
                                 Price: Low to High
-                              </Link>
+                              </span>
                             </li>
 
                             <li className="p-b-6">
-                              <Link
-                                href="#"
+                              <span
                                 className="text-decoration-none filter-link stext-106 trans-04"
+                                onClick={() => {
+                                  setSortPrice("DESC");
+                                }}
                               >
                                 Price: High to Low
-                              </Link>
+                              </span>
                             </li>
                           </ul>
                         </div>
@@ -362,7 +402,7 @@ const Product = () => {
             </div>
           </div>
           <div className="row isotope-grid">
-            {Products.length ? (
+            {!Products || Products.length ? (
               Products.map((product) => (
                 <div
                   key={product.objectID}
@@ -370,15 +410,7 @@ const Product = () => {
                 >
                   <div className="block2">
                     <div className="block2-pic hov-img0">
-                      {/* Hiển thị ảnh sản phẩm */}
-                      {product.images.length > 0 ? (
-                        <img
-                          src={`images/${product.images[0]}`}
-                          alt="IMG-PRODUCT"
-                        />
-                      ) : (
-                        <img src="images/product-04.jpg" alt="IMG-PRODUCT" />
-                      )}
+                      <img src={product.img} alt="IMG-PRODUCT" />
                       {/* Quick View */}
                       <QuickViewProdDetail />
                     </div>
@@ -423,7 +455,6 @@ const Product = () => {
                 <div className=" pt-5 pb-5 opacity-50">
                   <h3 className="display-6 fw-bold">{`Code: ${ErrorCode}`}</h3>
                   <p className="fs-4 text-muted mt-3">
-                    {" "}
                     Message: {ErrorMessage}
                   </p>
                 </div>
