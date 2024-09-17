@@ -1,6 +1,10 @@
 package com.services;
 
 import java.math.BigDecimal;
+import java.sql.CallableStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +23,7 @@ import com.entities.ProductVersion;
 import com.repositories.AttributeOptionJPA;
 import com.repositories.CategoryJPA;
 import com.repositories.ProductJPA;
+import com.repositories.ProductRepository;
 import com.responsedto.ProductDTO;
 
 @Service
@@ -29,6 +34,32 @@ public class ProductInforService {
 	CategoryJPA categoryJPA;
 	@Autowired
 	AttributeOptionJPA attributeOptionJPA;
+	@Autowired
+	private ProductRepository productRepository;
+
+	public List<ProductDTO> getFilteredProducts(Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice,
+			Integer color, Integer size, String sortPrice) {
+		if ((categoryId == null) || (categoryId == 0 || categoryId < 0)) {
+			categoryId = null;
+		}
+		if ((minPrice == null) || (minPrice != null && minPrice.compareTo(BigDecimal.ZERO) == 0)) {
+			minPrice = null;
+		}
+		if ((maxPrice == null) || (maxPrice != null && maxPrice.compareTo(BigDecimal.ZERO) == 0)) {
+			maxPrice = null;
+		}
+		if ((color == null) || (color == 0 || color < 0)) {
+			color = null;
+		}
+		if ((size == null) || (size == 0 || size < 0)) {
+			size = null;
+		}
+
+		if (sortPrice == null || sortPrice.isEmpty()) {
+			sortPrice = "ASC";
+		}
+		return productRepository.callGetFilteredProducts(categoryId, minPrice, maxPrice, color, size, sortPrice);
+	}
 
 	public List<ProductDTO> getListProductByCategoryId(int id) {
 		if (id == -1) {
@@ -44,6 +75,7 @@ public class ProductInforService {
 				ProductDTO productDTO = new ProductDTO();
 				productDTO.setId(String.valueOf(productCategory.getProduct().getProductId()));
 				productDTO.setName(productCategory.getProduct().getProductName());
+				productDTO.setImg(productCategory.getProduct().getProductImg());
 				BigDecimal minPrice = new BigDecimal("0.00");
 				BigDecimal maxPrice = new BigDecimal("0.00");
 				List<String> images = new ArrayList<>();
@@ -72,6 +104,7 @@ public class ProductInforService {
 		return productDTOs;
 
 	}
+
 	public List<AttributeOption> getListByAttributeName(String attributeName) {
 		List<AttributeOption> attributeOptions = new ArrayList<>();
 		for (AttributeOption attOp : attributeOptionJPA.findAll()) {
@@ -108,6 +141,7 @@ public class ProductInforService {
 				ProductDTO productDTO = new ProductDTO();
 				productDTO.setId(String.valueOf(product.getProductId()));
 				productDTO.setName(product.getProductName());
+				productDTO.setImg(product.getProductImg());
 				BigDecimal minPrice = new BigDecimal("0.00");
 				BigDecimal maxPrice = new BigDecimal("0.00");
 				List<String> images = new ArrayList<>();
@@ -151,6 +185,7 @@ public class ProductInforService {
 				productDTO.setObjectID(String.valueOf(product.getProductId()));
 				productDTO.setId(String.valueOf(product.getProductId()));
 				productDTO.setName(product.getProductName());
+				productDTO.setImg(product.getProductImg());
 				productDTO.setDescription(product.getDescription());
 
 				// Xử lý rating từ feedbacks

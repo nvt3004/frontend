@@ -13,6 +13,7 @@ public class ProductDTO {
 	private String objectID; // Định danh duy nhất cho Algolia
 	private String id;
 	private String name;
+	private String img;
 	private String description;
 	private double rating;
 	private List<String> categories;

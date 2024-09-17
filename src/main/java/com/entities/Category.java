@@ -25,7 +25,7 @@ public class Category implements Serializable {
 	private String categoryName;
 
 	//bi-directional many-to-one association to ProductCategory
-	@OneToMany(mappedBy="category")
+	@OneToMany(fetch = FetchType.EAGER,mappedBy="category")
 	@JsonManagedReference
 
 	private List<ProductCategory> productCategories;
