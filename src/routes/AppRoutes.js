@@ -19,13 +19,19 @@ import SupplierManagement from '../components/admin/parts/SuppliersManagement';
 import AddNewSupplier from '../components/admin/parts/AddNewSupplier';
 import WarehouseManagement from '../components/admin/parts/WarehouseManagement';
 import AddNewWarehouse from '../components/admin/parts/AddNewWarehouse';
+import WarehouseStockIn from '../components/admin/parts/WarehouseStockIn';
 import PermissionManagement from '../components/admin/parts/PermissionManagement';
 import NewPermission from '../components/admin/parts/NewPermission';
 import FeedbackManagement from '../components/admin/parts/FeedbackManagement';
 
+// Admin new pages
+import UserTable from '../components/admin/parts/NewParts/body/UserManagement/UserTable';
+import SuppliersTable from '../components/admin/parts/NewParts/body/SuppliersManagement/SuppliersTable';
+
 // Default Pages
 import DefaultClientPage from '../pages/client/index';
 import DefaultAdminPage from '../pages/admin/index';
+
 
 const router = createBrowserRouter([
   {
@@ -48,7 +54,7 @@ const router = createBrowserRouter([
         path: 'users',
         children: [
           { path: 'add', element: <AddNewUser /> },
-          { path: 'manage', element: <ManageUsers /> },
+          { path: 'manage', element: <UserTable /> },
         ],
       },
       {
@@ -60,7 +66,7 @@ const router = createBrowserRouter([
       {
         path: 'suppliers',
         children: [
-          { path: 'manage', element: <SupplierManagement/>},
+          { path: 'manage', element: <SuppliersTable/>},
           { path: 'add', element: <AddNewSupplier /> },
         ],
       },
@@ -68,7 +74,7 @@ const router = createBrowserRouter([
         path: 'warehouse',
         children: [
           { path: 'manage', element: <WarehouseManagement/>},
-          { path: 'add', element: <AddNewWarehouse /> },
+          { path: 'stock-in', element: <WarehouseStockIn /> },
         ],
       },
       {

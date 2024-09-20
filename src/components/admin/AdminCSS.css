@@ -1,0 +1,116 @@
+.scroll ::-webkit-scrollbar {
+    width: 5px;
+}
+
+.scroll ::-webkit-scrollbar-track {
+    background-color: white;
+}
+
+.scroll ::-webkit-scrollbar-thumb {
+    background-color: gray;
+}
+
+/* --- --- --- */
+::-webkit-scrollbar {
+    width: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: white;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: gray;
+}
+
+/* --- --- --- */
+.font-13 {
+    font-size: 13px;
+}
+
+.font-14 {
+    font-size: 14px;
+}
+.font-16{
+    font-size: 16px;
+}
+
+/* --- --- --- */
+.text-purple {
+    color: #e331ff;
+}
+
+/* --- --- --- */
+.bg-gray-1 {
+    background-color: #dcdce1;
+}
+
+/* --- --- --- */
+.custom-radius {
+    border-radius: 12px 0 12px 0;
+}
+
+.custom-radius-top-bottom {
+    border-radius: 12px 0 12px 0;
+}
+
+.custom-hover{
+    transition: transform 0.3s ease-in-out;
+}
+.custom-hover:hover{
+    transform: scale(1.05); 
+}
+
+/* --- --- --- */
+.w-30 {
+    width: 30%;
+}
+
+.w-15 {
+    width: 15%;
+}
+
+/* --- --- --- */
+.dropdown-toggle::after {
+    display: none;
+}
+
+.custom-pagination {
+    background-color: var(--bs-body-bg);
+    /* Nếu mày dùng bg-body-secondary */
+}
+
+.custom-pagination-item {
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-body-bg);
+    /* Để border cùng màu luôn */
+}
+.page-item a{
+    background-color: var(--bs-gray-200);
+    color: black;
+    border: none;
+}
+
+/* --- --- --- */
+.custom-table td{
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* --- --- --- */
+.eye-show:hover {
+    opacity: 0.5;
+}
+
+/* --- --- --- */
+.swal2-confirm{
+    border-radius: 12px 0 12px 0;
+}
+.swal2-cancel{
+    border-radius: 12px 0 12px 0;
+}
+
+/* --- --- --- */
+.accordion-header button{
+    padding: 6px 12px !important; 
+}
