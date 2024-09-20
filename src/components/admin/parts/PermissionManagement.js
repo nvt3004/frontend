@@ -149,7 +149,7 @@ const PermissionManagement = () => {
                 </tbody>
             </Table>
 
-            <Pagination className='justify-content-center'>
+            <Pagination className='justify-content-start'>
                 <Pagination.First onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
                 <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
                 {[...Array(totalPagesAssigns).keys()].map(number => (
