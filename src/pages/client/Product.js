@@ -19,11 +19,11 @@ const Product = () => {
   const [color, setColor] = useState(null);
   const [size, setSize] = useState(null);
   const [sortPrice, setSortPrice] = useState("ASC");
-  const [up, setUp] = useState(false);
   //
-
-  const [ErrorCode, setErrorCode] = useState("404");
+  const [ErrorCode, setErrorCode] = useState("204");
   const [ErrorMessage, setErrorMessage] = useState("No products found");
+  //
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchCategorieAndColorAndSize = async () => {
@@ -52,6 +52,7 @@ const Product = () => {
 
   useEffect(() => {
     const fetchFilter = async () => {
+      setLoading(true);
       if (!searchTerm) {
         try {
           const response = await productApi.filter(
@@ -69,15 +70,16 @@ const Product = () => {
           }
         } catch (error) {
           console.error("Error fetching filter:", error.message);
+        } finally {
+          setLoading(false);
         }
       } else {
         setProducts([]);
       }
-      setUp(false);
     };
 
     fetchFilter();
-  }, [up, size, color, sortPrice, searchTerm, categoryId]);
+  }, [minPrice, maxPrice, size, color, sortPrice, searchTerm, categoryId]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -94,6 +96,7 @@ const Product = () => {
     }
   }, [debouncedSearchTerm]);
   const handleSearch = async (keywork) => {
+    setLoading(true);
     try {
       const response = await productApi.searchProduct(keywork);
       if (response && response.data) {
@@ -105,6 +108,8 @@ const Product = () => {
       }
     } catch (error) {
       console.log("Handle search error:" + error);
+    } finally {
+      setLoading(false);
     }
   };
   const handleChangeCategory = async (id) => {
@@ -195,7 +200,6 @@ const Product = () => {
                                 onClick={() => {
                                   setMinPrice(null);
                                   setMaxPrice(null);
-                                  setUp(true);
                                 }}
                               >
                                 All
@@ -208,7 +212,6 @@ const Product = () => {
                                 onClick={() => {
                                   setMinPrice(0);
                                   setMaxPrice(200000);
-                                  setUp(true);
                                 }}
                               >
                                 0.000 VND - 200.000 VND
@@ -221,7 +224,6 @@ const Product = () => {
                                 onClick={() => {
                                   setMinPrice(200000);
                                   setMaxPrice(400000);
-                                  setUp(true);
                                 }}
                               >
                                 200.000 VND - 400.000 VND
@@ -234,7 +236,6 @@ const Product = () => {
                                 onClick={() => {
                                   setMinPrice(400000);
                                   setMaxPrice(600000);
-                                  setUp(true);
                                 }}
                               >
                                 400.000 VND - 600.000 VND
@@ -247,7 +248,6 @@ const Product = () => {
                                 onClick={() => {
                                   setMinPrice(600000);
                                   setMaxPrice(800000);
-                                  setUp(true);
                                 }}
                               >
                                 600.000 VND - 800.000 VND
@@ -260,7 +260,6 @@ const Product = () => {
                                 onClick={() => {
                                   setMinPrice(1000000);
                                   setMaxPrice(null);
-                                  setUp(true);
                                 }}
                               >
                                 1.000.000 VNĐ +
@@ -451,13 +450,23 @@ const Product = () => {
                 </div>
               ))
             ) : (
-              <div className="d-flex justify-content-center mt-5 mb-5">
-                <div className=" pt-5 pb-5 opacity-50">
-                  <h3 className="display-6 fw-bold">{`Code: ${ErrorCode}`}</h3>
-                  <p className="fs-4 text-muted mt-3">
-                    Message: {ErrorMessage}
-                  </p>
-                </div>
+              <div>
+                {loading ? (
+                  <div class="d-flex justify-content-center mt-5 mb-5">
+                    <div class="spinner-border" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="d-flex justify-content-center mt-5 mb-5">
+                    <div className=" pt-5 pb-5 opacity-50">
+                      <h3 className="display-6 fw-bold">{`Code: ${ErrorCode}`}</h3>
+                      <p className="fs-4 text-muted mt-3">
+                        Message: {ErrorMessage}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
