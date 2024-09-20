@@ -176,6 +176,14 @@ const ShopingCart = () => {
                           </td>
                           <td>
                             <h6>{product.name}</h6>
+                            <button
+                              type="button"
+                              className="  stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
+                              data-bs-toggle="modal"
+                              data-bs-target="#exampleModal"
+                            >
+                              Black - M (<i className="zmdi zmdi-edit"></i>)
+                            </button>
                           </td>
                           <td>${product.price}</td>
                           <td>
