@@ -48,7 +48,7 @@ const SupplierModal = ({supplier, show, handleClose, isNew}) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <CustomButton btnBG={'danger'} btnName={'Cancel'} handleClick={handleCancel}/>
-                    <CustomButton btnBG={isNew ? 'success' : 'warning'}
+                    <CustomButton btnBG={isNew ? 'success' : isEdit ? 'success' : 'warning'}
                         btnName={isNew ? 'Create' : isEdit ? 'Save changed' : 'Change Infomations'}
                         handleClick={!isEdit ? handleSetEdit : ''} textColor={'text-white'}/>
                 </Modal.Footer>

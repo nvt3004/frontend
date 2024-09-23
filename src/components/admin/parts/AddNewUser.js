@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 import Swal from 'sweetalert2';
-import './ThoLHCSS.css';
 import BootstrapToast from './Toast';
 import PermissionModal from './PermissionModal';
 
