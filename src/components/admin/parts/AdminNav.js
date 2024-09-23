@@ -26,7 +26,7 @@ const AdminNav = () => {
         </div>
 
         <button
-          className="list-group-item list-group-item-action"
+          className="list-group-item list-group-item-action bg-danger"
           data-bs-toggle="collapse"
           data-bs-target="#productManagementCollapse"
           aria-expanded="false"
@@ -84,8 +84,8 @@ const AdminNav = () => {
           Warehouse Management
         </button>
         <div className="collapse" id="warehouseManagementCollapse">
-          <StyledLink to="/admin/warehouse/add" className="list-group-item text-center bg-secondary-subtle">
-            New Warehouses
+          <StyledLink to="/admin/warehouse/stock-in" className="list-group-item text-center bg-secondary-subtle">
+            Stock in
           </StyledLink>
           <StyledLink to="/admin/warehouse/manage" className="list-group-item text-center bg-secondary-subtle">
             Manage Warehouses
@@ -109,7 +109,7 @@ const AdminNav = () => {
           </StyledLink>
         </div>
         <button
-          className="list-group-item list-group-item-action bg-white"
+          className="list-group-item list-group-item-action bg-danger"
           data-bs-toggle="collapse"
           data-bs-target="#feedbacksManagementCollapse"
           aria-expanded="false"

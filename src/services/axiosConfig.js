@@ -22,19 +22,43 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
-    return Promise.reject(error);
+    // Xử lý lỗi yêu cầu (request)
+    console.error("Error in request:", error);
+    return Promise.reject(error); // Tiếp tục trả về lỗi
   }
 );
 
 axiosInstance.interceptors.response.use(
   (response) => {
-   if(response && response.data){
-    return response;
-   }
-   return response;
+    // Kiểm tra xem response có dữ liệu không, nếu có thì trả về
+    if (response && response.data) {
+      return response.data; // Trả về dữ liệu trực tiếp
+    }
+    return response; // Nếu không có dữ liệu, trả về toàn bộ response
   },
   (error) => {
-    return Promise.reject(error);
+    // Xử lý lỗi phản hồi (response)
+    console.error("Error in response:", error);  
+    // Bạn có thể kiểm tra các mã trạng thái lỗi để thực hiện hành động cụ thể
+    if (error.response) {
+      // Lỗi từ phía server (status code khác 2xx)
+      if (error.response.status === 401) {
+        // Ví dụ: Xử lý khi user chưa đăng nhập hoặc token hết hạn
+        console.warn("Unauthorized - redirecting to login");
+        // Redirect to login page
+        window.location.href = "/auth/login";
+      } else if (error.response.status === 500) {
+        // Xử lý lỗi server
+        console.error("Server error");
+      }
+    } else if (error.request) {
+      // Lỗi xảy ra khi không nhận được phản hồi từ server
+      console.error("No response from server:", error.request);
+    } else {
+      // Các lỗi khác
+      console.error("Error in setting up request:", error.message);
+    }
+    return Promise.reject(error); // Trả về lỗi để tiếp tục xử lý ở nơi gọi API
   }
 );
 

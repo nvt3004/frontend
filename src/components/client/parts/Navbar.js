@@ -372,7 +372,7 @@ const Navbar = () => {
                 id="nav-home"
                 role="tabpanel"
                 aria-labelledby="nav-home-tab"
-                tabindex="0"
+                tabIndex="0"
               >
                 <ul className="main-menu-m m-0">
                   <li>
@@ -421,7 +421,7 @@ const Navbar = () => {
                 id="nav-profile"
                 role="tabpanel"
                 aria-labelledby="nav-profile-tab"
-                tabindex="0"
+                tabIndex="0"
               >
                 <ul className="main-menu-m m-0">
                   <li>
