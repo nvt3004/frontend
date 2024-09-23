@@ -56,9 +56,9 @@ const getTopProducts = async () => {
     const response = await axiosInstance.get("/product/getTopProducts");
     return response;
   } catch (error) {
-    console.error("Error fetching Sizes:", error);
+    console.error("Error fetching Products:", error);
     if (error.response && error.response.status === 404) {
-      console.warn("No Sizes found");
+      console.warn("No Products found");
     } else {
       console.error("An unexpected error occurred");
     }
@@ -69,9 +69,9 @@ const getProductDetail = async (id) => {
     const response = await axiosInstance.get(`/home/product/${id}`);
     return response;
   } catch (error) {
-    console.error("Error fetching Sizes:", error);
+    console.error("Error fetching Products:", error);
     if (error.response && error.response.status === 404) {
-      console.warn("No Sizes found");
+      console.warn("No Products found");
     } else {
       console.error("An unexpected error occurred");
     }

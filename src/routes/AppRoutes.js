@@ -126,7 +126,7 @@ const router = createBrowserRouter([
 ]);
 
 function AppRoutes() {
-  Cookies.set('access_token', 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0eWxtcGMwNjIwOSIsImlhdCI6MTcyNzAyNzY4MCwiZXhwIjoxNzI3MTE0MDgwfQ.x2yVQvfZPjho2cTPBTx4vZT64oqv8QtzfR3CRHzqSPU');
+  Cookies.set('access_token', 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGFpbnZwYzA2MTU3MTFAZnB0LmVkdS52biIsInB1cnBvc2UiOiJsb2dpbiIsImlhdCI6MTcyNzA5Njk3OSwiZXhwIjoxNzI3MDk4Nzc5fQ.Sh4F3ABdo-LywelyqULh1tgzXbh_ikx2mzyLznroTz8');
   return <RouterProvider router={router} />;
 }
 

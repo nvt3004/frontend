@@ -25,7 +25,7 @@ const Product = () => {
   const getProductDetail = async (id) => {
     try {
       const response = await productApi.getProductDetail(id);
-      setProductDetail(response.data);
+      setProductDetail(response.data.data);
     } catch (error) {
       console.error("Error fetching product:", error.message);
     }
@@ -38,7 +38,7 @@ const Product = () => {
     const fetchCategorieAndColorAndSize = async () => {
       try {
         const response = await productApi.getFilterAttribute();
-        setFiltertAttribute(response.data);
+        setFiltertAttribute(response.data.data);
       } catch (error) {
         console.error("Error fetching categories:", error.message);
       }
@@ -61,7 +61,7 @@ const Product = () => {
             sortPrice
           );
           if (response.data || !response.data == null) {
-            setProducts(response.data);
+            setProducts(response.data.data);
           } else {
             setProducts([]);
           }
@@ -97,7 +97,7 @@ const Product = () => {
     try {
       const response = await productApi.searchProduct(keywork);
       if (response && response.data) {
-        setProducts(response.data);
+        setProducts(response.data.data);
       } else {
         setProducts([]);
         setErrorCode(response.code);

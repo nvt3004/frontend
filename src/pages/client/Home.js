@@ -30,7 +30,8 @@ const Home = () => {
     const fetchTopProduct = async () => {
       try {
         const response = await productApi.getTopProducts();
-        setProducts(response.data);
+        console.log('édaffffffffffffffffff',response)
+        setProducts(response.data.data);
       } catch (error) {
         console.error("Error fetching products:", error.message);
       }
@@ -41,7 +42,7 @@ const Home = () => {
   const getProductDetail = async (id) => {
     try {
       const response = await productApi.getProductDetail(id);
-      setProductDetail(response.data);
+      setProductDetail(response.data.data);
     } catch (error) {
       console.error("Error fetching product:", error.message);
     }
