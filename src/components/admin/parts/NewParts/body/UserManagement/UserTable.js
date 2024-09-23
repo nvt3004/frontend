@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
 import { FaEye, FaFileExport, FaPlus, FaSearch } from 'react-icons/fa';
 import users from './data';
@@ -9,6 +9,8 @@ import { CiSquareRemove } from "react-icons/ci";
 import { IoPersonRemoveSharp } from 'react-icons/io5';
 import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
+import DoRequest from '../../../../axiosRequest/doRequest';
+import CustomButton from '../../component/CustomButton';
 
 const UserTable = () => {
     let active = 2;
@@ -39,6 +41,34 @@ const UserTable = () => {
         setSelectedUser(null);
     }
 
+
+
+    // const [users, setUsers] = useState([]);
+
+    // const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aG9saHBjMDYyOTdAZnB0LmVkdS52biIsInB1cnBvc2UiOiJsb2dpbiIsImlhdCI6MTcyNzA4ODY2MiwiZXhwIjoxNzI3MDkwNDYyfQ.P5YnTleoMLwOzmpR6NlOi5OwetJiKX787v3cqyCwkP4';
+    // const getUserApi = () => {
+    //     const getUser = DoRequest({ token: token }).get('/api/test/user/all')
+    //         .then((response) => {
+    //             setUsers(response?.data);
+    //         });
+    //     return getUser;
+    // }
+    // const handleGetUser = () => {
+    //     toast.promise(
+    //         getUserApi,
+    //         {
+    //             pending: 'Getting data . . .',
+    //             success: 'Get data completed !!',
+    //             error: 'Cannot get data. Please, check the staement !!'
+    //         },
+    //         {
+    //             position: 'top-right',
+    //             autoClose: 3000,
+    //             closeOnClick: true,
+    //         }
+    //     );
+    // }
+
     const handleRemoveUser = (user) => {
         Swal.fire({
             title: 'Confirm to remove',
@@ -50,20 +80,26 @@ const UserTable = () => {
         }).then((isConfirm) => {
             if (isConfirm.isConfirmed) {
 
-                const doRemoveAPI = () => {}
-                
+                // const doRemoveAPI = () => {
+                //     const removeUser = DoRequest({ token: token }).delete(`/api/test/user/delete/${user?.userId}`)
+                //         .then(() => {
+                //             handleGetUser();
+                //         });
+                //     return removeUser;
+                // }
+
                 // toast.promise(
-                //     doRemoveAPI(), {
-                //         pending: 'Removing...',
-                //         success: `${user?.fullname} has been removed !!`,
-                //         error: `There's something wrong...`
-                //     }, {
-                //         position: 'top-right',
-                //         autoClose: 3000,
-                //         closeOnClick: true,
-                //     }
+                //     doRemoveAPI, {
+                //     pending: 'Removing...',
+                //     success: `${user?.fullName} has been removed !!`,
+                //     error: `There's something wrong...`
+                // }, {
+                //     position: 'top-right',
+                //     autoClose: 3000,
+                //     closeOnClick: true,
+                // }
                 // )
-                toast.success(`${user?.fullname} has been removed !!`, {
+                toast.success(`${user?.fullName} has been removed !!`, {
                     position: 'top-right',
                     autoClose: 3000,
                     closeOnClick: true,
@@ -71,12 +107,13 @@ const UserTable = () => {
             }
         });
     }
+
     return (
         <div className='font-14'>
             <div className='bg-body-tertiary d-flex align-items-center' style={{ height: "50px" }}>
                 <div className='container d-flex justify-content-between align-items-center'>
-                    <h4 className='m-0 col-1 d-flex align-items-center'><HiMiniUserGroup />&ensp;Users</h4>
-                    <div className='col-11 d-flex justify-content-around'>
+                    <h4 className='m-0 col-2 d-flex align-items-center'><HiMiniUserGroup />&ensp;Users</h4>
+                    <div className='col-10 d-flex justify-content-around'>
                         <InputGroup className='w-30'>
                             <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
                             <Form.Control className='custom-radius' placeholder='Search users . . .' />
@@ -88,6 +125,7 @@ const UserTable = () => {
                         </Form.Select>
                         <Button variant='secondary' className='font-14 custom-radius custom-hover'><FaFileExport /> {` Export`}</Button>
                         <Button className='font-14 custom-radius custom-hover' onClick={() => handleShowModal()}><FaPlus />{` Add new user`}</Button>
+                        {/* <CustomButton btnBG={'primary'} btnName={'Load data'} handleClick={handleGetUser} /> */}
                     </div>
                 </div>
             </div>
@@ -114,7 +152,7 @@ const UserTable = () => {
                                     <img src={`${process.env.PUBLIC_URL}/images/DefaultAvatar.png`} alt='staff avatar' style={{ height: "50px", width: "auto" }} />
                                     {` ${item?.username}`}
                                 </td>
-                                <td>{item?.fullname}</td>
+                                <td>{item?.fullName}</td>
                                 <td>{item?.birthday}</td>
                                 <td>
                                     {item?.gender ? (<><IoIosMale className='text-primary fs-5' /> &ensp;{`Male`}</>)
@@ -145,7 +183,7 @@ const UserTable = () => {
             </div>
             <div>
                 <UserModal show={showModal} handleClose={handleCloseModal} user={selecteddUser} isNew={isNew} />
-                <ToastContainer/>
+                <ToastContainer />
             </div>
         </div>
     );

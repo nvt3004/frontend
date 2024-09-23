@@ -41,7 +41,6 @@ import PaymentCancel from '../pages/client/PaymentCancel';
 import UserTable from '../components/admin/parts/NewParts/body/UserManagement/UserTable';
 import SuppliersTable from '../components/admin/parts/NewParts/body/SuppliersManagement/SuppliersTable';
 
-
 const router = createBrowserRouter([
   {
     path: '/',

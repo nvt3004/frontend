@@ -80,7 +80,16 @@ const UserModal = ({ user, show, handleClose, isNew }) => {
                                     <div>
                                         <Form.Group className='mt-1'>
                                             <Form.Label>Fullname</Form.Label>
-                                            <Form.Control type='text' placeholder='Fullname . . .' defaultValue={user?.fullname} onChange={handleChaneValue} />
+                                            <Form.Control type='text' placeholder='Fullname . . .' defaultValue={user?.fullname} onKeyDown={(e) => {
+                                                if (isEdit === false && isNew === false) {
+                                                    e.preventDefault();
+                                                }
+                                            }}
+                                                onPaste={(e) => {
+                                                    if (isEdit === false && isNew === false) {
+                                                        e.preventDefault();
+                                                    }
+                                                }} />
                                         </Form.Group>
                                         <Form.Group className='mt-1'>
                                             <Form.Label>Birthday</Form.Label>
@@ -102,7 +111,7 @@ const UserModal = ({ user, show, handleClose, isNew }) => {
                                     <div>
                                         <Form.Group className='mt-1'>
                                             <Form.Label>Username</Form.Label>
-                                            <Form.Control type='text' placeholder='Username . . .' />
+                                            <Form.Control type='text' placeholder='Username . . .' defaultValue={user?.username}/>
                                         </Form.Group>
                                         <Form.Group className='mt-1'>
                                             <Form.Label>Email</Form.Label>
@@ -169,7 +178,7 @@ const UserModal = ({ user, show, handleClose, isNew }) => {
 
                             : <Button className='custom-radius text-white custom-hover' variant='warning' onClick={handleSetEdit}>Change infomations</Button>
                     ) :
-                        <Button className='custom-radius text-white custom-hover' variant='success'>Save</Button>
+                        <Button className='custom-radius text-white custom-hover' variant='success'>Create</Button>
                     }
 
                 </Modal.Footer>
