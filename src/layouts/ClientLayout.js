@@ -1,18 +1,18 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import ClientHeader from '../components/client/parts/ClientHeader';
-import ClientNav from '../components/client/parts/ClientNav';
-import ClientFooter from '../components/client/parts/ClientFooter';
+import Header from '../components/client/parts/Header';
+import Cart from '../components/client/parts/Cart';
+import Footer from '../components/client/parts/Footer';
 
 function ClientLayout() {
   return (
-    <div>
-      <ClientHeader />
-      <ClientNav />
+    <div >
+      <Header />
+      <Cart />
       <main>
-        <Outlet /> {/* Nơi chứa nội dung động */}
+        <Outlet />
       </main>
-      <ClientFooter />
+      <Footer />
     </div>
   );
 }
