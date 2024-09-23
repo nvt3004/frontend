@@ -14,77 +14,21 @@ const searchProduct = async (keyword) => {
     }
   }
 };
-const getAllCategory = async () => {
+const getFilterAttribute = async () => {
   try {
-    const response = await axiosInstance.get("/product/getAllCategory");
+    const response = await axiosInstance.get("/product/FilterAttribute");
     return response;
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    console.error("Error fetching FilterAttribute:", error);
     if (error.response && error.response.status === 404) {
-      console.warn("No categories found");
+      console.warn("No FilterAttribute found");
     } else {
       console.error("An unexpected error occurred");
     }
   }
 };
 
-const getAllProduct = async () => {
-  try {
-    const response = await axiosInstance.get("/product/getAllProduct");
-    return response;
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    if (error.response && error.response.status === 404) {
-      console.warn("No products found");
-    } else {
-      console.error("An unexpected error occurred");
-    }
-  }
-};
-const getAllProductByCategoryId = async (categoryId) => {
-  try {
-    const response = await axiosInstance.get(
-      `/product/getAllProductByCategory`,
-      {
-        params: { id: categoryId },
-      }
-    );
-    return response;
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    if (error.response && error.response.status === 404) {
-      console.warn("No products found");
-    } else {
-      console.error("An unexpected error occurred");
-    }
-  }
-};
-const getAllColor = async () => {
-  try {
-    const response = await axiosInstance.get("/product/getAllColor");
-    return response;
-  } catch (error) {
-    console.error("Error fetching colors:", error);
-    if (error.response && error.response.status === 404) {
-      console.warn("No colors found");
-    } else {
-      console.error("An unexpected error occurred");
-    }
-  }
-};
-const getAllSize = async () => {
-  try {
-    const response = await axiosInstance.get("/product/getAllSize");
-    return response;
-  } catch (error) {
-    console.error("Error fetching Sizes:", error);
-    if (error.response && error.response.status === 404) {
-      console.warn("No Sizes found");
-    } else {
-      console.error("An unexpected error occurred");
-    }
-  }
-};
+
 const filter = async (categoryId,minPrice, maxPrice, color, size, sortPrice) => {
   try {
     const response = await axiosInstance.get("/product/filtered", {
@@ -107,14 +51,37 @@ const filter = async (categoryId,minPrice, maxPrice, color, size, sortPrice) => 
     }
   }
 };
-
+const getTopProducts = async () => {
+  try {
+    const response = await axiosInstance.get("/product/getTopProducts");
+    return response;
+  } catch (error) {
+    console.error("Error fetching Sizes:", error);
+    if (error.response && error.response.status === 404) {
+      console.warn("No Sizes found");
+    } else {
+      console.error("An unexpected error occurred");
+    }
+  }
+};
+const getProductDetail = async (id) => {
+  try {
+    const response = await axiosInstance.get(`/home/product/${id}`);
+    return response;
+  } catch (error) {
+    console.error("Error fetching Sizes:", error);
+    if (error.response && error.response.status === 404) {
+      console.warn("No Sizes found");
+    } else {
+      console.error("An unexpected error occurred");
+    }
+  }
+};
 const productApi = {
   searchProduct,
-  getAllCategory,
-  getAllProduct,
-  getAllProductByCategoryId,
-  getAllColor,
-  getAllSize,
-  filter
+  getFilterAttribute,
+  filter,
+  getTopProducts,
+  getProductDetail
 };
 export default productApi;
