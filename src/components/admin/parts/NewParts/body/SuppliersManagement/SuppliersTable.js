@@ -3,6 +3,7 @@ import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
 import { FaEye, FaFileExport, FaPlus, FaSearch } from 'react-icons/fa';
 import suppliers from './data';
 import { FaParachuteBox } from "react-icons/fa";
+import SupplierModal from './SupplierModal';
 
 const SuppliersTable = () => {
     let active = 2;
@@ -15,6 +16,23 @@ const SuppliersTable = () => {
         );
     }
 
+    const [showModal, setShowModal] = useState(false);
+    const [selectedSupplier, setSelectedSupplier] = useState(null);
+    const [isNew, setNew] = useState(false);
+
+    const handleShowModal = (supplier) => {
+        setShowModal(true);
+        if (supplier) {
+            setSelectedSupplier(supplier);
+        } else {
+            setNew(true);
+        }
+    }
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setNew(false);
+        setSelectedSupplier(null);
+    }
     return (
         <div className='font-14'>
             <div className='bg-body-tertiary d-flex align-items-center' style={{ height: "50px" }}>
@@ -26,7 +44,7 @@ const SuppliersTable = () => {
                             <Form.Control className='custom-radius' placeholder='Search users . . .' />
                         </InputGroup>
                         <Button variant='secondary' className='font-14 custom-radius custom-hover'><FaFileExport /> {` Export`}</Button>
-                        <Button className='font-14 custom-radius custom-hover'><FaPlus />{` Add new supplier`}</Button>
+                        <Button className='font-14 custom-radius custom-hover' onClick={() => handleShowModal()}><FaPlus />{` Add new supplier`}</Button>
                     </div>
                 </div>
             </div>
@@ -40,6 +58,7 @@ const SuppliersTable = () => {
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Adress</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -54,6 +73,7 @@ const SuppliersTable = () => {
                                 <td>{item?.email}</td>
                                 <td className='fw-medium'>{item?.phone}</td>
                                 <td>{item?.address}</td>
+                                <td className='font-16'><FaEye className='eye-show' onClick={() => handleShowModal(item)} /></td>
                             </tr>
                         ))}
                     </tbody>
@@ -66,6 +86,9 @@ const SuppliersTable = () => {
                         <Pagination.Last>{`>`}</Pagination.Last>
                     </Pagination>
                 </div>
+            </div>
+            <div>
+                <SupplierModal supplier={selectedSupplier} show={showModal} handleClose={handleCloseModal} isNew={isNew}/>
             </div>
         </div>
     );

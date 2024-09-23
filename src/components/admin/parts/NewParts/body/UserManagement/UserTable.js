@@ -75,8 +75,8 @@ const UserTable = () => {
         <div className='font-14'>
             <div className='bg-body-tertiary d-flex align-items-center' style={{ height: "50px" }}>
                 <div className='container d-flex justify-content-between align-items-center'>
-                    <h4 className='m-0 col-1 d-flex align-items-center'><HiMiniUserGroup />&ensp;Users</h4>
-                    <div className='col-11 d-flex justify-content-around'>
+                    <h4 className='m-0 col-2 d-flex align-items-center'><HiMiniUserGroup />&ensp;Users</h4>
+                    <div className='col-10 d-flex justify-content-around'>
                         <InputGroup className='w-30'>
                             <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
                             <Form.Control className='custom-radius' placeholder='Search users . . .' />
