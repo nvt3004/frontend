@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import axiosInstance from "../axiosConfig";
 
 export const loginSocial = async (userData) => {
@@ -18,6 +19,8 @@ export const loginWithEmail = async (username, password) => {
 
     if (response.status === 200) {
       console.log("User login successfully:", response.data);
+      const thirtyMinutesInDays = 30 / (24 * 60); // Chuyển đổi phút thành ngày
+      Cookies.set('token', response.data.token, { expires: thirtyMinutesInDays });
       return response;
     } else {
       console.error(

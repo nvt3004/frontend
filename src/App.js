@@ -1,10 +1,11 @@
 import React from "react";
 import AppRoutes from "./routes/AppRoutes";
+import { AuthProvider } from "./routes/AuthContext";
 function App() {
   return (
-    <div>
-      <AppRoutes />
-    </div>
+    <AuthProvider>
+        <AppRoutes />
+    </AuthProvider>
   );
 }
 

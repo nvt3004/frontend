@@ -32,7 +32,7 @@ axiosInstance.interceptors.response.use(
   (response) => {
     // Kiểm tra xem response có dữ liệu không, nếu có thì trả về
     if (response && response.data) {
-      return response.data; // Trả về dữ liệu trực tiếp
+      return response; // Trả về dữ liệu trực tiếp
     }
     return response; // Nếu không có dữ liệu, trả về toàn bộ response
   },

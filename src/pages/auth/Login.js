@@ -69,9 +69,7 @@ const Login = () => {
         await loginSocial(userData);
       } else {
         console.log("Email is null. Request user to provide their email.");
-        // Gửi email xác minh nếu cần thiết
         await sendEmailVerification(user);
-        // Cập nhật trạng thái UI hoặc thông báo cho người dùng
       }
     } catch (error) {
       console.error("Error during Google login:", error);
@@ -153,11 +151,11 @@ const Login = () => {
                     Email/Number Phone
                   </label>
                   <input
-                    type="email"
+                    type="text"
                     className="form-control"
                     id="exampleInputEmail1"
                     aria-describedby="emailHelp"
-                    placeholder="Enter your email"
+                    placeholder="Enter your username"
                     value={username}
                     onChange={(e) => setEmail(e.target.value)}
                   />

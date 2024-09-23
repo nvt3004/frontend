@@ -1,4 +1,3 @@
-// src/api/ExamProdApi.js
 import axiosInstance from "../axiosConfig";
 
 // Lấy danh sách sản phẩm (GET)
