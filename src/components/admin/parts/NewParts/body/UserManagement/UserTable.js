@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
 import { FaEye, FaFileExport, FaPlus, FaSearch } from 'react-icons/fa';
-// import users from './data';
+import users from './data';
 import UserModal from './UserModal';
 import { HiMiniUserGroup } from "react-icons/hi2";
 import { IoIosFemale, IoIosMale } from 'react-icons/io';
@@ -43,31 +43,31 @@ const UserTable = () => {
 
 
 
-    const [users, setUsers] = useState([]);
+    // const [users, setUsers] = useState([]);
 
-    const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aG9saHBjMDYyOTdAZnB0LmVkdS52biIsInB1cnBvc2UiOiJsb2dpbiIsImlhdCI6MTcyNzA4ODY2MiwiZXhwIjoxNzI3MDkwNDYyfQ.P5YnTleoMLwOzmpR6NlOi5OwetJiKX787v3cqyCwkP4';
-    const getUserApi = () => {
-        const getUser = DoRequest({ token: token }).get('/api/test/user/all')
-            .then((response) => {
-                setUsers(response?.data);
-            });
-        return getUser;
-    }
-    const handleGetUser = () => {
-        toast.promise(
-            getUserApi,
-            {
-                pending: 'Getting data . . .',
-                success: 'Get data completed !!',
-                error: 'Cannot get data. Please, check the staement !!'
-            },
-            {
-                position: 'top-right',
-                autoClose: 3000,
-                closeOnClick: true,
-            }
-        );
-    }
+    // const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aG9saHBjMDYyOTdAZnB0LmVkdS52biIsInB1cnBvc2UiOiJsb2dpbiIsImlhdCI6MTcyNzA4ODY2MiwiZXhwIjoxNzI3MDkwNDYyfQ.P5YnTleoMLwOzmpR6NlOi5OwetJiKX787v3cqyCwkP4';
+    // const getUserApi = () => {
+    //     const getUser = DoRequest({ token: token }).get('/api/test/user/all')
+    //         .then((response) => {
+    //             setUsers(response?.data);
+    //         });
+    //     return getUser;
+    // }
+    // const handleGetUser = () => {
+    //     toast.promise(
+    //         getUserApi,
+    //         {
+    //             pending: 'Getting data . . .',
+    //             success: 'Get data completed !!',
+    //             error: 'Cannot get data. Please, check the staement !!'
+    //         },
+    //         {
+    //             position: 'top-right',
+    //             autoClose: 3000,
+    //             closeOnClick: true,
+    //         }
+    //     );
+    // }
 
     const handleRemoveUser = (user) => {
         Swal.fire({
@@ -80,36 +80,33 @@ const UserTable = () => {
         }).then((isConfirm) => {
             if (isConfirm.isConfirmed) {
 
-                const doRemoveAPI = () => {
-                    const removeUser = DoRequest({token: token}).delete(`/api/test/user/delete/${user?.userId}`)
-                        .then(() => {
-                            handleGetUser();
-                        });
-                    return removeUser;
-                }
+                // const doRemoveAPI = () => {
+                //     const removeUser = DoRequest({ token: token }).delete(`/api/test/user/delete/${user?.userId}`)
+                //         .then(() => {
+                //             handleGetUser();
+                //         });
+                //     return removeUser;
+                // }
 
-                toast.promise(
-                    doRemoveAPI, {
-                    pending: 'Removing...',
-                    success: `${user?.fullName} has been removed !!`,
-                    error: `There's something wrong...`
-                }, {
-                    position: 'top-right',
-                    autoClose: 3000,
-                    closeOnClick: true,
-                }
-                )
-                // toast.success(`${user?.fullName} has been removed !!`, {
+                // toast.promise(
+                //     doRemoveAPI, {
+                //     pending: 'Removing...',
+                //     success: `${user?.fullName} has been removed !!`,
+                //     error: `There's something wrong...`
+                // }, {
                 //     position: 'top-right',
                 //     autoClose: 3000,
                 //     closeOnClick: true,
-                // })
+                // }
+                // )
+                toast.success(`${user?.fullName} has been removed !!`, {
+                    position: 'top-right',
+                    autoClose: 3000,
+                    closeOnClick: true,
+                })
             }
         });
     }
-    useEffect(() => {
-        
-    }, [users]);
 
     return (
         <div className='font-14'>
@@ -128,7 +125,7 @@ const UserTable = () => {
                         </Form.Select>
                         <Button variant='secondary' className='font-14 custom-radius custom-hover'><FaFileExport /> {` Export`}</Button>
                         <Button className='font-14 custom-radius custom-hover' onClick={() => handleShowModal()}><FaPlus />{` Add new user`}</Button>
-                        <CustomButton btnBG={'primary'} btnName={'Load data'} handleClick={handleGetUser} />
+                        {/* <CustomButton btnBG={'primary'} btnName={'Load data'} handleClick={handleGetUser} /> */}
                     </div>
                 </div>
             </div>
