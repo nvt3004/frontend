@@ -1,6 +1,6 @@
 import React from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
+import Cookies from "js-cookie";
 // Layouts
 import ClientLayout from '../layouts/ClientLayout';
 import AdminLayout from '../layouts/AdminLayout';
@@ -36,6 +36,8 @@ import AddNewWarehouse from '../components/admin/parts/AddNewWarehouse';
 import PermissionManagement from '../components/admin/parts/PermissionManagement';
 import NewPermission from '../components/admin/parts/NewPermission';
 import FeedbackManagement from '../components/admin/parts/FeedbackManagement';
+import PaymentSuccess from '../pages/client/PaymentSuccess';
+import PaymentCancel from '../pages/client/PaymentCancel';
 
 
 
@@ -120,9 +122,12 @@ const router = createBrowserRouter([
     path: '*', // Catch-all route for 404 pages
     element: <PageNotFound/>,
   },
+  { path: '/pm-success', element: <PaymentSuccess /> },
+  { path: '/pm-cancel', element: <PaymentCancel /> },
 ]);
 
 function AppRoutes() {
+  Cookies.set('access_token', 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0eWxtcGMwNjIwOSIsImlhdCI6MTcyNzAyNzY4MCwiZXhwIjoxNzI3MTE0MDgwfQ.x2yVQvfZPjho2cTPBTx4vZT64oqv8QtzfR3CRHzqSPU');
   return <RouterProvider router={router} />;
 }
 
