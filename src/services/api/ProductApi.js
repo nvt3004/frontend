@@ -1,9 +1,12 @@
 import axiosInstance from "../axiosConfig";
-const searchProduct = async (keyword) => {
+const searchProduct = async (query, page) => {
   try {
-    const response = await axiosInstance.get(
-      `/product/search?query=${keyword}`
-    );
+    const response = await axiosInstance.get("/product/search", {
+      params: {
+        query,
+        page,
+      },
+    });
     return response;
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -28,20 +31,28 @@ const getFilterAttribute = async () => {
   }
 };
 
-
-const filter = async (categoryId,minPrice, maxPrice, color, size, sortPrice) => {
+const filter = async (
+  categoryName,
+  minPrice,
+  maxPrice,
+  color,
+  size,
+  sortPrice,
+  page
+) => {
   try {
     const response = await axiosInstance.get("/product/filtered", {
       params: {
-        categoryId,
+        categoryName,
         minPrice,
         maxPrice,
         color,
         size,
-        sortPrice
-      }
+        sortPrice,
+        page,
+      },
     });
-    return response; 
+    return response;
   } catch (error) {
     console.error("Error fetching products:", error);
     if (error.response && error.response.status === 404) {
@@ -82,6 +93,6 @@ const productApi = {
   getFilterAttribute,
   filter,
   getTopProducts,
-  getProductDetail
+  getProductDetail,
 };
 export default productApi;

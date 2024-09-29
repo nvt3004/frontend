@@ -30,7 +30,6 @@ const Home = () => {
     const fetchTopProduct = async () => {
       try {
         const response = await productApi.getTopProducts();
-        console.log('édaffffffffffffffffff',response)
         setProducts(response.data.data);
       } catch (error) {
         console.error("Error fetching products:", error.message);
@@ -55,6 +54,12 @@ const Home = () => {
   const style = {
     w500: { width: "100%" },
     wh: { width: "100px", height: "126px" },
+  };
+  const handleCheckColorAndSize = (key, value) => {
+    let attribute = [];
+    ProductDetail.versions.forEach(element => {
+      
+    });
   };
   return (
     <div>
@@ -380,7 +385,7 @@ const Home = () => {
                                   className="pt-3 pb-3 w-100 border border-1 p-2 rounded-0 form-select stext-111"
                                   aria-label="Default select example"
                                 >
-                                  <option>Choose an option</option>
+                                  {/* <option>Choose an option</option> */}
                                   {attribute.values.map((value, valueIndex) => (
                                     <option key={valueIndex} value={value}>
                                       {value}
