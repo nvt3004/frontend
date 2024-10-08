@@ -17,9 +17,9 @@ const AdminNav = () => {
           Users Management
         </button>
         <div className="collapse" id="userManagementCollapse">
-          <StyledLink to="/admin/users/add" className="list-group-item text-center bg-secondary-subtle">
+          {/* <StyledLink to="/admin/users/add" className="list-group-item text-center bg-secondary-subtle">
             New User
-          </StyledLink>
+          </StyledLink> */}
           <StyledLink to="/admin/users/manage" className="list-group-item text-center bg-secondary-subtle">
             Manage Users
           </StyledLink>
@@ -35,7 +35,7 @@ const AdminNav = () => {
           Products Management
         </button>
         <div className="collapse" id="productManagementCollapse">
-          <StyledLink to="/admin/products/add" className="list-group-item text-center bg-secondary-subtle">
+          <StyledLink to="/admin/products/new" className="list-group-item text-center bg-secondary-subtle">
             New Product
           </StyledLink>
           <StyledLink to="/admin/products/manage" className="list-group-item text-center bg-secondary-subtle">

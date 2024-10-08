@@ -19,6 +19,7 @@ const SuppliersTable = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedSupplier, setSelectedSupplier] = useState(null);
     const [isNew, setNew] = useState(false);
+    const [isEdit, setEdit] = useState(false);
 
     const handleShowModal = (supplier) => {
         setShowModal(true);
@@ -33,11 +34,19 @@ const SuppliersTable = () => {
         setNew(false);
         setSelectedSupplier(null);
     }
+    const handleCancel = () => {
+        setShowModal(false);
+        setEdit(false);
+        setSelectedSupplier(null);
+    }
+    const handleEdit = () => {
+        setEdit(true);
+    }
     return (
         <div className='font-14'>
             <div className='bg-body-tertiary d-flex align-items-center' style={{ height: "50px" }}>
                 <div className='container d-flex justify-content-between align-items-center'>
-                    <h4 className='m-0 col-2 d-flex align-items-center'><FaParachuteBox/>&ensp;Suppliers</h4>
+                    <h4 className='m-0 col-2 d-flex align-items-center'><FaParachuteBox />&ensp;Suppliers</h4>
                     <div className='col-10 d-flex justify-content-around'>
                         <InputGroup className='w-30'>
                             <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
@@ -88,7 +97,8 @@ const SuppliersTable = () => {
                 </div>
             </div>
             <div>
-                <SupplierModal supplier={selectedSupplier} show={showModal} handleClose={handleCloseModal} isNew={isNew}/>
+                <SupplierModal supplier={selectedSupplier} show={showModal} handleClose={handleCloseModal} isNew={isNew}
+                    isEdit={isEdit} handelEdit={handleEdit} handleCancel={handleCancel} />
             </div>
         </div>
     );

@@ -32,6 +32,8 @@ import FeedbackManagement from '../components/admin/parts/FeedbackManagement';
 // Admin new pages
 import UserTable from '../components/admin/parts/NewParts/body/UserManagement/UserTable';
 import SuppliersTable from '../components/admin/parts/NewParts/body/SuppliersManagement/SuppliersTable';
+import ProductTable from '../components/admin/parts/NewParts/body/ProductManagement/ProductTable';
+import NewProduct from '../components/admin/parts/NewParts/body/ProductManagement/NewProduct';
 
 const router = createBrowserRouter([
   {
@@ -94,6 +96,13 @@ const router = createBrowserRouter([
         path: 'feedback',
         children: [
           { path: 'manage', element: <FeedbackManagement/>},
+        ],
+      },
+      {
+        path: 'products',
+        children: [
+          { path: 'manage', element: <ProductTable/>},
+          { path: 'new', element: <NewProduct/>},
         ],
       },
     ],

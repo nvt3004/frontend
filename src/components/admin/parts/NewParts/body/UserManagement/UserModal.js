@@ -4,29 +4,7 @@ import { FaPlus, FaUser } from 'react-icons/fa';
 import { FaUpload } from 'react-icons/fa6';
 import { IoIosMale } from 'react-icons/io';
 
-const UserModal = ({ user, show, handleClose, isNew }) => {
-    const [isEdit, setEdit] = useState(false);
-    const handleChaneValue = (e) => {
-        if (!isEdit) {
-            e.preventDefault();
-        }
-    }
-    const handleSetEdit = () => {
-        setEdit(true);
-    }
-    const handleCancel = () => {
-        handleClose();
-        setEdit(false);
-    }
-    const [isCollapse, setCollapse] = useState(false);
-    const handleOpenCollaspe = () => {
-        setCollapse(true);
-    }
-
-    useEffect(() => {
-        console.log(isEdit);
-
-    }, []);
+const UserModal = ({ user, show, handleClose, handleCancel, isNew, isCollapse, handleCollapse, isEdit, handleEdit }) => {
     return (
         <div>
             <Modal show={show} onHide={handleClose} size='xl'>
@@ -124,7 +102,7 @@ const UserModal = ({ user, show, handleClose, isNew }) => {
                                             <option onClick={() => {setCollapse(!isCollapse) ; console.log('select permissions');
                                             }}>Select permission</option>
                                         </Form.Select> */}
-                                            <Button variant='secondary' className='w-100 custom-radius' onClick={() => { setCollapse(!isCollapse) }}>
+                                            <Button variant='secondary' className='w-100 custom-radius' onClick={handleCollapse}>
                                                 {`${isCollapse ? 'Hide permissions' : 'Show permissions'}`}
                                             </Button>
                                             <Collapse in={isCollapse}>
@@ -138,7 +116,7 @@ const UserModal = ({ user, show, handleClose, isNew }) => {
                                                                         <Form.Label className='m-0'>Create new user</Form.Label>
                                                                     </Form.Group>
                                                                 </div>
-                                                                <div className='col d-flex align-items-center'>
+                                                                <div className='col d-flex align-items-center justify-content-center'>
                                                                     <Form.Group controlId='c-user'>
                                                                         <Form.Check type='checkbox' />
                                                                     </Form.Group>
@@ -153,7 +131,7 @@ const UserModal = ({ user, show, handleClose, isNew }) => {
                                                                         <Form.Label className='m-0'>Create new supplier</Form.Label>
                                                                     </Form.Group>
                                                                 </div>
-                                                                <div className='col d-flex align-items-center'>
+                                                                <div className='col d-flex align-items-center justify-content-center'>
                                                                     <Form.Group controlId='c-supplier'>
                                                                         <Form.Check type='checkbox' />
                                                                     </Form.Group>
@@ -176,7 +154,7 @@ const UserModal = ({ user, show, handleClose, isNew }) => {
                         isEdit ?
                             (<Button className='custom-radius text-white custom-hover' variant='success'>Save changed</Button>)
 
-                            : <Button className='custom-radius text-white custom-hover' variant='warning' onClick={handleSetEdit}>Change infomations</Button>
+                            : <Button className='custom-radius text-white custom-hover' variant='warning' onClick={handleEdit}>Change infomations</Button>
                     ) :
                         <Button className='custom-radius text-white custom-hover' variant='success'>Create</Button>
                     }
