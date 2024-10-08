@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import productApi from "../../services/api/ProductApi";
-
+import SpeechToText from "../../components/client/search/SpeechtoText";
 const Product = () => {
   // Các thuộc tính bộ lọc được lấy từ API (ví dụ: color, size, category)
   const [filterAttributes, setFilterAttributes] = useState({
@@ -41,7 +41,7 @@ const Product = () => {
   // Xác định API đang hoạt động
   const [isSearching, setIsSearching] = useState(false);
 
-  console.log('1');
+  console.log("1");
   // Lấy chi tiết sản phẩm
   const getProductDetail = async (id) => {
     try {
@@ -65,7 +65,7 @@ const Product = () => {
       } catch (error) {
         console.error("Error fetching filter attributes:", error.message);
       }
-      console.log('2');
+      console.log("2");
     };
 
     fetchFilterAttributes();
@@ -90,7 +90,7 @@ const Product = () => {
       setCurrentSearchPage(0);
       setHasMoreSearchResults(true);
       handleSearch(debouncedSearchTerm, 0);
-      console.log('3');
+      console.log("3");
     } else {
       // Nếu không có tìm kiếm, reset về bộ lọc thông thường
       setIsSearching(false);
@@ -106,7 +106,7 @@ const Product = () => {
         sortOrder,
         0
       );
-      console.log('4');
+      console.log("4");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
@@ -126,7 +126,7 @@ const Product = () => {
         sortOrder,
         0
       );
-      console.log('5');
+      console.log("5");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -171,7 +171,7 @@ const Product = () => {
           setErrorMessage("No products found with the selected filters.");
         }
       }
-      console.log('6');
+      console.log("6");
     } catch (error) {
       console.error("Error fetching filter:", error.message);
       setErrorMessage("Error fetching products.");
@@ -197,7 +197,6 @@ const Product = () => {
           setErrorMessage(`No products found for "${keyword}".`);
         }
       }
-     
     } catch (error) {
       console.log("Handle search error:", error);
       setErrorMessage("Error searching products.");
@@ -230,7 +229,6 @@ const Product = () => {
       default:
         break;
     }
-  
   };
 
   // Hàm xử lý Load More
@@ -248,7 +246,6 @@ const Product = () => {
         currentPage
       );
     }
-  
   };
 
   // Hàm bỏ chọn tất cả bộ lọc
@@ -269,6 +266,9 @@ const Product = () => {
     setErrorMessage("No products found");
   };
 
+  const handleSpeechText = (text) => {
+    setSearchTerm(text);
+  };
   const style = {
     m: { marginTop: "40px" },
   };
@@ -362,7 +362,7 @@ const Product = () => {
                           <ul className="list-unstyled">
                             <li className="p-b-6">
                               <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                   selectedMinPrice === null &&
                                   selectedMaxPrice === null
                                     ? "filter-link-active"
@@ -379,7 +379,7 @@ const Product = () => {
 
                             <li className="p-b-6">
                               <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                   selectedMinPrice === 0 &&
                                   selectedMaxPrice === 200000
                                     ? "filter-link-active"
@@ -396,7 +396,7 @@ const Product = () => {
 
                             <li className="p-b-6">
                               <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                   selectedMinPrice === 200000 &&
                                   selectedMaxPrice === 400000
                                     ? "filter-link-active"
@@ -413,7 +413,7 @@ const Product = () => {
 
                             <li className="p-b-6">
                               <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                   selectedMinPrice === 400000 &&
                                   selectedMaxPrice === 600000
                                     ? "filter-link-active"
@@ -430,7 +430,7 @@ const Product = () => {
 
                             <li className="p-b-6">
                               <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                   selectedMinPrice === 600000 &&
                                   selectedMaxPrice === 800000
                                     ? "filter-link-active"
@@ -447,7 +447,7 @@ const Product = () => {
 
                             <li className="p-b-6">
                               <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                   selectedMinPrice === 1000000 &&
                                   selectedMaxPrice === null
                                     ? "filter-link-active"
@@ -481,7 +481,7 @@ const Product = () => {
                                 onClick={() => {
                                   handleSelectChange("color", null);
                                 }}
-                                className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                   selectedColor === null
                                     ? "filter-link-active"
                                     : ""
@@ -505,7 +505,7 @@ const Product = () => {
                                   </span>
 
                                   <span
-                                    className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                    className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                       selectedColor === colorItem.attributeValue
                                         ? "filter-link-active"
                                         : ""
@@ -534,7 +534,7 @@ const Product = () => {
                                 onClick={() => {
                                   handleSelectChange("size", null);
                                 }}
-                                className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                   selectedSize === null
                                     ? "filter-link-active"
                                     : ""
@@ -551,7 +551,7 @@ const Product = () => {
                                   className="p-b-6"
                                 >
                                   <span
-                                    className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                    className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                       selectedSize === sizeItem.attributeValue
                                         ? "filter-link-active"
                                         : ""
@@ -576,7 +576,7 @@ const Product = () => {
                           <ul className="list-unstyled">
                             <li className="p-b-6">
                               <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                   sortOrder === "ASC"
                                     ? "filter-link-active"
                                     : ""
@@ -591,7 +591,7 @@ const Product = () => {
 
                             <li className="p-b-6">
                               <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 ${
+                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
                                   sortOrder === "DESC"
                                     ? "filter-link-active"
                                     : ""
@@ -604,6 +604,15 @@ const Product = () => {
                               </span>
                             </li>
                           </ul>
+                        </div>
+                        {/* Nút Bỏ Chọn Bộ Lọc */}
+                        <div className="clear-filters p-t-10 p-b-15 ms-auto">
+                          <button
+                            onClick={handleClearFilter}
+                            className="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 ps-3 pe-3"
+                          >
+                            Clear All Filters
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -638,6 +647,10 @@ const Product = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search"
                           />
+                          <SpeechToText speechText={handleSpeechText} />
+                          <button className="size-113 flex-c-m fs-23 cl2 hov-cl1 trans-04 me-2">
+                            <i class="zmdi zmdi-wallpaper"></i>
+                          </button>
                         </div>
                       </div>
                     </div>
