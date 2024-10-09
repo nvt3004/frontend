@@ -4,7 +4,9 @@ import axiosInstance from "../axiosConfig";
 export const loginSocial = async (userData) => {
   try {
     const response = await axiosInstance.post("/login-social", userData);
-    console.log("User login socail successfully:", response.data);
+    console.log("User login successfully:", response.data);
+      const thirtyMinutesInDays = 30 / (24 * 60); // Chuyển đổi phút thành ngày
+      Cookies.set('token', response.data.token, { expires: thirtyMinutesInDays });
     return response;
   } catch (error) {
     console.error("Error creating user:", error);

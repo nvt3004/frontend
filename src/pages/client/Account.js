@@ -145,9 +145,9 @@ const Account = () => {
     if (profile && profile.listData && profile.listData.gender !== undefined) {
       // Chuyển đổi bit thành string
       const genderValue = profile.listData.gender; // Giả sử gender là kiểu bit (0 hoặc 1)
-      if (genderValue === 0) {
+      if (genderValue === 1) {
         setGender("Male");
-      } else if (genderValue === 1) {
+      } else if (genderValue === 0) {
         setGender("Female");
       } else {
         setGender("Other"); // Bạn có thể thay đổi điều này tùy thuộc vào logic của bạn
