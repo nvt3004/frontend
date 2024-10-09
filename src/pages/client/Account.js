@@ -17,6 +17,7 @@ import { stfExecAPI } from "../../stf/common";
 import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import ConfirmAlert from "../../components/client/sweetalert/ConfirmAlert";
+import { getProfile, updateUser } from "../../services/api/OAuthApi";
 
 function getNameAddress(nameId) {
   return nameId.substring(nameId.indexOf(" "), nameId.length).trim();
@@ -44,6 +45,115 @@ const Account = () => {
   const [addressDetal, setAddressDetal] = useState("");
 
   const [idEdit, setIdEdit] = useState(-1);
+
+  const [profile, setProfile] = useState(null);
+
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [gender, setGender] = useState("Male");
+  const [birthday, setBirthday] = useState("");
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+  });
+
+  useEffect(() => {
+    if (profile && profile.listData) {
+      setFormData({
+        fullName: profile.listData.fullName || "",
+        email: profile.listData.email || "",
+        phone: profile.listData.phone || "",
+      });
+      setGender(
+        profile.listData.gender === 1
+          ? "Male"
+          : profile.listData.gender === 0
+          ? "Female"
+          : "Other"
+      ); // Chuyển đổi giá trị bit sang string
+      setBirthday(
+        profile.listData.birthday ? profile.listData.birthday.split("T")[0] : ""
+      ); // Đảm bảo định dạng ngày tháng
+    }
+  }, [profile]);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    // Tạo đối tượng người dùng cập nhật
+    const updatedUser = {
+      fullName: formData.fullName,
+      email: formData.email,
+      phone: formData.phone,
+      gender: gender === "Male" ? 1 : gender === "Female" ? 0 : 2, // Chuyển đổi về kiểu bit
+      birthday: birthday,
+      image: selectedImage || profile?.listData?.image, // Nếu có hình ảnh mới thì sử dụng, nếu không thì giữ nguyên
+    };
+
+    try {
+      const response = await updateUser(profile.listData.userId, updatedUser);
+      console.log("Update successful:", response);
+      // Thực hiện thêm các hành động nếu cần sau khi cập nhật thành công
+    } catch (error) {
+      console.error("Error updating profile:", error.message);
+      // Xử lý lỗi nếu cần
+    }
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0]; // Lấy file đầu tiên trong danh sách
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSelectedImage(reader.result); // Lưu đường dẫn hình ảnh vào state
+      };
+      reader.readAsDataURL(file); // Đọc file dưới dạng URL
+    }
+  };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profileData = await getProfile();
+
+        console.log("Profile data:", profileData);
+        setProfile(profileData);
+      } catch (error) {
+        console.error("Error fetching profile:", error.message);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    if (profile && profile.listData) {
+      if (profile.listData.birthday) {
+        // Giả sử birthday là kiểu Date hoặc chuỗi ngày hợp lệ
+        const date = new Date(profile.listData.birthday);
+        const formattedDate = date.toISOString().split("T")[0]; // Chuyển đổi thành định dạng YYYY-MM-DD
+        setBirthday(formattedDate);
+      }
+    }
+  }, [profile]); // Chạy effect khi profile thay đổi
+
+  const handleBirthdayChange = (event) => {
+    setBirthday(event.target.value); // Cập nhật ngày sinh khi người dùng thay đổi
+  };
+
+  useEffect(() => {
+    if (profile && profile.listData && profile.listData.gender !== undefined) {
+      // Chuyển đổi bit thành string
+      const genderValue = profile.listData.gender; // Giả sử gender là kiểu bit (0 hoặc 1)
+      if (genderValue === 1) {
+        setGender("Male");
+      } else if (genderValue === 0) {
+        setGender("Female");
+      } else {
+        setGender("Other"); // Bạn có thể thay đổi điều này tùy thuộc vào logic của bạn
+      }
+    }
+  }, [profile]);
 
   //Lưu địa chỉ
   const handleSaveAddress = async () => {
@@ -334,15 +444,23 @@ const Account = () => {
         <div className="d-flex align-items-center border-bottom border-2 mb-4">
           <div>
             <img
-              src={Avatar}
+              src={profile?.listData?.image || Avatar}
               alt="User IMG"
               style={styles.accountImg1}
               className="account-img me-4"
             />
           </div>
           <div>
-            <h3>Nguyễn Minh Nhựt</h3>
-            <p>nhut347927</p>
+            <h3>
+              {profile && profile.listData && profile.listData.fullName
+                ? profile.listData.fullName
+                : "Nguyễn Minh Nhựt"}
+            </h3>
+            <p>
+              {profile && profile.listData && profile.listData.username
+                ? profile.listData.username
+                : "Default Username"}
+            </p>
           </div>
           <div className="d-flex ms-auto flex-column flex-md-row">
             {/* <!-- Button trigger modal --> */}
@@ -748,20 +866,25 @@ const Account = () => {
                 ></button>
               </div>
               <div className="modal-body">
-                <form className="w-100">
+                <form className="w-100" onSubmit={handleSubmit}>
                   <div className="row">
                     <div className="col-md-5 text-center">
                       {/* Image */}
                       <img
-                        src={Avatar}
+                        src={
+                          selectedImage || profile?.listData?.image || Avatar
+                        }
                         alt="User IMG"
                         style={styles.accountImg}
                         className="account-img mb-3"
                       />
-
-                      {/* Button to select a new image */}
                       <div className="mb-4">
-                        <input type="file" id="fileInput" className="d-none" />
+                        <input
+                          type="file"
+                          id="fileInput"
+                          className="d-none"
+                          onChange={handleImageChange}
+                        />
                         <label
                           htmlFor="fileInput"
                           className="btn btn-outline-primary rounded-0 stext-110"
@@ -770,14 +893,17 @@ const Account = () => {
                           Choose Image
                         </label>
                       </div>
-
                       {/* Read-only fields */}
                       <div className="mb-4">
-                        <h5 className="mb-2 stext-110">Username: johndoe</h5>
-                        <p className="stext-111">Create Date: 2023-08-15</p>
+                        <h5 className="mb-2 stext-110">
+                          {profile?.listData?.username || "Default Username"}
+                        </h5>
+                        <p className="stext-111">
+                          Create Date:{" "}
+                          {profile?.listData?.createDate || "2023-08-15"}
+                        </p>
                       </div>
                     </div>
-
                     <div className="col-md-7">
                       <div className="">
                         {/* Editable fields */}
@@ -797,11 +923,16 @@ const Account = () => {
                               type="text"
                               name="full_name"
                               placeholder="Full Name"
-                              value="John Doe"
+                              value={formData.fullName}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  fullName: e.target.value,
+                                })
+                              } // Cập nhật khi thay đổi
                             />
                           </div>
                         </div>
-
                         <div className="mb-3">
                           <label className="stext-110" htmlFor="email">
                             Email
@@ -818,11 +949,16 @@ const Account = () => {
                               type="email"
                               name="email"
                               placeholder="Email"
-                              value="johndoe@example.com"
+                              value={formData.email}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  email: e.target.value,
+                                })
+                              } // Cập nhật khi thay đổi
                             />
                           </div>
                         </div>
-
                         <div className="mb-3">
                           <label className="stext-110" htmlFor="phone">
                             Phone
@@ -839,11 +975,16 @@ const Account = () => {
                               type="text"
                               name="phone"
                               placeholder="Phone"
-                              value="+1234567890"
+                              value={formData.phone}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  phone: e.target.value,
+                                })
+                              } // Cập nhật khi thay đổi
                             />
                           </div>
                         </div>
-
                         <div className="mb-3">
                           <label className="stext-110" htmlFor="gender">
                             Gender
@@ -859,7 +1000,8 @@ const Account = () => {
                                 type="radio"
                                 name="gender"
                                 value="Male"
-                                defaultChecked
+                                checked={gender === "Male"}
+                                onChange={(e) => setGender(e.target.value)}
                               />
                               <label
                                 htmlFor="gender-male"
@@ -878,6 +1020,8 @@ const Account = () => {
                                 type="radio"
                                 name="gender"
                                 value="Female"
+                                checked={gender === "Female"}
+                                onChange={(e) => setGender(e.target.value)}
                               />
                               <label
                                 htmlFor="gender-female"
@@ -893,6 +1037,8 @@ const Account = () => {
                                 type="radio"
                                 name="gender"
                                 value="Other"
+                                checked={gender === "Other"}
+                                onChange={(e) => setGender(e.target.value)}
                               />
                               <label
                                 htmlFor="gender-other"
@@ -903,7 +1049,6 @@ const Account = () => {
                             </div>
                           </div>
                         </div>
-
                         <div className="mb-3">
                           <label className="stext-110" htmlFor="birthday">
                             Birthday
@@ -919,11 +1064,11 @@ const Account = () => {
                               }}
                               type="date"
                               name="birthday"
-                              value="1990-01-01"
+                              value={birthday}
+                              onChange={handleBirthdayChange}
                             />
                           </div>
                         </div>
-
                         <div className="flex-w">
                           <button
                             type="submit"

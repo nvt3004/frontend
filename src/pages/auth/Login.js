@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate  } from "react-router-dom";
+import Cookies from "js-cookie";
 import {
   auth,
   googleProvider,
@@ -17,24 +18,9 @@ const Login = () => {
   const [username, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [value, setValue] = useState("");
+  const [role, setRole] = useState(null); // Trạng thái lưu vai trò
 
-  // const fetchUserProfile = async (accessToken) => {
-  //   try {
-  //     const response = await fetch(
-  //       "https://people.googleapis.com/v1/people/me?personFields=birthdays,gender,phoneNumbers",
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${accessToken}`,
-  //         },
-  //       }
-  //     );
-  //     const data = await response.json();
-  //     console.log("User Profile:", data);
-  //     return data;
-  //   } catch (error) {
-  //     console.error("Error fetching user profile:", error);
-  //   }
-  // };
+  const navigate = useNavigate(); 
 
   const handleGoogleLogin = async () => {
     try {
@@ -67,6 +53,28 @@ const Login = () => {
           phone: phone,
         };
         await loginSocial(userData);
+        console.log(userData)
+
+        // const token = Cookies.get("token");
+        // if (token) {
+        //   setIsAuthenticated(true);
+        //   const profileData = await getProfile(); // Gọi API lấy profile
+        //   setProfile(profileData);
+
+        //   // Lấy giá trị authorities đầu tiên trong mảng
+        //   if (
+        //     profileData.listData &&
+        //     profileData.listData.authorities &&
+        //     profileData.listData.authorities.length > 0
+        //   ) {
+        //     setRole(profileData.listData.authorities[0]); // Lưu vai trò từ authorities
+        //     console.log('Vai trò '+profileData.listData.authorities[0].authority)
+        //   }
+        // } else {
+        //   setIsAuthenticated(false);
+        // }
+        navigate('/home');
+        // window.location.reload();
       } else {
         console.log("Email is null. Request user to provide their email.");
         await sendEmailVerification(user);
@@ -102,6 +110,9 @@ const Login = () => {
           phone: phone,
         };
         await loginSocial(userData);
+        
+        navigate('/home');
+        // window.location.reload();
       } else {
         console.log("Email is null. Request user to provide their email.");
         // Gửi email xác minh nếu cần thiết
@@ -119,17 +130,20 @@ const Login = () => {
 
   const handleEmailLogin = async (event) => {
     event.preventDefault();
+
     try {
       const response = await loginWithEmail(username, password);
 
       if (response.status === 200) {
         console.log("Username:", username);
         console.log("User Password:", password);
+        // Chuyển hướng đến trang /home sau khi đăng nhập thành công
+        navigate('/home');
       }
     } catch (error) {
       console.error("Error during username login:", error.message);
     }
-  };
+};
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
