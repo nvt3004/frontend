@@ -46,7 +46,7 @@ export async function stfExecAPI(configs = configStf) {
   if (!configs) throw new Error('Missing "configs"!');
   if (!configs.url) throw new Error('Missing "configs.url"!');
 
-  const token = Cookies.get("access_token");
+  const token = Cookies.get("token");
 
   try {
     const response = await axios({

@@ -1,8 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { getProfile } from "../../../services/api/OAuthApi";
+
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profileData = await getProfile();
+
+        console.log("Profile data:", profileData);
+        setProfile(profileData);
+      } catch (error) {
+        console.error("Error fetching profile:", error.message);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -104,7 +122,9 @@ const Navbar = () => {
                 to="/account"
                 className="text-decoration-none flex-c-m trans-04 p-lr-25"
               >
-                My Account{" "}
+                {profile && profile.listData && profile.listData.fullName
+                  ? profile.listData.fullName
+                  : "My Account"}
               </Link>
               <Link
                 href="#"
@@ -184,7 +204,6 @@ const Navbar = () => {
               <button
                 type="button"
                 className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 "
-               
               >
                 <i className="zmdi zmdi-search"></i>
               </button>
@@ -219,7 +238,9 @@ const Navbar = () => {
                 <ul className="dropdown-menu rounded-0">
                   <li>
                     <Link to="/account" className="dropdown-item stext-111">
-                      Account
+                      {profile && profile.listData && profile.listData.fullName
+                        ? profile.listData.fullName
+                        : "Account"}
                     </Link>
                   </li>
                   <li>
@@ -255,7 +276,6 @@ const Navbar = () => {
           <button
             type="button"
             className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 "
-         
           >
             <i className="zmdi zmdi-search"></i>
           </button>
@@ -319,7 +339,9 @@ const Navbar = () => {
                     to="/account"
                     className="text-decoration-none flex-c-m p-lr-10 trans-04"
                   >
-                    My Account
+                    {profile && profile.listData && profile.listData.fullName
+                      ? profile.listData.fullName
+                      : "My Account"}
                   </Link>
 
                   <Link
@@ -362,7 +384,9 @@ const Navbar = () => {
                   aria-controls="nav-profile"
                   aria-selected="false"
                 >
-                  Account
+                  {profile && profile.listData && profile.listData.fullName
+                    ? profile.listData.fullName
+                    : "Account"}
                 </button>
               </div>
             </nav>
@@ -446,7 +470,7 @@ const Navbar = () => {
           </div>
         </div>
       ) : null}
-   
+
       {/* <!-- Offcanvas  right --> */}
       <div
         className="offcanvas offcanvas-end"

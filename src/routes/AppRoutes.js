@@ -63,7 +63,7 @@ const router = createBrowserRouter([
     path: "/admin",
     element: <AdminLayout />,
     children: [
-      { index: true, element: <Dashboard /> }, // Trang mặc định cho admin
+      { index: true, element: <ProtectedRoute element={<Dashboard />} requiredRole="Admin" /> },
       {
         path: "dashboard",
         element: <ProtectedRoute element={<Dashboard />} />,

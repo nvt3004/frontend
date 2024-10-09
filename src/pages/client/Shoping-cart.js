@@ -11,6 +11,7 @@ import ConfirmAlert from "../../components/client/sweetalert/ConfirmAlert";
 import InfoAlert from "../../components/client/sweetalert/InfoAlert";
 import { useForm } from "react-hook-form";
 import { stfExecAPI, ghnExecAPI } from "../../stf/common";
+import AttributeItem from "../../components/client/AttributeItem/AttributeItem";
 
 const getEndDate = (end) => {
   const now = new Date();
@@ -59,6 +60,25 @@ function getPercentage(number) {
   return number / total;
 }
 
+function getRowCelCick(attributes = [], item) {
+  for (let i = 0; i < attributes.length; i++) {
+    const key = attributes[i].key;
+
+    for (let j = 0; j < attributes[i].values.length; j++) {
+      const val = attributes[i].values[j];
+
+      if (key.toLowerCase() == item.key.toLowerCase()) {
+        if (val.toLowerCase() == item.value.toLowerCase()) {
+          console.log("Vô for");
+          return [i, j];
+        }
+      }
+    }
+
+    return [0, 0];
+  }
+}
+
 const ShopingCart = () => {
   const [carts, setCarts] = useState([]);
 
@@ -90,6 +110,151 @@ const ShopingCart = () => {
   const [couponRead, setCouponRead] = useState("");
   const [total, setTotal] = useState(0);
   const [pay, setPay] = useState(true);
+
+  const [err, setErr] = useState();
+  const [itemCartUpdate, setItemCartUpdate] = useState();
+
+  //Xử lý thay đổi phiên bản sản phẩm trong giỏ hàng
+  const findAllValueInAttributes = useCallback(
+    (atbs, products, keyToEetrieve) => {
+      const atbsTemp = [...atbs];
+
+      if (atbsTemp.length >= 2) {
+        atbsTemp.splice(-1, 1);
+      }
+
+      const versionTemps = { ...products }.productDetail.versions.filter(
+        (item, index) => {
+          const atbVersionTemps = item.attributes.filter((a) => {
+            return (
+              atbsTemp.find(
+                (o) =>
+                  o.key.toLowerCase() == a.key.toLowerCase() &&
+                  o.value.toLowerCase() == a.value.toLowerCase()
+              ) !== undefined
+            );
+          });
+
+          return atbVersionTemps.length === atbsTemp.length;
+        }
+      );
+
+      const values = versionTemps.map((vs) => {
+        const ob = vs.attributes.find((a) => {
+          return a.key.toLowerCase() == keyToEetrieve.toLowerCase();
+        });
+        return ob ? ob.value.toLowerCase() : "";
+      });
+
+      return [...new Set(values.filter((i) => i !== ""))];
+    },
+    []
+  );
+
+  const partitionProduct = useCallback(
+    (
+      products,
+      atbSelected,
+      rowCelClick = [0, 0],
+      keySelectedWhenClick = "size"
+    ) => {
+      const arrs = [...products.productDetail.attributes].map((a) => {
+        return a.values;
+      });
+      const [row, cel] = rowCelClick;
+      const valueReduces = [
+        { key: keySelectedWhenClick, value: arrs[row][cel] },
+      ];
+      let atbProducts = JSON.parse(
+        JSON.stringify(products.productDetail.attributes)
+      );
+
+      let t = { ...atbProducts[row] };
+      atbProducts[row] = atbProducts[0];
+      atbProducts[0] = t;
+
+      let results = [];
+
+      atbProducts.forEach((item, index) => {
+        const key = item.key;
+        const values = item.values;
+
+        const ob = {
+          key: key,
+          values: [],
+        };
+
+        const valueByVersion = findAllValueInAttributes(
+          valueReduces,
+          products,
+          key
+        );
+
+        values.forEach((vl) => {
+          let active = false;
+          let disible = false;
+
+          if (
+            key.toLowerCase() == keySelectedWhenClick.toLowerCase() &&
+            arrs[row][cel].toLowerCase() == vl.toLowerCase()
+          ) {
+            active = true;
+          } else if (key.toLowerCase() !== keySelectedWhenClick.toLowerCase()) {
+            const isInner = valueByVersion.includes(vl.toLowerCase());
+            const valueActive = [...atbSelected].find(
+              (o) => o.key == key && o.value == vl
+            );
+            disible = !isInner;
+            active = valueActive !== undefined && isInner ? true : false;
+          }
+
+          if (active === true && index > 0) {
+            valueReduces.push({ key, value: vl });
+          }
+
+          ob.values.push({ val: vl, active, disible });
+        });
+
+        results.push(ob);
+      });
+
+      let rs = { ...results[row] };
+      results[row] = results[0];
+      results[0] = rs;
+      return results;
+    },
+    []
+  );
+
+  const [pd, setPd] = useState();
+  const [attriTest, setAttriTest] = useState([
+    // {
+    //   key: "size",
+    //   value: "S",
+    // },
+    // {
+    //   key: "color",
+    //   value: "Blue",
+    // },
+    // {
+    //   key: "cl",
+    //   value: "Min",
+    // },
+  ]);
+
+  const [product, setProduct] = useState([]);
+  console.log("Render", product);
+
+  const handleClickItemAttribute = ({ key, value, rowCel }) => {
+    const [row, cel] = rowCel;
+    const tem = attriTest.map((o) => {
+      const isEqual = o.key.toLowerCase() == key.toLowerCase();
+      return isEqual ? { ...o, value: value } : o;
+    });
+
+    setAttriTest(tem);
+    setProduct(partitionProduct(pd, tem, [row, cel], key));
+  };
 
   //Đổ danh sách cart của user
   useEffect(() => {
@@ -315,21 +480,14 @@ const ShopingCart = () => {
     setCoupon(-1);
   };
 
-  //Click edit version
-  const handleClickEditVersion = (idUpdate, versionIdSelected, versions) => {
-    setVersion(versionIdSelected);
-    setVersions(versions);
-    setIdUpdate(idUpdate);
-  };
-
   //Cập nhật version trong giỏ hàng
-  const handleUpdateVersionCart = async () => {
+  const handleUpdateVersionCart = async ({ idItem, idVersion }) => {
     const [error, data] = await stfExecAPI({
       method: "put",
       url: "api/user/cart/update-item",
       data: {
-        cartItemId: idUpdate,
-        versionId: version,
+        cartItemId: idItem,
+        versionId: idVersion,
       },
     });
 
@@ -349,10 +507,10 @@ const ShopingCart = () => {
 
       if (data) {
         setCarts(data.data);
-        const newItemUpdate = data?.data.find((o) => o.catrItemId == idUpdate);
+        const newItemUpdate = data?.data.find((o) => o.catrItemId == idItem);
 
         const temp = [...selectedItems].map((i) =>
-          i.catrItemId == idUpdate ? newItemUpdate : i
+          i.catrItemId == idItem ? newItemUpdate : i
         );
         setSubTotal(totalPrice(temp));
         setSelectedItems(temp);
@@ -419,15 +577,10 @@ const ShopingCart = () => {
     return null;
   }, []);
 
-  //
-  const handleNote = (event) => {
-    setNote(event.target.value);
-  };
-
   // Hàm giảm số lượng
   const handleUpdateQuantiy = async (id, quantity) => {
     const [error, data] = await stfExecAPI({
-      method: "post",
+      method: "put",
       url: "api/user/cart/update",
       data: {
         cartItemId: id,
@@ -436,6 +589,7 @@ const ShopingCart = () => {
     });
 
     if (error) {
+      console.log(error);
       DangerAlert({
         text:
           `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
@@ -625,6 +779,53 @@ const ShopingCart = () => {
   const style = {
     m: { marginTop: "40px" },
   };
+
+  const handleClickSaveUpdateVersion = async (product) => {
+    const length = product.length;
+    let numberReduce = 0;
+    const data = product.map((i) => {
+      const val = i.values.find((o) => o.active && !o.disible)?.val;
+      return { key: i.key, value: val || "" };
+    });
+
+    console.log("Ty ", data);
+    product.forEach((p) => {
+      p.values.forEach((vl) => {
+        if (vl.active && !vl.disible) {
+          numberReduce += 1;
+        }
+      });
+    });
+
+    if (length !== numberReduce) {
+      setErr("Please select full attributes!");
+    } else {
+      setErr("");
+      console.log(4234, itemCartUpdate);
+
+      for (let i = 0; i < itemCartUpdate?.versions.length; i++) {
+        let count = 0;
+        let item = itemCartUpdate.versions[i];
+
+        for (let j = 0; j < item.attributes.length; j++) {
+          let atb = item.attributes[j];
+          const temp = data.find(
+            (d) => d.key.toLowerCase() == atb.key.toLowerCase()
+          );
+
+          if (temp && temp?.value == atb.value) {
+            count += 1;
+          }
+        }
+
+        if (item.attributes.length == count) {
+          // Cập nhật phiên bản sản phẩm trong giỏ hàng
+         await handleUpdateVersionCart({idItem: itemCartUpdate.cartItemId, idVersion:item.id});
+        }
+      }
+    }
+  };
+
   return (
     <div style={style.m}>
       {/* <!-- Shoping Cart --> */}
@@ -686,13 +887,53 @@ const ShopingCart = () => {
                                 type="button"
                                 className="  stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
                                 data-bs-toggle="modal"
-                                data-bs-target="#exampleModal"
+                                data-bs-target="#staticBackdrop"
                                 onClick={() => {
-                                  handleClickEditVersion(
-                                    product.catrItemId,
-                                    product.versionId,
-                                    product.productDetail.versions
+                                  console.log(1, product);
+                                  console.log(
+                                    2,
+                                    product.productDetail.attributes
                                   );
+                                  console.log(3, product.attributes[0]);
+                                  console.log(4, product.attributes[0].key);
+                                  console.log(
+                                    5,
+                                    partitionProduct(
+                                      product,
+                                      product.attributes,
+                                      getRowCelCick(
+                                        product.productDetail.attributes,
+                                        product.attributes[0]
+                                      ),
+                                      product.attributes[0].key
+                                    )
+                                  );
+                                  console.log(
+                                    "Rowcel: ",
+                                    getRowCelCick(
+                                      product.productDetail.attributes,
+                                      product.attributes[0]
+                                    )
+                                  );
+                                  setItemCartUpdate({
+                                    cartItemId: product.catrItemId,
+                                    versions: [
+                                      ...product.productDetail.versions,
+                                    ],
+                                  });
+                                  setPd(product);
+                                  setProduct(
+                                    partitionProduct(
+                                      product,
+                                      product.attributes,
+                                      getRowCelCick(
+                                        product.productDetail.attributes,
+                                        product.attributes[0]
+                                      ),
+                                      product.attributes[0].key
+                                    )
+                                  );
+                                  setAttriTest(product.attributes);
                                 }}
                               >
                                 {product.productDetail.versions.find(
@@ -1105,7 +1346,35 @@ const ShopingCart = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal đổi sản phẩm trong giỏ */}
+      <div
+        class="modal fade"
+        id="staticBackdrop"
+        tabindex="-1"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <AttributeItem
+              pd={product}
+              onClick={handleClickItemAttribute}
+              clickSave={handleClickSaveUpdateVersion}
+              message={err}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 export default ShopingCart;
+

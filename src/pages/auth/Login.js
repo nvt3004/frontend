@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate  } from "react-router-dom";
 import {
   auth,
   googleProvider,
@@ -17,6 +17,8 @@ const Login = () => {
   const [username, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [value, setValue] = useState("");
+
+  const navigate = useNavigate(); // Khởi tạo hook useNavigate
 
   // const fetchUserProfile = async (accessToken) => {
   //   try {
@@ -119,17 +121,20 @@ const Login = () => {
 
   const handleEmailLogin = async (event) => {
     event.preventDefault();
+
     try {
       const response = await loginWithEmail(username, password);
 
       if (response.status === 200) {
         console.log("Username:", username);
         console.log("User Password:", password);
+        // Chuyển hướng đến trang /home sau khi đăng nhập thành công
+        navigate('/home');
       }
     } catch (error) {
       console.error("Error during username login:", error.message);
     }
-  };
+};
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");

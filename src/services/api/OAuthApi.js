@@ -46,6 +46,28 @@ export const registerUser = async (userData) => {
   }
 };
 
+export const getProfile = async () => {
+  try {
+    const token = Cookies.get("token"); // Lấy token từ cookie
+
+    if (!token) {
+      throw new Error("Token không tồn tại");
+    }
+
+    const response = await axiosInstance.get("/adminuser/get-profile", {
+      headers: {
+        Authorization: `Bearer ${token.trim()}`, // Dùng trim() để loại bỏ khoảng trắng
+      },
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching profile:", error.message);
+    throw error;
+  }
+};
+
+
 // Gửi yêu cầu đặt lại mật khẩu
 export const sendResetPasswordEmail = async (email) => {
   try {
@@ -92,6 +114,27 @@ export const resetPassword = async (token, newPassword) => {
   } catch (error) {
     console.error("Password reset failed:", error);
     throw error;
+  }
+};
+
+export const updateUser = async (userId, updatedUser) => {
+  try {
+    const token = Cookies.get("token");
+
+    if (!token) {
+      throw new Error("Token không tồn tại");
+    }
+
+    const response = await axiosInstance.put(`/adminuser/update/${userId}`, updatedUser, { 
+      headers: {
+        Authorization: `Bearer ${token.trim()}`, 
+      },
+    });
+    
+    return response.data; 
+  } catch (error) {
+    console.error("Error updating user:", error.message); 
+    throw error; 
   }
 };
 

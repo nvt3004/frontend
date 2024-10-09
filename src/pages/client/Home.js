@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Slider from "../../components/client/homeItem/Slider";
 import { Link } from "react-router-dom";
 import productApi from "../../services/api/ProductApi";
+
 const Home = () => {
   // SuccessAlert({ title: 'Product Added', text: 'The product was added to your cart!' });
 
@@ -57,9 +58,7 @@ const Home = () => {
   };
   const handleCheckColorAndSize = (key, value) => {
     let attribute = [];
-    ProductDetail.versions.forEach(element => {
-      
-    });
+    ProductDetail.versions.forEach((element) => {});
   };
   return (
     <div>
