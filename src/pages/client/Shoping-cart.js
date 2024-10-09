@@ -44,11 +44,11 @@ const getEndDate = (end) => {
 };
 
 function getNameAddress(nameId) {
-  return nameId.substring(nameId.indexOf(" "), nameId.length).trim();
+  return nameId?.substring(nameId.indexOf(" "), nameId.length).trim();
 }
 
 function getIdAddress(name) {
-  return name.substring(0, name.indexOf(" ")).trim();
+  return name?.substring(0, name.indexOf(" ")).trim();
 }
 
 function formatCurrencyVND(amount) {
@@ -510,7 +510,7 @@ const ShopingCart = () => {
         const newItemUpdate = data?.data.find((o) => o.catrItemId == idItem);
 
         const temp = [...selectedItems].map((i) =>
-          i.catrItemId == idItem ? newItemUpdate : i
+          i?.catrItemId == idItem ? newItemUpdate : i
         );
         setSubTotal(totalPrice(temp));
         setSelectedItems(temp);
@@ -525,18 +525,18 @@ const ShopingCart = () => {
   };
 
   const handleAddress = async (e) => {
-    const a = addresses.find((o) => o.addressId == e.target.value);
+    const a = addresses.find((o) => o?.addressId == e.target.value);
 
     const feeS = await feeShip(
-      getIdAddress(a.district),
-      getIdAddress(a.ward + "")
+      getIdAddress(a?.district),
+      getIdAddress(a?.ward + "")
     );
 
     setAddress(Number(e.target.value));
 
     setAddressTitle(
       `${getNameAddress(a?.province)}, ${getNameAddress(
-        a.district
+        a?.district
       )}, ${getNameAddress(a?.ward)}, ${a?.detailAddress}`
     );
     setFee(feeS);
@@ -634,16 +634,16 @@ const ShopingCart = () => {
         const a = data?.data[0];
 
         const feeS = await feeShip(
-          getIdAddress(a.district),
-          getIdAddress(a.ward + "")
+          getIdAddress(a?.district),
+          getIdAddress(a?.ward + "")
         );
 
         setAddresses([...data?.data]);
-        setAddress(a.addressId);
+        setAddress(a?.addressId);
         setAddressTitle(
-          `${getNameAddress(a.province)}, ${getNameAddress(
-            a.district
-          )}, ${getNameAddress(a.ward)}, ${a.detailAddress}`
+          `${getNameAddress(a?.province)}, ${getNameAddress(
+            a?.district
+          )}, ${getNameAddress(a?.ward)}, ${a?.detailAddress}`
         );
         setFee(feeS);
       }
@@ -1151,15 +1151,15 @@ const ShopingCart = () => {
                             addresses.map((item) => {
                               return (
                                 <option
-                                  selected={item.addressId === Number(address)}
-                                  value={item.addressId}
+                                  selected={item?.addressId === Number(address)}
+                                  value={item?.addressId}
                                 >
                                   {`${getNameAddress(
-                                    item.province
+                                    item?.province
                                   )}, ${getNameAddress(
-                                    item.district
+                                    item?.district
                                   )}, ${getNameAddress(item.ward)}, ${
-                                    item.detailAddress
+                                    item?.detailAddress
                                   }`}
                                 </option>
                               );

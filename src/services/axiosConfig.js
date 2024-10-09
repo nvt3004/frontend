@@ -14,7 +14,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     // Lấy token từ cookie
-    const token = Cookies.get("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGFpbnZwYzA2MTU3QGZwdC5lZHUudm4iLCJwdXJwb3NlIjoibG9naW4iLCJpYXQiOjE3MjczMTc5MDMsImV4cCI6MTcyNzMxOTcwM30.sk-8T-YSvf8MCZMPcHjiMOX1BOUpdmNO9vJw8knWJxA");
+    const token = Cookies.get("token");
     if (token) {
       // Đính token vào header Authorization
       config.headers.Authorization = `Bearer ${token}`;

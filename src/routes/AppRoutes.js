@@ -126,7 +126,6 @@ const router = createBrowserRouter([
 ]);
 
 function AppRoutes() {
-  Cookies.set('access_token', 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGFpbnZwYzA2MTU3QGZwdC5lZHUudm4iLCJwdXJwb3NlIjoibG9naW4iLCJpYXQiOjE3MjcxMDMzMjAsImV4cCI6MTcyNzEwNTEyMH0.axH3YDyaKK7Qx2zXL2bV0CweaF8wEwPwur4R5kg_F_I');
   return <RouterProvider router={router} />;
 }
 
