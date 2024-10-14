@@ -3,7 +3,7 @@ import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import WarningAlert from "../../components/client/sweetalert/WarningAlert";
 import InfoAlert from "../../components/client/sweetalert/InfoAlert";
-
+import { stfExecAPI, ghnExecAPI } from "../../stf/common";
 const searchProduct = async (query, page) => {
   try {
     const response = await axiosInstance.get("/product/search", {
@@ -94,22 +94,31 @@ const getProductDetail = async (id) => {
   }
 };
 
-
 const addWishlist = async (productId) => {
   try {
-    const response = await axiosInstance.post(`/api/user/wishlist/add/${productId}`);
+    // Tạo đối tượng wishlistModel với productId
+
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: `api/user/wishlist/add`,
+      data: {
+        productId: productId, 
+      },
+    });
+   
+
     // Hiển thị thông báo thành công
     SuccessAlert({
       title: "Product Added!",
       text: "The product has been successfully added to your wishlist.",
     });
-
-    return response.data;
+    return data.data;
   } catch (error) {
     // Kiểm tra các mã trạng thái khác nhau để xử lý lỗi cụ thể
+
     if (error.response) {
       const { status, data } = error.response;
-
+console.log("abc",error)
       switch (status) {
         case 400:
           DangerAlert({ title: "Invalid Token", text: data.message });
@@ -139,13 +148,17 @@ const addWishlist = async (productId) => {
   }
 };
 
+
 const removeWishlist = async (productId) => {
   try {
-    const response = await axiosInstance.delete(`/api/user/wishlist/remove/${productId}`);
+    const [error, data] = await stfExecAPI({
+      method: "delete",
+      url: `api/user/wishlist/remove/${productId}`,
+    });
     // Nếu thành công, hiển thị SuccessAlert
     SuccessAlert({ title: "Deleted!", text: "The wishlist item has been successfully removed." });
 
-    return response.data; // Trả về dữ liệu từ server
+    return data.data; // Trả về dữ liệu từ server
   } catch (error) {
     // Kiểm tra lỗi và hiển thị thông báo phù hợp với các alert component
     if (error.response) {
