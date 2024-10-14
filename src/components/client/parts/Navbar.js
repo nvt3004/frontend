@@ -7,6 +7,7 @@ const Navbar = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [profile, setProfile] = useState(null);
 
+  const [uri, setUri] = useState(window.location.pathname);
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -158,37 +159,45 @@ const Navbar = () => {
 
             <div className="menu-desktop p-0 " style={styles.menuDesktop}>
               <ul className="main-menu" style={styles.mainMenu}>
-                <li className="active-menu">
+                <li className={uri=='/'||uri=='/home'?'active-menu':''}
+                  onClick={()=>{setUri(window.location.pathname)}}   
+                >
                   <Link to="/" className="text-decoration-none">
                     Home
                   </Link>
                 </li>
 
-                <li>
+                <li className={uri=='/product'?'active-menu':''}
+                onClick={()=>{setUri(window.location.pathname)}}   >
                   <Link to="/product" className="text-decoration-none">
                     Shop
                   </Link>
                 </li>
 
-                <li className="label1" data-label1="hot">
+                <li className={`${uri=='/shoping-cart'?'active-menu ':''} label1`} data-label1="hot"
+                
+                onClick={()=>{setUri(window.location.pathname)}}>
                   <Link to="/shoping-cart" className="text-decoration-none">
                     Features
                   </Link>
                 </li>
 
-                <li>
+                <li className={uri=='/blog'?'active-menu':''}
+                onClick={()=>{setUri(window.location.pathname)}} >
                   <Link to="/blog" className="text-decoration-none">
                     Blog
                   </Link>
                 </li>
 
-                <li>
+                <li className={uri=='/about'?'active-menu':''}
+                onClick={()=>{setUri(window.location.pathname)}} >
                   <Link to="/about" className="text-decoration-none">
                     About
                   </Link>
                 </li>
 
-                <li>
+                <li className={uri=='/contact'?'active-menu':''}
+                onClick={()=>{setUri(window.location.pathname)}} >
                   <Link to="/contact" className="text-decoration-none">
                     Contact
                   </Link>

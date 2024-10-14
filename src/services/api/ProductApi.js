@@ -1,4 +1,9 @@
 import axiosInstance from "../axiosConfig";
+import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
+import DangerAlert from "../../components/client/sweetalert/DangerAlert";
+import WarningAlert from "../../components/client/sweetalert/WarningAlert";
+import InfoAlert from "../../components/client/sweetalert/InfoAlert";
+
 const searchProduct = async (query, page) => {
   try {
     const response = await axiosInstance.get("/product/search", {
@@ -88,11 +93,92 @@ const getProductDetail = async (id) => {
     }
   }
 };
+
+
+const addWishlist = async (productId) => {
+  try {
+    const response = await axiosInstance.post(`/api/user/wishlist/add/${productId}`);
+    // Hiển thị thông báo thành công
+    SuccessAlert({
+      title: "Product Added!",
+      text: "The product has been successfully added to your wishlist.",
+    });
+
+    return response.data;
+  } catch (error) {
+    // Kiểm tra các mã trạng thái khác nhau để xử lý lỗi cụ thể
+    if (error.response) {
+      const { status, data } = error.response;
+
+      switch (status) {
+        case 400:
+          DangerAlert({ title: "Invalid Token", text: data.message });
+          break;
+        case 401:
+          WarningAlert({ title: "Token Expired", text: data.message });
+          break;
+        case 403:
+          WarningAlert({ title: "Account Locked", text: data.message });
+          break;
+        case 404:
+          DangerAlert({ title: "Not Found", text: data.message });
+          break;
+        case 409:
+          InfoAlert({ title: "Already Liked", text: data.message });
+          break;
+        case 422:
+          DangerAlert({ title: "Invalid Input", text: data.message });
+          break;
+        default:
+          DangerAlert({ title: "Unknown Error", text: "An unexpected error occurred" });
+          break;
+      }
+    } else {
+      DangerAlert({ title: "Connection Error", text: "Failed to connect to the server" });
+    }
+  }
+};
+
+const removeWishlist = async (productId) => {
+  try {
+    const response = await axiosInstance.delete(`/api/user/wishlist/remove/${productId}`);
+    // Nếu thành công, hiển thị SuccessAlert
+    SuccessAlert({ title: "Deleted!", text: "The wishlist item has been successfully removed." });
+
+    return response.data; // Trả về dữ liệu từ server
+  } catch (error) {
+    // Kiểm tra lỗi và hiển thị thông báo phù hợp với các alert component
+    if (error.response) {
+      const { status, data } = error.response;
+      switch (status) {
+        case 400:
+          DangerAlert({ title: "Invalid Token", text: data.message });
+          break;
+        case 401:
+          WarningAlert({ title: "Token Expired", text: data.message });
+          break;
+        case 403:
+          WarningAlert({ title: "Account Locked", text: data.message });
+          break;
+        case 404:
+          DangerAlert({ title: "Not Found", text: data.message });
+          break;
+        default:
+          DangerAlert({ title: "Unknown Error", text: "An unexpected error occurred." });
+          break;
+      }
+    } else {
+      DangerAlert({ title: "Connection Error", text: "Failed to connect to the server." });
+    }
+  }
+};
 const productApi = {
   searchProduct,
   getFilterAttribute,
   filter,
   getTopProducts,
   getProductDetail,
+  addWishlist,
+  removeWishlist
 };
 export default productApi;

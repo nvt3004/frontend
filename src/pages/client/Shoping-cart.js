@@ -67,8 +67,8 @@ function getRowCelCick(attributes = [], item) {
     for (let j = 0; j < attributes[i].values.length; j++) {
       const val = attributes[i].values[j];
 
-      if (key.toLowerCase() == item.key.toLowerCase()) {
-        if (val.toLowerCase() == item.value.toLowerCase()) {
+      if (key?.toLowerCase() == item?.key?.toLowerCase()) {
+        if (val?.toLowerCase() == item?.value?.toLowerCase()) {
           console.log("Vô for");
           return [i, j];
         }
@@ -129,8 +129,8 @@ const ShopingCart = () => {
             return (
               atbsTemp.find(
                 (o) =>
-                  o.key.toLowerCase() == a.key.toLowerCase() &&
-                  o.value.toLowerCase() == a.value.toLowerCase()
+                  o?.key?.toLowerCase() == a?.key?.toLowerCase() &&
+                  o?.value?.toLowerCase() == a?.value?.toLowerCase()
               ) !== undefined
             );
           });
@@ -141,9 +141,9 @@ const ShopingCart = () => {
 
       const values = versionTemps.map((vs) => {
         const ob = vs.attributes.find((a) => {
-          return a.key.toLowerCase() == keyToEetrieve.toLowerCase();
+          return a?.key?.toLowerCase() == keyToEetrieve?.toLowerCase();
         });
-        return ob ? ob.value.toLowerCase() : "";
+        return ob ? ob?.value?.toLowerCase() : "";
       });
 
       return [...new Set(values.filter((i) => i !== ""))];
@@ -195,12 +195,12 @@ const ShopingCart = () => {
           let disible = false;
 
           if (
-            key.toLowerCase() == keySelectedWhenClick.toLowerCase() &&
-            arrs[row][cel].toLowerCase() == vl.toLowerCase()
+            key?.toLowerCase() == keySelectedWhenClick?.toLowerCase() &&
+            arrs[row][cel]?.toLowerCase() == vl?.toLowerCase()
           ) {
             active = true;
-          } else if (key.toLowerCase() !== keySelectedWhenClick.toLowerCase()) {
-            const isInner = valueByVersion.includes(vl.toLowerCase());
+          } else if (key?.toLowerCase() !== keySelectedWhenClick?.toLowerCase()) {
+            const isInner = valueByVersion.includes(vl?.toLowerCase());
             const valueActive = [...atbSelected].find(
               (o) => o.key == key && o.value == vl
             );
@@ -248,7 +248,7 @@ const ShopingCart = () => {
   const handleClickItemAttribute = ({ key, value, rowCel }) => {
     const [row, cel] = rowCel;
     const tem = attriTest.map((o) => {
-      const isEqual = o.key.toLowerCase() == key.toLowerCase();
+      const isEqual = o?.key?.toLowerCase() == key?.toLowerCase();
       return isEqual ? { ...o, value: value } : o;
     });
 
@@ -810,7 +810,7 @@ const ShopingCart = () => {
         for (let j = 0; j < item.attributes.length; j++) {
           let atb = item.attributes[j];
           const temp = data.find(
-            (d) => d.key.toLowerCase() == atb.key.toLowerCase()
+            (d) => d?.key?.toLowerCase() == atb?.key?.toLowerCase()
           );
 
           if (temp && temp?.value == atb.value) {

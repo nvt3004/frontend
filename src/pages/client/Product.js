@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import productApi from "../../services/api/ProductApi";
 import SpeechToText from "../../components/client/search/SpeechtoText";
+import Wish from "../../components/client/ProdWish/Wish";
 const Product = () => {
   // Các thuộc tính bộ lọc được lấy từ API (ví dụ: color, size, category)
   const [filterAttributes, setFilterAttributes] = useState({
@@ -41,6 +42,35 @@ const Product = () => {
   // Xác định API đang hoạt động
   const [isSearching, setIsSearching] = useState(false);
 
+  const handleAddWishlist = async (id) => {
+    try {
+      await productApi.addWishlist(id);
+      setProducts((prevProducts) =>
+        prevProducts.map((prod) =>
+          prod.id === id
+            ? { ...prod, like: true } // Đánh dấu sản phẩm là 'liked'
+            : prod
+        )
+      );
+    } catch (error) {
+      console.error("Error adding to Wishlist:", error.message);
+    }
+  };
+  const handleRemoveWishlist = async (id) => {
+    try {
+      await productApi.removeWishlist(id);
+      setProducts((prevProducts) =>
+        prevProducts.map((prod) =>
+          prod.id === id
+            ? { ...prod, like: false } // Gỡ dấu 'liked' khỏi sản phẩm
+            : prod
+        )
+      );
+    } catch (error) {
+      console.error("Error removing from Wishlist:", error.message);
+    }
+  };
+  
   console.log("1");
   // Lấy chi tiết sản phẩm
   const getProductDetail = async (id) => {
@@ -696,21 +726,16 @@ const Product = () => {
                           </div>
 
                           <div className="block2-txt-child2 flex-r p-t-3">
-                            <Link
-                              to="#"
-                              className="btn-addwish-b2 dis-block pos-relative js-addwish-b2"
-                            >
-                              <img
-                                className="icon-heart1 dis-block trans-04"
-                                src="images/icons/icon-heart-01.png"
-                                alt="ICON"
-                              />
-                              <img
-                                className="icon-heart2 dis-block trans-04 ab-t-l"
-                                src="images/icons/icon-heart-02.png"
-                                alt="ICON"
-                              />
-                            </Link>
+                            <Wish
+                              prodID={product.id}
+                              isWish={product.like}
+                              handleAddWish={() => {
+                                handleAddWishlist(product.id);
+                              }}
+                              handleRemoveWish={() =>
+                                handleRemoveWishlist(product.id)
+                              }
+                            />
                           </div>
                         </div>
                       </div>
