@@ -1,8 +1,9 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
 import Select from 'react-select';
+import { motion } from 'framer-motion';
 
-const Organize = ({suppliers, categories}) => {
+const Organize = ({suppliers, categories, handleOpenSupplier}) => {
     return (
         <div>
             <div className='bg-white rounded-2 border py-2 px-4 mb-4'>
@@ -11,14 +12,17 @@ const Organize = ({suppliers, categories}) => {
                     <Form.Group className='mb-3'>
                         <div className='d-flex align-items-center mb-1'>
                             <Form.Label className='fs-6 fw-medium mb-0'>Category</Form.Label>
-                            <label className='ms-3 font-12 fw-medium text-primary'>New category</label>
+                            <motion.label className='ms-3 mb-0 font-12 fw-medium text-primary'
+                                whileHover={{opacity: 0.8, scale: 1.08}} >New category</motion.label>
                         </div>
                         <Select options={categories} placeholder='Select category...'/>
                     </Form.Group>
                     <Form.Group className='mb-3'>
                         <div className='d-flex align-items-center mb-1'>
                             <Form.Label className='fs-6 fw-medium mb-0'>Supplier</Form.Label>
-                            <label className='ms-3 font-12 fw-medium text-primary'>New supplier</label>
+                            <motion.label className='ms-3 mb-0 font-12 fw-medium text-primary'
+                                whileHover={{opacity: 0.8, scale: 1.1}}
+                                onClick={handleOpenSupplier}>New supplier</motion.label>
                         </div>
                         <Select options={suppliers} placeholder='Select supplier...'/>
                     </Form.Group>

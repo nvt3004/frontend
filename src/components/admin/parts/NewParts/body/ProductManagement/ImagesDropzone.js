@@ -1,17 +1,17 @@
 import React from 'react';
 import { useDropzone } from 'react-dropzone';
-import { MdDeleteForever } from "react-icons/md";
 
 const ImagesDropzone = ({ onDrop }) => {
     const { getRootProps, getInputProps } = useDropzone({
         onDrop: (acceptedFiles) => {
             onDrop(acceptedFiles);
-        }
+        },
+        accept: {'image/*': []},
     });
 
     return (
         <div {...getRootProps({ className: 'dropzone' })}>
-            <input {...getInputProps()} />
+            <input {...getInputProps()}/>
             <p>Drag 'n' drop some files here, or click to select files</p>
         </div>
     );

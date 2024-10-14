@@ -34,6 +34,7 @@ import UserTable from '../components/admin/parts/NewParts/body/UserManagement/Us
 import SuppliersTable from '../components/admin/parts/NewParts/body/SuppliersManagement/SuppliersTable';
 import ProductTable from '../components/admin/parts/NewParts/body/ProductManagement/ProductTable';
 import NewProduct from '../components/admin/parts/NewParts/body/ProductManagement/NewProduct';
+import StockIn from '../components/admin/parts/NewParts/body/WarehouseManagement/StockIn';
 
 const router = createBrowserRouter([
   {
@@ -43,7 +44,7 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> }, // Trang mặc định cho client
       { path: '/home', element: <Home /> },
       { path: '/product', element: <Product /> },
-      { path: '/product-detail', element: <ProductDetail/> },
+      { path: '/product-detail', element: <ProductDetail /> },
       { path: '/shoping-cart', element: <ShopingCart /> },
       { path: '/blog', element: <Blog /> },
       { path: '/blog-detail', element: <BlogDetail /> },
@@ -68,41 +69,41 @@ const router = createBrowserRouter([
       {
         path: 'orders',
         children: [
-          { path: 'manage', element: <OrderManagement/>}
+          { path: 'manage', element: <OrderManagement /> }
         ],
       },
       {
         path: 'suppliers',
         children: [
-          { path: 'manage', element: <SuppliersTable/>},
+          { path: 'manage', element: <SuppliersTable /> },
           { path: 'add', element: <AddNewSupplier /> },
         ],
       },
       {
         path: 'warehouse',
         children: [
-          { path: 'manage', element: <WarehouseManagement/>},
-          { path: 'stock-in', element: <WarehouseStockIn /> },
+          // { path: 'manage', element: <WarehouseManagement/>},
+          { path: 'stock-in', element: <StockIn /> },
         ],
       },
       {
         path: 'permission',
         children: [
-          { path: 'manage', element: <PermissionManagement/>},
-          { path: 'add', element: <NewPermission/> },
+          { path: 'manage', element: <PermissionManagement /> },
+          { path: 'add', element: <NewPermission /> },
         ],
       },
       {
         path: 'feedback',
         children: [
-          { path: 'manage', element: <FeedbackManagement/>},
+          { path: 'manage', element: <FeedbackManagement /> },
         ],
       },
       {
         path: 'products',
         children: [
-          { path: 'manage', element: <ProductTable/>},
-          { path: 'new', element: <NewProduct/>},
+          { path: 'manage', element: <ProductTable /> },
+          { path: 'new', element: <NewProduct /> },
         ],
       },
     ],

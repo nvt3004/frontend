@@ -16,7 +16,7 @@ function AdminLayout() {
           <AdminNav className="flex-grow-1" />
         </aside>
         <div className='col-10 col-md-10 bg-body-tertiary' style={{ height: "89.9vh", overflowY: "auto" }}>
-          <div className='container'>
+          <div className='container admin-layout'>
             <Outlet />
           </div>
         </div>

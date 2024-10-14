@@ -18,7 +18,7 @@ const AdminNav = () => {
         </button>
         <div className="collapse" id="userManagementCollapse">
           {/* <StyledLink to="/admin/users/add" className="list-group-item text-center bg-secondary-subtle">
-            New User
+            Manage Customers
           </StyledLink> */}
           <StyledLink to="/admin/users/manage" className="list-group-item text-center bg-secondary-subtle">
             Manage Users
@@ -26,7 +26,7 @@ const AdminNav = () => {
         </div>
 
         <button
-          className="list-group-item list-group-item-action bg-danger"
+          className="list-group-item list-group-item-action"
           data-bs-toggle="collapse"
           data-bs-target="#productManagementCollapse"
           aria-expanded="false"
@@ -67,9 +67,9 @@ const AdminNav = () => {
           Suppliers Management
         </button>
         <div className="collapse" id="suppliersManagementCollapse">
-          <StyledLink to="/admin/suppliers/add" className="list-group-item text-center bg-secondary-subtle">
+          {/* <StyledLink to="/admin/suppliers/add" className="list-group-item text-center bg-secondary-subtle">
             New Suppliers
-          </StyledLink>
+          </StyledLink> */}
           <StyledLink to="/admin/suppliers/manage" className="list-group-item text-center bg-secondary-subtle">
             Manage Suppliers
           </StyledLink>
@@ -87,9 +87,9 @@ const AdminNav = () => {
           <StyledLink to="/admin/warehouse/stock-in" className="list-group-item text-center bg-secondary-subtle">
             Stock in
           </StyledLink>
-          <StyledLink to="/admin/warehouse/manage" className="list-group-item text-center bg-secondary-subtle">
+          {/* <StyledLink to="/admin/warehouse/manage" className="list-group-item text-center bg-secondary-subtle">
             Manage Warehouses
-          </StyledLink>
+          </StyledLink> */}
         </div>
         <button
           className="list-group-item list-group-item-action bg-white"
@@ -98,7 +98,7 @@ const AdminNav = () => {
           aria-expanded="false"
           aria-controls="permissionsManagementCollapse"
         >
-            Permissions Management
+          Permissions Management
         </button>
         <div className="collapse" id="permissionsManagementCollapse">
           <StyledLink to="/admin/permission/add" className="list-group-item text-center bg-secondary-subtle">

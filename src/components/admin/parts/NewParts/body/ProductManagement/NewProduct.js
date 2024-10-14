@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState, version } from 'react';
-import { Form, InputGroup, Table } from 'react-bootstrap';
+import { Button, Form, InputGroup, Table } from 'react-bootstrap';
 import { RiAddBoxFill } from "react-icons/ri";
 import CustomButton from '../../component/CustomButton';
 import suppliers from '../SuppliersManagement/data';
 import Variants from './Variants';
 import Organize from './Organize';
 import EmptyValues from '../../component/errorPages/EmptyValues';
-import Dropzone, { useDropzone } from 'react-dropzone';
 import ImagesDropzone from './ImagesDropzone';
-
+import { MdDeleteForever } from "react-icons/md";
+import SupplierModal from '../SuppliersManagement/SupplierModal';
 
 const NewProduct = () => {
     const supplierOptions = suppliers.map(item => ({
@@ -47,28 +47,26 @@ const NewProduct = () => {
     // }, [selectedSize]);
 
     const [variants, setVariants] = useState([]);
-    let variantIndex = 0;
     const handleSetVariants = () => {
         const newVariants = [];
         selectedSizes.forEach(size => {
             selectedColors.forEach(color => {
-                newVariants.push({ index: variantIndex, size: size.label, color: color.label, images: [] });
+                newVariants.push({ size: size.label, color: color.label, images: [] });
             });
         });
         setVariants(newVariants);
-        
-        variantIndex +=1;
-    }
+    };
+
     useEffect(() => {
         handleSetVariants();
-        console.log(variants);
     }, [selectedSizes, selectedColors]);
-    
+
     const handleDrop = (files, versionIndex) => {
         const newImages = files.map((file, index) => ({
             id: index,
             url: URL.createObjectURL(file),
         }));
+
         setVariants((prevVariants) =>
             prevVariants.map((variant, idx) =>
                 idx === versionIndex
@@ -79,11 +77,32 @@ const NewProduct = () => {
                     : variant
             )
         );
+    };
+    useEffect(() => {
         console.log(variants);
 
+    }, [variants]);
+
+    const handleDeleteImage = (versionIndex, imgIndex) => {
+        setVariants((prevVariants) =>
+            prevVariants.map((variant, idx) =>
+                idx === versionIndex
+                    ? {
+                        ...variant,
+                        images: variant.images.filter((_, index) => index !== imgIndex),
+                    }
+                    : variant
+            )
+        );
     };
 
-
+    const [openSupplierModal, setOpenSupplierModal] = useState(false);
+    const handleOpenSupplierModal = () => {
+        setOpenSupplierModal(true);
+    }
+    const handleCancelSupplier = () => {
+        setOpenSupplierModal(false);
+    }
 
     return (
         <div className='mt-2'>
@@ -149,16 +168,23 @@ const NewProduct = () => {
                                                         </tr>
                                                         <tr className=''>
                                                             <td colSpan={5}>
-                                                                {/* <ImagesDropzone onDrop={(files) => handleDrop(files, index)} />
-                                                                {variants.map((variant, index) => (
-                                                                    <div key={index}>
-                                                                        <div>
-                                                                            {variant.images && variant.images.map((image, imgIndex) => (
-                                                                                <img key={imgIndex} src={image.url} alt={`Variant ${index} image`} style={{ width: '150px', height: 'auto' }} />
-                                                                            ))}
+                                                                <ImagesDropzone onDrop={(files) => handleDrop(files, index)} />
+                                                                <div className='d-flex justify-content-around'>
+                                                                    {item.images && item.images.map((image, imgIndex) => (
+                                                                        <div className='position-relative'>
+                                                                            <img key={imgIndex} src={image.url} alt={`Variant's image`}
+                                                                                style={{ width: '150px', height: 'auto' }} />
+                                                                            <Button
+                                                                                className='position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center'
+                                                                                variant='secondary'
+                                                                                style={{ width: '30px', height: '30px', borderRadius: '50%' }}
+                                                                                onClick={() => handleDeleteImage(index, imgIndex)}
+                                                                            >
+                                                                                <MdDeleteForever style={{ width: '60%', height: '60%' }} />
+                                                                            </Button>
                                                                         </div>
-                                                                    </div>
-                                                                ))} */}
+                                                                    ))}
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     </>
@@ -171,11 +197,14 @@ const NewProduct = () => {
                         </div>
                     </div>
                     <div className='col-3'>
-                        <Organize suppliers={supplierOptions} categories={categoryOptions} />
+                        <Organize suppliers={supplierOptions} categories={categoryOptions} handleOpenSupplier={handleOpenSupplierModal}/>
                         <Variants sizeRef={sizeRef} colorRef={colorRef}
                             sizes={sizes} colors={colors}
                             sizeChange={handleSizeChange} colorChange={handleColorChange} />
                     </div>
+                </div>
+                <div>
+                    <SupplierModal isNew={true} show={openSupplierModal} handleCancel={handleCancelSupplier}/>
                 </div>
             </div>
         </div>
