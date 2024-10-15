@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Overlay, Table } from 'react-bootstrap';
+import { Modal, Table } from 'react-bootstrap';
 
 const WarehouseProductModal = ({ show, handleClose, item }) => {
     const [defaultImage, setDefaultImmage] = useState(process.env.PUBLIC_URL + '/images/default-image.jpg');

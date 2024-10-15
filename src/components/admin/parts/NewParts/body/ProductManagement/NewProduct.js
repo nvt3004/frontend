@@ -42,9 +42,6 @@ const NewProduct = () => {
     const handleColorChange = (selectedOptions) => {
         setSelectedColor(selectedOptions);
     }
-    // useEffect(() => {
-    //     console.log('Selected sizes have changed: ', selectedSize);
-    // }, [selectedSize]);
 
     const [variants, setVariants] = useState([]);
     const handleSetVariants = () => {
@@ -198,7 +195,7 @@ const NewProduct = () => {
                     </div>
                     <div className='col-3'>
                         <Organize suppliers={supplierOptions} categories={categoryOptions} handleOpenSupplier={handleOpenSupplierModal}/>
-                        <Variants sizeRef={sizeRef} colorRef={colorRef}
+                        <Variants 
                             sizes={sizes} colors={colors}
                             sizeChange={handleSizeChange} colorChange={handleColorChange} />
                     </div>

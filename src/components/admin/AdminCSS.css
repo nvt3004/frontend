@@ -65,6 +65,10 @@
     background-color: #dcdce1;
 }
 
+.bg-gray-2{
+    background-color: #EFEFEF;
+}
+
 /* --- --- --- */
 .custom-radius {
     border-radius: 12px 0 12px 0;

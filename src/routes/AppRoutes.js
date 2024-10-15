@@ -18,13 +18,8 @@ import Contact from '../pages/client/Contact';
 import Dashboard from '../pages/admin/Dashboard'; // Default Pages
 import Settings from '../pages/admin/Settings';
 import AddNewUser from '../components/admin/parts/AddNewUser';
-import ManageUsers from '../components/admin/parts/ManageUsers';
 import OrderManagement from '../components/admin/parts/OrderManagement';
-import SupplierManagement from '../components/admin/parts/SuppliersManagement';
 import AddNewSupplier from '../components/admin/parts/AddNewSupplier';
-import WarehouseManagement from '../components/admin/parts/WarehouseManagement';
-import AddNewWarehouse from '../components/admin/parts/AddNewWarehouse';
-import WarehouseStockIn from '../components/admin/parts/WarehouseStockIn';
 import PermissionManagement from '../components/admin/parts/PermissionManagement';
 import NewPermission from '../components/admin/parts/NewPermission';
 import FeedbackManagement from '../components/admin/parts/FeedbackManagement';
