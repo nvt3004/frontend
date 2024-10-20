@@ -3,7 +3,7 @@ import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import WarningAlert from "../../components/client/sweetalert/WarningAlert";
 import InfoAlert from "../../components/client/sweetalert/InfoAlert";
-import { stfExecAPI, ghnExecAPI } from "../../stf/common";
+import { stfExecAPI } from "../../stf/common";
 const searchProduct = async (query, page) => {
   try {
     const response = await axiosInstance.get("/product/search", {
@@ -112,7 +112,7 @@ const addWishlist = async (productId) => {
       title: "Product Added!",
       text: "The product has been successfully added to your wishlist.",
     });
-    return data.data;
+    return data;
   } catch (error) {
     // Kiểm tra các mã trạng thái khác nhau để xử lý lỗi cụ thể
 
@@ -158,7 +158,7 @@ const removeWishlist = async (productId) => {
     // Nếu thành công, hiển thị SuccessAlert
     SuccessAlert({ title: "Deleted!", text: "The wishlist item has been successfully removed." });
 
-    return data.data; // Trả về dữ liệu từ server
+    return data; // Trả về dữ liệu từ server
   } catch (error) {
     // Kiểm tra lỗi và hiển thị thông báo phù hợp với các alert component
     if (error.response) {
@@ -184,7 +184,59 @@ const removeWishlist = async (productId) => {
       DangerAlert({ title: "Connection Error", text: "Failed to connect to the server." });
     }
   }
+}; 
+
+
+const getProductWish = async () => {
+  try {
+    const [error, data] = await stfExecAPI({
+      method: "get",
+      url: "api/user/wishlist/getproductwish",
+    });
+
+    // Nếu thành công, trả về dữ liệu từ server
+    return data.data;
+  } catch (error) {
+    // Kiểm tra lỗi và ghi log phù hợp
+    if (error.response) {
+      const { status, data } = error.response;
+
+      switch (status) {
+        case 400:
+          console.log("Bad Request: ", data.message || "Authorization header or token is missing.");
+          break;
+        case 401:
+          console.log("Unauthorized: ", data.message || "Token is missing, empty, or expired.");
+          break;
+        case 403:
+          console.log("Forbidden: ", data.message || "Account is locked.");
+          break;
+        case 404:
+          console.log("Not Found: ", data.message || "User not found.");
+          break;
+        case 204:
+          console.log("No Content: No products found in wishlist.");
+          break;
+        default:
+          console.log("Unknown Error: An unexpected error occurred.");
+          break;
+      }
+    } else {
+      console.log("Connection Error: Failed to connect to the server.");
+    }
+  }
 };
+const getCartAll = async (dispatch) => {
+  try {
+    const [error, data] = await stfExecAPI({
+      url: "api/user/cart/all",
+    });
+    return data.data;
+  } catch (err) {
+    console.error("Unexpected error:", err);
+  }
+};
+
 const productApi = {
   searchProduct,
   getFilterAttribute,
@@ -192,6 +244,8 @@ const productApi = {
   getTopProducts,
   getProductDetail,
   addWishlist,
-  removeWishlist
+  removeWishlist,
+  getProductWish,
+  getCartAll
 };
 export default productApi;

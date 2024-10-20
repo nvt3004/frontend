@@ -1,13 +1,48 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getProfile } from "../../../services/api/OAuthApi";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
+import { setWishlistCount } from "../../../store/actions/wishlistActions";
+
+import { setCartCount } from "../../../store/actions/cartActions";
+import productApi from "../../../services/api/ProductApi";
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [profile, setProfile] = useState(null);
 
   const [uri, setUri] = useState(window.location.pathname);
+
+  const wishlistCount = useSelector((state) => state.wishlist.wishlistCount);
+  const cartCount = useSelector((state) => state.cart.cartCount);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const data = await productApi.getProductWish(); // Gọi API để lấy wishlist
+        dispatch(setWishlistCount(data?.length));
+      } catch (error) {
+        console.log("Failed to fetch wishlist products", error);
+      }
+    };
+
+    fetchWishlist();
+    const fetchCart = async () => {
+      try {
+        const data = await productApi.getCartAll(); // Gọi API để lấy wishlist
+        dispatch(setCartCount(data?.length));
+      } catch (error) {
+        console.log("Failed to fetch wishlist products", error);
+      }
+    };
+    fetchCart();
+    fetchWishlist();
+  }, []);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -117,7 +152,7 @@ const Navbar = () => {
                 href="#"
                 className="text-decoration-none flex-c-m trans-04 p-lr-25"
               >
-                Help & FAQs{" "}
+                Help & FAQs
               </Link>
               <Link
                 to="/account"
@@ -131,13 +166,13 @@ const Navbar = () => {
                 href="#"
                 className="text-decoration-none flex-c-m trans-04 p-lr-25"
               >
-                EN{" "}
+                EN
               </Link>
               <Link
                 href="#"
                 className="text-decoration-none flex-c-m trans-04 p-lr-25"
               >
-                USD{" "}
+                USD
               </Link>
             </div>
           </div>
@@ -159,45 +194,70 @@ const Navbar = () => {
 
             <div className="menu-desktop p-0 " style={styles.menuDesktop}>
               <ul className="main-menu" style={styles.mainMenu}>
-                <li className={uri=='/'||uri=='/home'?'active-menu':''}
-                  onClick={()=>{setUri(window.location.pathname)}}   
+                <li
+                  className={uri == "/" || uri == "/home" ? "active-menu" : ""}
+                  onClick={() => {
+                    setUri(window.location.pathname);
+                  }}
                 >
                   <Link to="/" className="text-decoration-none">
                     Home
                   </Link>
                 </li>
 
-                <li className={uri=='/product'?'active-menu':''}
-                onClick={()=>{setUri(window.location.pathname)}}   >
+                <li
+                  className={uri == "/product" ? "active-menu" : ""}
+                  onClick={() => {
+                    setUri(window.location.pathname);
+                  }}
+                >
                   <Link to="/product" className="text-decoration-none">
                     Shop
                   </Link>
                 </li>
 
-                <li className={`${uri=='/shoping-cart'?'active-menu ':''} label1`} data-label1="hot"
-                
-                onClick={()=>{setUri(window.location.pathname)}}>
+                <li
+                  className={`${
+                    uri == "/shoping-cart" ? "active-menu " : ""
+                  } label1`}
+                  data-label1="hot"
+                  onClick={() => {
+                    setUri(window.location.pathname);
+                  }}
+                >
                   <Link to="/shoping-cart" className="text-decoration-none">
                     Features
                   </Link>
                 </li>
 
-                <li className={uri=='/blog'?'active-menu':''}
-                onClick={()=>{setUri(window.location.pathname)}} >
+                <li
+                  className={uri == "/blog" ? "active-menu" : ""}
+                  onClick={() => {
+                    setUri(window.location.pathname);
+                  }}
+                >
                   <Link to="/blog" className="text-decoration-none">
                     Blog
                   </Link>
                 </li>
 
-                <li className={uri=='/about'?'active-menu':''}
-                onClick={()=>{setUri(window.location.pathname)}} >
+                <li
+                  className={uri == "/about" ? "active-menu" : ""}
+                  onClick={() => {
+                    setUri(window.location.pathname);
+                  }}
+                >
                   <Link to="/about" className="text-decoration-none">
                     About
                   </Link>
                 </li>
 
-                <li className={uri=='/contact'?'active-menu':''}
-                onClick={()=>{setUri(window.location.pathname)}} >
+                <li
+                  className={uri == "/contact" ? "active-menu" : ""}
+                  onClick={() => {
+                    setUri(window.location.pathname);
+                  }}
+                >
                   <Link to="/contact" className="text-decoration-none">
                     Contact
                   </Link>
@@ -218,7 +278,7 @@ const Navbar = () => {
               </button>
               <button
                 className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart"
-                data-notify="2"
+                data-notify={cartCount}
                 type="button"
                 data-bs-toggle="offcanvas"
                 data-bs-target="#offcanvasRight"
@@ -230,9 +290,11 @@ const Navbar = () => {
               <Link
                 to="/wishlist"
                 className="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti"
-                data-notify="0"
+                data-notify={wishlistCount}
               >
-                <i className="zmdi zmdi-favorite-outline"></i>
+                <i className={`zmdi  ${
+                  uri == "/wishlist" ? "zmdi-favorite text-717fe0" : "zmdi-favorite-outline"
+                } `}></i>
               </Link>
 
               <div className="btn-group">
@@ -291,7 +353,7 @@ const Navbar = () => {
 
           <button
             className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart"
-            data-notify="2"
+            data-notify={cartCount}
             type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#offcanvasRight"
@@ -303,7 +365,7 @@ const Navbar = () => {
           <Link
             to="/wishlist"
             className="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti"
-            data-notify="0"
+            data-notify={wishlistCount}
           >
             <i className="zmdi zmdi-favorite-outline"></i>
           </Link>
