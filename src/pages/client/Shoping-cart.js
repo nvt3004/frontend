@@ -267,7 +267,7 @@ const ShopingCart = () => {
         setCarts(data.data);
       }
     };
-
+   
     fetchCarts();
   }, []);
 

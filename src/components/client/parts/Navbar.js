@@ -20,35 +20,41 @@ const Navbar = () => {
 
   const dispatch = useDispatch();
 
+  const [cart, setCart] = useState();
+  const [total,setTotal] = useState(0);
+
+
+
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        const data = await productApi.getProductWish(); // Gọi API để lấy wishlist
-        dispatch(setWishlistCount(data?.length));
+        const data = await productApi.getProductWish();
+        dispatch(setWishlistCount(data?.length == null ? 0 : data.length));
       } catch (error) {
         console.log("Failed to fetch wishlist products", error);
       }
     };
 
-    fetchWishlist();
     const fetchCart = async () => {
       try {
-        const data = await productApi.getCartAll(); // Gọi API để lấy wishlist
-        dispatch(setCartCount(data?.length));
+        const data = await productApi.getCartAll();
+        setCart(data);
+        dispatch(setCartCount(data?.length == null ? 0 : data.length));
+        data.forEach((product) => {
+          setTotal(total + (product.price * product.quantity));
+        });
       } catch (error) {
         console.log("Failed to fetch wishlist products", error);
       }
     };
     fetchCart();
     fetchWishlist();
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const profileData = await getProfile();
-
-        console.log("Profile data:", profileData);
         setProfile(profileData);
       } catch (error) {
         console.error("Error fetching profile:", error.message);
@@ -291,10 +297,17 @@ const Navbar = () => {
                 to="/wishlist"
                 className="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti"
                 data-notify={wishlistCount}
+                onClick={() => {
+                  setUri("/wishlist");
+                }}
               >
-                <i className={`zmdi  ${
-                  uri == "/wishlist" ? "zmdi-favorite text-717fe0" : "zmdi-favorite-outline"
-                } `}></i>
+                <i
+                  className={`  ${
+                    uri == "/wishlist"
+                      ? "zmdi zmdi-favorite text-717fe0"
+                      : "zmdi zmdi-favorite-outline"
+                  } `}
+                ></i>
               </Link>
 
               <div className="btn-group">
@@ -560,92 +573,38 @@ const Navbar = () => {
         </div>
         <div className="offcanvas-body">
           <ul className="header-cart-wrapitem w-full custom-scrollbar">
-            <li className="header-cart-item flex-w flex-t m-b-12 w-100">
-              <div className="header-cart-item-img">
-                <img src="images/item-cart-01.jpg" alt="IMG" />
-              </div>
-              <div className="header-cart-item-txt p-t-8">
-                <Link
-                  to="#"
-                  className="text-decoration-none header-cart-item-name m-b-18 hov-cl1 trans-04"
-                >
-                  White Shirt Pleat
-                </Link>
-                <span className="header-cart-item-info">1 x $19.00</span>
-              </div>
-            </li>
-
-            <li className="header-cart-item flex-w flex-t m-b-12">
-              <div className="header-cart-item-img">
-                <img src="images/item-cart-01.jpg" alt="IMG" />
-              </div>
-              <div className="header-cart-item-txt p-t-8">
-                <Link
-                  to="#"
-                  className="text-decoration-none header-cart-item-name m-b-18 hov-cl1 trans-04"
-                >
-                  White Shirt Pleat
-                </Link>
-                <span className="header-cart-item-info">1 x $19.00</span>
-              </div>
-            </li>
-            <li className="header-cart-item flex-w flex-t m-b-12">
-              <div className="header-cart-item-img">
-                <img src="images/item-cart-01.jpg" alt="IMG" />
-              </div>
-              <div className="header-cart-item-txt p-t-8">
-                <Link
-                  to="#"
-                  className="text-decoration-none header-cart-item-name m-b-18 hov-cl1 trans-04"
-                >
-                  White Shirt Pleat
-                </Link>
-                <span className="header-cart-item-info">1 x $19.00</span>
-              </div>
-            </li>
-            <li className="header-cart-item flex-w flex-t m-b-12">
-              <div className="header-cart-item-img">
-                <img src="images/item-cart-01.jpg" alt="IMG" />
-              </div>
-              <div className="header-cart-item-txt p-t-8">
-                <Link
-                  to="#"
-                  className="text-decoration-none header-cart-item-name m-b-18 hov-cl1 trans-04"
-                >
-                  White Shirt Pleat
-                </Link>
-                <span className="header-cart-item-info">1 x $19.00</span>
-              </div>
-            </li>
-            <li className="header-cart-item flex-w flex-t m-b-12">
-              <div className="header-cart-item-img">
-                <img src="images/item-cart-01.jpg" alt="IMG" />
-              </div>
-              <div className="header-cart-item-txt p-t-8">
-                <Link
-                  to="#"
-                  className="text-decoration-none header-cart-item-name m-b-18 hov-cl1 trans-04"
-                >
-                  White Shirt Pleat
-                </Link>
-                <span className="header-cart-item-info">1 x $19.00</span>
-              </div>
-            </li>
+            {cart &&
+              cart.map((product, index) => (
+                <li key={index} className="header-cart-item flex-w flex-t m-b-12 w-100">
+                  <div className="header-cart-item-img">
+                    <img src={product.image} alt="IMG" />
+                  </div>
+                  <div className="header-cart-item-txt p-t-8">
+                    <Link
+                      to="#"
+                      className="text-decoration-none header-cart-item-name m-b-18 hov-cl1 trans-04"
+                    >
+                      {product.productName}
+                    </Link>
+                    <span className="header-cart-item-info">{`${product.quantity} x ${product.price}`}</span>
+                  </div>
+                </li>
+              ))}
           </ul>
 
           <div className="container">
             <div className="header-cart-total w-full p-tb-40">
-              Total: $75.00
+              Total: {`${total.toFixed(2)} VND`}
             </div>
             <div className="header-cart-buttons">
               <Link
-                href="shoping-cart.html"
+                to="shoping-cart"
                 className="text-decoration-none flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10"
               >
                 View Cart
               </Link>
               <Link
-                href="shoping-cart.html"
+                to="shoping-cart"
                 className="text-decoration-none flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10"
               >
                 Check Out
