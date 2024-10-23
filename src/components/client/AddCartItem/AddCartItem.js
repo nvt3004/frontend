@@ -6,7 +6,11 @@ const style = {
   opacity: 0.7,
 };
 
-const AttributeItem = ({ pd, onClick, clickSave = () => {}, message }) => {
+const AddCartItem = ({ pd, onClick, clickSave = () => {}, message }) => {
+  
+
+  const temppd = {...pd};
+
   return (
     <>
       <div className="modal-body">
@@ -18,9 +22,9 @@ const AttributeItem = ({ pd, onClick, clickSave = () => {}, message }) => {
               </div>
 
               <div className="row px-3">
-                {a.values &&
-                  a.values.map((v, j) => {
-                    let ban = v.disible ? "not-allowed" : "pointer";
+                {a?.values &&
+                  a?.values?.map((v, j) => {
+                    let ban = v?.disible ? "not-allowed" : "pointer";
                     let disible = ban === "pointer" ? {} : { ...style };
 
                     return (
@@ -31,9 +35,10 @@ const AttributeItem = ({ pd, onClick, clickSave = () => {}, message }) => {
                           }
 
                           onClick({
-                            key: a.key,
-                            value: v.val,
+                            key: a?.key,
+                            value: v?.val,
                             rowCel: [index, j],
+                            pdu: temppd
                           });
                         }}
                         style={{
@@ -42,11 +47,11 @@ const AttributeItem = ({ pd, onClick, clickSave = () => {}, message }) => {
                           cursor: ban,
                           ...disible,
                         }}
-                        className={`${v.active ? "bg-dark text-white" : ""} ${
-                          !v.disible ? "" : `bg-secondary opacity-25`
-                        } btn btn-outline-dark  col d-flex p-2 justify-content-center align-items-center border me-3 rounded-0`}
+                        className={`${v?.active ? "bg-dark text-white" : ""} ${
+                          !v?.disible ? "" : `bg-secondary opacity-25`
+                        } btn btn-outline-dark col d-flex p-2 justify-content-center align-items-center border me-3 rounded-0`}
                       >
-                        {v.val}
+                        {v?.val}
                       </div>
                     );
                   })}
@@ -55,31 +60,23 @@ const AttributeItem = ({ pd, onClick, clickSave = () => {}, message }) => {
           );
         })}
 
+        <div className="mt-5">
+          <button
+            onClick={() => {
+              clickSave(pd);
+            }}
+            className="flex-c-m w-75 stext-101 cl0 py-3 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail"
+          >
+            Add to cart
+          </button>
+        </div>
+
         <span className="text-danger px-1 d-flex align-items-center">
           {message && <GoAlert className="me-2" />} {message}
         </span>
-      </div>
-
-      <div class="modal-footer">
-        <button
-          type="button"
-          className="btn stext-101 cl0  bg2 bor14 text-black hov1 trans-04 pointer rounded-0"
-          data-bs-dismiss="modal"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          className="btn stext-101 cl0  bg3 bor14 hov-btn3 trans-04 pointer rounded-0"
-          onClick={() => {
-            clickSave(pd);
-          }}
-        >
-          Save change
-        </button>
       </div>
     </>
   );
 };
 
-export default memo(AttributeItem);
+export default memo(AddCartItem);
