@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { getProfile } from "../../../services/api/OAuthApi";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-
+import logo4plus from "../../../assets/images/icons/logo4plus.png"
 import { setWishlistCount } from "../../../store/actions/wishlistActions";
 
 import { setCartCount } from "../../../store/actions/cartActions";
@@ -196,7 +196,7 @@ const Navbar = () => {
                 className="text-decoration-none logo"
                 style={styles.logo}
               >
-                <img src="images/icons/logo4plus.png" alt="IMG-LOGO" />
+                <img src={logo4plus} alt="IMG-LOGO" />
               </Link>
             </div>
 
@@ -353,7 +353,7 @@ const Navbar = () => {
         {/* <!-- Logo moblie --> */}
         <div className="logo-mobile ">
           <Link to="/home">
-            <img src="images/icons/logo4plus.png" alt="IMG-LOGO" />
+            <img src={logo4plus} alt="IMG-LOGO" />
           </Link>
         </div>
 

@@ -1,5 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import blog4 from "../../assets/images/blog-04.jpg"
+
+import min1 from "../../assets/images/product-min-01.jpg"
+import min2 from "../../assets/images/product-min-02.jpg"
+import min3 from "../../assets/images/product-min-03.jpg"
 const BlogDetail = () => {
   const style ={
     m:{marginTop:"80px"}
@@ -14,7 +19,7 @@ const BlogDetail = () => {
               <div className="p-r-45 p-r-0-lg">
                 {/* <!--  --> */}
                 <div className="wrap-pic-w how-pos5-parent">
-                  <img src="images/blog-04.jpg" alt="IMG-BLOG" />
+                  <img src={blog4} alt="IMG-BLOG" />
 
                   <div className="flex-col-c-m size-123 bg9 how-pos5">
                     <span className="ltext-107 cl2 txt-center">22</span>
@@ -222,7 +227,7 @@ const BlogDetail = () => {
                         href="#"
                         className="wrao-pic-w size-214 hov-ovelay1 m-r-20"
                       >
-                        <img src="images/product-min-01.jpg" alt="PRODUCT" />
+                        <img src={min1} alt="PRODUCT" />
                       </Link>
 
                       <div className="size-215 flex-col-t p-t-8">
@@ -239,7 +244,7 @@ const BlogDetail = () => {
                         href="#"
                         className="text-decoration-none wrao-pic-w size-214 hov-ovelay1 m-r-20"
                       >
-                        <img src="images/product-min-02.jpg" alt="PRODUCT" />
+                        <img src={min2} alt="PRODUCT" />
                       </Link>
 
                       <div className="size-215 flex-col-t p-t-8">
@@ -256,7 +261,7 @@ const BlogDetail = () => {
                         href="#"
                         className="text-decoration-none wrao-pic-w size-214 hov-ovelay1 m-r-20"
                       >
-                        <img src="images/product-min-03.jpg" alt="PRODUCT" />
+                        <img src={min3} alt="PRODUCT" />
                       </Link>
 
                       <div className="size-215 flex-col-t p-t-8">

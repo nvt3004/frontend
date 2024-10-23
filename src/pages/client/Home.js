@@ -2,8 +2,13 @@ import React, { useEffect, useState } from "react";
 import Slider from "../../components/client/homeItem/Slider";
 import { Link } from "react-router-dom";
 import productApi from "../../services/api/ProductApi";
-
+import Wish from "../../components/client/ProdWish/Wish";
+import { useDispatch } from "react-redux";
+import banner1 from "../../assets/images/banner-01.jpg"
+import banner2 from "../../assets/images/banner-02.jpg"
+import banner3 from "../../assets/images/banner-03.jpg"
 const Home = () => {
+  const dispatch = useDispatch();
   // SuccessAlert({ title: 'Product Added', text: 'The product was added to your cart!' });
 
   // const handleAction = async () => {
@@ -60,6 +65,35 @@ const Home = () => {
     let attribute = [];
     ProductDetail.versions.forEach((element) => {});
   };
+
+  const handleAddWishlist = async (id) => {
+    try {
+      await productApi.addWishlist(id, dispatch);
+      setProducts((prevProducts) =>
+        prevProducts.map((prod) =>
+          prod.id === id
+            ? { ...prod, like: true } // Đánh dấu sản phẩm là 'liked'
+            : prod
+        )
+      );
+    } catch (error) {
+      console.error("Error adding to Wishlist:", error.message);
+    }
+  };
+  const handleRemoveWishlist = async (id, dispatch) => {
+    try {
+      await productApi.removeWishlist(id);
+      setProducts((prevProducts) =>
+        prevProducts.map((prod) =>
+          prod.id === id
+            ? { ...prod, like: false } // Gỡ dấu 'liked' khỏi sản phẩm
+            : prod
+        )
+      );
+    } catch (error) {
+      console.error("Error removing from Wishlist:", error.message);
+    }
+  };
   return (
     <div>
       <Slider />
@@ -71,7 +105,7 @@ const Home = () => {
             <div className="col-md-6 col-xl-4 p-b-30 m-lr-auto">
               {/* <!-- Block1 --> */}
               <div className="block1 wrap-pic-w">
-                <img src="images/banner-01.jpg" alt="IMG-BANNER" />
+                <img src={banner1} alt="IMG-BANNER" />
 
                 <Link
                   to="/product"
@@ -99,7 +133,7 @@ const Home = () => {
             <div className="col-md-6 col-xl-4 p-b-30 m-lr-auto">
               {/* <!-- Block1 --> */}
               <div className="block1 wrap-pic-w">
-                <img src="images/banner-02.jpg" alt="IMG-BANNER" />
+                <img src={banner2} alt="IMG-BANNER" />
 
                 <Link
                   to="/product"
@@ -127,7 +161,7 @@ const Home = () => {
             <div className="col-md-6 col-xl-4 p-b-30 m-lr-auto">
               {/* <!-- Block1 --> */}
               <div className="block1 wrap-pic-w">
-                <img src="images/banner-03.jpg" alt="IMG-BANNER" />
+                <img src={banner3} alt="IMG-BANNER" />
 
                 <Link
                   to="/product"
@@ -202,21 +236,16 @@ const Home = () => {
                           </div>
 
                           <div className="block2-txt-child2 flex-r p-t-3">
-                            <Link
-                              to="#"
-                              className="btn-addwish-b2 dis-block pos-relative js-addwish-b2"
-                            >
-                              <img
-                                className="icon-heart1 dis-block trans-04"
-                                src="images/icons/icon-heart-01.png"
-                                alt="ICON"
-                              />
-                              <img
-                                className="icon-heart2 dis-block trans-04 ab-t-l"
-                                src="images/icons/icon-heart-02.png"
-                                alt="ICON"
-                              />
-                            </Link>
+                            <Wish
+                              prodID={product.id}
+                              isWish={product.like}
+                              handleAddWish={() => {
+                                handleAddWishlist(product.id);
+                              }}
+                              handleRemoveWish={() =>
+                                handleRemoveWishlist(product.id)
+                              }
+                            />
                           </div>
                         </div>
                       </div>

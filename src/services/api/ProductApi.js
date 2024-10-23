@@ -4,6 +4,12 @@ import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import WarningAlert from "../../components/client/sweetalert/WarningAlert";
 import InfoAlert from "../../components/client/sweetalert/InfoAlert";
 import { stfExecAPI } from "../../stf/common";
+import {
+  incrementWishlist,
+  decrementWishlist
+} from '../../store/actions/wishlistActions';
+import { useDispatch } from 'react-redux';
+
 const searchProduct = async (query, page) => {
   try {
     const response = await axiosInstance.get("/product/search", {
@@ -94,7 +100,7 @@ const getProductDetail = async (id) => {
   }
 };
 
-const addWishlist = async (productId) => {
+const addWishlist = async (productId, dispatch) => {
   try {
     // Tạo đối tượng wishlistModel với productId
 
@@ -108,6 +114,7 @@ const addWishlist = async (productId) => {
    
 
     // Hiển thị thông báo thành công
+    dispatch(incrementWishlist());
     SuccessAlert({
       title: "Product Added!",
       text: "The product has been successfully added to your wishlist.",
@@ -149,15 +156,15 @@ console.log("abc",error)
 };
 
 
-const removeWishlist = async (productId) => {
+const removeWishlist = async (productId, dispatch) => {
   try {
     const [error, data] = await stfExecAPI({
       method: "delete",
       url: `api/user/wishlist/remove/${productId}`,
     });
     // Nếu thành công, hiển thị SuccessAlert
+    dispatch(decrementWishlist());
     SuccessAlert({ title: "Deleted!", text: "The wishlist item has been successfully removed." });
-
     return data; // Trả về dữ liệu từ server
   } catch (error) {
     // Kiểm tra lỗi và hiển thị thông báo phù hợp với các alert component

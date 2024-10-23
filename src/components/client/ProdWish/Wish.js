@@ -1,5 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import icon1 from "../../../assets/images/icons/icon-heart-01.png"
+import icon2 from "../../../assets/images/icons/icon-heart-02.png"
 const AddWish = ({ prodID, isWish, handleAddWish, handleRemoveWish }) => {
   return (
     <div>
@@ -9,7 +11,7 @@ const AddWish = ({ prodID, isWish, handleAddWish, handleRemoveWish }) => {
       >
         <img
           className="dis-block trans-04"
-          src="images/icons/icon-heart-01.png"
+          src={icon1}
           alt="ICON"
           onClick={() => {
             handleAddWish(prodID);
@@ -18,7 +20,7 @@ const AddWish = ({ prodID, isWish, handleAddWish, handleRemoveWish }) => {
         {isWish === true ? (
           <img
             className="dis-block trans-04 ab-t-l"
-            src="images/icons/icon-heart-02.png"
+            src={icon2}
             alt="ICON"
             onClick={() => {
               handleRemoveWish(prodID);

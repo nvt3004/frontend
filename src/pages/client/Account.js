@@ -485,12 +485,12 @@ const Account = () => {
             <h3>
               {profile && profile.listData && profile.listData.fullName
                 ? profile.listData.fullName
-                : "Nguyễn Minh Nhựt"}
+                : "Your Name"}
             </h3>
             <p>
               {profile && profile.listData && profile.listData.username
                 ? profile.listData.username
-                : "Default Username"}
+                : "Your Username"}
             </p>
           </div>
           <div className="d-flex ms-auto flex-column flex-md-row">
@@ -520,87 +520,116 @@ const Account = () => {
           <div className="col-md-8">
             <h4 className="stext-301">Orders</h4>
             <div className="overflow-y-auto" style={{ height: "60vh" }}>
-            {orders?.length === 0 ? (
-  <div>Không có đơn hàng nào</div>
-) : (
-  orders?.map((order) => (
-    <div key={order.orderId} className="mb-3">
-      <div className="card">
-        <div
-          className="card-header d-flex justify-content-between align-items-center"
-          data-bs-toggle="collapse"
-          data-bs-target={`#collapseOrder${order.orderId}`}
-          aria-expanded="false"
-          aria-controls={`collapseOrder${order.orderId}`}
-        >
-          <div>
-            <strong>Order #{order.orderId}</strong> <br />
-            <small>{new Date(order.orderDate).toLocaleString()}</small>
-          </div>
-          <span
-            className={`badge text-bg-${
-              order.statusName === "Shipped" ? "success" : "warning"
-            }`}
-          >
-            {order.statusName}
-          </span>
-          <div>
-            <strong>Total: {order.totalPrice.toFixed(2)} VND</strong>
-          </div>
-        </div>
+              {orders?.length === 0 ? (
+                <div>Không có đơn hàng nào</div>
+              ) : (
+                orders?.map((order) => (
+                  <div key={order.orderId} className="mb-2">
+                    <div className="card rounded-0 bor4 p-2">
+                      <div
+                        className="card-header d-flex justify-content-between align-items-center bg-white pointer"
+                        data-bs-toggle="collapse"
+                        data-bs-target={`#collapseOrder${order.orderId}`}
+                        aria-expanded="false"
+                        aria-controls={`collapseOrder${order.orderId}`}
+                      >
+                        <div>
+                          <strong className="stext-103">
+                            Order #{order.orderId}
+                          </strong>{" "}
+                          <br />
+                          <small className=" stext-113">
+                            {new Date(order.orderDate).toLocaleString()}
+                          </small>
+                        </div>
+                        <span
+                          className={`badge text-bg-${
+                            order.statusName === "Shipped"
+                              ? "success"
+                              : order.statusName === "Processed"
+                              ? "info"
+                              : order.statusName === "Pending"
+                              ? "warning"
+                              : order.statusName === "Delivered"
+                              ? "primary"
+                              : order.statusName === "Cancelled"
+                              ? "danger"
+                              : "secondary"
+                          }`}
+                        >
+                          {order.statusName}
+                        </span>
 
-        {/* Dropdown for Order Details */}
-        <div>
-          <div className="collapse p-3" id={`collapseOrder${order.orderId}`}>
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Variant</th>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order.products.map((product, index) => (
-                  <tr key={index}>
-                    <td>
-                      <img
-                        src={product.imageUrl}
-                        alt={product.productName}
-                        style={{ width: "50px", marginRight: "10px" }}
-                      />
-                      {product.productName}
-                    </td>
-                    <td>{product.variant}</td>
-                    <td>{product.quantity}</td>
-                    <td>${product.price.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  ))
-)}
+                        <div>
+                          <strong className="stext-103">
+                            Total: {order.totalPrice.toFixed(2)} VND
+                          </strong>
+                        </div>
+                      </div>
 
+                      {/* Dropdown for Order Details */}
+                      <div>
+                        <div
+                          className="collapse"
+                          id={`collapseOrder${order.orderId}`}
+                        >
+                          <table className="table table-bordered m-0 mt-4">
+                            <thead>
+                              <tr>
+                                <th className="stext-102">Product</th>
+                                <th className="stext-102">Variant</th>
+                                <th className="stext-102">Quantity</th>
+                                <th className="stext-102">Price</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {order.products.map((product, index) => (
+                                <tr key={index}>
+                                  <td className="stext-103">
+                                    <img
+                                      src={product.imageUrl}
+                                      alt={product.productName}
+                                      style={{
+                                        width: "50px",
+                                        marginRight: "10px",
+                                      }}
+                                    />
+                                    {product.productName}
+                                  </td>
+                                  <td className="txt-middle stext-103">
+                                    {product.variant}
+                                  </td>
+                                  <td className="txt-middle stext-103">
+                                    {product.quantity}
+                                  </td>
+                                  <td className="txt-middle stext-103">
+                                    ${product.price.toFixed(2)}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
             {/* Pagination */}
-            <div className="pagination">
+            <div className="pagination my-3 ">
               <button
-                className="btn btn-outline-secondary"
+                className="rounded-0 flex-c-m  cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4"
                 onClick={() => handlePageChange(page - 1)}
                 disabled={page === 0}
               >
                 Previous
               </button>
-              <span className="mx-2">
+              <span className="mx-3 pt-1 mt-2 stext-103">
                 Page {page + 1} of {totalPages}
               </span>
               <button
-                className="btn btn-outline-secondary"
+                className="rounded-0 flex-c-m  cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4"
                 onClick={() => handlePageChange(page + 1)}
                 disabled={page === totalPages - 1}
               >
@@ -615,7 +644,7 @@ const Account = () => {
             <div className="w-full pb-3 d-flex justify-content-end">
               <button
                 type="button"
-                class="btn btn-primary"
+                class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10 rounded-0"
                 data-bs-toggle="modal"
                 data-bs-target="#exampleModal9"
                 onClick={() => {
@@ -641,35 +670,26 @@ const Account = () => {
                   addresses.map((code, index) => (
                     <li
                       key={index}
-                      className="rounded-0 py-3 px-2 mb-2 border-top"
+                      className="address-item rounded-0 rounded bor4 mb-3 p-3"
                     >
-                      <div className="me-3 row">
-                        {/* <i className="zmdi zmdi-label me-2"></i> */}
-                        <div className="col-10 d-flex flex-column">
-                          <span
-                            className="text-black-50"
-                            style={{ fontSize: "0.9rem" }}
-                          >
+                      <div className="row">
+                        <div className="col-10">
+                          <p className="address-detail stext-110">
                             {code.detailAddress}
-                          </span>
-
-                          <span
-                            className="text-black-50"
-                            style={{ fontSize: "0.9rem" }}
-                          >
+                          </p>
+                          <p className="address-location text-muted stext-103">
                             {`${getNameAddress(
                               code.province
                             )}, ${getNameAddress(
                               code.district
                             )}, ${getNameAddress(code.ward)}`}
-                          </span>
+                          </p>
                         </div>
 
-                        <div className="d-flex col-2 justify-content-between">
+                        <div className="col-2 text-end">
                           <i
                             onClick={() => {
                               setIdEdit(code.addressId);
-
                               setProvinceId(
                                 JSON.stringify(
                                   provinces.find(
@@ -686,8 +706,8 @@ const Account = () => {
                               );
                               setAddressDetal(code.detailAddress);
                             }}
-                            style={{ fontSize: "1.1rem", cursor: "pointer" }}
-                            className="zmdi me-2 zmdi-edit text-primary-emphasis  p-2"
+                            className="zmdi zmdi-edit rounded-0 flex-c-m  cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4"
+                            style={{ fontSize: "1.2rem", cursor: "pointer" }}
                             data-bs-toggle="modal"
                             data-bs-target="#exampleModal9"
                           ></i>
@@ -696,9 +716,8 @@ const Account = () => {
                             onClick={() => {
                               handleDeleteAddress(code.addressId);
                             }}
-                            data-id={code.addressId}
-                            style={{ fontSize: "1.1rem", cursor: "pointer" }}
-                            className="zmdi zmdi-delete text-danger p-2"
+                            className="zmdi zmdi-delete text-danger rounded-0 flex-c-m  cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4 mt-2"
+                            style={{ fontSize: "1.2rem", cursor: "pointer" }}
                           ></i>
                         </div>
                       </div>
@@ -850,7 +869,7 @@ const Account = () => {
                           </option>
 
                           {wards &&
-                            wards.map((item) => {
+                            wards?.map((item) => {
                               return (
                                 <option
                                   selected={
@@ -859,14 +878,14 @@ const Account = () => {
                                       ? -1
                                       : JSON.parse(wardId)?.WardCode)
                                   }
-                                  key={item.WardCode}
+                                  key={item?.WardCode}
                                   className="stext-110"
                                   value={JSON.stringify(item).replace(
                                     /"/g,
                                     "'"
                                   )}
                                 >
-                                  {item.WardName}
+                                  {item?.WardName}
                                 </option>
                               );
                             })}
@@ -923,7 +942,7 @@ const Account = () => {
           aria-labelledby="exampleModalLabel"
           aria-hidden="true"
         >
-          <div className="modal-dialog modal-lg ">
+          <div className="modal-dialog modal-xl ">
             <div className="modal-content rounded-0 ">
               <div className="modal-header pb-1 pt-2">
                 <h1
@@ -940,7 +959,7 @@ const Account = () => {
                 ></button>
               </div>
               <div className="modal-body">
-                <form className="w-100" onSubmit={handleSubmit}>
+                <form className="w-100 p-2" onSubmit={handleSubmit}>
                   <div className="row">
                     <div className="col-md-5 text-center">
                       {/* Image */}
@@ -970,11 +989,11 @@ const Account = () => {
                       {/* Read-only fields */}
                       <div className="mb-4">
                         <h5 className="mb-2 stext-110">
-                          {profile?.listData?.username || "Default Username"}
+                          {profile?.listData?.username || "Your Username"}
                         </h5>
                         <p className="stext-111">
                           Create Date:{" "}
-                          {profile?.listData?.createDate || "2023-08-15"}
+                          {new Date(profile?.listData?.createDate).toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -982,7 +1001,7 @@ const Account = () => {
                       <div className="">
                         {/* Editable fields */}
                         <div className="mb-3">
-                          <label className="stext-110" htmlFor="full_name">
+                          <label className="stext-110 mb-2" htmlFor="full_name">
                             Full Name
                           </label>
                           <div style={{ ...styles.bor8, ...styles.mB12 }}>
@@ -1008,7 +1027,7 @@ const Account = () => {
                           </div>
                         </div>
                         <div className="mb-3">
-                          <label className="stext-110" htmlFor="email">
+                          <label className="stext-110  mb-2" htmlFor="email">
                             Email
                           </label>
                           <div style={{ ...styles.bor8, ...styles.mB12 }}>
@@ -1034,7 +1053,7 @@ const Account = () => {
                           </div>
                         </div>
                         <div className="mb-3">
-                          <label className="stext-110" htmlFor="phone">
+                          <label className="stext-110  mb-2" htmlFor="phone">
                             Phone
                           </label>
                           <div style={{ ...styles.bor8, ...styles.mB12 }}>
@@ -1123,8 +1142,8 @@ const Account = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="mb-3">
-                          <label className="stext-110" htmlFor="birthday">
+                        <div className="mb-5">
+                          <label className="stext-110  mb-2" htmlFor="birthday">
                             Birthday
                           </label>
                           <div style={{ ...styles.bor8, ...styles.mB12 }}>

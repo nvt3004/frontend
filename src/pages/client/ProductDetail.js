@@ -1,12 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import "../../assets/style/custom-scroll.css";
 import QuickViewProdDetail from "../../components/client/Modal/QuickViewProdDetail";
+import prodDetail1 from "../../assets/images/product-detail-01.jpg"
+import prodDetail2 from "../../assets/images/product-detail-02.jpg"
+import prodDetail3 from "../../assets/images/product-detail-03.jpg"
+import ava from "../../assets/images/avatar-01.jpg"
 const ProductDetail = () => {
   const [rating, setRating] = useState(0); // Trạng thái lưu số sao được chọn
   // Khởi tạo state cho số lượng sản phẩm
   const [quantity, setQuantity] = useState(1);
 
+   // Lấy param từ URL (nếu có)
+   const { id: paramId } = useParams();
+
+   // Lấy query param từ URL
+   const location = useLocation();
+   const queryParams = new URLSearchParams(location.search);
+   const queryId = queryParams.get("id");
+ 
+   // Ưu tiên param ID, nếu không có thì lấy query param
+   const [productId, setProductId] = useState(null);
+ 
+   useEffect(() => {
+     if (paramId) {
+       setProductId(paramId);  // Sử dụng param ID nếu có
+     } else if (queryId) {
+       setProductId(queryId);  // Sử dụng query param nếu param không có
+     }
+   }, [paramId, queryId]);
+ 
+   // Kiểm tra nếu không có id từ cả hai nguồn
+   if (!productId) {
+    return (
+      <div 
+        className="d-flex align-items-center justify-content-center fs-4 text-muted mt-3"
+        style={{ height: "80vh" }} 
+      >
+        Product ID not found
+      </div>
+    );
+  }
+  
   // Hàm giảm số lượng
   const handleDecrease = () => {
     setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
@@ -58,7 +94,7 @@ const ProductDetail = () => {
                         style={style.wh}
                       >
                         <img
-                          src="images/product-detail-01.jpg"
+                          src={prodDetail1}
                           className="d-block w-100 h-full"
                           alt=""
                         />
@@ -71,7 +107,7 @@ const ProductDetail = () => {
                         style={style.wh}
                       >
                         <img
-                          src="images/product-detail-02.jpg"
+                          src={prodDetail2}
                           className="d-block w-100"
                           alt=""
                         />
@@ -84,7 +120,7 @@ const ProductDetail = () => {
                         style={style.wh}
                       >
                         <img
-                          src="images/product-detail-03.jpg"
+                          src={prodDetail3}
                           className="d-block w-100 "
                           alt=""
                         />
@@ -97,21 +133,21 @@ const ProductDetail = () => {
                     <div className="carousel-inner" style={style.w500}>
                       <div className="carousel-item active">
                         <img
-                          src="images/product-detail-01.jpg"
+                          src={prodDetail1}
                           className="d-block w-100"
                           alt=""
                         />
                       </div>
                       <div className="carousel-item">
                         <img
-                          src="images/product-detail-02.jpg"
+                          src={prodDetail2}
                           className="d-block w-100"
                           alt=""
                         />
                       </div>
                       <div className="carousel-item">
                         <img
-                          src="images/product-detail-03.jpg"
+                          src={prodDetail3}
                           className="d-block w-100"
                           alt=""
                         />
@@ -376,7 +412,7 @@ const ProductDetail = () => {
                         {/* <!-- Review --> */}
                         <div className="flex-w flex-t p-b-68">
                           <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                            <img src="images/avatar-01.jpg" alt="AVATAR" />
+                            <img src={ava} alt="AVATAR" />
                           </div>
 
                           <div className="size-207">

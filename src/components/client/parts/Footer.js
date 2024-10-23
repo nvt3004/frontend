@@ -1,6 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-
+import pay1 from "../../../assets/images/icons/icon-pay-01.png"
+import pay2 from "../../../assets/images/icons/icon-pay-02.png"
+import pay3 from "../../../assets/images/icons/icon-pay-03.png"
+import pay4 from "../../../assets/images/icons/icon-pay-04.png"
+import pay5 from "../../../assets/images/icons/icon-pay-05.png"
 const Footer = () => {
   // Tính toán năm hiện tại
   const year = new Date().getFullYear();
@@ -167,23 +171,23 @@ const Footer = () => {
           <div className="p-t-40">
             <div className="flex-c-m flex-w p-b-18">
               <Link to="#" className="m-all-1">
-                <img src="images/icons/icon-pay-01.png" alt="ICON-PAY" />
+                <img src={pay1} alt="ICON-PAY" />
               </Link>
 
               <Link to="#" className="m-all-1">
-                <img src="images/icons/icon-pay-02.png" alt="ICON-PAY" />
+                <img src={pay2} alt="ICON-PAY" />
               </Link>
 
               <Link to="#" className="m-all-1">
-                <img src="images/icons/icon-pay-03.png" alt="ICON-PAY" />
+                <img src={pay3} alt="ICON-PAY" />
               </Link>
 
               <Link to="#" className="m-all-1">
-                <img src="images/icons/icon-pay-04.png" alt="ICON-PAY" />
+                <img src={pay4} alt="ICON-PAY" />
               </Link>
 
               <Link to="#" className="m-all-1">
-                <img src="images/icons/icon-pay-05.png" alt="ICON-PAY" />
+                <img src={pay5} alt="ICON-PAY" />
               </Link>
             </div>
 

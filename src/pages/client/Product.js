@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import productApi from "../../services/api/ProductApi";
 import SpeechToText from "../../components/client/search/SpeechtoText";
 import Wish from "../../components/client/ProdWish/Wish";
+import { useDispatch } from "react-redux";
 const Product = () => {
+  const dispatch = useDispatch();
   // Các thuộc tính bộ lọc được lấy từ API (ví dụ: color, size, category)
   const [filterAttributes, setFilterAttributes] = useState({
     color: [],
@@ -44,7 +46,7 @@ const Product = () => {
 
   const handleAddWishlist = async (id) => {
     try {
-      await productApi.addWishlist(id);
+      await productApi.addWishlist(id, dispatch);
       setProducts((prevProducts) =>
         prevProducts.map((prod) =>
           prod.id === id
@@ -58,7 +60,7 @@ const Product = () => {
   };
   const handleRemoveWishlist = async (id) => {
     try {
-      await productApi.removeWishlist(id);
+      await productApi.removeWishlist(id, dispatch);
       setProducts((prevProducts) =>
         prevProducts.map((prod) =>
           prod.id === id
@@ -70,7 +72,7 @@ const Product = () => {
       console.error("Error removing from Wishlist:", error.message);
     }
   };
-  
+
   console.log("1");
   // Lấy chi tiết sản phẩm
   const getProductDetail = async (id) => {
@@ -301,6 +303,7 @@ const Product = () => {
   };
   const style = {
     m: { marginTop: "40px" },
+    h: { height: "60vh" },
   };
 
   return (
@@ -689,7 +692,7 @@ const Product = () => {
               </div>
 
               {/* Danh sách sản phẩm */}
-              <div className="row isotope-grid">
+              <div className="row isotope-grid ">
                 {products && products.length > 0 ? (
                   products.map((product) => (
                     <div
@@ -742,15 +745,15 @@ const Product = () => {
                     </div>
                   ))
                 ) : (
-                  <div>
+                  <div style={style.h}>
                     {loading ? (
-                      <div className="d-flex justify-content-center mt-5 mb-5">
+                      <div className="d-flex align-content-center justify-content-center mt-5 mb-5">
                         <div className="spinner-border" role="status">
                           <span className="visually-hidden">Loading...</span>
                         </div>
                       </div>
                     ) : (
-                      <div className="d-flex justify-content-center mt-5 mb-5">
+                      <div className="d-flex align-content-center justify-content-center mt-5 mb-5">
                         <div className="pt-5 pb-5 opacity-50">
                           <p className="fs-4 text-muted mt-3">{errorMessage}</p>
                         </div>

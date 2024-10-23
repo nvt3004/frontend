@@ -49,7 +49,8 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> }, // Trang mặc định cho client
       { path: "/home", element: <Home /> },
       { path: "/product", element: <Product /> },
-      { path: "/product-detail", element: <ProductDetail /> },
+      { path: "/product-detail/:id", element: <ProductDetail /> }, // Nhận ID từ param URL
+      { path: "/product-detail", element: <ProductDetail /> }, // Hỗ trợ query param
       { path: "/shoping-cart", element: <ProtectedRoute element={<ShopingCart />} /> },
       { path: "/blog", element: <Blog /> },
       { path: "/blog-detail", element: <BlogDetail /> },
