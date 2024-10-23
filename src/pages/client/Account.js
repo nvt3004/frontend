@@ -18,7 +18,7 @@ import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import ConfirmAlert from "../../components/client/sweetalert/ConfirmAlert";
 import { getProfile, updateUser } from "../../services/api/OAuthApi";
-
+import productApi from "../../services/api/ProductApi";
 function getNameAddress(nameId) {
   return nameId.substring(nameId.indexOf(" "), nameId.length).trim();
 }
@@ -56,6 +56,37 @@ const Account = () => {
     email: "",
     phone: "",
   });
+
+  const [orders, setOrders] = useState([]);
+  const [page, setPage] = useState(0); // Quản lý trang hiện tại
+  const [totalPages, setTotalPages] = useState(1); // Tổng số trang
+  const [loading, setLoading] = useState(true);
+
+  // Hàm gọi API getOrder
+  const fetchOrders = async (pageNumber = 0) => {
+    setLoading(true);
+    try {
+      const data = await productApi.getOrder(10, pageNumber); // Gọi API getOrder với page
+
+      setOrders(data.content); // Lưu danh sách đơn hàng
+      setTotalPages(data.totalPages); // Lưu tổng số trang
+      setPage(data.number); // Lưu trang hiện tại
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Gọi API khi component được render lần đầu tiên
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  // Hàm xử lý khi người dùng chuyển trang
+  const handlePageChange = (newPage) => {
+    fetchOrders(newPage); // Gọi API với trang mới
+  };
 
   useEffect(() => {
     if (profile && profile.listData) {
@@ -487,54 +518,97 @@ const Account = () => {
         </div>
         <div className="row mb-5">
           <div className="col-md-8">
-            <h4 className="stext-301 ">Order</h4>
-            <div className="wrap-table-shopping-cart">
-              <table className="table-shopping-cart">
-                <thead>
-                  <tr className="table_head">
-                    <th className="column-1">Product</th>
-                    <th className="column-2"></th>
+            <h4 className="stext-301">Orders</h4>
+            <div className="overflow-y-auto" style={{ height: "60vh" }}>
+            {orders?.length === 0 ? (
+  <div>Không có đơn hàng nào</div>
+) : (
+  orders?.map((order) => (
+    <div key={order.orderId} className="mb-3">
+      <div className="card">
+        <div
+          className="card-header d-flex justify-content-between align-items-center"
+          data-bs-toggle="collapse"
+          data-bs-target={`#collapseOrder${order.orderId}`}
+          aria-expanded="false"
+          aria-controls={`collapseOrder${order.orderId}`}
+        >
+          <div>
+            <strong>Order #{order.orderId}</strong> <br />
+            <small>{new Date(order.orderDate).toLocaleString()}</small>
+          </div>
+          <span
+            className={`badge text-bg-${
+              order.statusName === "Shipped" ? "success" : "warning"
+            }`}
+          >
+            {order.statusName}
+          </span>
+          <div>
+            <strong>Total: {order.totalPrice.toFixed(2)} VND</strong>
+          </div>
+        </div>
 
-                    <th className="column-3">Quantity</th>
-                    <th className="column-4">Total</th>
-                    <th className="column-5">Status</th>
+        {/* Dropdown for Order Details */}
+        <div>
+          <div className="collapse p-3" id={`collapseOrder${order.orderId}`}>
+            <table className="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Variant</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {order.products.map((product, index) => (
+                  <tr key={index}>
+                    <td>
+                      <img
+                        src={product.imageUrl}
+                        alt={product.productName}
+                        style={{ width: "50px", marginRight: "10px" }}
+                      />
+                      {product.productName}
+                    </td>
+                    <td>{product.variant}</td>
+                    <td>{product.quantity}</td>
+                    <td>${product.price.toFixed(2)}</td>
                   </tr>
-                </thead>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  ))
+)}
 
-                <tbody>
-                  <tr className="table_row">
-                    <td className="column-1">
-                      <div className="how-itemcart1">
-                        <img src="images/item-cart-04.jpg" alt="Product 1" />
-                      </div>
-                    </td>
-                    <td className="column-2">Fresh Strawberries</td>
-                    <td className="column-3">5</td>
-
-                    <td className="column-4">$ 36.00</td>
-                    <td className="column-5">
-                      <span className="badge text-bg-warning">Pending</span>
-                    </td>
-                  </tr>
-                  {/* .................... */}
-                  <tr className="table_row">
-                    <td className="column-1">
-                      <div className="how-itemcart1">
-                        <img src="images/item-cart-05.jpg" alt="Product 2" />
-                      </div>
-                    </td>
-                    <td className="column-2">Lightweight Jacket</td>
-                    <td className="column-3">5</td>
-
-                    <td className="column-4">$ 36.00</td>
-                    <td className="column-5">
-                      <span className="badge text-bg-success">Shipped</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            </div>
+            {/* Pagination */}
+            <div className="pagination">
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 0}
+              >
+                Previous
+              </button>
+              <span className="mx-2">
+                Page {page + 1} of {totalPages}
+              </span>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages - 1}
+              >
+                Next
+              </button>
             </div>
           </div>
+
           <div className="col-md-4">
             <h4 className="stext-301">Address</h4>
 

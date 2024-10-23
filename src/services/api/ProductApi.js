@@ -226,7 +226,8 @@ const getProductWish = async () => {
     }
   }
 };
-const getCartAll = async (dispatch) => {
+
+const getCartAll = async () => {
   try {
     const [error, data] = await stfExecAPI({
       url: "api/user/cart/all",
@@ -234,6 +235,51 @@ const getCartAll = async (dispatch) => {
     return data.data;
   } catch (err) {
     console.error("Unexpected error:", err);
+  }
+};
+
+
+
+const getOrder = async (size = 10, page = 0) => {
+  try {
+    const [error, data] = await stfExecAPI({
+      method: "get",
+      url: "api/staff/orders/username",
+      params: {
+        size: size,
+        page: page
+      },
+    });
+
+    return data.data;
+  } catch (error) {
+ 
+    if (error.response) {
+      const { status, data } = error.response;
+
+      switch (status) {
+        case 400:
+          console.log("Bad Request: ", data.message || "Authorization header or token is missing.");
+          break;
+        case 401:
+          console.log("Unauthorized: ", data.message || "Token is missing, empty, or expired.");
+          break;
+        case 403:
+          console.log("Forbidden: ", data.message || "Account is locked.");
+          break;
+        case 404:
+          console.log("Not Found: ", data.message || "User not found.");
+          break;
+        case 204:
+          console.log("No Content: No orders found for the user.");
+          break;
+        default:
+          console.log("Unknown Error: An unexpected error occurred.");
+          break;
+      }
+    } else {
+      console.log("Connection Error: Failed to connect to the server.");
+    }
   }
 };
 
@@ -246,6 +292,7 @@ const productApi = {
   addWishlist,
   removeWishlist,
   getProductWish,
-  getCartAll
+  getCartAll,
+  getOrder
 };
 export default productApi;
