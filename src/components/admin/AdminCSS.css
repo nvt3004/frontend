@@ -24,25 +24,49 @@
 }
 
 /* --- --- --- */
+.font-10 {
+    font-size: 10px;
+}
+.font-11 {
+    font-size: 11px;
+}
+.font-12 {
+    font-size: 12px;
+}
 .font-13 {
     font-size: 13px;
 }
-
 .font-14 {
     font-size: 14px;
 }
 .font-16{
     font-size: 16px;
 }
+.font-15{
+    font-size: 15px;
+}
+.font-24{
+    font-size: 24px;
+}
 
 /* --- --- --- */
 .text-purple {
     color: #e331ff;
 }
+.text-purple-pantone-1{
+    color: #833e8d;
+}
+.text-blue-pantone-1{
+    color: #3a5589;
+}
 
 /* --- --- --- */
 .bg-gray-1 {
     background-color: #dcdce1;
+}
+
+.bg-gray-2{
+    background-color: #EFEFEF;
 }
 
 /* --- --- --- */
@@ -59,6 +83,10 @@
 }
 .custom-hover:hover{
     transform: scale(1.05); 
+}
+
+.custom-border-right{
+    border-right: 2px solid #D1D1D1;
 }
 
 /* --- --- --- */
@@ -113,4 +141,23 @@
 /* --- --- --- */
 .accordion-header button{
     padding: 6px 12px !important; 
+}
+
+/* --- --- --- */
+.custome-placeholder-font-12::placeholder{
+    font-size: 12px;
+}
+
+/* --- --- --- */
+.custom-form-select option{
+    font-size: 14px;
+}
+
+/* --- --- --- */
+.btn-custom {
+    width: 20px; /* Đặt chiều rộng */
+    height: 20px; /* Đặt chiều cao */
+    font-size: 12px; /* Đặt kích thước chữ */
+    padding: 0; /* Xóa padding */
+    border-radius: 50%; /* Giữ hình tròn */
 }
