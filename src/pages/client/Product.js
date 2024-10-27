@@ -1,94 +1,39 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import productApi from "../../services/api/ProductApi";
 import SpeechToText from "../../components/client/search/SpeechtoText";
 import Wish from "../../components/client/ProdWish/Wish";
-import { useDispatch } from "react-redux";
+
 const Product = () => {
   const dispatch = useDispatch();
-  // Các thuộc tính bộ lọc được lấy từ API (ví dụ: color, size, category)
+
+  // Danh sách sản phẩm
+  const [products, setProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("No products found");
+
+  // Trạng thái phân trang
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMoreProducts, setHasMoreProducts] = useState(true);
+
+  // Bộ lọc sản phẩm
   const [filterAttributes, setFilterAttributes] = useState({
     color: [],
     size: [],
     category: [],
-    // Thêm các thuộc tính khác nếu cần
   });
-
-  // Danh sách sản phẩm
-  const [products, setProducts] = useState([]);
-
-  // Trạng thái tìm kiếm
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-
-  // Bộ lọc sản phẩm
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedMinPrice, setSelectedMinPrice] = useState(null);
   const [selectedMaxPrice, setSelectedMaxPrice] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [sortOrder, setSortOrder] = useState("ASC");
+  const [action, setAction] = useState(0);
 
-  // Trạng thái và thông báo
-  const [errorMessage, setErrorMessage] = useState("No products found");
-  const [loading, setLoading] = useState(false);
-  const [selectedProductDetail, setSelectedProductDetail] = useState(null);
-
-  // Trạng thái phân trang cho hai API
-  const [currentPage, setCurrentPage] = useState(0); // API Lấy Sản Phẩm
-  const [hasMoreProducts, setHasMoreProducts] = useState(true);
-
-  const [currentSearchPage, setCurrentSearchPage] = useState(0); // API Tìm Kiếm
-  const [hasMoreSearchResults, setHasMoreSearchResults] = useState(true);
-
-  // Xác định API đang hoạt động
-  const [isSearching, setIsSearching] = useState(false);
-
-  const handleAddWishlist = async (id) => {
-    try {
-      await productApi.addWishlist(id, dispatch);
-      setProducts((prevProducts) =>
-        prevProducts.map((prod) =>
-          prod.id === id
-            ? { ...prod, like: true } // Đánh dấu sản phẩm là 'liked'
-            : prod
-        )
-      );
-    } catch (error) {
-      console.error("Error adding to Wishlist:", error.message);
-    }
-  };
-  const handleRemoveWishlist = async (id) => {
-    try {
-      await productApi.removeWishlist(id, dispatch);
-      setProducts((prevProducts) =>
-        prevProducts.map((prod) =>
-          prod.id === id
-            ? { ...prod, like: false } // Gỡ dấu 'liked' khỏi sản phẩm
-            : prod
-        )
-      );
-    } catch (error) {
-      console.error("Error removing from Wishlist:", error.message);
-    }
-  };
-
-  console.log("1");
-  // Lấy chi tiết sản phẩm
-  const getProductDetail = async (id) => {
-    try {
-      const response = await productApi.getProductDetail(id);
-      setSelectedProductDetail(response.data.data);
-    } catch (error) {
-      console.error("Error fetching product:", error.message);
-    }
-  };
-
-  const handleProductClick = (id) => {
-    getProductDetail(id);
-  };
-
-  // Lấy các thuộc tính bộ lọc khi component mount
+  // Fetch bộ lọc một lần khi component mount
   useEffect(() => {
     const fetchFilterAttributes = async () => {
       try {
@@ -97,16 +42,16 @@ const Product = () => {
       } catch (error) {
         console.error("Error fetching filter attributes:", error.message);
       }
-      console.log("2");
     };
 
     fetchFilterAttributes();
   }, []);
 
-  // Debounce search term để tránh gọi API quá nhiều lần khi người dùng gõ liên tục
+  // Debounce search term
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
+      setAction(1);
     }, 400);
 
     return () => {
@@ -114,53 +59,18 @@ const Product = () => {
     };
   }, [searchTerm]);
 
-  // Effect để thực hiện tìm kiếm khi debouncedSearchTerm thay đổi
+  // Fetch sản phẩm khi debounce search term thay đổi
   useEffect(() => {
-    if (debouncedSearchTerm) {
-      setIsSearching(true);
-      setProducts([]);
-      setCurrentSearchPage(0);
-      setHasMoreSearchResults(true);
-      handleSearch(debouncedSearchTerm, 0);
-      console.log("3");
-    } else {
-      // Nếu không có tìm kiếm, reset về bộ lọc thông thường
-      setIsSearching(false);
-      setProducts([]);
-      setCurrentPage(0);
-      setHasMoreProducts(true);
-      fetchFilter(
-        selectedCategory,
-        selectedMinPrice,
-        selectedMaxPrice,
-        selectedColor,
-        selectedSize,
-        sortOrder,
-        0
-      );
-      console.log("4");
+    if (debouncedSearchTerm !== "") {
+      resetProducts();
+      fetchProducts();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm]);
 
-  // Effect để thực hiện bộ lọc khi các thuộc tính thay đổi
+  // Fetch sản phẩm khi bộ lọc thay đổi
   useEffect(() => {
-    if (!isSearching) {
-      setProducts([]);
-      setCurrentPage(0);
-      setHasMoreProducts(true);
-      fetchFilter(
-        selectedCategory,
-        selectedMinPrice,
-        selectedMaxPrice,
-        selectedColor,
-        selectedSize,
-        sortOrder,
-        0
-      );
-      console.log("5");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    resetProducts();
+    fetchProducts();
   }, [
     selectedCategory,
     selectedMinPrice,
@@ -170,74 +80,63 @@ const Product = () => {
     sortOrder,
   ]);
 
-  // Hàm gọi API lọc sản phẩm
-  const fetchFilter = async (
-    categoryName,
-    minPrice,
-    maxPrice,
-    color,
-    size,
-    sortOrder,
-    pageNumber
-  ) => {
-    setLoading(true);
-    try {
-      const response = await productApi.filter(
-        categoryName,
-        minPrice,
-        maxPrice,
-        color,
-        size,
-        sortOrder,
-        pageNumber
-      );
-      const newProducts = response.data.data.content;
+  const resetProducts = () => {
+    setProducts([]);
+    setCurrentPage(0);
+    setErrorMessage("No products found");
+    setHasMoreProducts(true);
+  };
 
-      if (newProducts && newProducts.length > 0) {
+  const fetchProducts = async () => {
+    setLoading(true);
+    const pageSize = 2; // Số sản phẩm mỗi lần
+    try {
+      const response = await productApi.getProds({
+        query: debouncedSearchTerm,
+        categoryName: selectedCategory,
+        minPrice: selectedMinPrice,
+        maxPrice: selectedMaxPrice,
+        color: selectedColor,
+        size: selectedSize,
+        sortPrice: sortOrder,
+        page: currentPage,
+        pageSize: pageSize,
+        action: action,
+      });
+
+      // console.log("Fetching products with parameters:", {
+      //   query: debouncedSearchTerm,
+      //   categoryName: selectedCategory,
+      //   minPrice: selectedMinPrice,
+      //   maxPrice: selectedMaxPrice,
+      //   color: selectedColor,
+      //   size: selectedSize,
+      //   sortPrice: sortOrder,
+      //   page: currentPage,
+      //   pageSize: pageSize,
+      //   action: action,
+      // });
+
+      let newProducts = response?.data || [];
+
+      if (newProducts.length > 0) {
         setProducts((prevProducts) => [...prevProducts, ...newProducts]);
-        setCurrentPage(pageNumber + 1);
-        setHasMoreProducts(newProducts.length > 0);
+        setHasMoreProducts(newProducts.length === pageSize);
+        setErrorMessage(""); // Reset error message on successful fetch
       } else {
         setHasMoreProducts(false);
-        if (pageNumber === 0) {
-          setErrorMessage("No products found with the selected filters.");
+        if (currentPage === 0) {
+          setErrorMessage("No products found");
         }
       }
-      console.log("6");
     } catch (error) {
-      console.error("Error fetching filter:", error.message);
+      console.error("Error fetching products:", error.message);
       setErrorMessage("Error fetching products.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Hàm gọi API tìm kiếm sản phẩm
-  const handleSearch = async (keyword, pageNumber) => {
-    setLoading(true);
-    try {
-      const response = await productApi.searchProduct(keyword, pageNumber);
-      const searchResults = response.data.data;
-
-      if (searchResults && searchResults.length > 0) {
-        setProducts((prevProducts) => [...prevProducts, ...searchResults]);
-        setCurrentSearchPage(pageNumber + 1);
-        setHasMoreSearchResults(searchResults.length > 0);
-      } else {
-        setHasMoreSearchResults(false);
-        if (pageNumber === 0) {
-          setErrorMessage(`No products found for "${keyword}".`);
-        }
-      }
-    } catch (error) {
-      console.log("Handle search error:", error);
-      setErrorMessage("Error searching products.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Hàm xử lý chọn bộ lọc
   const handleSelectChange = (attribute, value) => {
     switch (attribute) {
       case "category":
@@ -261,46 +160,61 @@ const Product = () => {
       default:
         break;
     }
+    setAction(0);
   };
 
-  // Hàm xử lý Load More
-  const handleLoadMore = () => {
-    if (isSearching && hasMoreSearchResults) {
-      handleSearch(debouncedSearchTerm, currentSearchPage);
-    } else if (!isSearching && hasMoreProducts) {
-      fetchFilter(
-        selectedCategory,
-        selectedMinPrice,
-        selectedMaxPrice,
-        selectedColor,
-        selectedSize,
-        sortOrder,
-        currentPage
-      );
-    }
-  };
-
-  // Hàm bỏ chọn tất cả bộ lọc
   const handleClearFilter = () => {
+    resetProducts();
     setSelectedCategory(null);
     setSelectedMinPrice(null);
     setSelectedMaxPrice(null);
     setSelectedColor(null);
     setSelectedSize(null);
     setSortOrder("ASC");
-    setSearchTerm("");
-    setDebouncedSearchTerm("");
-    setIsSearching(false);
-    setCurrentPage(0);
-    setHasMoreProducts(true);
-    setCurrentSearchPage(0);
-    setHasMoreSearchResults(true);
-    setErrorMessage("No products found");
+    setAction(0);
+  };
+
+  // Load thêm sản phẩm khi currentPage thay đổi
+  useEffect(() => {
+    if (currentPage > 0) {
+      fetchProducts();
+    }
+  }, [currentPage]);
+
+  const handleLoadMore = () => {
+    setCurrentPage((prevPage) => prevPage + 1);
   };
 
   const handleSpeechText = (text) => {
     setSearchTerm(text);
   };
+
+  const handleAddWishlist = async (id) => {
+    try {
+      await productApi.addWishlist(id, dispatch);
+      setProducts((prevProducts) =>
+        prevProducts.map((prod) =>
+          prod.id === id ? { ...prod, like: true } : prod
+        )
+      );
+    } catch (error) {
+      console.error("Error adding to Wishlist:", error.message);
+    }
+  };
+
+  const handleRemoveWishlist = async (id) => {
+    try {
+      await productApi.removeWishlist(id, dispatch);
+      setProducts((prevProducts) =>
+        prevProducts.map((prod) =>
+          prod.id === id ? { ...prod, like: false } : prod
+        )
+      );
+    } catch (error) {
+      console.error("Error removing from Wishlist:", error.message);
+    }
+  };
+
   const style = {
     m: { marginTop: "40px" },
     h: { height: "60vh" },
@@ -316,9 +230,11 @@ const Product = () => {
             <div className="flex-w flex-l-m filter-tope-group m-tb-10">
               <button
                 className={`stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 ${
-                  selectedCategory === null ? "how-active1" : ""
+                  selectedCategory === null || selectedCategory === ""
+                    ? "how-active1"
+                    : ""
                 }`}
-                onClick={() => handleSelectChange("category", null)}
+                onClick={() => handleSelectChange("category", "")}
               >
                 All Products
               </button>
@@ -694,9 +610,9 @@ const Product = () => {
               {/* Danh sách sản phẩm */}
               <div className="row isotope-grid ">
                 {products && products.length > 0 ? (
-                  products.map((product) => (
+                  products.map((product, index) => (
                     <div
-                      key={product.id} // Đảm bảo rằng mỗi sản phẩm có một key duy nhất
+                      key={index} // Đảm bảo rằng mỗi sản phẩm có một key duy nhất
                       className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
                     >
                       <div className="block2">
@@ -708,7 +624,6 @@ const Product = () => {
                             className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none"
                             data-bs-toggle="modal"
                             data-bs-target="#exampleModal"
-                            onClick={() => handleProductClick(product.id)}
                           >
                             Quick View
                           </button>
@@ -765,8 +680,7 @@ const Product = () => {
 
               {/* <!-- Load more --> */}
               <div className="flex-c-m flex-w w-full ">
-                {((!isSearching && hasMoreProducts) ||
-                  (isSearching && hasMoreSearchResults)) && (
+                {hasMoreProducts ? (
                   <div className="d-flex justify-content-center mt-4">
                     <button
                       onClick={handleLoadMore}
@@ -776,9 +690,7 @@ const Product = () => {
                       {loading ? "Loading..." : "Load More"}
                     </button>
                   </div>
-                )}
-                {((!isSearching && !hasMoreProducts) ||
-                  (isSearching && !hasMoreSearchResults)) && (
+                ) : (
                   <button className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
                     No more products to load
                   </button>

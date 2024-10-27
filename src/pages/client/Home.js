@@ -10,9 +10,9 @@ import InfoAlert from "../../components/client/sweetalert/InfoAlert";
 import { stfExecAPI, ghnExecAPI } from "../../stf/common";
 import Wish from "../../components/client/ProdWish/Wish";
 import { useDispatch } from "react-redux";
-import banner1 from "../../assets/images/banner-01.jpg"
-import banner2 from "../../assets/images/banner-02.jpg"
-import banner3 from "../../assets/images/banner-03.jpg"
+import banner1 from "../../assets/images/banner-01.jpg";
+import banner2 from "../../assets/images/banner-02.jpg";
+import banner3 from "../../assets/images/banner-03.jpg";
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
     const key = attributes[i].key;
@@ -265,7 +265,7 @@ const Home = () => {
 
         if (checkCount == temp) {
           //Thêm vào giỏ hàng
-          await handleAddVersionToCart({versionId: vs.id, quantity: 1});
+          await handleAddVersionToCart({ versionId: vs.id, quantity: 1 });
           break;
         }
       }
@@ -361,7 +361,6 @@ const Home = () => {
     ProductDetail.versions.forEach((element) => {});
   };
 
-  
   const handleAddWishlist = async (id) => {
     try {
       await productApi.addWishlist(id, dispatch);
@@ -376,9 +375,9 @@ const Home = () => {
       console.error("Error adding to Wishlist:", error.message);
     }
   };
-  const handleRemoveWishlist = async (id, dispatch) => {
+  const handleRemoveWishlist = async (id) => {
     try {
-      await productApi.removeWishlist(id);
+      await productApi.removeWishlist(id, dispatch);
       setProducts((prevProducts) =>
         prevProducts.map((prod) =>
           prod.id === id
@@ -525,13 +524,15 @@ const Home = () => {
 
                             <span className="stext-105 cl3">
                               {`${
-                                product?.minPrice == null ? 0 : product?.minPrice
+                                product?.minPrice == null
+                                  ? 0
+                                  : product?.minPrice
                               }VND ~ ${product?.maxPrice}VND`}
                             </span>
                           </div>
 
                           <div className="block2-txt-child2 flex-r p-t-3">
-                          <Wish
+                            <Wish
                               prodID={product?.id}
                               isWish={product?.like}
                               handleAddWish={() => {

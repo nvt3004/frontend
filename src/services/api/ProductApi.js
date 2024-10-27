@@ -6,28 +6,69 @@ import InfoAlert from "../../components/client/sweetalert/InfoAlert";
 import { stfExecAPI } from "../../stf/common";
 import {
   incrementWishlist,
-  decrementWishlist
-} from '../../store/actions/wishlistActions';
-import { useDispatch } from 'react-redux';
-
-const searchProduct = async (query, page) => {
+  decrementWishlist,
+} from "../../store/actions/wishlistActions";
+const getProds = async ({
+  query,
+  categoryName,
+  minPrice,
+  maxPrice,
+  color,
+  size,
+  sortPrice,
+  page,
+  pageSize,
+  action,
+} = {}) => {
   try {
-    const response = await axiosInstance.get("/product/search", {
+    const { data } = await axiosInstance.get("product/getProds", {
       params: {
         query,
+        categoryName,
+        minPrice,
+        maxPrice,
+        color,
+        size,
+        sortPrice,
         page,
+        pageSize,
+        action,
       },
     });
-    return response;
+    return data;
   } catch (error) {
-    console.error("Error fetching products:", error);
-    if (error.response && error.response.status === 404) {
-      console.warn("No products found for this query");
+    if (error.response) {
+      const { status, data } = error.response;
+
+      switch (status) {
+        case 400:
+          console.log(
+            "Bad Request: ",
+            data?.message || "Invalid action value."
+          );
+          break;
+        case 500:
+          console.log(
+            "Error: ",
+            data?.message || "An error occurred during get product."
+          );
+          break;
+        case 204:
+          console.log("No Content: No products found.");
+          break;
+        default:
+          console.log("Unknown Error: An unexpected error occurred.");
+          break;
+      }
     } else {
-      console.error("An unexpected error occurred");
+      console.log(
+        "Connection Error: Failed to connect to the server. Error message:",
+        error.message
+      );
     }
   }
 };
+
 const getFilterAttribute = async () => {
   try {
     const response = await axiosInstance.get("/product/FilterAttribute");
@@ -42,37 +83,6 @@ const getFilterAttribute = async () => {
   }
 };
 
-const filter = async (
-  categoryName,
-  minPrice,
-  maxPrice,
-  color,
-  size,
-  sortPrice,
-  page
-) => {
-  try {
-    const response = await axiosInstance.get("/product/filtered", {
-      params: {
-        categoryName,
-        minPrice,
-        maxPrice,
-        color,
-        size,
-        sortPrice,
-        page,
-      },
-    });
-    return response;
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    if (error.response && error.response.status === 404) {
-      console.warn("No products found");
-    } else {
-      console.error("An unexpected error occurred");
-    }
-  }
-};
 const getTopProducts = async () => {
   try {
     const response = await axiosInstance.get("/product/getTopProducts");
@@ -108,10 +118,9 @@ const addWishlist = async (productId, dispatch) => {
       method: "post",
       url: `api/user/wishlist/add`,
       data: {
-        productId: productId, 
+        productId: productId,
       },
     });
-   
 
     // Hiển thị thông báo thành công
     dispatch(incrementWishlist());
@@ -125,7 +134,7 @@ const addWishlist = async (productId, dispatch) => {
 
     if (error.response) {
       const { status, data } = error.response;
-console.log("abc",error)
+      console.log("abc", error);
       switch (status) {
         case 400:
           DangerAlert({ title: "Invalid Token", text: data.message });
@@ -146,28 +155,38 @@ console.log("abc",error)
           DangerAlert({ title: "Invalid Input", text: data.message });
           break;
         default:
-          DangerAlert({ title: "Unknown Error", text: "An unexpected error occurred" });
+          DangerAlert({
+            title: "Unknown Error",
+            text: "An unexpected error occurred",
+          });
           break;
       }
     } else {
-      DangerAlert({ title: "Connection Error", text: "Failed to connect to the server" });
+      DangerAlert({
+        title: "Connection Error",
+        text: "Failed to connect to the server",
+      });
     }
   }
 };
-
-
 const removeWishlist = async (productId, dispatch) => {
   try {
     const [error, data] = await stfExecAPI({
       method: "delete",
       url: `api/user/wishlist/remove/${productId}`,
     });
-    // Nếu thành công, hiển thị SuccessAlert
+
     dispatch(decrementWishlist());
-    SuccessAlert({ title: "Deleted!", text: "The wishlist item has been successfully removed." });
-    return data; // Trả về dữ liệu từ server
+    SuccessAlert({
+      title: "Deleted!",
+      text: "The wishlist item has been successfully removed.",
+    });
+
+    return data;
   } catch (error) {
-    // Kiểm tra lỗi và hiển thị thông báo phù hợp với các alert component
+    console.error("Error while removing wishlist item:", error);
+
+    // Kiểm tra lỗi với `error.response`
     if (error.response) {
       const { status, data } = error.response;
       switch (status) {
@@ -184,15 +203,20 @@ const removeWishlist = async (productId, dispatch) => {
           DangerAlert({ title: "Not Found", text: data.message });
           break;
         default:
-          DangerAlert({ title: "Unknown Error", text: "An unexpected error occurred." });
+          DangerAlert({
+            title: "Unknown Error",
+            text: "An unexpected error occurred.",
+          });
           break;
       }
     } else {
-      DangerAlert({ title: "Connection Error", text: "Failed to connect to the server." });
+      DangerAlert({
+        title: "Connection Error",
+        text: "Failed to connect to the server.",
+      });
     }
   }
-}; 
-
+};
 
 const getProductWish = async () => {
   try {
@@ -210,10 +234,16 @@ const getProductWish = async () => {
 
       switch (status) {
         case 400:
-          console.log("Bad Request: ", data.message || "Authorization header or token is missing.");
+          console.log(
+            "Bad Request: ",
+            data.message || "Authorization header or token is missing."
+          );
           break;
         case 401:
-          console.log("Unauthorized: ", data.message || "Token is missing, empty, or expired.");
+          console.log(
+            "Unauthorized: ",
+            data.message || "Token is missing, empty, or expired."
+          );
           break;
         case 403:
           console.log("Forbidden: ", data.message || "Account is locked.");
@@ -245,8 +275,6 @@ const getCartAll = async () => {
   }
 };
 
-
-
 const getOrder = async (size = 10, page = 0) => {
   try {
     const [error, data] = await stfExecAPI({
@@ -254,22 +282,27 @@ const getOrder = async (size = 10, page = 0) => {
       url: "api/staff/orders/username",
       params: {
         size: size,
-        page: page
+        page: page,
       },
     });
 
     return data.data;
   } catch (error) {
- 
     if (error.response) {
       const { status, data } = error.response;
 
       switch (status) {
         case 400:
-          console.log("Bad Request: ", data.message || "Authorization header or token is missing.");
+          console.log(
+            "Bad Request: ",
+            data.message || "Authorization header or token is missing."
+          );
           break;
         case 401:
-          console.log("Unauthorized: ", data.message || "Token is missing, empty, or expired.");
+          console.log(
+            "Unauthorized: ",
+            data.message || "Token is missing, empty, or expired."
+          );
           break;
         case 403:
           console.log("Forbidden: ", data.message || "Account is locked.");
@@ -291,15 +324,14 @@ const getOrder = async (size = 10, page = 0) => {
 };
 
 const productApi = {
-  searchProduct,
+  getProds,
   getFilterAttribute,
-  filter,
   getTopProducts,
   getProductDetail,
   addWishlist,
   removeWishlist,
   getProductWish,
   getCartAll,
-  getOrder
+  getOrder,
 };
 export default productApi;
