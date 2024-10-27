@@ -11,6 +11,9 @@ import { MdDeleteForever } from "react-icons/md";
 import SupplierModal from '../SuppliersManagement/SupplierModal';
 
 const NewProduct = () => {
+    const handleGetAttributesAPI = () => {
+
+    }
     const supplierOptions = suppliers.map(item => ({
         value: item?.id,
         label: item?.supplierName,
@@ -30,9 +33,6 @@ const NewProduct = () => {
         { value: 'blue', label: 'Blue' },
         { value: 'yellow', label: 'Yellow' },
     ];
-
-    const sizeRef = useRef();
-    const colorRef = useRef();
 
     const [selectedSizes, setSelectedSize] = useState([]);
     const [selectedColors, setSelectedColor] = useState([]);

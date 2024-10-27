@@ -1,15 +1,15 @@
 import axios from 'axios';
 import React from 'react';
 
-const DoRequest = ({token}) => {
-    const baseURL = 'http://localhost:8080';
+const DoRequest = () => {
+    const baseURL = 'http://localhost:8080/api';
+    const token = `eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbnRydXFoeTNAZ21haWwuY29tIiwicHVycG9zZSI6ImxvZ2luIiwiaWF0IjoxNzMwMDI5OTkxLCJleHAiOjE3MzAwNDc5OTF9.cTdDj8YNcFsNafctLyeeu0oj871f9cZfbcbGTOLMaqE`;
     const axiosInstance = axios.create({
         baseURL: baseURL,
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
         },
-        timeout: 5000,
     })
 
     return axiosInstance;

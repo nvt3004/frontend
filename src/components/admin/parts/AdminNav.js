@@ -35,6 +35,9 @@ const AdminNav = () => {
           Products Management
         </button>
         <div className="collapse" id="productManagementCollapse">
+          <StyledLink to="/admin/products/categories" className="list-group-item text-center bg-secondary-subtle">
+            Product's Categories
+          </StyledLink>
           <StyledLink to="/admin/products/new" className="list-group-item text-center bg-secondary-subtle">
             New Product
           </StyledLink>

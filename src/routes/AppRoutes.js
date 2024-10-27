@@ -30,6 +30,7 @@ import SuppliersTable from '../components/admin/parts/NewParts/body/SuppliersMan
 import ProductTable from '../components/admin/parts/NewParts/body/ProductManagement/ProductTable';
 import NewProduct from '../components/admin/parts/NewParts/body/ProductManagement/NewProduct';
 import StockIn from '../components/admin/parts/NewParts/body/WarehouseManagement/StockIn';
+import ProductCategories from '../components/admin/parts/NewParts/body/ProductManagement/ProductCategories';
 
 const router = createBrowserRouter([
   {
@@ -99,6 +100,7 @@ const router = createBrowserRouter([
         children: [
           { path: 'manage', element: <ProductTable /> },
           { path: 'new', element: <NewProduct /> },
+          { path: 'categories', element: <ProductCategories /> },
         ],
       },
     ],

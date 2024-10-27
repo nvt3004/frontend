@@ -4,53 +4,107 @@ import { AiOutlineProduct } from 'react-icons/ai';
 import CustomButton from '../../component/CustomButton';
 import CustomFormControl from '../../component/CustomFormControl';
 
-const SupplierModal = ({supplier, show, handleClose, isNew, isEdit, handelEdit, handleCancel}) => {
-    // const handleCancel  = () => {
-    //     handleClose();
-    //     setEdit(false)
-    // }
-    // const [isEdit, setEdit] = useState(false);
-    // const handleSetEdit = () => {
-    //     setEdit(true);
-    // }
+const SupplierModal = ({ supplier, show, isNew, isEdit, handleChange, handelEdit, handleCancel, handleSubmit, register, errors, handleSubmitNew }) => {
+
     return (
         <div>
-            <Modal show={show} onHide={handleClose}>
+            <Modal show={show} onHide={handleCancel}>
                 <Modal.Header>
                     <Modal.Title className='d-flex align-items-center'>
                         <AiOutlineProduct />&ensp;<p className='mb-0 fs-3'>{isNew ? `New Supplier` : `Supplier Infomations`}</p>
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <Form>
+                    <Form id='form1'>
                         <Form.Group>
                             <Form.Label>Contacter</Form.Label>
-                            {/* <Form.Control type='text' defaultValue={supplier?.contactName}/> */}
-                            <CustomFormControl type={'text'} defaultValue={supplier?.contactName} isEdit={isEdit} isNew={isNew}/>
+                            <Form.Control type='text' defaultValue={supplier?.contactName}
+                                {...register("contactName", { required: true })}
+                                placeholder={`Contacter's name`}
+                                onKeyDown={handleChange} onPaste={handleChange}
+                                disabled={!supplier && !isNew} />
+                            {errors?.contactName && (
+                                <p className='fw-bold text-danger'>Contacter required</p>
+                            )}
                         </Form.Group>
                         <Form.Group>
                             <Form.Label>Supplier</Form.Label>
-                            <CustomFormControl type={'text'} defaultValue={supplier?.supplierName} isEdit={isEdit} isNew={isNew}/>
+                            <Form.Control type='text' defaultValue={(supplier && !isEdit) ? supplier?.supplierName : ''}
+                                {...register("supplierName", { required: true })}
+                                placeholder={(supplier && isEdit) && supplier?.supplierName}
+                                onKeyDown={handleChange} onPaste={handleChange}
+                                disabled={!supplier && !isNew} />
+                            {errors?.supplierName && (
+                                <p className='fw-bold text-danger'>Supplier is required</p>
+                            )}
                         </Form.Group>
                         <Form.Group>
                             <Form.Label>Address</Form.Label>
-                            <CustomFormControl type={'text'} defaultValue={supplier?.address} isEdit={isEdit} isNew={isNew}/>
-                        </Form.Group>
-                        <Form.Group>
-                            <Form.Label>Phone</Form.Label>
-                            <CustomFormControl type={'text'} defaultValue={supplier?.phone} isEdit={isEdit} isNew={isNew}/>
+                            <Form.Control type='text' defaultValue={supplier && !isEdit ? supplier?.address : ''}
+                                {...register("address", { required: true })}
+                                placeholder={(supplier && isEdit) && supplier?.address}
+                                onKeyDown={handleChange} onPaste={handleChange}
+                                disabled={!supplier && !isNew} />
+                            {errors?.address && (
+                                <p className='fw-bold text-danger'>Address is required</p>
+                            )}
                         </Form.Group>
                         <Form.Group>
                             <Form.Label>Email</Form.Label>
-                            <CustomFormControl type={'text'} defaultValue={supplier?.email} isEdit={isEdit} isNew={isNew}/>
+                            <Form.Control type='email' defaultValue={supplier && !isEdit ? supplier?.email : ''}
+                                {...register("email", {
+                                    required: "Email iss required",
+                                    pattern: {
+                                        value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
+                                        message: "Email does not valid"
+                                    }
+                                })}
+                                placeholder={(supplier && isEdit) && supplier?.email}
+                                onKeyDown={handleChange} onPaste={handleChange}
+                                disabled={!supplier && !isNew} />
+                            {errors?.email && (
+                                <p className='fw-bold text-danger'>{errors.email.message}</p>
+                            )}
+                        </Form.Group>
+                        <Form.Group>
+                            <Form.Label>Phone</Form.Label>
+                            <Form.Control type='tel' defaultValue={supplier && !isEdit ? supplier?.phone : ''}
+                                {...register("phone", {
+                                    required: "Phone number is required",
+                                    pattern: {
+                                        value: /^0\d{9}$/,
+                                        message: "Phone number does not valid"
+                                    }
+                                })}
+                                placeholder={(supplier && isEdit) && supplier?.phone}
+                                onKeyDown={handleChange} onPaste={handleChange}
+                                disabled={!supplier && !isNew} />
+                            {errors?.phone && (
+                                <p className='fw-bold text-danger'>{errors.phone.message}</p>
+                            )}
                         </Form.Group>
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <CustomButton btnBG={'danger'} btnName={'Cancel'} handleClick={handleCancel}/>
-                    <CustomButton btnBG={isNew ? 'success' : isEdit ? 'success' : 'warning'}
-                        btnName={isNew ? 'Create' : isEdit ? 'Save changed' : 'Change Infomations'}
-                        handleClick={!isEdit ? handelEdit : ''} textColor={'text-white'}/>
+                    <CustomButton btnBG={'danger'} btnName={'Cancel'} handleClick={handleCancel} />
+                    {isNew ? (
+                        <>
+                            <CustomButton btnBG={'success'} btnName={'Save'} btnType={'submit'}
+                                form={'form1'} textColor={'text-white'} handleClick={handleSubmitNew} />
+                        </>
+                    ) : (
+                        isEdit ? (
+                            <>
+                                <CustomButton btnBG={'success'} btnName={'Save changed'} btnType={'submit'}
+                                    form={'form1'} textColor={'text-white'} handleClick={handleSubmit} />
+                            </>
+                        ) : (
+                            <>
+                                <CustomButton btnBG={'warning'} btnName={'Change infomations'} btnType={'button'}
+                                    textColor={'text-white'} handleClick={handelEdit} />
+                            </>
+                        )
+                    )}
                 </Modal.Footer>
             </Modal>
         </div>
