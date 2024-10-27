@@ -27,6 +27,16 @@ import PermissionManagement from '../components/admin/parts/PermissionManagement
 import NewPermission from '../components/admin/parts/NewPermission';
 import FeedbackManagement from '../components/admin/parts/FeedbackManagement';
 
+
+
+// Auth Pages
+import AuthLayout from "../layouts/AuthLayout";
+import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
+import PaymentSuccess from '../pages/client/PaymentSuccess';
+import PaymentCancel from '../pages/client/PaymentCancel';
 // Admin new pages
 import UserTable from '../components/admin/parts/NewParts/body/UserManagement/UserTable';
 import SuppliersTable from '../components/admin/parts/NewParts/body/SuppliersManagement/SuppliersTable';
@@ -35,6 +45,8 @@ import NewProduct from '../components/admin/parts/NewParts/body/ProductManagemen
 import StockIn from '../components/admin/parts/NewParts/body/WarehouseManagement/StockIn';
 import ProductCategories from '../components/admin/parts/NewParts/body/ProductManagement/ProductCategories';
 
+
+import ProtectedRoute from "./ProtectedRoute";
 const router = createBrowserRouter([
   {
     path: "/",
