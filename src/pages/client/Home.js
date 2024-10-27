@@ -13,6 +13,9 @@ import { useDispatch } from "react-redux";
 import banner1 from "../../assets/images/banner-01.jpg";
 import banner2 from "../../assets/images/banner-02.jpg";
 import banner3 from "../../assets/images/banner-03.jpg";
+
+import { incrementCart } from "../../store/actions/cartActions";
+
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
     const key = attributes[i].key;
@@ -292,6 +295,8 @@ const Home = () => {
           "Server error",
       });
       return;
+    } else {
+      dispatch(incrementCart());
     }
 
     SuccessAlert({
@@ -389,6 +394,12 @@ const Home = () => {
       console.error("Error removing from Wishlist:", error.message);
     }
   };
+  function formatCurrencyVND(amount) {
+    return amount.toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+  }
   return (
     <div>
       <Slider />
@@ -523,11 +534,14 @@ const Home = () => {
                             </Link>
 
                             <span className="stext-105 cl3">
-                              {`${
-                                product?.minPrice == null
-                                  ? 0
-                                  : product?.minPrice
-                              }VND ~ ${product?.maxPrice}VND`}
+                              {`
+  ${
+    product?.minPrice !== product?.maxPrice
+      ? `${formatCurrencyVND(product?.minPrice ?? "N/A")} ~ `
+      : ""
+  }
+  ${formatCurrencyVND(product?.maxPrice ?? "N/A")}
+`}
                             </span>
                           </div>
 

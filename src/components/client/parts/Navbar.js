@@ -41,9 +41,11 @@ const Navbar = () => {
         setCart(data);
         dispatch(setCartCount(data?.length == null ? 0 : data.length));
         setTotal(0);
-        data.forEach((product) => {
-          setTotal(total + (product.price * product.quantity));
-        });
+        const calculatedTotal = data.reduce((acc, product) => {
+          return acc + Number(product.price) * Number(product.quantity);
+        }, 0);
+    
+        setTotal(calculatedTotal); 
       } catch (error) {
         console.log("Failed to fetch wishlist products", error);
       }
