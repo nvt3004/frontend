@@ -535,6 +535,8 @@ const Product = () => {
   const style = {
     m: { marginTop: "40px" },
     h: { height: "60vh" },
+    w500: { width: "100%" },
+    wh: { width: "100px", height: "126px" },
   };
 
   return (
@@ -1115,35 +1117,33 @@ const Product = () => {
 
                 <div className="col-md-6 col-lg-5 p-b-30">
                   <div className="p-r-50 p-t-5 p-lr-0-lg">
-                    <h4 className="mtext-105 cl2 js-name-detail p-b-14">
+                  <h4 className="mtext-105 cl2 js-name-detail p-b-14">
                       {ProductDetail ? ProductDetail?.product?.productName : ""}
                     </h4>
 
                     <span className="mtext-106 cl2">
-                      {price > 0 ? price : ProductDetail?.product?.minPrice}
+                      {" "}
+                      {products?.map((product1, index) =>
+                        product1?.id == ProductDetail?.product?.id ? (
+                          <span key={index}>
+                            {`
+  ${
+    product1?.minPrice !== product1?.maxPrice
+      ? `${formatCurrencyVND(product1?.minPrice ?? "N/A")} ~ `
+      : ""
+  }
+  ${formatCurrencyVND(product1?.maxPrice ?? "N/A")}
+`}
+                          </span>
+                        ) : null
+                      )}
                     </span>
 
                     <p className="stext-102 cl3 p-t-23">
-                      <span>
-                        {ProductDetail && ProductDetail?.versions
-                          ? ProductDetail?.versions.length
-                          : 0}{" "}
-                        ~ versions
-                      </span>
-                      {ProductDetail &&
-                        ProductDetail?.attributes &&
-                        ProductDetail?.attributes.length > 0 && (
-                          <span>
-                            {ProductDetail?.attributes?.map(
-                              (attribute, index) => (
-                                <span key={index} className="ms-3">
-                                  {attribute?.values?.length} ~ {attribute?.key}
-                                </span>
-                              )
-                            )}
-                          </span>
-                        )}
+                      Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
+                      sản phẩm phụ hợp với bạn nhất <Link>tại đây</Link>
                     </p>
+
 
                     {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
                     <div className="p-t-33">
