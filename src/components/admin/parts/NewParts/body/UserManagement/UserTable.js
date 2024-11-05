@@ -11,6 +11,7 @@ import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
 import DoRequest from '../../../../axiosRequest/doRequest';
 import CustomButton from '../../component/CustomButton';
+import EmptyValues from '../../component/errorPages/EmptyValues';
 
 const UserTable = () => {
     let active = 2;
@@ -26,6 +27,8 @@ const UserTable = () => {
     const [showModal, setShowModal] = useState(false);
     const [selecteddUser, setSelectedUser] = useState(null);
     const [isNew, setNew] = useState(false);
+    const [isCollapse, setCollapse] = useState(false);
+    const [isEdit, setEdit] = useState(false);
 
     const handleShowModal = (user) => {
         setShowModal(true);
@@ -40,34 +43,17 @@ const UserTable = () => {
         setNew(false);
         setSelectedUser(null);
     }
-
-
-
-    // const [users, setUsers] = useState([]);
-
-    // const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aG9saHBjMDYyOTdAZnB0LmVkdS52biIsInB1cnBvc2UiOiJsb2dpbiIsImlhdCI6MTcyNzA4ODY2MiwiZXhwIjoxNzI3MDkwNDYyfQ.P5YnTleoMLwOzmpR6NlOi5OwetJiKX787v3cqyCwkP4';
-    // const getUserApi = () => {
-    //     const getUser = DoRequest({ token: token }).get('/api/test/user/all')
-    //         .then((response) => {
-    //             setUsers(response?.data);
-    //         });
-    //     return getUser;
-    // }
-    // const handleGetUser = () => {
-    //     toast.promise(
-    //         getUserApi,
-    //         {
-    //             pending: 'Getting data . . .',
-    //             success: 'Get data completed !!',
-    //             error: 'Cannot get data. Please, check the staement !!'
-    //         },
-    //         {
-    //             position: 'top-right',
-    //             autoClose: 3000,
-    //             closeOnClick: true,
-    //         }
-    //     );
-    // }
+    const handleCollapse = () => {
+        setCollapse(!isCollapse);
+    }
+    const handleEdit = () => {
+        setEdit(true);
+    }
+    const handleCancel = () => {
+        setShowModal(false);
+        setEdit(false);
+        setSelectedUser(null);
+    }
 
     const handleRemoveUser = (user) => {
         Swal.fire({
@@ -129,60 +115,68 @@ const UserTable = () => {
                     </div>
                 </div>
             </div>
-            <div className=''>
-                <Table className='mb-0' variant='' hover>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Username</th>
-                            <th>Fullname</th>
-                            <th>Birthday</th>
-                            <th>Gender</th>
-                            <th>Email</th>
-                            <th>Active</th>
-                            <th></th>
-                            <th className=''>Remove</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users?.map((item, index) => (
-                            <tr className='font-13 custom-table'>
-                                <td>{index + 1}</td>
-                                <td>
-                                    <img src={`${process.env.PUBLIC_URL}/images/DefaultAvatar.png`} alt='staff avatar' style={{ height: "50px", width: "auto" }} />
-                                    {` ${item?.username}`}
-                                </td>
-                                <td>{item?.fullName}</td>
-                                <td>{item?.birthday}</td>
-                                <td>
-                                    {item?.gender ? (<><IoIosMale className='text-primary fs-5' /> &ensp;{`Male`}</>)
-                                        : (<><IoIosFemale className='text-danger fs-5' /> &ensp;{`Female`}</>)}
-                                </td>
-                                <td>{item?.email}</td>
-                                <td className={`${item?.active ? 'text-success' : 'text-danger'} fw-medium`}>{item?.active ? 'Activating' : 'Inactive'}</td>
-                                <td className='font-16'><FaEye className='eye-show' onClick={() => handleShowModal(item)} /></td>
-                                <td className=''>
-                                    {item?.active ? '' : (
-                                        <Button variant='danger' className='d-flex align-items-center custom-radius' onClick={() => handleRemoveUser(item)}>
-                                            <IoPersonRemoveSharp className='font-16 fw-medium' />
-                                        </Button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </Table>
-                <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
-                    <p className='font-13'>{`1 to 10 items of 15 `} <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span></p>
-                    <Pagination className='border-0'>
-                        <Pagination.First>{`<`}</Pagination.First>
-                        {items}
-                        <Pagination.Last>{`>`}</Pagination.Last>
-                    </Pagination>
-                </div>
+            <div>
+
+                {users.length > 0 ? (
+                    <div>
+                        <Table className='mb-0' variant='' hover>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Username</th>
+                                    <th>Fullname</th>
+                                    <th>Birthday</th>
+                                    <th>Gender</th>
+                                    <th>Email</th>
+                                    <th>Active</th>
+                                    <th></th>
+                                    <th className=''>Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users?.map((item, index) => (
+                                    <tr className='font-13 custom-table'>
+                                        <td>{index + 1}</td>
+                                        <td>
+                                            <img src={`${process.env.PUBLIC_URL}/images/DefaultAvatar.png`} alt='staff avatar' style={{ height: "50px", width: "auto" }} />
+                                            {` ${item?.username}`}
+                                        </td>
+                                        <td>{item?.fullName}</td>
+                                        <td>{item?.birthday}</td>
+                                        <td>
+                                            {item?.gender ? (<><IoIosMale className='text-primary fs-5' /> &ensp;{`Male`}</>)
+                                                : (<><IoIosFemale className='text-danger fs-5' /> &ensp;{`Female`}</>)}
+                                        </td>
+                                        <td>{item?.email}</td>
+                                        <td className={`${item?.active ? 'text-success' : 'text-danger'} fw-medium`}>{item?.active ? 'Activating' : 'Inactive'}</td>
+                                        <td className='font-16'><FaEye className='eye-show' onClick={() => handleShowModal(item)} /></td>
+                                        <td className=''>
+                                            {item?.active ? '' : (
+                                                <Button variant='danger' className='d-flex align-items-center custom-radius' onClick={() => handleRemoveUser(item)}>
+                                                    <IoPersonRemoveSharp className='font-16 fw-medium' />
+                                                </Button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </Table>
+                        <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
+                            <p className='font-13'>{`1 to 10 items of 15 `} <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span></p>
+                            <Pagination className='border-0'>
+                                <Pagination.First>{`<`}</Pagination.First>
+                                {items}
+                                <Pagination.Last>{`>`}</Pagination.Last>
+                            </Pagination>
+                        </div>
+                    </div>
+
+                ) : (<div><EmptyValues text={'Data may have a bit time to load success !!'}/></div>)}
             </div>
             <div>
-                <UserModal show={showModal} handleClose={handleCloseModal} user={selecteddUser} isNew={isNew} />
+                <UserModal show={showModal} handleClose={handleCloseModal} handleCancel={handleCancel} user={selecteddUser} isNew={isNew}
+                    isCollapse={isCollapse} handleCollapse={handleCollapse}
+                    isEdit={isEdit} handleEdit={handleEdit} />
                 <ToastContainer />
             </div>
         </div>

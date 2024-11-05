@@ -1,30 +1,388 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import "../../assets/style/custom-scroll.css";
 import QuickViewProdDetail from "../../components/client/Modal/QuickViewProdDetail";
-const ProductDetail = () => {
-  const [rating, setRating] = useState(0); // Trạng thái lưu số sao được chọn
-  // Khởi tạo state cho số lượng sản phẩm
-  const [quantity, setQuantity] = useState(1);
 
-  // Hàm giảm số lượng
-  const handleDecrease = () => {
-    setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
-  };
+import { stfExecAPI, ghnExecAPI } from "../../stf/common";
+import ava from "../../assets/images/avatar-01.jpg"
+import productApi from "../../services/api/ProductApi";
+import AddCartItem from "../../components/client/AddCartItem/AddCartItem";
+import DangerAlert from "../../components/client/sweetalert/DangerAlert";
+import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 
-  // Hàm tăng số lượng
-  const handleIncrease = () => {
-    setQuantity((prevQuantity) => prevQuantity + 1);
-  };
+import { useDispatch } from "react-redux";
 
-  // Hàm xử lý khi người dùng nhập số lượng trực tiếp
-  const handleChange = (event) => {
-    const value = parseInt(event.target.value);
-    if (!isNaN(value) && value > 0) {
-      setQuantity(value);
+import { incrementCart } from "../../store/actions/cartActions";
+
+import heart1 from "../../assets/images/icons/icon-heart-01.png"
+import heart2 from "../../assets/images/icons/icon-heart-02.png"
+import prod12 from "../../assets/images/product-01.jpg"
+
+function getRowCelCick(attributes = [], item) {
+  for (let i = 0; i < attributes.length; i++) {
+    const key = attributes[i].key;
+
+    for (let j = 0; j < attributes[i].values.length; j++) {
+      const val = attributes[i].values[j];
+
+      if (key?.toLowerCase() == item?.key?.toLowerCase()) {
+        if (val?.toLowerCase() == item?.value?.toLowerCase()) {
+          console.log("Vô for");
+          return [i, j];
+        }
+      }
     }
-  };
 
+    return [0, 0];
+  }
+}
+
+const ProductDetail = () => {
+  const dispatch = useDispatch();
+
+
+  //Minh ty làm *************************************
+  const [product, setProduct] = useState([]);
+  const [ProductDetail, setProductDetail] = useState();
+  const [attriTest, setAttriTest] = useState([]);
+  const [pd, setPd] = useState();
+  const [err, setErr] = useState();
+  const [price, setPrice] = useState(0);
+
+
+  const [rating, setRating] = useState(0); // Trạng thái lưu số sao được chọn
+   // Lấy param từ URL (nếu có)
+   const { id: paramId } = useParams();
+   // Lấy query param từ URL
+   const location = useLocation();
+   const queryParams = new URLSearchParams(location.search);
+   const queryId = queryParams.get("id");
+   // Ưu tiên param ID, nếu không có thì lấy query param
+   const [productId, setProductId] = useState(null);
+ 
+
+
+   
+   useEffect(() => {
+    const fetchProductDetail = async () => {
+      const id = paramId || queryId;
+      if (id) {
+        setProductId(id);  // Đặt productId theo `paramId` hoặc `queryId`
+        
+        try {
+          const response = await productApi.getProductDetail(id);
+          setProductDetail(response.data.data); // Lưu chi tiết sản phẩm vào state
+        } catch (error) {
+          console.error("Error fetching product:", error.message);
+        }
+      }
+    };
+  
+    fetchProductDetail();
+  }, [paramId, queryId]);
+  
+
+
+
+
+
+//Xử lý thay đổi phiên bản sản phẩm trong giỏ hàng
+const findAllValueInAttributes = useCallback(
+  (atbs, products, keyToEetrieve) => {
+    const atbsTemp = [...atbs];
+
+    if (atbsTemp.length >= 2) {
+      atbsTemp.splice(-1, 1);
+    }
+
+    const versionTemps = { ...products }.versions.filter((item, index) => {
+      const atbVersionTemps = item.attributes.filter((a) => {
+        return (
+          atbsTemp.find(
+            (o) =>
+              o?.key?.toLowerCase() == a?.key?.toLowerCase() &&
+              o?.value?.toLowerCase() == a?.value?.toLowerCase()
+          ) !== undefined
+        );
+      });
+
+      return atbVersionTemps.length === atbsTemp.length;
+    });
+
+    const values = versionTemps.map((vs) => {
+      const ob = vs.attributes.find((a) => {
+        return a?.key?.toLowerCase() == keyToEetrieve?.toLowerCase();
+      });
+      return ob ? ob?.value?.toLowerCase() : "";
+    });
+
+    return [...new Set(values.filter((i) => i !== ""))];
+  },
+  []
+);
+
+const partitionProduct = useCallback(
+  (
+    products,
+    atbSelected,
+    rowCelClick = [0, 0],
+    keySelectedWhenClick = "size"
+  ) => {
+    const arrs = [...products.attributes].map((a) => {
+      return a.values;
+    });
+    const [row, cel] = rowCelClick;
+    const valueReduces = [
+      { key: keySelectedWhenClick, value: arrs[row][cel] },
+    ];
+    let atbProducts = JSON.parse(JSON.stringify(products.attributes));
+
+    let t = { ...atbProducts[row] };
+    atbProducts[row] = atbProducts[0];
+    atbProducts[0] = t;
+
+    let results = [];
+
+    atbProducts.forEach((item, index) => {
+      const key = item.key;
+      const values = item.values;
+
+      const ob = {
+        key: key,
+        values: [],
+      };
+
+      const valueByVersion = findAllValueInAttributes(
+        valueReduces,
+        products,
+        key
+      );
+
+      values.forEach((vl) => {
+        let active = false;
+        let disible = false;
+
+        if (
+          key?.toLowerCase() == keySelectedWhenClick?.toLowerCase() &&
+          arrs[row][cel]?.toLowerCase() == vl?.toLowerCase()
+        ) {
+          active = true;
+        } else if (
+          key?.toLowerCase() !== keySelectedWhenClick?.toLowerCase()
+        ) {
+          const isInner = valueByVersion.includes(vl?.toLowerCase());
+          const valueActive = [...atbSelected].find(
+            (o) => o.key == key && o.value == vl
+          );
+          disible = !isInner;
+          active = valueActive !== undefined && isInner ? true : false;
+        }
+
+        if (active === true && index > 0) {
+          valueReduces.push({ key, value: vl });
+        }
+
+        ob.values.push({ val: vl, active, disible });
+      });
+
+      results.push(ob);
+    });
+
+    let rs = { ...results[row] };
+    results[row] = results[0];
+    results[0] = rs;
+    return results;
+  },
+  []
+);
+
+const handleClickItemAttribute = ({ key, value, rowCel, pdu }) => {
+  const [row, cel] = rowCel;
+  const tem = attriTest.map((o) => {
+    const isEqual = o?.key?.toLowerCase() == key?.toLowerCase();
+    return isEqual ? { ...o, value: value } : o;
+  });
+
+  setAttriTest(tem);
+  setProduct(partitionProduct(pd, tem, [row, cel], key));
+
+  console.log("test ", partitionProduct(pd, tem, [row, cel], key));
+
+  setPriceWhenChangeVersion(partitionProduct(pd, tem, [row, cel], key));
+};
+
+const setPriceWhenChangeVersion = (product) => {
+  const length = product.length;
+  let numberReduce = 0;
+  const versionCompare = [];
+
+  product.forEach((p) => {
+    p.values.forEach((vl) => {
+      if (vl.active && !vl.disible) {
+        numberReduce += 1;
+        versionCompare.push({ key: p.key, value: vl.val });
+      }
+    });
+  });
+
+  console.log("Versioncompate: ", versionCompare);
+
+  if (length == numberReduce) {
+    for (let vs of ProductDetail.versions) {
+      let checkCount = vs.attributes.length;
+      let temp = 0;
+
+      for (let att of vs.attributes) {
+        if (
+          versionCompare.find(
+            (i) =>
+              i.key.toLowerCase() == att.key.toLowerCase() &&
+              i.value.toLowerCase() == att.value.toLowerCase()
+          )
+        ) {
+          temp += 1;
+        }
+      }
+
+      if (checkCount == temp) {
+        setPrice(vs.price);
+        break;
+      }
+    }
+  }
+};
+
+const handleClickSaveUpdateVersion = async (product) => {
+  const length = product.length;
+  let numberReduce = 0;
+  const versionCompare = [];
+
+  product.forEach((p) => {
+    p.values.forEach((vl) => {
+      if (vl.active && !vl.disible) {
+        numberReduce += 1;
+        versionCompare.push({ key: p.key, value: vl.val });
+      }
+    });
+  });
+
+  console.log("Versioncompate: ", versionCompare);
+
+  if (length == numberReduce) {
+    setErr("");
+
+    for (let vs of ProductDetail.versions) {
+      let checkCount = vs.attributes.length;
+      let temp = 0;
+
+      for (let att of vs.attributes) {
+        if (
+          versionCompare.find(
+            (i) =>
+              i.key.toLowerCase() == att.key.toLowerCase() &&
+              i.value.toLowerCase() == att.value.toLowerCase()
+          )
+        ) {
+          temp += 1;
+        }
+      }
+
+      if (checkCount == temp) {
+        //Thêm vào giỏ hàng
+        await handleAddVersionToCart({ versionId: vs.id, quantity: 1 });
+        break;
+      }
+    }
+  } else {
+    setErr("Please select full attributes!");
+  }
+};
+
+//Thêm sản phẩm vào giỏ hàng
+const handleAddVersionToCart = async ({ versionId, quantity }) => {
+  const [error, data] = await stfExecAPI({
+    method: "post",
+    url: "api/user/cart/add",
+    data: {
+      versionId: versionId,
+      quantity: quantity,
+    },
+  });
+
+  if (error) {
+    DangerAlert({
+      text:
+        `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
+        "Server error",
+    });
+    return;
+  } else {
+    dispatch(incrementCart());
+  }
+
+  SuccessAlert({
+    text: "Add product to cart success!",
+  });
+};
+
+const getProductDetail = async (id) => {
+  try {
+    const response = await productApi.getProductDetail(id);
+    setProductDetail(response.data.data);
+  } catch (error) {
+    console.error("Error fetching product:", error.message);
+  }
+};
+const findProductDetailById = async (id) => {
+  try {
+    const response = await productApi.getProductDetail(id);
+
+    return response.data.data;
+  } catch (error) {
+    console.error("Error fetching product:", error.message);
+  }
+};
+
+const handleProductClick = async (id) => {
+  const product = await findProductDetailById(id);
+
+  console.log("Ty", product);
+  getProductDetail(id);
+
+  setPd(product);
+  setProduct(
+    partitionProduct(
+      product,
+      product.attributes,
+      getRowCelCick(product.versions.attributes, product.attributes[0]),
+      product.attributes[0].key
+    )
+  );
+  setAttriTest(product.attributes);
+};
+
+
+
+
+   // Kiểm tra nếu không có id từ cả hai nguồn
+   if (!productId) {
+    return (
+      <div 
+        className="d-flex align-items-center justify-content-center fs-4 text-muted mt-3"
+        style={{ height: "80vh" }} 
+      >
+        Product ID not found
+      </div>
+    );
+  }
+  
+  function formatCurrencyVND(amount) {
+    return amount.toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+  }
   const handleRating = (index) => {
     setRating(index); // Cập nhật trạng thái khi người dùng chọn sao
   };
@@ -38,217 +396,147 @@ const ProductDetail = () => {
       {/* <!-- Product Detail --> */}
       <section className="sec-product-detail bg0 p-t-65 p-b-60">
         <div>
-          <div className="row">
-            <div className="col-md-6 col-lg-7 p-b-30">
-              <div
-                id="productCarousel"
-                className="carousel slide carousel-fade"
-              >
-                <div className="row m-0">
-                  <div className="col-md-2">
-                    {/* Thumbnail Images as Indicators */}
-                    <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
-                      <button
-                        type="button"
-                        data-bs-target="#productCarousel"
-                        data-bs-slide-to="0"
-                        className="active"
-                        aria-current="true"
-                        aria-label="Slide 1"
-                        style={style.wh}
-                      >
-                        <img
-                          src="images/product-detail-01.jpg"
-                          className="d-block w-100 h-full"
-                          alt=""
-                        />
-                      </button>
-                      <button
-                        type="button"
-                        data-bs-target="#productCarousel"
-                        data-bs-slide-to="1"
-                        aria-label="Slide 2"
-                        style={style.wh}
-                      >
-                        <img
-                          src="images/product-detail-02.jpg"
-                          className="d-block w-100"
-                          alt=""
-                        />
-                      </button>
-                      <button
-                        type="button"
-                        data-bs-target="#productCarousel"
-                        data-bs-slide-to="2"
-                        aria-label="Slide 3"
-                        style={style.wh}
-                      >
-                        <img
-                          src="images/product-detail-03.jpg"
-                          className="d-block w-100 "
-                          alt=""
-                        />
-                      </button>
+           <div className="row">
+                <div className="col-md-6 col-lg-7 p-b-30">
+                  <div
+                    id="productCarousel"
+                    className="carousel slide carousel-fade"
+                  >
+                    <div className="row m-0">
+                      <div className="col-md-2">
+                        {/* Thumbnail Images as Indicators */}
+                        <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
+                          {ProductDetail &&
+                            ProductDetail?.versions &&
+                            ProductDetail?.versions?.length > 0 &&
+                            ProductDetail?.versions?.map((version, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                data-bs-target="#productCarousel"
+                                data-bs-slide-to={index}
+                                className={index === 0 ? "active" : ""}
+                                aria-label={`Slide ${index + 1}`}
+                                style={style.wh}
+                              >
+                                <img
+                                  src={version?.images}
+                                  className={
+                                    index === 0
+                                      ? "d-block w-100 h-full"
+                                      : "d-block w-100"
+                                  }
+                                  alt=""
+                                />
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+
+                      <div className="col-md-10 p-0">
+                        {/* Large Image Carousel */}
+                        <div className="carousel-inner" style={style.w500}>
+                          {ProductDetail &&
+                            ProductDetail?.versions &&
+                            ProductDetail?.versions?.length > 0 &&
+                            ProductDetail?.versions.map((version, index) => (
+                              <div
+                                className={`carousel-item ${
+                                  index === 0 ? "active" : ""
+                                }`}
+                                key={index}
+                              >
+                                <img
+                                  src={version?.images}
+                                  className="d-block w-100"
+                                  alt={version?.versionName}
+                                />
+                              </div>
+                            ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <div className="col-md-10 p-0">
-                    {/* Large Image Carousel */}
-                    <div className="carousel-inner" style={style.w500}>
-                      <div className="carousel-item active">
-                        <img
-                          src="images/product-detail-01.jpg"
-                          className="d-block w-100"
-                          alt=""
+                <div className="col-md-6 col-lg-5 p-b-30">
+                  <div className="p-r-50 p-t-5 p-lr-0-lg">
+                    <h4 className="mtext-105 cl2 js-name-detail p-b-14">
+                      {ProductDetail ? ProductDetail?.product?.productName : ""}
+                    </h4>
+
+                    <span className="mtext-106 cl2">
+                      {" "} 123456
+                      {/* {Products.map((product1, index) =>
+                        product1?.id == ProductDetail?.product?.id ? (
+                          <span key={index}>
+                            {`
+  ${
+    product1?.minPrice !== product1?.maxPrice
+      ? `${formatCurrencyVND(product1?.minPrice ?? "N/A")} ~ `
+      : ""
+  }
+  ${formatCurrencyVND(product1?.maxPrice ?? "N/A")}
+`}
+                          </span>
+                        ) : null
+                      )} */}
+                    </span>
+
+                    <p className="stext-102 cl3 p-t-23">
+                      Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
+                      sản phẩm phụ hợp với bạn nhất <Link>tại đây</Link>
+                    </p>
+
+                    {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
+                    <div className="p-t-33">
+                      {
+                        <AddCartItem
+                          pd={product}
+                          onClick={handleClickItemAttribute}
+                          clickSave={handleClickSaveUpdateVersion}
+                          message={err}
                         />
+                      }
+
+                 
+                    </div>
+
+                    {/* <!--  --> */}
+                    <div className="flex-w flex-m p-l-100 p-t-40 respon7">
+                      <div className="flex-m bor9 p-r-10 m-r-11">
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
+                          data-tooltip="Add to Wishlist"
+                        >
+                          <i className="zmdi zmdi-favorite"></i>
+                        </Link>
                       </div>
-                      <div className="carousel-item">
-                        <img
-                          src="images/product-detail-02.jpg"
-                          className="d-block w-100"
-                          alt=""
-                        />
-                      </div>
-                      <div className="carousel-item">
-                        <img
-                          src="images/product-detail-03.jpg"
-                          className="d-block w-100"
-                          alt=""
-                        />
-                      </div>
+
+                      <Link
+                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                        data-tooltip="Facebook"
+                      >
+                        <i className="fa fa-facebook"></i>
+                      </Link>
+
+                      <Link
+                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                        data-tooltip="Twitter"
+                      >
+                        <i className="fa fa-twitter"></i>
+                      </Link>
+
+                      <Link
+                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                        data-tooltip="Google Plus"
+                      >
+                        <i className="fa fa-google-plus"></i>
+                      </Link>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="col-md-6 col-lg-5 p-b-30">
-              <div className="p-r-50 p-t-5 p-lr-0-lg">
-                <h4 className="mtext-105 cl2 js-name-detail p-b-14">
-                  Lightweight Jacket
-                </h4>
-
-                <span className="mtext-106 cl2">$58.79</span>
-
-                <p className="stext-102 cl3 p-t-23">
-                  Nulla eget sem vitae eros pharetra viverra. Nam vitae luctus
-                  ligula. Mauris consequat ornare feugiat.
-                </p>
-
-                {/* <!--  --> */}
-                <div className="p-t-33">
-                  <div className="flex-w flex-r-m p-b-10">
-                    <div className="size-203 flex-c-m respon6">Size</div>
-
-                    <div className="size-204 respon6-next">
-                      <div>
-                        <select
-                          className="pt-3 pb-3 w-100 border border-1 p-2 rounded-0 form-select stext-111"
-                          aria-label="Default select example"
-                        >
-                          <option>Choose an option</option>
-                          <option value="1">Size S</option>
-                          <option value="2">Size M</option>
-                          <option value="3">Size L</option>
-                          <option value="4">Size XL</option>
-                        </select>
-                        <div className="dropDownSelect2"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex-w flex-r-m p-b-10">
-                    <div className="size-203 flex-c-m respon6">Color</div>
-
-                    <div className="size-204 respon6-next">
-                      <div>
-                        <select
-                          className="pt-3 pb-3 w-100 border border-1 p-2 rounded-0 form-select stext-111"
-                          aria-label="Default select example"
-                        >
-                          <option>Choose an option</option>
-                          <option value={"1"}>Red</option>
-                          <option value={"2"}>Blue</option>
-                          <option value={"3"}>White</option>
-                          <option value={"4"}>Grey</option>
-                        </select>
-                        <div className="dropDownSelect2"></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex-w flex-r-m p-b-10">
-                    <div className="size-204 flex-w flex-m respon6-next">
-                    <div className="wrap-num-product flex-w m-r-20 m-tb-10">
-                        <div
-                          className="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m"
-                          onClick={handleDecrease}
-                        >
-                          <i className="fs-16 zmdi zmdi-minus"></i>
-                        </div>
-
-                        <input
-                          className="mtext-104 cl3 txt-center num-product"
-                          type="number"
-                          name="num-product1"
-                          value={quantity}
-                          onChange={handleChange}
-                        />
-
-                        <div
-                          className="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m"
-                          onClick={handleIncrease}
-                        >
-                          <i className="fs-16 zmdi zmdi-plus"></i>
-                        </div>
-                      </div>
-
-                      <button className="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
-                        Add to cart
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* <!--  --> */}
-                <div className="flex-w flex-m p-l-100 p-t-40 respon7">
-                  <div className="flex-m bor9 p-r-10 m-r-11">
-                    <Link
-                      href="#"
-                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
-                      data-tooltip="Add to Wishlist"
-                    >
-                      <i className="zmdi zmdi-favorite"></i>
-                    </Link>
-                  </div>
-
-                  <Link
-                    href="#"
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Facebook"
-                  >
-                    <i className="fa fa-facebook"></i>
-                  </Link>
-
-                  <Link
-                    href="#"
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Twitter"
-                  >
-                    <i className="fa fa-twitter"></i>
-                  </Link>
-
-                  <Link
-                    href="#"
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Google Plus"
-                  >
-                    <i className="fa fa-google-plus"></i>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <div className="bor10 m-t-50 p-t-43 p-b-40">
             {/* <!-- Tab01 --> */}
@@ -376,7 +664,7 @@ const ProductDetail = () => {
                         {/* <!-- Review --> */}
                         <div className="flex-w flex-t p-b-68">
                           <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                            <img src="images/avatar-01.jpg" alt="AVATAR" />
+                            <img src={ava} alt="AVATAR" />
                           </div>
 
                           <div className="size-207">
@@ -509,7 +797,7 @@ const ProductDetail = () => {
                 {/* <!-- Block2 --> */}
                 <div className="block2">
                   <div className="block2-pic hov-img0">
-                    <img src="images/product-01.jpg" alt="IMG-PRODUCT" />
+                    <img src={prod12} alt="IMG-PRODUCT" />
 
                    {/* Quick View */}
                    <QuickViewProdDetail />
@@ -534,12 +822,12 @@ const ProductDetail = () => {
                       >
                         <img
                           className="icon-heart1 dis-block trans-04"
-                          src="images/icons/icon-heart-01.png"
+                          src={heart1}
                           alt="ICON"
                         />
                         <img
                           className="icon-heart2 dis-block trans-04 ab-t-l"
-                          src="images/icons/icon-heart-02.png"
+                          src={heart2}
                           alt="ICON"
                         />
                       </Link>

@@ -1,3 +1,11 @@
 .text-717fe0{
  color: #717fe0 !important;
 }
+.line-custom {
+    display: inline-block; /* Hoặc block nếu cần */
+    width: 100%; /* Hoặc chiều rộng mong muốn */
+    height: 4px;
+    background: linear-gradient(90deg, #717fe0, #000000);
+    border-radius: 100px;
+  }
+  

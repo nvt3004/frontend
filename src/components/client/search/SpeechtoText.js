@@ -104,61 +104,132 @@ const SpeechToText = ({ speechText }) => {
           style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
         >
           <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Ghi Âm Giọng Nói</h5>
+            <div className="modal-content rounded-0">
+              <div className="w-100 text-end ">
                 <button
                   type="button"
-                  className="close"
+                  className="btn-close mt-3 me-3"
                   aria-label="Close"
                   onClick={handleCloseModal}
                 >
-                  <span aria-hidden="true">&times;</span>
+                  <span aria-hidden="true"></span>
                 </button>
               </div>
+              <div className="w-100 px-3">
+                <span className="w-100 line-custom"></span>
+              </div>
               <div className="modal-body">
-                {/* Nút ghi âm */}
-                <div className="d-grid gap-2 mb-3">
-                  <button
-                    className={`btn ${
-                      isRecording ? "btn-danger" : "btn-primary"
-                    }`}
-                    onClick={handleRecordButton}
-                  >
-                    {isRecording ? "Dừng ghi âm" : "Bắt đầu ghi âm"}
-                  </button>
+                <div className="w-100 text-center">
+                  <strong className="fs-24 ">Tìm Kiếm Bằng Giọng Nói</strong>
                 </div>
-
-                {/* Hiển thị trạng thái ghi âm */}
-                <div className="mb-3">
-                  {isRecording ? (
-                    <p className="text-danger">Đang ghi âm...</p>
-                  ) : (
-                    <p className="text-success">Ghi âm đã dừng.</p>
-                  )}
+                <div
+                  className="mb-3 d-flex justify-content-center"
+                  style={{ height: "100px" }}
+                >
+                  <div className="mt-6 waveform-container d-flex justify-content-center">
+                    {[...Array(20)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="waveform-bar"
+                        style={
+                          isRecording ? { animationDelay: `${i * 0.1}s` } : {}
+                        }
+                      ></div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Kết quả nhận dạng */}
                 {transcript && (
                   <div className="alert alert-secondary" role="alert">
-                    <h5 className="alert-heading">Kết quả nhận dạng:</h5>
+                    <h5 className="alert-heading">Kết quả:</h5>
                     <p className="mb-0">{transcript}</p>
                   </div>
                 )}
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleCloseModal}
-                >
-                  Đóng
-                </button>
+                {/* Nút ghi âm */}
+                <div className="d-grid gap-3 mb-3">
+                  <button
+                    className={`btn flex-c-m stext-101 cl0 size-101  bor1 hov-btn1 p-lr-15 trans-04 ${
+                      isRecording ? "btn-danger" : "bg1"
+                    }`}
+                    onClick={handleRecordButton}
+                  >
+                    {isRecording ? "Dừng ghi âm" : "Bắt đầu ghi âm"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn flex-c-m stext-101 cl0 size-101  bor1 p-lr-15 trans-04 bg-secondary-subtle text-black"
+                    onClick={handleCloseModal}
+                  >
+                    Đóng
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        @keyframes pulse {
+          0%,
+          100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+        }
+        @keyframes wave {
+          0% {
+            transform: scale(0.9);
+          }
+          50% {
+            transform: scale(1.1);
+          }
+          100% {
+            transform: scale(0.9);
+          }
+        }
+        .animate-pulse {
+          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        .animate-wave {
+          animation: wave 1.5s infinite;
+        }
+        .dialog-content {
+          animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp {
+          from {
+            transform: translateY(10%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        @keyframes waveform {
+          0%,
+          100% {
+            height: 4px;
+          }
+          50% {
+            height: 30px;
+          }
+        }
+        .waveform-container {
+          display: flex;
+          gap: 5px;
+        }
+        .waveform-bar {
+          width: 4px;
+          background-color: #717fe0; /* Màu tím */
+          border-radius: 4px;
+          animation: waveform 1s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 };

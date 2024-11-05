@@ -17,29 +17,35 @@ import Account from "../pages/client/Account";
 import WishList from "../pages/client/WishList";
 import PageNotFound from "../pages/PageNotFound";
 // Admin Pages
-import Dashboard from "../pages/admin/Dashboard"; // Default Pages
-import Settings from "../pages/admin/Settings";
+import Dashboard from '../pages/admin/Dashboard'; // Default Pages
+import Settings from '../pages/admin/Settings';
+import AddNewUser from '../components/admin/parts/AddNewUser';
+import OrderManagement from '../components/admin/parts/OrderManagement';
+import AddNewSupplier from '../components/admin/parts/AddNewSupplier';
+import PermissionManagement from '../components/admin/parts/PermissionManagement';
+import NewPermission from '../components/admin/parts/NewPermission';
+import FeedbackManagement from '../components/admin/parts/FeedbackManagement';
+
+
+
 // Auth Pages
 import AuthLayout from "../layouts/AuthLayout";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
-import AddNewUser from "../components/admin/parts/AddNewUser";
-import OrderManagement from "../components/admin/parts/OrderManagement";
-import AddNewSupplier from "../components/admin/parts/AddNewSupplier";
-import WarehouseManagement from "../components/admin/parts/WarehouseManagement";
-import WarehouseStockIn from "../components/admin/parts/WarehouseStockIn";
-import PermissionManagement from "../components/admin/parts/PermissionManagement";
-import NewPermission from "../components/admin/parts/NewPermission";
-import FeedbackManagement from "../components/admin/parts/FeedbackManagement";
 import PaymentSuccess from '../pages/client/PaymentSuccess';
 import PaymentCancel from '../pages/client/PaymentCancel';
 // Admin new pages
-import UserTable from "../components/admin/parts/NewParts/body/UserManagement/UserTable";
-import SuppliersTable from "../components/admin/parts/NewParts/body/SuppliersManagement/SuppliersTable";
-import ProtectedRoute from "./ProtectedRoute";
+import UserTable from '../components/admin/parts/NewParts/body/UserManagement/UserTable';
+import SuppliersTable from '../components/admin/parts/NewParts/body/SuppliersManagement/SuppliersTable';
+import ProductTable from '../components/admin/parts/NewParts/body/ProductManagement/ProductTable';
+import NewProduct from '../components/admin/parts/NewParts/body/ProductManagement/NewProduct';
+import StockIn from '../components/admin/parts/NewParts/body/WarehouseManagement/StockIn';
+import ProductCategories from '../components/admin/parts/NewParts/body/ProductManagement/ProductCategories';
 
+
+import ProtectedRoute from "./ProtectedRoute";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -89,20 +95,37 @@ const router = createBrowserRouter([
       {
         path: "warehouse",
         children: [
-          { path: "manage", element: <ProtectedRoute element={<WarehouseManagement />} requiredRole="Admin"/> },
-          { path: "stock-in", element: <ProtectedRoute element={<WarehouseStockIn />} requiredRole="Admin"/> },
+          { path: 'manage', element: <SuppliersTable /> },
+          { path: 'add', element: <AddNewSupplier /> },
         ],
       },
       {
         path: "permission",
         children: [
-          { path: "manage", element: <ProtectedRoute element={<PermissionManagement />} requiredRole="Admin"/> },
-          { path: "add", element: <ProtectedRoute element={<NewPermission />} requiredRole="Admin"/> },
+          // { path: 'manage', element: <WarehouseManagement/>},
+          { path: 'stock-in', element: <StockIn /> },
+        ],
+      },
+      // {
+      //   path: 'permission',
+      //   children: [
+      //     { path: 'manage', element: <PermissionManagement /> },
+      //     { path: 'add', element: <NewPermission /> },
+      //   ],
+      // },
+      {
+        path: 'feedback',
+        children: [
+          { path: 'manage', element: <FeedbackManagement /> },
         ],
       },
       {
-        path: "feedback",
-        children: [{ path: "manage", element: <ProtectedRoute element={<FeedbackManagement />} requiredRole="Admin,Staff"/> }],
+        path: 'products',
+        children: [
+          { path: 'manage', element: <ProductTable /> },
+          { path: 'new', element: <NewProduct /> },
+          { path: 'categories', element: <ProductCategories /> },
+        ],
       },
     ],
   },

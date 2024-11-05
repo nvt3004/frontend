@@ -1,5 +1,6 @@
 import React from "react";
 import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import iconEmail from "../../assets/images/icons/icon-email.png"
 
 const Contact = () => {
   
@@ -51,7 +52,7 @@ const Contact = () => {
                   />
                   <img
                     className="how-pos4 pointer-none"
-                    src="images/icons/icon-email.png"
+                    src={iconEmail}
                     alt="ICON"
                   />
                 </div>

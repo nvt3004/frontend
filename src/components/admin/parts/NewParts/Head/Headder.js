@@ -9,8 +9,8 @@ const Headder = () => {
             <div className='position-sticky top-0 bg-white d-flex justify-content-between align-items-center' style={{ minHeight: "75px", zIndex: 1000 }}>
                 <div className='col-3 d-flex align-items-center'>
                     <img src={`${process.env.PUBLIC_URL}/images/logo.png`} alt='logo' style={{ width: "70px" }} />
-                    <div className='text-purple'>
-                        <h3 className='mb-0'>StepsToFuture</h3>
+                    <div className='text-primary'>
+                        <h3 className='mb-0'>{`Steps To Future`}</h3>
                         <p className='mb-0'>Dashboard</p>
                     </div>
                 </div>

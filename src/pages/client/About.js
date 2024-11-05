@@ -1,5 +1,6 @@
 import React from "react";
-
+import about1 from "../../assets/images/about-01.jpg"
+import about2 from "../../assets/images/about-02.jpg"
 const About = () => {
   const style = {
     container: {
@@ -72,7 +73,7 @@ const About = () => {
             <div className="col-11 col-md-5 col-lg-4 m-lr-auto">
               <div className="how-bor1">
                 <div className="hov-img0">
-                  <img src="images/about-01.jpg" alt="IMG" />
+                  <img src={about1} alt="IMG" />
                 </div>
               </div>
             </div>
@@ -115,7 +116,7 @@ const About = () => {
             <div className="order-md-1 col-11 col-md-5 col-lg-4 m-lr-auto p-b-30">
               <div className="how-bor2">
                 <div className="hov-img0">
-                  <img src="images/about-02.jpg" alt="IMG" />
+                  <img src={about2} alt="IMG" />
                 </div>
               </div>
             </div>

@@ -6,7 +6,7 @@ const style = {
   opacity: 0.7,
 };
 
-const AttributeItem = ({ pd, onClick, clickSave = () => {} , message}) => {
+const AttributeItem = ({ pd, onClick, clickSave = () => {}, message }) => {
   return (
     <>
       <div className="modal-body">
@@ -44,7 +44,7 @@ const AttributeItem = ({ pd, onClick, clickSave = () => {} , message}) => {
                         }}
                         className={`${v.active ? "bg-dark text-white" : ""} ${
                           !v.disible ? "" : `bg-secondary opacity-25`
-                        } btn btn-outline-dark rounded col d-flex p-2 justify-content-center align-items-center border me-3`}
+                        } btn btn-outline-dark  col d-flex p-2 justify-content-center align-items-center border me-3 rounded-0`}
                       >
                         {v.val}
                       </div>
@@ -56,17 +56,21 @@ const AttributeItem = ({ pd, onClick, clickSave = () => {} , message}) => {
         })}
 
         <span className="text-danger px-1 d-flex align-items-center">
-            {message && <GoAlert className="me-2" />} {message}
+          {message && <GoAlert className="me-2" />} {message}
         </span>
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+        <button
+          type="button"
+          className="btn stext-101 cl0  bg2 bor14 text-black hov1 trans-04 pointer rounded-0"
+          data-bs-dismiss="modal"
+        >
           Cancel
         </button>
         <button
           type="button"
-          class="btn btn-primary"
+          className="btn stext-101 cl0  bg3 bor14 hov-btn3 trans-04 pointer rounded-0"
           onClick={() => {
             clickSave(pd);
           }}

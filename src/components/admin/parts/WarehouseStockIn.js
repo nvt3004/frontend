@@ -1,6 +1,4 @@
 import React from 'react';
-import { Card } from 'react-bootstrap';
-import { FaUser } from 'react-icons/fa';
 import CustomerSelection from './CustomerSelection';
 
 const WarehouseStockIn = () => {

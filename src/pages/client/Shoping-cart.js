@@ -199,7 +199,9 @@ const ShopingCart = () => {
             arrs[row][cel]?.toLowerCase() == vl?.toLowerCase()
           ) {
             active = true;
-          } else if (key?.toLowerCase() !== keySelectedWhenClick?.toLowerCase()) {
+          } else if (
+            key?.toLowerCase() !== keySelectedWhenClick?.toLowerCase()
+          ) {
             const isInner = valueByVersion.includes(vl?.toLowerCase());
             const valueActive = [...atbSelected].find(
               (o) => o.key == key && o.value == vl
@@ -267,7 +269,7 @@ const ShopingCart = () => {
         setCarts(data.data);
       }
     };
-   
+
     fetchCarts();
   }, []);
 
@@ -820,7 +822,10 @@ const ShopingCart = () => {
 
         if (item.attributes.length == count) {
           // Cập nhật phiên bản sản phẩm trong giỏ hàng
-         await handleUpdateVersionCart({idItem: itemCartUpdate.cartItemId, idVersion:item.id});
+          await handleUpdateVersionCart({
+            idItem: itemCartUpdate.cartItemId,
+            idVersion: item.id,
+          });
         }
       }
     }
@@ -873,12 +878,7 @@ const ShopingCart = () => {
                             <td>
                               <div className="how-itemcart1">
                                 {/* Gán cứng hình đặng có ảnh coi chơi nữa đổ ra lại product.image */}
-                                <img
-                                  src={
-                                    "http://localhost:8080/images/1726151501124.jpg"
-                                  }
-                                  alt={"No"}
-                                />
+                                <img src={product.image} alt={"No"} />
                               </div>
                             </td>
                             <td>
@@ -1355,8 +1355,14 @@ const ShopingCart = () => {
         aria-hidden="true"
       >
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-          <div class="modal-content">
-            <div class="modal-header">
+          <div class="modal-content rounded-0">
+            <div class="modal-header py-0">
+              <h1
+                className="modal-title  stext-101 cl5 size-103 d-flex align-items-center"
+                id="exampleModalLabel"
+              >
+                Edit Version
+              </h1>
               <button
                 type="button"
                 class="btn-close"
@@ -1377,4 +1383,3 @@ const ShopingCart = () => {
   );
 };
 export default ShopingCart;
-

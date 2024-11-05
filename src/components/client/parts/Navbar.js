@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
 
+import logo4plus from "../../../assets/images/icons/logo4plus.png"
 import { setWishlistCount } from "../../../store/actions/wishlistActions";
 
 import { setCartCount } from "../../../store/actions/cartActions";
@@ -49,9 +50,12 @@ const Navbar = () => {
         const data = await productApi.getCartAll();
         setCart(data);
         dispatch(setCartCount(data?.length == null ? 0 : data.length));
-        data.forEach((product) => {
-          setTotal(total + product.price * product.quantity);
-        });
+        setTotal(0);
+        const calculatedTotal = data.reduce((acc, product) => {
+          return acc + Number(product.price) * Number(product.quantity);
+        }, 0);
+    
+        setTotal(calculatedTotal); 
       } catch (error) {
         console.log("Failed to fetch wishlist products", error);
       }
@@ -59,6 +63,7 @@ const Navbar = () => {
     fetchCart();
     fetchWishlist();
   }, [dispatch]);
+
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -203,14 +208,14 @@ const Navbar = () => {
                 className="text-decoration-none logo"
                 style={styles.logo}
               >
-                <img src="images/icons/logo4plus.png" alt="IMG-LOGO" />
+                <img src={logo4plus} alt="IMG-LOGO" />
               </Link>
             </div>
 
             <div className="menu-desktop p-0 " style={styles.menuDesktop}>
               <ul className="main-menu" style={styles.mainMenu}>
                 <li
-                  className={uri == "/" || uri == "/home" ? "active-menu" : ""}
+                  className={uri === "/" || uri === "/home" ? "active-menu" : ""}
                   onClick={() => {
                     setUri(window.location.pathname);
                   }}
@@ -221,7 +226,7 @@ const Navbar = () => {
                 </li>
 
                 <li
-                  className={uri == "/product" ? "active-menu" : ""}
+                  className={uri === "/product" ? "active-menu" : ""}
                   onClick={() => {
                     setUri(window.location.pathname);
                   }}
@@ -233,7 +238,7 @@ const Navbar = () => {
 
                 <li
                   className={`${
-                    uri == "/shoping-cart" ? "active-menu " : ""
+                    uri === "/shoping-cart" ? "active-menu " : ""
                   } label1`}
                   data-label1="hot"
                   onClick={() => {
@@ -246,7 +251,7 @@ const Navbar = () => {
                 </li>
 
                 <li
-                  className={uri == "/blog" ? "active-menu" : ""}
+                  className={uri === "/blog" ? "active-menu" : ""}
                   onClick={() => {
                     setUri(window.location.pathname);
                   }}
@@ -257,7 +262,7 @@ const Navbar = () => {
                 </li>
 
                 <li
-                  className={uri == "/about" ? "active-menu" : ""}
+                  className={uri === "/about" ? "active-menu" : ""}
                   onClick={() => {
                     setUri(window.location.pathname);
                   }}
@@ -268,7 +273,7 @@ const Navbar = () => {
                 </li>
 
                 <li
-                  className={uri == "/contact" ? "active-menu" : ""}
+                  className={uri === "/contact" ? "active-menu" : ""}
                   onClick={() => {
                     setUri(window.location.pathname);
                   }}
@@ -312,7 +317,7 @@ const Navbar = () => {
               >
                 <i
                   className={`  ${
-                    uri == "/wishlist"
+                    uri === "/wishlist"
                       ? "zmdi zmdi-favorite text-717fe0"
                       : "zmdi zmdi-favorite-outline"
                   } `}
@@ -376,7 +381,7 @@ const Navbar = () => {
         {/* <!-- Logo moblie --> */}
         <div className="logo-mobile ">
           <Link to="/home">
-            <img src="images/icons/logo4plus.png" alt="IMG-LOGO" />
+            <img src={logo4plus} alt="IMG-LOGO" />
           </Link>
         </div>
 
@@ -614,7 +619,7 @@ const Navbar = () => {
                     >
                       {product.productName}
                     </Link>
-                    <span className="header-cart-item-info">{`${product.quantity} x ${product.price}`}</span>
+                    <span className="header-cart-item-info">{`${product.quantity} x ${product.price} VND`}</span>
                   </div>
                 </li>
               ))}
