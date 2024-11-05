@@ -1,6 +1,5 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Cookies from "js-cookie";
 // Layouts
 import ClientLayout from "../layouts/ClientLayout";
 import AdminLayout from "../layouts/AdminLayout";
@@ -50,13 +49,13 @@ const router = createBrowserRouter([
       { path: "/home", element: <Home /> },
       { path: "/product", element: <Product /> },
       { path: "/product-detail", element: <ProductDetail /> },
-      { path: "/shoping-cart", element: <ProtectedRoute element={<ShopingCart />} /> },
+      { path: "/shoping-cart", element: <ProtectedRoute element={<ShopingCart />} requiredRole="User,Admin" /> },
       { path: "/blog", element: <Blog /> },
       { path: "/blog-detail", element: <BlogDetail /> },
       { path: "/about", element: <About /> },
       { path: "/contact", element: <Contact /> },
-      { path: "/account", element: <ProtectedRoute element={<Account />} /> },
-      { path: "/wishlist", element: <ProtectedRoute element={<WishList />} /> },
+      { path: "/account", element: <ProtectedRoute element={<Account />} requiredRole="User,Admin" /> },
+      { path: "/wishlist", element: <ProtectedRoute element={<WishList />} requiredRole="User,Admin" /> },
     ],
   },
   {
@@ -66,44 +65,44 @@ const router = createBrowserRouter([
       { index: true, element: <ProtectedRoute element={<Dashboard />} requiredRole="Admin" /> },
       {
         path: "dashboard",
-        element: <ProtectedRoute element={<Dashboard />} />,
+        element: <ProtectedRoute element={<Dashboard />} requiredRole="Admin"/>,
       },
-      { path: "settings", element: <ProtectedRoute element={<Settings />} /> },
+      { path: "settings", element: <ProtectedRoute element={<Settings />} requiredRole="Admin"/> },
       {
         path: "users",
         children: [
-          { path: "add", element: <ProtectedRoute element={<AddNewUser />} /> },
-          { path: "manage", element: <ProtectedRoute element={<UserTable />} /> },
+          { path: "add", element: <ProtectedRoute element={<AddNewUser />} requiredRole="Admin,Staff"/> },
+          { path: "manage", element: <ProtectedRoute element={<UserTable />} requiredRole="Admin,Staff"/> },
         ],
       },
       {
         path: "orders",
-        children: [{ path: "manage", element: <ProtectedRoute element={<OrderManagement />} /> }],
+        children: [{ path: "manage", element: <ProtectedRoute element={<OrderManagement />} requiredRole="Admin,Staff"/> }],
       },
       {
         path: "suppliers",
         children: [
-          { path: "manage", element: <ProtectedRoute element={<SuppliersTable />} /> },
-          { path: "add", element: <ProtectedRoute element={<AddNewSupplier />} /> },
+          { path: "manage", element: <ProtectedRoute element={<SuppliersTable />} requiredRole="Admin,Staff"/> },
+          { path: "add", element: <ProtectedRoute element={<AddNewSupplier />} requiredRole="Admin,Staff"/> },
         ],
       },
       {
         path: "warehouse",
         children: [
-          { path: "manage", element: <ProtectedRoute element={<WarehouseManagement />} /> },
-          { path: "stock-in", element: <ProtectedRoute element={<WarehouseStockIn />} /> },
+          { path: "manage", element: <ProtectedRoute element={<WarehouseManagement />} requiredRole="Admin"/> },
+          { path: "stock-in", element: <ProtectedRoute element={<WarehouseStockIn />} requiredRole="Admin"/> },
         ],
       },
       {
         path: "permission",
         children: [
-          { path: "manage", element: <ProtectedRoute element={<PermissionManagement />} /> },
-          { path: "add", element: <ProtectedRoute element={<NewPermission />} /> },
+          { path: "manage", element: <ProtectedRoute element={<PermissionManagement />} requiredRole="Admin"/> },
+          { path: "add", element: <ProtectedRoute element={<NewPermission />} requiredRole="Admin"/> },
         ],
       },
       {
         path: "feedback",
-        children: [{ path: "manage", element: <ProtectedRoute element={<FeedbackManagement />} /> }],
+        children: [{ path: "manage", element: <ProtectedRoute element={<FeedbackManagement />} requiredRole="Admin,Staff"/> }],
       },
     ],
   },

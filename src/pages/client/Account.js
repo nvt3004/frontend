@@ -18,6 +18,7 @@ import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import ConfirmAlert from "../../components/client/sweetalert/ConfirmAlert";
 import { getProfile, updateUser } from "../../services/api/OAuthApi";
+import { format } from "date-fns";
 
 function getNameAddress(nameId) {
   return nameId.substring(nameId.indexOf(" "), nameId.length).trim();
@@ -49,13 +50,15 @@ const Account = () => {
   const [profile, setProfile] = useState(null);
 
   const [selectedImage, setSelectedImage] = useState(null);
-  const [gender, setGender] = useState("Male");
+  const [gender, setGender] = useState("");
   const [birthday, setBirthday] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    phone: "",
+    phone: ""
   });
+
+  // const formattedBirthday = birthday ? format(new Date(birthday), 'yyyy/MM/dd') : null;
 
   useEffect(() => {
     if (profile && profile.listData) {
@@ -70,33 +73,31 @@ const Account = () => {
           : profile.listData.gender === 0
           ? "Female"
           : "Other"
-      ); // Chuyển đổi giá trị bit sang string
+      ); 
       setBirthday(
         profile.listData.birthday ? profile.listData.birthday.split("T")[0] : ""
-      ); // Đảm bảo định dạng ngày tháng
+      ); 
     }
   }, [profile]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    // Tạo đối tượng người dùng cập nhật
     const updatedUser = {
       fullName: formData.fullName,
       email: formData.email,
       phone: formData.phone,
-      gender: gender === "Male" ? 1 : gender === "Female" ? 0 : 2, // Chuyển đổi về kiểu bit
-      birthday: birthday,
-      image: selectedImage || profile?.listData?.image, // Nếu có hình ảnh mới thì sử dụng, nếu không thì giữ nguyên
+      gender: gender === "Male" ? 1 : gender === "Female" ? 0 : 2, 
+      birthday: birthday ? new Date(birthday).toISOString().split("T")[0] : null,
+      image: selectedImage || profile?.listData?.image, 
     };
 
     try {
       const response = await updateUser(profile.listData.userId, updatedUser);
       console.log("Update successful:", response);
-      // Thực hiện thêm các hành động nếu cần sau khi cập nhật thành công
+
     } catch (error) {
       console.error("Error updating profile:", error.message);
-      // Xử lý lỗi nếu cần
+
     }
   };
 
@@ -138,19 +139,20 @@ const Account = () => {
   }, [profile]); // Chạy effect khi profile thay đổi
 
   const handleBirthdayChange = (event) => {
-    setBirthday(event.target.value); // Cập nhật ngày sinh khi người dùng thay đổi
+    console.log('ngay sinh'+event.target.value); 
+    setBirthday(event.target.value); 
   };
+  
 
   useEffect(() => {
     if (profile && profile.listData && profile.listData.gender !== undefined) {
-      // Chuyển đổi bit thành string
-      const genderValue = profile.listData.gender; // Giả sử gender là kiểu bit (0 hoặc 1)
+      const genderValue = profile.listData.gender; 
       if (genderValue === 1) {
         setGender("Male");
       } else if (genderValue === 0) {
         setGender("Female");
       } else {
-        setGender("Other"); // Bạn có thể thay đổi điều này tùy thuộc vào logic của bạn
+        setGender("Other"); 
       }
     }
   }, [profile]);
@@ -456,11 +458,11 @@ const Account = () => {
                 ? profile.listData.fullName
                 : "Nguyễn Minh Nhựt"}
             </h3>
-            <p>
-              {profile && profile.listData && profile.listData.username
+            <h5 className="mb-2 stext-110">
+              {profile?.listData?.provider === "Guest"
                 ? profile.listData.username
-                : "Default Username"}
-            </p>
+                : "Social"}
+            </h5>
           </div>
           <div className="d-flex ms-auto flex-column flex-md-row">
             {/* <!-- Button trigger modal --> */}
@@ -896,11 +898,18 @@ const Account = () => {
                       {/* Read-only fields */}
                       <div className="mb-4">
                         <h5 className="mb-2 stext-110">
-                          {profile?.listData?.username || "Default Username"}
+                          {profile?.listData?.provider === "Guest"
+                            ? profile.listData.username
+                            : "Social"}
                         </h5>
                         <p className="stext-111">
                           Create Date:{" "}
-                          {profile?.listData?.createDate || "2023-08-15"}
+                          {profile?.listData?.createDate
+                            ? format(
+                                new Date(profile.listData.createDate),
+                                "dd/MM/yyyy"
+                              )
+                            : "15/08/2023"}
                         </p>
                       </div>
                     </div>

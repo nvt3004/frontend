@@ -1,32 +1,36 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { useLocation } from "react-router-dom";
 
 const ProtectedRoute = ({ element, requiredRole }) => {
-  const { isAuthenticated, role, loading } = useAuth();
+  const { isAuthenticated, role, loading, profile } = useAuth();
+  const location = useLocation(); 
+
+  const from = location.state?.from || "/home";
 
   if (loading) {
-    return <div>Loading...</div>; // Show a loading message while fetching profile
+    return <div>Loading...</div>;
   }
 
   console.log("Is Authenticated:", isAuthenticated);
   console.log("User Role:", role);
   console.log("Required Role:", requiredRole);
+  console.log("Profile:", profile);
+  console.log('Đường dẫn trước đó'+from)
 
-  // Extract the authority value from role object
-  const userRole = role?.authority; 
-
-  // If not authenticated, redirect to login
   if (!isAuthenticated) {
-    return <Navigate to="/auth/login" />;
+    return <Navigate to="/auth/login" state={{ from: location.pathname }} />;
   }
 
-  // If a role is required and the user doesn't have it, redirect to login
-  if (requiredRole && userRole !== requiredRole) {
-    return <Navigate to="/auth/login" />;
+  if (requiredRole) {
+    const requiredRolesArray = requiredRole.split(",").map(role => role.trim()); 
+    if (!requiredRolesArray.includes(role)) {
+      return <Navigate to="/auth/login" state={{ from: location.pathname }} />; 
+    }
   }
 
-  return element; // Return the protected component if all checks pass
+  return element;
 };
 
 export default ProtectedRoute;

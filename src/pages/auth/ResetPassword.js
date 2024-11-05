@@ -5,7 +5,7 @@ import { resetPassword } from "../../services/api/OAuthApi";
 const ResetPassword = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const token = queryParams.get("token"); // Lấy token từ query params
+  const token = queryParams.get("token"); 
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
