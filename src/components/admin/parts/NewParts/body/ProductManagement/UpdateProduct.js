@@ -15,7 +15,7 @@ import { set, useForm } from 'react-hook-form';
 import { FileToBase64, FilesToBase64 } from '../../../../../../services/fileToBase64';
 import { useLocation } from 'react-router-dom';
 
-const NewProduct = () => {
+const UpdateProduct = () => {
     const location = useLocation();
 
     const [categories, setCategories] = useState([]);
@@ -78,12 +78,11 @@ const NewProduct = () => {
 
     }, []);
 
-    const defaultValues = location?.state?.product;
-    const { register, trigger, setValue, getValues, formState: { errors }, setError, control, watch, reset } = useForm({ defaultValues });
+    const { register, trigger, setValue, getValues, formState: { errors }, setError, control } = useForm();
 
     const [selectedSizes, setSelectedSize] = useState([]);
     const [selectedColors, setSelectedColor] = useState([]);
-    const [variants, setVariants] = useState([]);
+    const [versions, setVersions] = useState([]);
     const handleSetVariants = () => {
         const newVariants = [];
         selectedSizes.forEach(size => {
@@ -105,15 +104,11 @@ const NewProduct = () => {
                 });
             });
         });
-        setVariants(newVariants);
+        setVersions(newVariants);
     };
     useEffect(() => {
         handleSetVariants();
     }, [selectedSizes, selectedColors]);
-    // useEffect(() => {
-    //     console.log("variant: ", variants);
-
-    // }, [variants]);
 
     const handleDrop = (files, versionIndex) => {
         const newImages = files.map((file, index) => (
@@ -122,7 +117,7 @@ const NewProduct = () => {
             })
         ));
 
-        setVariants((prevVariants) =>
+        setVersions((prevVariants) =>
             prevVariants.map((variant, idx) =>
                 idx === versionIndex
                     ? {
@@ -134,7 +129,7 @@ const NewProduct = () => {
         );
     };
     const handleDeleteImage = (versionIndex, imgIndex) => {
-        setVariants((prevVariants) =>
+        setVersions((prevVariants) =>
             prevVariants.map((variant, idx) =>
                 idx === versionIndex
                     ? {
@@ -154,116 +149,6 @@ const NewProduct = () => {
         setMainImage(preview[0]);
     }
 
-    const getDate = () => {
-        const now = new Date();
-        const dd = String(now.getDate()).padStart(2, '0');
-        const MM = String(now.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0 nên phải cộng thêm 1
-        const yy = String(now.getFullYear()).slice(-2); // Lấy 2 số cuối của năm
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-
-        return `${dd}${MM}${yy}-${hh}${mm}${ss}`;
-    };
-
-    const sizes = watch('sizes');
-    const colors = watch('colors');
-    useEffect(
-        () => {
-            if (sizes && sizes.length > 0 && colors && colors.length > 0) {
-                setSelectedColor(colors);
-                setSelectedSize(sizes);
-            }
-        }, [sizes, colors]
-    );
-
-    const handleSubmit = async () => {
-        if (mainImage) {
-            setValue('image', await FileToBase64(mainImage));
-        } else {
-            setError('image', { type: 'manual', message: 'Main image is required!' });
-        }
-
-        const fieldsToValidate = [
-            'name',
-            'description',
-            'categories',
-            'sizes',
-            'colors',
-        ];
-
-        if (variants.length > 0) {
-            fieldsToValidate.push(
-                ...variants.flatMap((_, index) => [
-                    `variants[${index}].retailPrice`,
-                    `variants[${index}].wholesalePrice`
-                ])
-            );
-        }
-
-        let imageVersion = true;
-        if (variants?.length > 0) {
-            variants.forEach((item, index) => {
-                if (!item?.images?.length > 0) {
-                    setError(`variants[${index}].images`, { type: 'manual', message: 'Please add at least one image of each version!' });
-                    imageVersion = false;
-                }
-            });
-        }
-
-        let isValid = await trigger(fieldsToValidate);
-
-        if (isValid && imageVersion) {
-            const variantPrice = getValues('variants');
-            let combineVariant = [];
-            if (variants?.length > 0) {
-                const base64Array = await Promise.all(
-                    variants.map(item => FilesToBase64(item?.images || []))
-                );
-
-                if (variantPrice?.length > 0) {
-                    combineVariant = variants.map((item, index) => ({
-                        ...item,
-                        versionName: `${getValues('name')}-ver-${index + 1}-${getDate()}`,
-                        retalPrice: variantPrice[index]?.retailPrice,
-                        wholesalePrice: variantPrice[index]?.wholesalePrice,
-                        images: base64Array[index]
-                    }));
-                }
-            }
-
-            const productData = {
-                name: getValues('name'),
-                description: getValues('description'),
-                categories: getValues('categories'),
-                image: getValues('image'),
-                price: 0,
-                versions: combineVariant
-            };
-
-            if (productData) {
-                console.log("product:", productData);
-
-                axiosInstance.post('/staff/product/add', productData).then(
-                    (response) => {
-                        if (response?.data?.code === 200 || response?.data?.code === 201) {
-                            toast.success('Product published successfully!');
-                            reset();
-                            setMainImage(null);
-                            setVariants(null);
-                            setSelectedColor([]);
-                            setSelectedSize([]);
-                        } else {
-                            toast.error('Failed to add product. Please check for errors and try again!');
-                        }
-                    }
-                );
-            }
-        } else {
-            toast.error('Please fill in all required fields correctly!');
-        }
-    };
-
     const [selectedProduct, setSelectedProduct] = useState(null);
     useEffect(() => {
         if (location.state?.product) {
@@ -277,8 +162,46 @@ const NewProduct = () => {
         }, [selectedProduct]
     );
 
-    const handleSubmitUpdate = () => {
-        console.log('values: ', getValues());
+    useEffect(() => {
+        if (selectedProduct) {
+            setValue("name", selectedProduct.productName);
+            setValue("categories", selectedProduct.categories.map(category => ({
+                value: category.id,
+                label: category.name
+            })));
+
+            setMainImage({ preview: selectedProduct.image });
+
+            const productVersions = selectedProduct.versions.map(version => ({
+                ...version,
+                attributes: version.attributes,
+                images: version.images.map(img => ({
+                    preview: img.name
+                }))
+            }));
+            setVersions(productVersions);
+        }
+    }, [selectedProduct, setValue]);
+
+    const handleUpdate = () => {
+        const productData = {
+            name: getValues("name"),
+            image: mainImage,
+            categories: getValues("categories"),
+            versions: versions.map((version, index) => ({
+                ...version,
+                retailPrice: getValues(`versions[${index}].retailPrice`),
+                wholesalePrice: getValues(`versions[${index}].wholesalePrice`),
+                images: version.images.map(img => img.preview), // chuyển URL thành dạng cần thiết để gửi lên API
+                attributes: [
+                    { key: "Size", value: version.attributes[0].value },
+                    { key: "Color", value: version.attributes[1].value }
+                ]
+            }))
+        };
+        
+        console.log(productData);
+        
     }
 
     return (
@@ -290,7 +213,7 @@ const NewProduct = () => {
                         <p className='fw-medium'>{location.state?.product ? `Change product infomation` : `Add a new product to your store`}</p>
                     </div>
                     <div>
-                        <CustomButton btnType={'button'} btnBG={'primary'} btnName={'Publish product'} textColor={'text-white'} handleClick={handleSubmit} />
+                        <CustomButton btnType={'button'} btnBG={'warning'} btnName={'Save'} textColor={'text-white'} handleClick={handleUpdate}/>
                     </div>
                 </div>
                 <div className='d-flex justify-content-between custom-form'>
@@ -300,16 +223,14 @@ const NewProduct = () => {
                                 <Form.Group className='mb-3'>
                                     <Form.Label className='fs-4 fw-medium'>Product name</Form.Label>
                                     <Form.Control className='py-2 custome-placeholder-font-12'
-                                        type='text' placeholder='Write product name here'
-                                        defaultValue={selectedProduct?.productName || ''}
-                                        {...register('name', { required: true })} />
-                                    <p className='fs-6 fw-medium text-danger'>{errors?.name && `Product's name is required !`}</p>
+                                        type='text' placeholder='Write product name here' 
+                                        {...register('name', {required: true})}/>
+                                    <p>{errors?.name && `Product name is required !`}</p>
                                 </Form.Group>
                                 <Form.Group className='mb-3'>
                                     <Form.Label className='fs-4 fw-medium'>Product main image</Form.Label>
                                     <div className='bg-white border rounded-2 py-2 px-1'>
-                                        <ImagesDropzone maxFile={true} maxFileNum={1} onDrop={(files) => handleDropMainImage(files)}
-                                            register={register} errors={errors} />
+                                        <ImagesDropzone maxFile={true} maxFileNum={1} onDrop={(files) => handleDropMainImage(files)} />
                                         <div className='d-flex justify-content-around'>
                                             {mainImage && (
                                                 <div className='position-relative'>
@@ -330,14 +251,13 @@ const NewProduct = () => {
                                             )}
                                         </div>
                                     </div>
-                                    <p className='fs-6 fw-medium text-danger'>{errors?.image && errors?.image?.message}</p>
                                 </Form.Group>
                             </Form>
                         </div>
                         <div>
                             <label className=' fs-4 fw-medium'>Product versions</label>
                             <div>
-                                {variants?.length > 0 ? (
+                                {versions?.length > 0 ? (
                                     <Table className='custom-table' striped hover>
                                         <thead>
                                             <th>#</th>
@@ -347,7 +267,7 @@ const NewProduct = () => {
                                             <th className='text-center'>Wholesale price</th>
                                         </thead>
                                         <tbody>
-                                            {variants?.map((item, index) => {
+                                            {versions?.map((item, index) => {
                                                 return (
                                                     <>
                                                         <tr key={index + 1} className=''>
@@ -356,29 +276,20 @@ const NewProduct = () => {
                                                             <td className='text-center'>{item?.attributes[1]?.value}</td>
                                                             <td className='w-30'>
                                                                 <InputGroup>
-                                                                    <Form.Control placeholder={`Product's retail price...`}
-                                                                        {...register(`variants[${index}].retailPrice`, { required: true, min: 1000, pattern: /^[0-9]+$/ })} />
+                                                                    <Form.Control placeholder={`Product's retail price...`} />
                                                                     <InputGroup.Text>VND</InputGroup.Text>
                                                                 </InputGroup>
-                                                                <p className='fs-6 fw-medium text-danger'>
-                                                                    {errors.variants?.[index]?.retailPrice && 'Required anumber and must be equal or greater than 1000 !'}</p>
                                                             </td>
                                                             <td className='w-30'>
                                                                 <InputGroup>
-                                                                    <Form.Control placeholder={`Product's wholesale price...`}
-                                                                        {...register(`variants[${index}].wholesalePrice`, { required: true, min: 1000, pattern: /^[0-9]+$/ })} />
+                                                                    <Form.Control placeholder={`Product's wholesale price...`} />
                                                                     <InputGroup.Text>VND</InputGroup.Text>
                                                                 </InputGroup>
-                                                                <p className='fs-6 fw-medium text-danger'>
-                                                                    {errors.variants?.[index]?.wholesalePrice && 'Required a number and must be equal or greater than 1000 ! !'}</p>
                                                             </td>
                                                         </tr>
                                                         <tr className=''>
                                                             <td colSpan={5}>
                                                                 <ImagesDropzone onDrop={(files) => handleDrop(files, index)} />
-                                                                <p className='fs-6 fw-medium text-danger'>
-                                                                    {errors.variants?.[index]?.images?.message}
-                                                                </p>
                                                                 <div className='d-flex justify-content-around'>
                                                                     {item.images && item.images.map((image, imgIndex) => (
                                                                         <div className='position-relative'>
@@ -408,10 +319,19 @@ const NewProduct = () => {
                         </div>
                     </div>
                     <div className='col-3'>
-                        <Organize errors={errors} categories={categories} control={control} />
+                        <Organize
+                            categories={categories}
+                            errors={errors}
+                            control={control}
+                            cateDefault={selectedProduct?.categories}
+                        />
                         <Variants
-                            sizes={attributes?.sizes} colors={attributes?.colors}
-                            control={control} errors={errors}
+                            sizes={attributes.sizes}
+                            colors={attributes.colors}
+                            control={control}
+                            errors={errors}
+                            sizesDefault={selectedProduct?.versions.map(v => v.attributes.find(attr => attr.key === 'Size')).filter(Boolean)}
+                            colorsDefault={selectedProduct?.versions.map(v => v.attributes.find(attr => attr.key === 'Color')).filter(Boolean)}
                         />
                     </div>
                 </div>
@@ -423,4 +343,4 @@ const NewProduct = () => {
     );
 }
 
-export default NewProduct;
+export default UpdateProduct;

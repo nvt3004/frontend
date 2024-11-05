@@ -47,6 +47,7 @@ import ProductCategories from '../components/admin/parts/NewParts/body/ProductMa
 
 
 import ProtectedRoute from "./ProtectedRoute";
+import UpdateProduct from "../components/admin/parts/NewParts/body/ProductManagement/UpdateProduct";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -79,7 +80,6 @@ const router = createBrowserRouter([
       {
         path: "users",
         children: [
-          { path: "add", element: <ProtectedRoute element={<AddNewUser />} /> },
           { path: "manage", element: <ProtectedRoute element={<UserTable />} /> },
         ],
       },
@@ -90,14 +90,13 @@ const router = createBrowserRouter([
       {
         path: "suppliers",
         children: [
-          { path: 'manage', element: <OrderManagement /> }
+          { path: 'manage', element: <SuppliersTable /> }
         ],
       },
       {
         path: "warehouse",
         children: [
-          { path: 'manage', element: <SuppliersTable /> },
-          { path: 'add', element: <AddNewSupplier /> },
+          { path: 'stock-in', element: <StockIn /> },
         ],
       },
       {
@@ -126,6 +125,7 @@ const router = createBrowserRouter([
           { path: 'manage', element: <ProductTable /> },
           { path: 'new', element: <NewProduct /> },
           { path: 'categories', element: <ProductCategories /> },
+          { path: 'update', element: <UpdateProduct /> },
         ],
       },
     ],

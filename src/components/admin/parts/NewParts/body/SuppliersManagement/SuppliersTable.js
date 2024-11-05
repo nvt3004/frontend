@@ -10,6 +10,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import CustomButton from '../../component/CustomButton';
 import { FaTrashAlt } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import axiosInstance from '../../../../../../services/axiosConfig';
 
 const SuppliersTable = () => {
 
@@ -56,7 +57,7 @@ const SuppliersTable = () => {
     const [totalElements, setTotalElements] = useState(0);
 
     const handleGetSuppliersAPI = () => {
-        DoRequest().get(`/staff/suppliers?size=10&page=${currentPage}`).then(
+        axiosInstance.get(`/staff/suppliers?size=10&page=${currentPage}`).then(
             (response) => {
                 setSuppliers(response?.data?.data?.content);
                 setTotalPage(response?.data?.data?.totalPages);
@@ -109,7 +110,7 @@ const SuppliersTable = () => {
         if (!isValid) {
             toast.error('Form is not valid !!');
         } else {
-            DoRequest().put(`/staff/suppliers?id=${supplier?.supplierId}`, supplier).then(
+            axiosInstance.put(`/staff/suppliers?id=${supplier?.supplierId}`, supplier).then(
                 (response) => {
                     if (response?.data?.errorCode === 200) {
                         toast.success(`Supplier updated successfully !!`);
@@ -143,7 +144,7 @@ const SuppliersTable = () => {
         if (!isValid) {
             toast.error('Form is not valid !!');
         } else {
-            DoRequest().post(`/staff/suppliers`, supplier).then(
+            axiosInstance.post(`/staff/suppliers`, supplier).then(
                 (response) => {
                     console.log(response);
 
@@ -172,7 +173,7 @@ const SuppliersTable = () => {
         ).then(
             (result) => {
                 if (result?.isConfirmed) {
-                    DoRequest().delete(`/staff/suppliers?id=${id}`).then(
+                    axiosInstance.delete(`/staff/suppliers?id=${id}`).then(
                         (response) => {
                             if (response?.data?.errorCode === 200 || response?.data?.errorCode === 201) {
                                 toast.success(`Supplier removed successfully !!`);
