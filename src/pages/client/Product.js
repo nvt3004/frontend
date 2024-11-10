@@ -519,12 +519,12 @@ const Product = () => {
     setProduct(
       partitionProduct(
         product,
-        product.attributes,
-        getRowCelCick(product.versions.attributes, product.attributes[0]),
-        product.attributes[0].key
+        product?.attributes,
+        getRowCelCick(product?.versions?.attributes, product?.attributes[0]),
+        product?.attributes[0]?.key
       )
     );
-    setAttriTest(product.attributes);
+    setAttriTest(product?.attributes);
   };
   function formatCurrencyVND(amount) {
     return amount.toLocaleString("vi-VN", {
@@ -1076,7 +1076,7 @@ const Product = () => {
                                 style={style.wh}
                               >
                                 <img
-                                  src={version?.images}
+                                  src={version?.image}
                                   className={
                                     index === 0
                                       ? "d-block w-100 h-full"
@@ -1103,7 +1103,7 @@ const Product = () => {
                                 key={index}
                               >
                                 <img
-                                  src={version?.images}
+                                  src={version?.image}
                                   className="d-block w-100"
                                   alt={version?.versionName}
                                 />

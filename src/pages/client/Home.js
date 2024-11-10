@@ -91,7 +91,7 @@ const Home = () => {
         return atbVersionTemps.length === atbsTemp.length;
       });
 
-      const values = versionTemps.map((vs) => {
+      const values = versionTemps?.map((vs) => {
         const ob = vs.attributes.find((a) => {
           return a?.key?.toLowerCase() == keyToEetrieve?.toLowerCase();
         });
@@ -110,7 +110,7 @@ const Home = () => {
       rowCelClick = [0, 0],
       keySelectedWhenClick = "size"
     ) => {
-      const arrs = [...products.attributes].map((a) => {
+      const arrs = [...products.attributes]?.map((a) => {
         return a.values;
       });
       const [row, cel] = rowCelClick;
@@ -180,7 +180,7 @@ const Home = () => {
 
   const handleClickItemAttribute = ({ key, value, rowCel, pdu }) => {
     const [row, cel] = rowCel;
-    const tem = attriTest.map((o) => {
+    const tem = attriTest?.map((o) => {
       const isEqual = o?.key?.toLowerCase() == key?.toLowerCase();
       return isEqual ? { ...o, value: value } : o;
     });
@@ -352,12 +352,12 @@ const Home = () => {
     setProduct(
       partitionProduct(
         product,
-        product.attributes,
-        getRowCelCick(product.versions.attributes, product.attributes[0]),
-        product.attributes[0].key
+        product?.attributes,
+        getRowCelCick(product?.versions?.attributes, product?.attributes[0]),
+        product?.attributes[0]?.key
       )
     );
-    setAttriTest(product.attributes);
+    setAttriTest(product?.attributes);
   };
 
   const style = {
@@ -507,7 +507,7 @@ const Home = () => {
             <div className="wrap-slick2">
               <div className="row isotope-grid">
                 {!Products || Products?.length ? (
-                  Products.map((product, index) => (
+                  Products?.map((product, index) => (
                     <div
                       key={index}
                       className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
@@ -619,9 +619,7 @@ const Home = () => {
                       <div className="col-md-2 me-2">
                         {/* Thumbnail Images as Indicators */}
                         <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
-                          {ProductDetail &&
-                            ProductDetail?.versions &&
-                            ProductDetail?.versions?.length > 0 &&
+                          {ProductDetail?.versions?.length > 0 &&
                             ProductDetail?.versions?.map((version, index) => (
                               <button
                                 key={index}
@@ -633,7 +631,7 @@ const Home = () => {
                                 style={style.wh}
                               >
                                 <img
-                                  src={version?.images}
+                                  src={version?.image}
                                   className={
                                     index === 0
                                       ? "d-block w-100 h-full"
@@ -649,10 +647,9 @@ const Home = () => {
                       <div className="col-md-10 p-0">
                         {/* Large Image Carousel */}
                         <div className="carousel-inner" style={style.w500}>
-                          {ProductDetail &&
-                            ProductDetail?.versions &&
+                          {
                             ProductDetail?.versions?.length > 0 &&
-                            ProductDetail?.versions.map((version, index) => (
+                            ProductDetail?.versions?.map((version, index) => (
                               <div
                                 className={`carousel-item ${
                                   index === 0 ? "active" : ""
@@ -660,7 +657,7 @@ const Home = () => {
                                 key={index}
                               >
                                 <img
-                                  src={version?.images}
+                                  src={version?.image}
                                   className="d-block w-100"
                                   alt={version?.versionName}
                                 />
@@ -680,7 +677,7 @@ const Home = () => {
 
                     <span className="mtext-106 cl2">
                       {" "}
-                      {Products.map((product1, index) =>
+                      {Products?.map((product1, index) =>
                         product1?.id == ProductDetail?.product?.id ? (
                           <span key={index}>
                             {`
