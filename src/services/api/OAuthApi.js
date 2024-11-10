@@ -1,12 +1,14 @@
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 import axiosInstance from "../axiosConfig";
+import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { auth } from "../../config/FirebaseConfig";
 
 export const loginSocial = async (userData) => {
   try {
     const response = await axiosInstance.post("/login-social", userData);
     console.log("User login successfully:", response.data);
-      const thirtyMinutesInDays = 30 / (24 * 60); // Chuyển đổi phút thành ngày
-      Cookies.set('token', response.data.token, { expires: thirtyMinutesInDays });
+    const thirtyMinutesInDays = 30 / (24 * 60);
+    Cookies.set("token", response.data.token, { expires: thirtyMinutesInDays });
     return response;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -14,11 +16,11 @@ export const loginSocial = async (userData) => {
   }
 };
 
-// Đăng nhập bằng Username và Password (POST)
 export const loginWithEmail = async (username, password) => {
   try {
     const response = await axiosInstance.post("/login", { username, password });
-
+    const thirtyMinutesInDays = 30 / (24 * 60);
+    Cookies.set("token", response.data.token, { expires: thirtyMinutesInDays });
     if (response.status === 200) {
       console.log("User login successfully:", response.data);
       const thirtyMinutesInDays = 1; // Chuyển đổi phút thành ngày
@@ -50,7 +52,7 @@ export const registerUser = async (userData) => {
 
 export const getProfile = async () => {
   try {
-    const token = Cookies.get("token"); // Lấy token từ cookie
+    const token = Cookies.get("token");
 
     if (!token) {
       throw new Error("Token không tồn tại");
@@ -58,10 +60,10 @@ export const getProfile = async () => {
 
     const response = await axiosInstance.get("/adminuser/get-profile", {
       headers: {
-        Authorization: `Bearer ${token.trim()}`, // Dùng trim() để loại bỏ khoảng trắng
+        Authorization: `Bearer ${token.trim()}`,
       },
     });
-    
+
     return response.data;
   } catch (error) {
     console.error("Error fetching profile:", error.message);
@@ -69,8 +71,6 @@ export const getProfile = async () => {
   }
 };
 
-
-// Gửi yêu cầu đặt lại mật khẩu
 export const sendResetPasswordEmail = async (email) => {
   try {
     const response = await axiosInstance.post("/send", { to: email });
@@ -94,7 +94,6 @@ export const sendResetPasswordEmail = async (email) => {
   }
 };
 
-// Đặt lại mật khẩu (POST)
 export const resetPassword = async (token, newPassword) => {
   try {
     const response = await axiosInstance.post("reset-password", {
@@ -127,43 +126,47 @@ export const updateUser = async (userId, updatedUser) => {
       throw new Error("Token không tồn tại");
     }
 
-    const response = await axiosInstance.put(`/adminuser/update/${userId}`, updatedUser, { 
-      headers: {
-        Authorization: `Bearer ${token.trim()}`, 
-      },
-    });
-    
-    return response.data; 
+    const response = await axiosInstance.put(
+      `/adminuser/update/${userId}`,
+      updatedUser,
+      {
+        headers: {
+          Authorization: `Bearer ${token.trim()}`,
+        },
+      }
+    );
+
+    return response.data;
   } catch (error) {
-    console.error("Error updating user:", error.message); 
-    throw error; 
+    console.error("Error updating user:", error.message);
+    throw error;
   }
 };
 
+export const sendResetPasswordSMS = async (phoneNumber) => {
+  try {
+    if (!document.getElementById("recaptcha-container")) {
+      throw new Error("recaptcha-container element not found");
+    }
 
-// export const sendResetPasswordSMS = async (phoneNumber) => {
-//   try {
-//     // Kiểm tra nếu phần tử recaptcha-container đã có trên DOM
-//     if (!document.getElementById('recaptcha-container')) {
-//       throw new Error("recaptcha-container element not found");
-//     }
+    const recaptchaVerifier = new RecaptchaVerifier(
+      "recaptcha-container",
+      {
+        size: "invisible",
+        callback: (response) => {},
+        "expired-callback": () => {},
+      },
+      auth
+    );
 
-//     // Khởi tạo RecaptchaVerifier
-//     const recaptchaVerifier = new RecaptchaVerifier('recaptcha-container', {
-//       size: 'invisible',
-//       callback: (response) => {
-//         // reCAPTCHA solved, allow send SMS
-//       },
-//       'expired-callback': () => {
-//         // Response expired; ask user to solve reCAPTCHA again
-//       }
-//     }, auth);
-
-//     // Gửi mã SMS
-//     const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
-//     return confirmationResult;
-//   } catch (error) {
-//     console.error("Error sending SMS:", error);
-//     throw new Error(error.message);
-//   }
-// };
+    const confirmationResult = await signInWithPhoneNumber(
+      auth,
+      phoneNumber,
+      recaptchaVerifier
+    );
+    return confirmationResult;
+  } catch (error) {
+    console.error("Error sending SMS:", error);
+    throw new Error(error.message);
+  }
+};

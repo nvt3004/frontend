@@ -17,6 +17,4 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 
-// // Optional: Add any scopes you need here
-
 export { auth, googleProvider, facebookProvider };

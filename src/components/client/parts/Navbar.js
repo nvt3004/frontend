@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getProfile } from "../../../services/api/OAuthApi";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
+import Cookies from "js-cookie";
+
 import logo4plus from "../../../assets/images/icons/logo4plus.png"
 import { setWishlistCount } from "../../../store/actions/wishlistActions";
 
@@ -21,9 +23,17 @@ const Navbar = () => {
   const dispatch = useDispatch();
 
   const [cart, setCart] = useState();
-  const [total,setTotal] = useState(0);
+  const [total, setTotal] = useState(0);
 
+  const navigate = useNavigate();
 
+  const token = Cookies.get("token");
+
+  const handleLogout = () => {
+    Cookies.remove("token");
+    navigate("/auth/login");
+    window.location.reload(); // Reload trang để cập nhật giao diện
+  };
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -41,9 +51,11 @@ const Navbar = () => {
         setCart(data);
         dispatch(setCartCount(data?.length == null ? 0 : data.length));
         setTotal(0);
-        data.forEach((product) => {
-          setTotal(total + (product.price * product.quantity));
-        });
+        const calculatedTotal = data.reduce((acc, product) => {
+          return acc + Number(product.price) * Number(product.quantity);
+        }, 0);
+    
+        setTotal(calculatedTotal); 
       } catch (error) {
         console.log("Failed to fetch wishlist products", error);
       }
@@ -329,19 +341,35 @@ const Navbar = () => {
                         : "Account"}
                     </Link>
                   </li>
-                  <li>
-                    <Link className="dropdown-item stext-111" to="/auth/login">
-                      Login
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      className="dropdown-item stext-111"
-                      to="/auth/register"
-                    >
-                      Register
-                    </Link>
-                  </li>
+                  {token ? (
+                    <li>
+                      <button
+                        className="dropdown-item stext-111"
+                        onClick={handleLogout}
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  ) : (
+                    <li>
+                      <Link
+                        className="dropdown-item stext-111"
+                        to="/auth/login"
+                      >
+                        Login
+                      </Link>
+                    </li>
+                  )}
+                  {!token && (
+                    <li>
+                      <Link
+                        className="dropdown-item stext-111"
+                        to="/auth/register"
+                      >
+                        Register
+                      </Link>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -577,7 +605,10 @@ const Navbar = () => {
           <ul className="header-cart-wrapitem w-full custom-scrollbar">
             {cart &&
               cart.map((product, index) => (
-                <li key={index} className="header-cart-item flex-w flex-t m-b-12 w-100">
+                <li
+                  key={index}
+                  className="header-cart-item flex-w flex-t m-b-12 w-100"
+                >
                   <div className="header-cart-item-img">
                     <img src={product.image} alt="IMG" />
                   </div>

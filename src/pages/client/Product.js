@@ -1,10 +1,34 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import productApi from "../../services/api/ProductApi";
 import SpeechToText from "../../components/client/search/SpeechtoText";
 import Wish from "../../components/client/ProdWish/Wish";
 
+import AddCartItem from "../../components/client/AddCartItem/AddCartItem";
+import DangerAlert from "../../components/client/sweetalert/DangerAlert";
+import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
+import { stfExecAPI, ghnExecAPI } from "../../stf/common";
+import { incrementCart } from "../../store/actions/cartActions";
+
+function getRowCelCick(attributes = [], item) {
+  for (let i = 0; i < attributes.length; i++) {
+    const key = attributes[i].key;
+
+    for (let j = 0; j < attributes[i].values.length; j++) {
+      const val = attributes[i].values[j];
+
+      if (key?.toLowerCase() == item?.key?.toLowerCase()) {
+        if (val?.toLowerCase() == item?.value?.toLowerCase()) {
+          console.log("Vô for");
+          return [i, j];
+        }
+      }
+    }
+
+    return [0, 0];
+  }
+}
 const Product = () => {
   const dispatch = useDispatch();
 
@@ -33,6 +57,8 @@ const Product = () => {
   const [sortOrder, setSortOrder] = useState("ASC");
   const [action, setAction] = useState(0);
 
+  //
+  const [ProductDetail, setProductDetail] = useState();
   // Fetch bộ lọc một lần khi component mount
   useEffect(() => {
     const fetchFilterAttributes = async () => {
@@ -89,7 +115,7 @@ const Product = () => {
 
   const fetchProducts = async () => {
     setLoading(true);
-    const pageSize = 2; // Số sản phẩm mỗi lần
+    const pageSize = 4;
     try {
       const response = await productApi.getProds({
         query: debouncedSearchTerm,
@@ -215,9 +241,302 @@ const Product = () => {
     }
   };
 
+  //########################################################################################
+
+  //Minh ty làm *************************************
+  const [product, setProduct] = useState([]);
+  const [attriTest, setAttriTest] = useState([]);
+  const [pd, setPd] = useState();
+  const [err, setErr] = useState();
+  const [price, setPrice] = useState(0);
+
+  //Xử lý thay đổi phiên bản sản phẩm trong giỏ hàng
+  const findAllValueInAttributes = useCallback(
+    (atbs, products, keyToEetrieve) => {
+      const atbsTemp = [...atbs];
+
+      if (atbsTemp.length >= 2) {
+        atbsTemp.splice(-1, 1);
+      }
+
+      const versionTemps = { ...products }.versions.filter((item, index) => {
+        const atbVersionTemps = item.attributes.filter((a) => {
+          return (
+            atbsTemp.find(
+              (o) =>
+                o?.key?.toLowerCase() == a?.key?.toLowerCase() &&
+                o?.value?.toLowerCase() == a?.value?.toLowerCase()
+            ) !== undefined
+          );
+        });
+
+        return atbVersionTemps.length === atbsTemp.length;
+      });
+
+      const values = versionTemps.map((vs) => {
+        const ob = vs.attributes.find((a) => {
+          return a?.key?.toLowerCase() == keyToEetrieve?.toLowerCase();
+        });
+        return ob ? ob?.value?.toLowerCase() : "";
+      });
+
+      return [...new Set(values.filter((i) => i !== ""))];
+    },
+    []
+  );
+
+  const partitionProduct = useCallback(
+    (
+      products,
+      atbSelected,
+      rowCelClick = [0, 0],
+      keySelectedWhenClick = "size"
+    ) => {
+      const arrs = [...products.attributes].map((a) => {
+        return a.values;
+      });
+      const [row, cel] = rowCelClick;
+      const valueReduces = [
+        { key: keySelectedWhenClick, value: arrs[row][cel] },
+      ];
+      let atbProducts = JSON.parse(JSON.stringify(products.attributes));
+
+      let t = { ...atbProducts[row] };
+      atbProducts[row] = atbProducts[0];
+      atbProducts[0] = t;
+
+      let results = [];
+
+      atbProducts.forEach((item, index) => {
+        const key = item.key;
+        const values = item.values;
+
+        const ob = {
+          key: key,
+          values: [],
+        };
+
+        const valueByVersion = findAllValueInAttributes(
+          valueReduces,
+          products,
+          key
+        );
+
+        values.forEach((vl) => {
+          let active = false;
+          let disible = false;
+
+          if (
+            key?.toLowerCase() == keySelectedWhenClick?.toLowerCase() &&
+            arrs[row][cel]?.toLowerCase() == vl?.toLowerCase()
+          ) {
+            active = true;
+          } else if (
+            key?.toLowerCase() !== keySelectedWhenClick?.toLowerCase()
+          ) {
+            const isInner = valueByVersion.includes(vl?.toLowerCase());
+            const valueActive = [...atbSelected].find(
+              (o) => o.key == key && o.value == vl
+            );
+            disible = !isInner;
+            active = valueActive !== undefined && isInner ? true : false;
+          }
+
+          if (active === true && index > 0) {
+            valueReduces.push({ key, value: vl });
+          }
+
+          ob.values.push({ val: vl, active, disible });
+        });
+
+        results.push(ob);
+      });
+
+      let rs = { ...results[row] };
+      results[row] = results[0];
+      results[0] = rs;
+      return results;
+    },
+    []
+  );
+
+  const handleClickItemAttribute = ({ key, value, rowCel, pdu }) => {
+    const [row, cel] = rowCel;
+    const tem = attriTest.map((o) => {
+      const isEqual = o?.key?.toLowerCase() == key?.toLowerCase();
+      return isEqual ? { ...o, value: value } : o;
+    });
+
+    setAttriTest(tem);
+    setProduct(partitionProduct(pd, tem, [row, cel], key));
+
+    console.log("test ", partitionProduct(pd, tem, [row, cel], key));
+
+    setPriceWhenChangeVersion(partitionProduct(pd, tem, [row, cel], key));
+  };
+
+  const setPriceWhenChangeVersion = (product) => {
+    const length = product.length;
+    let numberReduce = 0;
+    const versionCompare = [];
+
+    product.forEach((p) => {
+      p.values.forEach((vl) => {
+        if (vl.active && !vl.disible) {
+          numberReduce += 1;
+          versionCompare.push({ key: p.key, value: vl.val });
+        }
+      });
+    });
+
+    console.log("Versioncompate: ", versionCompare);
+
+    if (length == numberReduce) {
+      for (let vs of ProductDetail.versions) {
+        let checkCount = vs.attributes.length;
+        let temp = 0;
+
+        for (let att of vs.attributes) {
+          if (
+            versionCompare.find(
+              (i) =>
+                i.key.toLowerCase() == att.key.toLowerCase() &&
+                i.value.toLowerCase() == att.value.toLowerCase()
+            )
+          ) {
+            temp += 1;
+          }
+        }
+
+        if (checkCount == temp) {
+          setPrice(vs.price);
+          break;
+        }
+      }
+    }
+  };
+
+  const handleClickSaveUpdateVersion = async (product) => {
+    const length = product.length;
+    let numberReduce = 0;
+    const versionCompare = [];
+
+    product.forEach((p) => {
+      p.values.forEach((vl) => {
+        if (vl.active && !vl.disible) {
+          numberReduce += 1;
+          versionCompare.push({ key: p.key, value: vl.val });
+        }
+      });
+    });
+
+    console.log("Versioncompate: ", versionCompare);
+
+    if (length == numberReduce) {
+      setErr("");
+
+      for (let vs of ProductDetail.versions) {
+        let checkCount = vs.attributes.length;
+        let temp = 0;
+
+        for (let att of vs.attributes) {
+          if (
+            versionCompare.find(
+              (i) =>
+                i.key.toLowerCase() == att.key.toLowerCase() &&
+                i.value.toLowerCase() == att.value.toLowerCase()
+            )
+          ) {
+            temp += 1;
+          }
+        }
+
+        if (checkCount == temp) {
+          //Thêm vào giỏ hàng
+          await handleAddVersionToCart({ versionId: vs.id, quantity: 1 });
+          break;
+        }
+      }
+    } else {
+      setErr("Please select full attributes!");
+    }
+  };
+
+  //Thêm sản phẩm vào giỏ hàng
+  const handleAddVersionToCart = async ({ versionId, quantity }) => {
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: "api/user/cart/add",
+      data: {
+        versionId: versionId,
+        quantity: quantity,
+      },
+    });
+
+    if (error) {
+      DangerAlert({
+        text:
+          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
+          "Server error",
+      });
+      return;
+    } else {
+      dispatch(incrementCart());
+    }
+
+    SuccessAlert({
+      text: "Add product to cart success!",
+    });
+  };
+
+  //****************************************** */
+  const getProductDetail = async (id) => {
+    try {
+      const response = await productApi.getProductDetail(id);
+      setProductDetail(response.data.data);
+    } catch (error) {
+      console.error("Error fetching product:", error.message);
+    }
+  };
+
+  const findProductDetailById = async (id) => {
+    try {
+      const response = await productApi.getProductDetail(id);
+
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching product:", error.message);
+    }
+  };
+
+  const handleProductClick = async (id) => {
+    const product = await findProductDetailById(id);
+
+    console.log("Ty", product);
+    getProductDetail(id);
+
+    setPd(product);
+    setProduct(
+      partitionProduct(
+        product,
+        product.attributes,
+        getRowCelCick(product.versions.attributes, product.attributes[0]),
+        product.attributes[0].key
+      )
+    );
+    setAttriTest(product.attributes);
+  };
+  function formatCurrencyVND(amount) {
+    return amount.toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+  }
   const style = {
     m: { marginTop: "40px" },
     h: { height: "60vh" },
+    w500: { width: "100%" },
+    wh: { width: "100px", height: "126px" },
   };
 
   return (
@@ -624,6 +943,7 @@ const Product = () => {
                             className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none"
                             data-bs-toggle="modal"
                             data-bs-target="#exampleModal"
+                            onClick={() => handleProductClick(product?.id)}
                           >
                             Quick View
                           </button>
@@ -639,7 +959,14 @@ const Product = () => {
                             </Link>
 
                             <span className="stext-105 cl3">
-                              {`${product.minPrice} VND ~ ${product.maxPrice} VND`}
+                              {`
+  ${
+    product?.minPrice !== product?.maxPrice
+      ? `${formatCurrencyVND(product?.minPrice ?? "N/A")} ~ `
+      : ""
+  }
+  ${formatCurrencyVND(product?.maxPrice ?? "N/A")}
+`}
                             </span>
                           </div>
 
@@ -702,6 +1029,201 @@ const Product = () => {
       </section>
 
       {/*  */}
+      <div
+        className="modal fade"
+        id="exampleModal"
+        tabIndex="-1"
+        aria-labelledby="exampleModalLabel"
+      >
+        <div className="modal-dialog modal-xl">
+          <div className="modal-content rounded-0">
+            <div className="modal-header pb-1 pt-2">
+              <h1
+                className="modal-title flex-c-m stext-101 cl5 size-103  p-lr-15"
+                id="exampleModalLabel"
+              >
+                Quick view product details
+              </h1>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body">
+              <div className="row">
+                <div className="col-md-6 col-lg-7 p-b-30">
+                  <div
+                    id="productCarousel"
+                    className="carousel slide carousel-fade"
+                  >
+                    <div className="row m-0">
+                      <div className="col-md-2 me-2">
+                        {/* Thumbnail Images as Indicators */}
+                        <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
+                          {ProductDetail &&
+                            ProductDetail?.versions &&
+                            ProductDetail?.versions?.length > 0 &&
+                            ProductDetail?.versions?.map((version, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                data-bs-target="#productCarousel"
+                                data-bs-slide-to={index}
+                                className={index === 0 ? "active" : ""}
+                                aria-label={`Slide ${index + 1}`}
+                                style={style.wh}
+                              >
+                                <img
+                                  src={version?.images}
+                                  className={
+                                    index === 0
+                                      ? "d-block w-100 h-full"
+                                      : "d-block w-100"
+                                  }
+                                  alt=""
+                                />
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+
+                      <div className="col-md-10 p-0">
+                        {/* Large Image Carousel */}
+                        <div className="carousel-inner" style={style.w500}>
+                          {ProductDetail &&
+                            ProductDetail?.versions &&
+                            ProductDetail?.versions?.length > 0 &&
+                            ProductDetail?.versions.map((version, index) => (
+                              <div
+                                className={`carousel-item ${
+                                  index === 0 ? "active" : ""
+                                }`}
+                                key={index}
+                              >
+                                <img
+                                  src={version?.images}
+                                  className="d-block w-100"
+                                  alt={version?.versionName}
+                                />
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col-md-6 col-lg-5 p-b-30">
+                  <div className="p-r-50 p-t-5 p-lr-0-lg">
+                  <h4 className="mtext-105 cl2 js-name-detail p-b-14">
+                      {ProductDetail ? ProductDetail?.product?.productName : ""}
+                    </h4>
+
+                    <span className="mtext-106 cl2">
+                      {" "}
+                      {products?.map((product1, index) =>
+                        product1?.id == ProductDetail?.product?.id ? (
+                          <span key={index}>
+                            {`
+  ${
+    product1?.minPrice !== product1?.maxPrice
+      ? `${formatCurrencyVND(product1?.minPrice ?? "N/A")} ~ `
+      : ""
+  }
+  ${formatCurrencyVND(product1?.maxPrice ?? "N/A")}
+`}
+                          </span>
+                        ) : null
+                      )}
+                    </span>
+
+                    <p className="stext-102 cl3 p-t-23">
+                      Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
+                      sản phẩm phụ hợp với bạn nhất <Link>tại đây</Link>
+                    </p>
+
+
+                    {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
+                    <div className="p-t-33">
+                      {
+                        <AddCartItem
+                          pd={product}
+                          onClick={handleClickItemAttribute}
+                          clickSave={handleClickSaveUpdateVersion}
+                          message={err}
+                        />
+                      }
+
+                      {/* <div className="flex-w flex-r-m p-b-10">
+                        <div className="size-203 flex-c-m respon6">Color</div>
+
+                        <div className="size-204 respon6-next">
+                          <div>
+                            <select
+                              className="pt-3 pb-3 w-100 border border-1 p-2 rounded-0 form-select stext-111"
+                              aria-label="Default select example"
+                            >
+                              <option>Choose an option</option>
+                              <option value={"1"}>Red</option>
+                              <option value={"2"}>Blue</option>
+                              <option value={"3"}>White</option>
+                              <option value={"4"}>Grey</option>
+                            </select>
+                            <div className="dropDownSelect2"></div>
+                          </div>
+                        </div>
+                      </div> */}
+
+                      {/* <div className="flex-w flex-r-m p-b-10 mt-3">
+                        <div className="size-204 flex-w flex-m respon6-next">
+                          <button className="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
+                            Add to cart
+                          </button>
+                        </div>
+                      </div> */}
+                    </div>
+
+                    {/* <!--  --> */}
+                    <div className="flex-w flex-m p-l-100 p-t-40 respon7">
+                      <div className="flex-m bor9 p-r-10 m-r-11">
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
+                          data-tooltip="Add to Wishlist"
+                        >
+                          <i className="zmdi zmdi-favorite"></i>
+                        </Link>
+                      </div>
+
+                      <Link
+                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                        data-tooltip="Facebook"
+                      >
+                        <i className="fa fa-facebook"></i>
+                      </Link>
+
+                      <Link
+                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                        data-tooltip="Twitter"
+                      >
+                        <i className="fa fa-twitter"></i>
+                      </Link>
+
+                      <Link
+                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                        data-tooltip="Google Plus"
+                      >
+                        <i className="fa fa-google-plus"></i>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

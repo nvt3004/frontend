@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
-import { Link, useNavigate  } from "react-router-dom";
+import { Link, useNavigate, useLocation, useNavigation } from "react-router-dom";
 import Cookies from "js-cookie";
 import {
   auth,
@@ -12,15 +12,27 @@ import {
   sendEmailVerification,
   signInWithPopup,
 } from "firebase/auth";
-import { loginSocial, loginWithEmail } from "../../services/api/OAuthApi";
+import {
+  loginSocial,
+  loginWithEmail,
+  getProfile,
+} from "../../services/api/OAuthApi";
+// import "./Login.css";
+import styles from "./Login.css";
 
 const Login = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const {} = useNavigation ()
+
   const [username, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [value, setValue] = useState("");
-  const [role, setRole] = useState(null); // Trạng thái lưu vai trò
+  const [role, setRole] = useState(null);
+  const [profile, setProfile] = useState(null);
 
-  const navigate = useNavigate(); 
+  const from = location.state?.from || "/home";
 
   const handleGoogleLogin = async () => {
     try {
@@ -33,14 +45,9 @@ const Login = () => {
       const fullName = user.displayName;
       const photoURL = user.photoURL;
       const phone = user.phoneNumber;
-      // const accessToken = await user.getIdToken(); 
- 
-      // Lấy thông tin bổ sung
-      // const profileData = await fetchUserProfile(accessToken);
 
       const additionalUserInfo = getAdditionalUserInfo(result);
 
-      // Xử lý thông tin bổ sung từ Google People API nếu có
       const userEmail = user.email || additionalUserInfo.profile.email;
 
       if (userEmail) {
@@ -53,28 +60,9 @@ const Login = () => {
           phone: phone,
         };
         await loginSocial(userData);
-        console.log(userData)
+        navigate(from, { replace: true });
 
-        // const token = Cookies.get("token");
-        // if (token) {
-        //   setIsAuthenticated(true);
-        //   const profileData = await getProfile(); // Gọi API lấy profile
-        //   setProfile(profileData);
-
-        //   // Lấy giá trị authorities đầu tiên trong mảng
-        //   if (
-        //     profileData.listData &&
-        //     profileData.listData.authorities &&
-        //     profileData.listData.authorities.length > 0
-        //   ) {
-        //     setRole(profileData.listData.authorities[0]); // Lưu vai trò từ authorities
-        //     console.log('Vai trò '+profileData.listData.authorities[0].authority)
-        //   }
-        // } else {
-        //   setIsAuthenticated(false);
-        // }
-        navigate('/home');
-        // window.location.reload();
+        window.location.reload();
       } else {
         console.log("Email is null. Request user to provide their email.");
         await sendEmailVerification(user);
@@ -84,7 +72,6 @@ const Login = () => {
     }
   };
 
-  // Hàm xử lý đăng nhập với Facebook
   const handleFacebookLogin = async () => {
     try {
       facebookProvider.addScope("email");
@@ -96,7 +83,6 @@ const Login = () => {
       const photoURL = user.photoURL;
       const phone = user.phoneNumber;
 
-      // Lấy thông tin bổ sung
       const additionalUserInfo = getAdditionalUserInfo(result);
       const userEmail = user.email || additionalUserInfo.profile.email;
 
@@ -110,14 +96,12 @@ const Login = () => {
           phone: phone,
         };
         await loginSocial(userData);
-        
-        navigate('/home');
-        // window.location.reload();
+
+        navigate(from, { replace: true });
+        window.location.reload();
       } else {
         console.log("Email is null. Request user to provide their email.");
-        // Gửi email xác minh nếu cần thiết
         await sendEmailVerification(user);
-        // Cập nhật trạng thái UI hoặc thông báo cho người dùng
       }
     } catch (error) {
       if (error.code === "auth/account-exists-with-different-credential") {
@@ -135,15 +119,35 @@ const Login = () => {
       const response = await loginWithEmail(username, password);
 
       if (response.status === 200) {
-        console.log("Username:", username);
-        console.log("User Password:", password);
-        // Chuyển hướng đến trang /home sau khi đăng nhập thành công
-        navigate('/home');
+        const token = Cookies.get("token");
+        if (token) {
+          const profileData = await getProfile();
+          setProfile(profileData);
+
+          if (
+            profileData.listData &&
+            profileData.listData.authorities.length > 0
+          ) {
+            setRole(profileData.listData.authorities[0]);
+            if (profileData.listData.authorities[0].authority === "Admin") {
+              navigate("/admin");
+              window.location.reload();
+            } else if (
+              profileData.listData.authorities[0].authority === "Staff"
+            ) {
+              navigate("/admin/users/manage");
+              window.location.reload();
+            } else {
+              navigate(from, { replace: true });
+              window.location.reload();
+            }
+          }
+        }
       }
     } catch (error) {
       console.error("Error during username login:", error.message);
     }
-};
+  };
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
@@ -153,90 +157,74 @@ const Login = () => {
   }, []);
 
   return (
-    <div className="container mt-5">
-      <div className="row justify-content-center">
-        <div className="col-md-4">
-          <div className="card shadow-sm">
-            <div className="card-body">
-              <h3 className="card-title text-center mb-4">Login</h3>
-              <form onSubmit={handleEmailLogin}>
-                <div className="mb-3">
-                  <label htmlFor="exampleInputEmail1" className="form-label">
-                    Email/Number Phone
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="exampleInputEmail1"
-                    aria-describedby="emailHelp"
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <div id="emailHelp" className="form-text">
-                    We'll never share your email with anyone else.
+    <div className={styles.loginContainer}>
+      <div className="container mt-5 loginContainer">
+        <div className="row justify-content-center">
+          <div className="col-md-4">
+            <div className="card shadow-lg border-0 rounded-lg">
+              <div className="card-body p-5">
+                <h3 className="card-title text-center mb-4">Login</h3>
+                <form onSubmit={handleEmailLogin}>
+                  <div className="mb-3">
+                    <label htmlFor="emailInput" className="form-label">
+                      Email/Number Phone
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="emailInput"
+                      placeholder="Enter your username"
+                      value={username}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
+                  <div className="mb-3">
+                    <label htmlFor="passwordInput" className="form-label">
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="passwordInput"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary w-100 mb-3">
+                    Login
+                  </button>
+                </form>
+                <div className="d-flex flex-column gap-3">
+                  <button
+                    className="btn btn-outline-danger w-100"
+                    onClick={handleGoogleLogin}
+                  >
+                    <FaGoogle className="me-1" />
+                    Google
+                  </button>
+                  <button
+                    className="btn btn-outline-primary w-100"
+                    onClick={handleFacebookLogin}
+                  >
+                    <FaFacebook className="me-1" />
+                    Facebook
+                  </button>
                 </div>
-                <div className="mb-3">
-                  <label htmlFor="exampleInputPassword1" className="form-label">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="exampleInputPassword1"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+                <div className="d-flex justify-content-between mt-3">
+                  <Link
+                    to="/auth/forgot-password"
+                    className="btn btn-link no-underline"
+                  >
+                    Forgot password?
+                  </Link>
+                  <Link
+                    to="/auth/register"
+                    className="btn btn-link no-underline"
+                  >
+                    Create an account
+                  </Link>
                 </div>
-                <div className="mb-3 form-check">
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="exampleCheck1"
-                  />
-                  <label className="form-check-label" htmlFor="exampleCheck1">
-                    Remember me
-                  </label>
-                </div>
-                <button type="submit" className="btn btn-primary w-100">
-                  Login
-                </button>
-              </form>
-              <div className="d-flex justify-content-between mt-3">
-                <button
-                  className="btn btn-outline-secondary w-48"
-                  aria-label="Login with Google"
-                  onClick={handleGoogleLogin}
-                >
-                  <FaGoogle className="me-2" />
-                  Login with Google
-                </button>
-                <button
-                  className="btn btn-outline-secondary w-48"
-                  aria-label="Login with Facebook"
-                  onClick={handleFacebookLogin}
-                >
-                  <FaFacebook className="me-2" />
-                  Login with Facebook
-                </button>
-              </div>
-              <div className="d-flex justify-content-between mt-3">
-                <Link
-                  to="/auth/forgot-password"
-                  className="btn btn-link"
-                  style={{ textDecoration: "none" }}
-                >
-                  Forgot password?
-                </Link>
-                <Link
-                  to="/auth/register"
-                  className="btn btn-link"
-                  style={{ textDecoration: "none" }}
-                >
-                  Create an account
-                </Link>
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@ import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import WarningAlert from "../../components/client/sweetalert/WarningAlert";
 import InfoAlert from "../../components/client/sweetalert/InfoAlert";
+import { Navigate } from 'react-router-dom';
 import { stfExecAPI } from "../../stf/common";
 import {
   incrementWishlist,
@@ -123,11 +124,16 @@ const addWishlist = async (productId, dispatch) => {
     });
 
     // Hiển thị thông báo thành công
-    dispatch(incrementWishlist());
-    SuccessAlert({
-      title: "Product Added!",
-      text: "The product has been successfully added to your wishlist.",
-    });
+    if (!error) {
+      dispatch(incrementWishlist());
+      SuccessAlert({
+        title: "Product Added!",
+        text: "The product has been successfully added to your wishlist.",
+      });
+    }else{
+      return <Navigate to="/auth/login" />;
+    }
+
     return data;
   } catch (error) {
     // Kiểm tra các mã trạng thái khác nhau để xử lý lỗi cụ thể
@@ -176,11 +182,15 @@ const removeWishlist = async (productId, dispatch) => {
       url: `api/user/wishlist/remove/${productId}`,
     });
 
-    dispatch(decrementWishlist());
-    SuccessAlert({
-      title: "Deleted!",
-      text: "The wishlist item has been successfully removed.",
-    });
+    if (!error) {
+      dispatch(decrementWishlist());
+      SuccessAlert({
+        title: "Deleted!",
+        text: "The wishlist item has been successfully removed.",
+      });
+    }else{
+      return <Navigate to="/auth/login" />;
+    }
 
     return data;
   } catch (error) {

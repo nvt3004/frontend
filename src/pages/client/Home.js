@@ -13,6 +13,9 @@ import { useDispatch } from "react-redux";
 import banner1 from "../../assets/images/banner-01.jpg";
 import banner2 from "../../assets/images/banner-02.jpg";
 import banner3 from "../../assets/images/banner-03.jpg";
+
+import { incrementCart } from "../../store/actions/cartActions";
+
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
     const key = attributes[i].key;
@@ -61,6 +64,9 @@ const Home = () => {
   const [pd, setPd] = useState();
   const [err, setErr] = useState();
   const [price, setPrice] = useState(0);
+
+  const [priceMin, setPriceMin] = useState();
+  const [priceMax, setPriceMax] = useState();
 
   //Xử lý thay đổi phiên bản sản phẩm trong giỏ hàng
   const findAllValueInAttributes = useCallback(
@@ -292,6 +298,8 @@ const Home = () => {
           "Server error",
       });
       return;
+    } else {
+      dispatch(incrementCart());
     }
 
     SuccessAlert({
@@ -389,6 +397,12 @@ const Home = () => {
       console.error("Error removing from Wishlist:", error.message);
     }
   };
+  function formatCurrencyVND(amount) {
+    return amount.toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+  }
   return (
     <div>
       <Slider />
@@ -523,11 +537,14 @@ const Home = () => {
                             </Link>
 
                             <span className="stext-105 cl3">
-                              {`${
-                                product?.minPrice == null
-                                  ? 0
-                                  : product?.minPrice
-                              }VND ~ ${product?.maxPrice}VND`}
+                              {`
+  ${
+    product?.minPrice !== product?.maxPrice
+      ? `${formatCurrencyVND(product?.minPrice ?? "N/A")} ~ `
+      : ""
+  }
+  ${formatCurrencyVND(product?.maxPrice ?? "N/A")}
+`}
                             </span>
                           </div>
 
@@ -550,10 +567,7 @@ const Home = () => {
                 ) : (
                   <div className="d-flex justify-content-center mt-5 mb-5">
                     <div className=" pt-5 pb-5 opacity-50">
-                      <h3 className="display-6 fw-bold">{`Code: ${ErrorCode}`}</h3>
-                      <p className="fs-4 text-muted mt-3">
-                        Message: {ErrorMessage}
-                      </p>
+                      <p className="fs-4 text-muted mt-3">{ErrorMessage}</p>
                     </div>
                   </div>
                 )}
@@ -665,29 +679,26 @@ const Home = () => {
                     </h4>
 
                     <span className="mtext-106 cl2">
-                      {price > 0 ? price : ProductDetail?.product?.minPrice}
+                      {" "}
+                      {Products.map((product1, index) =>
+                        product1?.id == ProductDetail?.product?.id ? (
+                          <span key={index}>
+                            {`
+  ${
+    product1?.minPrice !== product1?.maxPrice
+      ? `${formatCurrencyVND(product1?.minPrice ?? "N/A")} ~ `
+      : ""
+  }
+  ${formatCurrencyVND(product1?.maxPrice ?? "N/A")}
+`}
+                          </span>
+                        ) : null
+                      )}
                     </span>
 
                     <p className="stext-102 cl3 p-t-23">
-                      <span>
-                        {ProductDetail && ProductDetail?.versions
-                          ? ProductDetail?.versions.length
-                          : 0}{" "}
-                        ~ versions
-                      </span>
-                      {ProductDetail &&
-                        ProductDetail?.attributes &&
-                        ProductDetail?.attributes.length > 0 && (
-                          <span>
-                            {ProductDetail?.attributes?.map(
-                              (attribute, index) => (
-                                <span key={index} className="ms-3">
-                                  {attribute?.values?.length} ~ {attribute?.key}
-                                </span>
-                              )
-                            )}
-                          </span>
-                        )}
+                      Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
+                      sản phẩm phụ hợp với bạn nhất <Link>tại đây</Link>
                     </p>
 
                     {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
