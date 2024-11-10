@@ -5,8 +5,7 @@ import ConfirmAlert from "../../components/client/sweetalert/ConfirmAlert";
 import InfoAlert from "../../components/client/sweetalert/InfoAlert";
 import { stfExecAPI, ghnExecAPI } from "../../stf/common";
 import AttributeItem from "../../components/client/AttributeItem/AttributeItem";
-import {  toast } from "react-toastify";
-import './shopping.css'
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const getEndDate = (end) => {
@@ -315,10 +314,10 @@ const ShopingCart = () => {
     });
 
     if (error) {
-      DangerAlert({
-        text:
-          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Server error",
+      toast.error(`${error?.response?.data?.message}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
@@ -330,26 +329,43 @@ const ShopingCart = () => {
 
     setCarts(carts.filter((c) => c.catrItemId !== id));
 
-    SuccessAlert({
-      text: "Delete cart item success!",
+    toast.success("Delete cart item success!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
     });
   };
 
   //Thanh toán
   const handleProceedToCheckout = async () => {
     if (selectedItems.length <= 0) {
-      InfoAlert({
-        text: "Please select product before checkout!",
+      toast.info("Please select product before checkout!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
 
     if (!address) {
-      InfoAlert({
-        text: "Please select address before checkout!",
+      toast.info("Please select address before checkout!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
+
+    //Đổ carts
+    const fetchCarts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: "api/user/cart/all",
+      });
+
+      if (data) {
+        setCarts(data.data);
+      }
+    };
 
     if (couponRead.trim() !== "") {
       const [error, data] = await stfExecAPI({
@@ -357,8 +373,10 @@ const ShopingCart = () => {
       });
 
       if (error) {
-        InfoAlert({
-          text: "Coupon not found!",
+        toast.info("Coupon not found!", {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
         });
         return;
       }
@@ -387,10 +405,19 @@ const ShopingCart = () => {
       });
 
       if (error) {
-        DangerAlert({
-          text:
-            `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-            "Server error",
+        fetchCarts();
+
+        setSubTotal(0);
+        setTotal(0);
+        setCouponRead("");
+        setIputEnter("");
+        setSelectAll(false);
+        setSelectedItems([]);
+
+        toast.info(`${error?.response?.data?.message}`, {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
         });
         return;
       }
@@ -407,18 +434,6 @@ const ShopingCart = () => {
       };
 
       fetchCoupon();
-
-      //Đổ carts
-      const fetchCarts = async () => {
-        const [error, data] = await stfExecAPI({
-          url: "api/user/cart/all",
-        });
-
-        if (data) {
-          setCarts(data.data);
-        }
-      };
-
       fetchCarts();
 
       setSubTotal(0);
@@ -426,8 +441,10 @@ const ShopingCart = () => {
       setCouponRead("");
       setIputEnter("");
 
-      SuccessAlert({
-        text: "Checkout success!",
+      toast.success("Checkout success!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
     } else {
       const [error, data] = await stfExecAPI({
@@ -449,10 +466,19 @@ const ShopingCart = () => {
       });
 
       if (error) {
-        DangerAlert({
-          text:
-            `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-            "Server error",
+        fetchCarts();
+
+        setSubTotal(0);
+        setTotal(0);
+        setCouponRead("");
+        setIputEnter("");
+        setSelectAll(false);
+        setSelectedItems([]);
+
+        toast.info(`${error?.response?.data?.message}`, {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
         });
         return;
       }
@@ -490,15 +516,11 @@ const ShopingCart = () => {
     });
 
     if (error) {
-      toast.info(
-        `${error?.response?.data?.message}` ||
-          "Server error",
-          {
-            className: 'toast-message',
-            position: "top-right",      
-            autoClose: 5000,   
-          }
-      );
+      toast.info(`${error?.response?.data?.message}` || "Server error", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
       return;
     }
 
@@ -521,14 +543,11 @@ const ShopingCart = () => {
 
     fetchCarts();
 
-    toast.success(
-      "Update cart item success!",
-        {
-          className: 'toast-message',
-          position: "top-right",      
-          autoClose: 5000,   
-        }
-    );
+    toast.success("Update cart item success!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
   };
 
   const handleAddress = async (e) => {
@@ -595,37 +614,48 @@ const ShopingCart = () => {
       },
     });
 
+    //Đổ lại giỏ hàng
+    const fetchCarts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: "api/user/cart/all",
+      });
+
+      if (data) {
+        // const temp = [...selectedItems].map((s) => {
+        //   if (s.catrItemId === id) {
+        //     return { ...s, quantity: quantity };
+        //   } else {
+        //     return s;
+        //   }
+        // });
+        setCarts(data.data);
+        // setSelectedItems(temp);
+        // setSubTotal(totalPrice(temp));
+      }
+    };
+
     if (error) {
-      console.log(error);
-      DangerAlert({
-        text:
-          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Server error",
+      //Nếu là vượt quá số lượng tồn kho thì cập nhật số lượng tồn kho vào giỏ hàng
+      if (error?.response?.data?.code === 999) {
+        fetchCarts();
+
+        setSubTotal(0);
+        setTotal(0);
+        setCouponRead("");
+        setIputEnter("");
+        setSelectAll(false);
+        setSelectedItems([]);
+      }
+
+      toast.info(`${error?.response?.data?.message}` || "Server error", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
 
     if (data) {
-      const fetchCarts = async () => {
-        const [error, data] = await stfExecAPI({
-          url: "api/user/cart/all",
-        });
-
-        if (data) {
-          const temp = [...selectedItems].map((s) => {
-            if (s.catrItemId === id) {
-              return { ...s, quantity: quantity };
-            } else {
-              return s;
-            }
-          });
-          console.log(temp);
-          setCarts(data.data);
-          setSelectedItems(temp);
-          setSubTotal(totalPrice(temp));
-        }
-      };
-
       fetchCarts();
     }
   };
@@ -742,8 +772,10 @@ const ShopingCart = () => {
     if (error) {
       setCouponRead("");
 
-      DangerAlert({
-        text: "Coupon not found!",
+      toast.info("Coupon not found!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
@@ -755,8 +787,10 @@ const ShopingCart = () => {
 
     setCouponRead(`${c.couponCode} - Giảm ${formatCurrencyVND(pri)}`);
 
-    SuccessAlert({
-      text: "Apply coupon success",
+    toast.success("Apply coupon success!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
     });
   };
 

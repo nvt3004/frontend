@@ -5,12 +5,9 @@ import users from './data';
 import UserModal from './UserModal';
 import { HiMiniUserGroup } from "react-icons/hi2";
 import { IoIosFemale, IoIosMale } from 'react-icons/io';
-import { CiSquareRemove } from "react-icons/ci";
 import { IoPersonRemoveSharp } from 'react-icons/io5';
 import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
-import DoRequest from '../../../../axiosRequest/doRequest';
-import CustomButton from '../../component/CustomButton';
 import EmptyValues from '../../component/errorPages/EmptyValues';
 
 const UserTable = () => {
