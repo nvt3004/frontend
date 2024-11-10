@@ -48,6 +48,7 @@ import ProductCategories from '../components/admin/parts/NewParts/body/ProductMa
 
 import ProtectedRoute from "./ProtectedRoute";
 import UpdateProduct from "../components/admin/parts/NewParts/body/ProductManagement/UpdateProduct";
+import ReceiptList from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptList";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -97,6 +98,7 @@ const router = createBrowserRouter([
         path: "warehouse",
         children: [
           { path: 'stock-in', element: <StockIn /> },
+          { path: 'list', element: <ReceiptList /> },
         ],
       },
       {

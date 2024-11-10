@@ -286,8 +286,8 @@ const NewProduct = () => {
             <div className='container'>
                 <div className='mb-4 d-flex justify-content-between align-items-center'>
                     <div>
-                        <h4 className='fw-bold d-flex align-items-center'><RiAddBoxFill />&ensp;{location.state?.product ? `Update product` : `Add a product`}</h4>
-                        <p className='fw-medium'>{location.state?.product ? `Change product infomation` : `Add a new product to your store`}</p>
+                        <h4 className='fw-bold d-flex align-items-center'><RiAddBoxFill />&ensp;{`Add a product`}</h4>
+                        <p className='fw-medium'>{`Add a new product to your store`}</p>
                     </div>
                     <div>
                         <CustomButton btnType={'button'} btnBG={'primary'} btnName={'Publish product'} textColor={'text-white'} handleClick={handleSubmit} />

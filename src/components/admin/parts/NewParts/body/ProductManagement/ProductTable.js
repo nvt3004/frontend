@@ -99,7 +99,7 @@ const ProductTable = () => {
     };
 
     const handleSetSelectedProduct = (productData) => {
-        navigate('/admin/products/update', {state: {product: productData}});
+        navigate('/admin/products/update', { state: { product: productData } });
     };
     // useEffect(
     //     () => {
@@ -187,21 +187,15 @@ const ProductTable = () => {
                                                                         <td>{version?.id}</td>
                                                                         <td>{version?.versionName}</td>
                                                                         <td className='w-15' style={{ minHeight: '40px' }}>
-                                                                            {version?.images.length > 0 ? (
+                                                                            {version?.image ? (
                                                                                 <div style={{ maxWidth: '100px' }} className=''>
-                                                                                    <Slider {...settings} infinite={version?.images.length > 1}>
-                                                                                        {version?.images.map((image, index) => {
-                                                                                            return (
-                                                                                                <div key={index + 1} className='d-flex justify-content-center'>
-                                                                                                    <img
-                                                                                                        src={`${image?.name}`}
-                                                                                                        alt={`${version?.id}-image`}
-                                                                                                        style={{ maxHeight: '100px', width: 'auto' }}
-                                                                                                    />
-                                                                                                </div>
-                                                                                            );
-                                                                                        })}
-                                                                                    </Slider>
+                                                                                    <div key={index + 1} className='d-flex justify-content-center'>
+                                                                                        <img
+                                                                                            src={`${version?.image?.name}`}
+                                                                                            alt={`${version?.id}-image`}
+                                                                                            style={{ maxHeight: '100px', width: 'auto' }}
+                                                                                        />
+                                                                                    </div>
                                                                                 </div>
                                                                             ) : 'This version does not has any images'}
                                                                         </td>

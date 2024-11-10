@@ -71,7 +71,8 @@
 
 /* --- --- --- */
 .custom-radius {
-    border-radius: 12px 0 12px 0;
+    /* border-radius: 7px 7px 7px 0; */
+    border-radius: 0;
 }
 
 .custom-radius-top-bottom {
@@ -131,12 +132,12 @@
 }
 
 /* --- --- --- */
-.swal2-confirm{
+/* .swal2-confirm{
     border-radius: 12px 0 12px 0;
 }
 .swal2-cancel{
     border-radius: 12px 0 12px 0;
-}
+} */
 
 /* --- --- --- */
 .accordion-header button{
