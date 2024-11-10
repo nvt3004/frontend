@@ -44,7 +44,7 @@ const menus = [
         label: "Product",
         icon: <Archive />,
         subItems: [
-          { id: "3", label: "Category", link: "/admin/products/category" },
+          { id: "3", label: "Category", link: "/admin/products/categories" },
           { id: "4", label: "New product", link: "/admin/products/new" },
           { id: "5", label: "Manage product", link: "/admin/products/manage" },
         ],
@@ -81,8 +81,8 @@ const menus = [
         label: "Permissions",
         icon: <UserGear  />,
         subItems: [
-          { id: "10", label: "New permissions", link: "/admin/permissions/new" },
-          { id: "11", label: "Manage permissions", link: "/admin/permissions/manage" },
+          { id: "10", label: "New permissions", link: "/admin/permission/add" },
+          { id: "11", label: "Manage permissions", link: "/admin/permission/manage" },
         ],
       }
     ],
