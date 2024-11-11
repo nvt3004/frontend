@@ -20,10 +20,7 @@ import PageNotFound from "../pages/PageNotFound";
 import Dashboard from '../pages/admin/Dashboard'; // Default Pages
 import Settings from '../pages/admin/Settings';
 import AddNewUser from '../components/admin/parts/AddNewUser';
-import OrderManagement from '../components/admin/parts/OrderManagement';
 import AddNewSupplier from '../components/admin/parts/AddNewSupplier';
-import PermissionManagement from '../components/admin/parts/PermissionManagement';
-import NewPermission from '../components/admin/parts/NewPermission';
 import FeedbackManagement from '../components/admin/parts/FeedbackManagement';
 
 
@@ -48,6 +45,7 @@ import ProductCategories from '../components/admin/parts/NewParts/body/ProductMa
 import ProtectedRoute from "./ProtectedRoute";
 import UpdateProduct from "../components/admin/parts/NewParts/body/ProductManagement/UpdateProduct";
 import ReceiptList from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptList";
+import OrderTable from "../components/admin/parts/NewParts/body/OrderManagement/OrderTable";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -85,7 +83,7 @@ const router = createBrowserRouter([
       },
       {
         path: "orders",
-        children: [{ path: "manage", element: <ProtectedRoute element={<OrderManagement />} requiredRole="Admin,Staff"/> }],
+        children: [{ path: "manage", element: <ProtectedRoute element={<OrderTable />} requiredRole="Admin,Staff"/> }],
       },
       {
         path: "suppliers",

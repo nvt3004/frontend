@@ -12,6 +12,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import DoRequest from '../../../../axiosRequest/doRequest';
 import CustomButton from '../../component/CustomButton';
 import EmptyValues from '../../component/errorPages/EmptyValues';
+import { FaArrowRight } from "react-icons/fa6";
 
 const UserTable = () => {
     let active = 2;
@@ -131,11 +132,12 @@ const UserTable = () => {
                                     <th>Active</th>
                                     <th></th>
                                     <th className=''>Remove</th>
+                                    <th>Perms</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {users?.map((item, index) => (
-                                    <tr className='font-13 custom-table'>
+                                    <tr key={index} className='font-13 custom-table'>
                                         <td>{index + 1}</td>
                                         <td>
                                             <img src={`${process.env.PUBLIC_URL}/images/DefaultAvatar.png`} alt='staff avatar' style={{ height: "50px", width: "auto" }} />
@@ -156,6 +158,9 @@ const UserTable = () => {
                                                     <IoPersonRemoveSharp className='font-16 fw-medium' />
                                                 </Button>
                                             )}
+                                        </td>
+                                        <td>
+                                            <CustomButton btnBG={'warning'} btnName={<FaArrowRight/>}/>
                                         </td>
                                     </tr>
                                 ))}

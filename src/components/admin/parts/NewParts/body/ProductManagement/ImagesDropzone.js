@@ -7,7 +7,7 @@ const ImagesDropzone = ({ onDrop, maxFile, maxFileNum }) => {
             onDrop(acceptedFiles);
         },
         accept: { 'image/*': [] },
-        ...(maxFile && { maxFiles: maxFileNum }),
+        ...({ maxFiles: 1, multiple: false }),
     });
 
     return (

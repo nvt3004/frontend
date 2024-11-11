@@ -57,7 +57,7 @@ const menus = [
       },
       {
         id: "6",
-        label: "Order",
+        label: "Orders",
         icon: <FileText />,
         link: "/admin/orders/manage",
         subItems: null,
@@ -146,7 +146,7 @@ const AdminLayout = () => {
   return (
     <div className={`container-stf`}>
       <div className={`sidebar-stf ${sidebarActive ? "active" : ""}`}>
-        <div className="menu-btn-stf" onClick={toggleSidebar}>
+        <div className="menu-btn-stf bg-secondary text-white" onClick={toggleSidebar}>
           <CaretLeft className={`ph-bold ${sidebarActive ? "active" : ""}`} />
         </div>
         <div className="head-stf">

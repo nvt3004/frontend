@@ -426,113 +426,115 @@ const UpdateProduct = () => {
                                         <tbody>
                                             {selectedProduct?.versions.map(
                                                 (version, index) => (
-                                                    <React.Fragment key={index}>
-                                                        <tr className='custom-table'>
-                                                            <td style={{ maxWidth: '250px' }}>{version?.versionName}</td>
-                                                            <td>{version?.attributes[0]?.value}</td>
-                                                            <td>{version?.attributes[1]?.value}</td>
-                                                            <td>{version?.quantity}</td>
-                                                            <td>
-                                                                {(version?.id === versionID) ?
-                                                                    (
-                                                                        <InputGroup>
-                                                                            <Form.Control type='number'
-                                                                                placeholder='Retail price. . .'
-                                                                                {...register(`retailPrice`)}
-                                                                                onKeyDown={(e) => { ChangeInput(e, (version?.id === versionID)) }} />
-                                                                            <InputGroup.Text>VND</InputGroup.Text>
-                                                                        </InputGroup>
-                                                                    ) :
-                                                                    (
-                                                                        version?.retailPrice
-                                                                    )
-                                                                }
-                                                            </td>
-                                                            <td>
-                                                                {(version?.id === versionID) ?
-                                                                    (
-                                                                        <InputGroup>
-                                                                            <Form.Control type='number'
-                                                                                placeholder='Wholesale price. . .'
-                                                                                {...register(`wholesalePrice`)}
-                                                                                onKeyDown={(e) => { ChangeInput(e, (version?.id === versionID)) }} />
-                                                                            <InputGroup.Text>VND</InputGroup.Text>
-                                                                        </InputGroup>
-                                                                    ) :
-                                                                    (
-                                                                        version?.retailPrice
-                                                                    )
-                                                                }
-                                                            </td>
-                                                            {selectedProduct?.versions.length > 1 && (
+                                                    version?.active && (
+                                                        <React.Fragment key={index}>
+                                                            <tr className='custom-table'>
+                                                                <td style={{ maxWidth: '250px' }}>{version?.versionName}</td>
+                                                                <td>{version?.attributes[0]?.value}</td>
+                                                                <td>{version?.attributes[1]?.value}</td>
+                                                                <td>{version?.quantity}</td>
                                                                 <td>
-                                                                    <CustomButton btnType={'button'}
-                                                                        btnBG={'danger'} btnName={<FaTrash />}
-                                                                        handleClick={() => { handleRemoveVersion(version) }} />
-                                                                </td>
-                                                            )}
-                                                            <td>
-                                                                <div style={{ minWidth: '90px' }}>
-                                                                    {!(versionID === version?.id) ?
+                                                                    {(version?.id === versionID) ?
                                                                         (
-                                                                            <div className='d-flex justify-content-center'>
-                                                                                <CustomButton btnType={'button'}
-                                                                                    btnBG={'warning'} btnName={<MdModeEdit />} textColor={'text-white'}
-                                                                                    handleClick={() => {
-                                                                                        if (versionID) {
-                                                                                            Swal.fire(
-                                                                                                {
-                                                                                                    title: 'WARNING !!',
-                                                                                                    text: 'You are on a another version update. Please cancel it if you want to move to this !',
-                                                                                                    showConfirmButton: true,
-                                                                                                    confirmButtonText: 'OK'
-                                                                                                }
-                                                                                            )
-                                                                                        } else {
-                                                                                            setVersionID(version?.id);
-                                                                                        }
-
-
-                                                                                    }} />
-                                                                            </div>
+                                                                            <InputGroup>
+                                                                                <Form.Control type='number'
+                                                                                    placeholder='Retail price. . .'
+                                                                                    {...register(`retailPrice`)}
+                                                                                    onKeyDown={(e) => { ChangeInput(e, (version?.id === versionID)) }} />
+                                                                                <InputGroup.Text>VND</InputGroup.Text>
+                                                                            </InputGroup>
                                                                         ) :
                                                                         (
-                                                                            <div className='d-flex justify-content-between'>
-                                                                                <CustomButton btnType={'button'}
-                                                                                    btnBG={'success'} btnName={<HiCheck />} textColor={'text-white'}
-                                                                                    handleClick={() => { handleUpdateVersion() }} />
-                                                                                <CustomButton btnType={'button'}
-                                                                                    btnBG={'danger'} btnName={<ImCancelCircle />} textColor={'text-white'}
-                                                                                    handleClick={() => { setVersionID(null); setImageVersionPreview(null); }} />
-                                                                            </div>
-                                                                        )}
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colSpan={8}>
-                                                                {(versionID === version?.id) && (
-                                                                    <div {...getRootProps({ className: 'dropzone' })}>
-                                                                        <input {...getInputProps()} />
-                                                                        <p>Drag 'n' drop some files here, or click to select files</p>
-                                                                    </div>
-                                                                )}
-                                                                {
-                                                                    imageVersionPreview && versionID === version?.id ?
-                                                                        (
-                                                                            <img src={imageVersionPreview?.preview} alt={version?.versionName} style={{ width: '150px', height: 'auto' }} />
-                                                                        ) :
-                                                                        (
-                                                                            <img src={version?.image?.name} alt={version?.versionName} style={{ width: '150px', height: 'auto' }} />
+                                                                            `${version?.retailPrice} VND`
                                                                         )
-                                                                }
-                                                            </td>
-                                                        </tr>
-                                                    </React.Fragment>
+                                                                    }
+                                                                </td>
+                                                                <td>
+                                                                    {(version?.id === versionID) ?
+                                                                        (
+                                                                            <InputGroup>
+                                                                                <Form.Control type='number'
+                                                                                    placeholder='Wholesale price. . .'
+                                                                                    {...register(`wholesalePrice`)}
+                                                                                    onKeyDown={(e) => { ChangeInput(e, (version?.id === versionID)) }} />
+                                                                                <InputGroup.Text>VND</InputGroup.Text>
+                                                                            </InputGroup>
+                                                                        ) :
+                                                                        (
+                                                                            `${version?.retailPrice} VND`
+                                                                        )
+                                                                    }
+                                                                </td>
+                                                                {selectedProduct?.versions.length > 1 && (
+                                                                    <td>
+                                                                        <CustomButton btnType={'button'}
+                                                                            btnBG={'danger'} btnName={<FaTrash />}
+                                                                            handleClick={() => { handleRemoveVersion(version) }} />
+                                                                    </td>
+                                                                )}
+                                                                <td>
+                                                                    <div style={{ minWidth: '90px' }}>
+                                                                        {!(versionID === version?.id) ?
+                                                                            (
+                                                                                <div className='d-flex justify-content-center'>
+                                                                                    <CustomButton btnType={'button'}
+                                                                                        btnBG={'warning'} btnName={<MdModeEdit />} textColor={'text-white'}
+                                                                                        handleClick={() => {
+                                                                                            if (versionID) {
+                                                                                                Swal.fire(
+                                                                                                    {
+                                                                                                        title: 'WARNING !!',
+                                                                                                        text: 'You are on a another version update. Please cancel it if you want to move to this !',
+                                                                                                        showConfirmButton: true,
+                                                                                                        confirmButtonText: 'OK'
+                                                                                                    }
+                                                                                                )
+                                                                                            } else {
+                                                                                                setVersionID(version?.id);
+                                                                                            }
+
+
+                                                                                        }} />
+                                                                                </div>
+                                                                            ) :
+                                                                            (
+                                                                                <div className='d-flex justify-content-between'>
+                                                                                    <CustomButton btnType={'button'}
+                                                                                        btnBG={'success'} btnName={<HiCheck />} textColor={'text-white'}
+                                                                                        handleClick={() => { handleUpdateVersion() }} />
+                                                                                    <CustomButton btnType={'button'}
+                                                                                        btnBG={'danger'} btnName={<ImCancelCircle />} textColor={'text-white'}
+                                                                                        handleClick={() => { setVersionID(null); setImageVersionPreview(null); }} />
+                                                                                </div>
+                                                                            )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td colSpan={8}>
+                                                                    {(versionID === version?.id) && (
+                                                                        <div {...getRootProps({ className: 'dropzone' })}>
+                                                                            <input {...getInputProps()} />
+                                                                            <p>Drag 'n' drop some files here, or click to select files</p>
+                                                                        </div>
+                                                                    )}
+                                                                    {
+                                                                        imageVersionPreview && versionID === version?.id ?
+                                                                            (
+                                                                                <img src={imageVersionPreview?.preview} alt={version?.versionName} style={{ width: '150px', height: 'auto' }} />
+                                                                            ) :
+                                                                            (
+                                                                                <img src={version?.image?.name} alt={version?.versionName} style={{ width: '150px', height: 'auto' }} />
+                                                                            )
+                                                                    }
+                                                                </td>
+                                                            </tr>
+                                                        </React.Fragment>
+                                                    )
                                                 )
                                             )}
                                             <tr>
-                                                <td colSpan={7}>
+                                                <td colSpan={8}>
                                                     <div className='d-flex justify-content-center'>
                                                         <div className='d-flex justify-content-around' style={{ minWidth: '350px' }}>
                                                             <CustomButton btnBG={'warning'} btnName={'Add new version'} btnType={'button'} textColor={'text-white'}

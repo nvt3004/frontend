@@ -182,34 +182,36 @@ const ProductTable = () => {
                                                             </thead>
                                                             <tbody>
                                                                 {item?.versions.map((version, index) => (
-                                                                    <tr key={version?.id} className='custom-table'>
-                                                                        <td>{index + 1}</td>
-                                                                        <td>{version?.id}</td>
-                                                                        <td>{version?.versionName}</td>
-                                                                        <td className='w-15' style={{ minHeight: '40px' }}>
-                                                                            {version?.image ? (
-                                                                                <div style={{ maxWidth: '100px' }} className=''>
-                                                                                    <div key={index + 1} className='d-flex justify-content-center'>
-                                                                                        <img
-                                                                                            src={`${version?.image?.name}`}
-                                                                                            alt={`${version?.id}-image`}
-                                                                                            style={{ maxHeight: '100px', width: 'auto' }}
-                                                                                        />
+                                                                    version?.active && (
+                                                                        <tr key={version?.id} className='custom-table'>
+                                                                            <td>{index + 1}</td>
+                                                                            <td>{version?.id}</td>
+                                                                            <td>{version?.versionName}</td>
+                                                                            <td className='w-15' style={{ minHeight: '40px' }}>
+                                                                                {version?.image ? (
+                                                                                    <div style={{ maxWidth: '100px' }} className=''>
+                                                                                        <div key={index + 1} className='d-flex justify-content-center'>
+                                                                                            <img
+                                                                                                src={`${version?.image?.name}`}
+                                                                                                alt={`${version?.id}-image`}
+                                                                                                style={{ maxHeight: '100px', width: 'auto' }}
+                                                                                            />
+                                                                                        </div>
                                                                                     </div>
+                                                                                ) : 'This version does not has any images'}
+                                                                            </td>
+                                                                            <td className='text-center'>{`${version?.retailPrice} VND`}</td>
+                                                                            <td>
+                                                                                <div>
+                                                                                    {version?.attributes.map((attribute, index) => (
+                                                                                        <p key={index + 1} className='m-0'>
+                                                                                            {`${attribute?.key === 'Color' ? 'Color' : 'Size'}: ${attribute?.value}`}
+                                                                                        </p>
+                                                                                    ))}
                                                                                 </div>
-                                                                            ) : 'This version does not has any images'}
-                                                                        </td>
-                                                                        <td className='text-center'>{`${version?.retailPrice} VND`}</td>
-                                                                        <td>
-                                                                            <div>
-                                                                                {version?.attributes.map((attribute, index) => (
-                                                                                    <p key={index + 1} className='m-0'>
-                                                                                        {`${attribute?.key === 'Color' ? 'Color' : 'Size'}: ${attribute?.value}`}
-                                                                                    </p>
-                                                                                ))}
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
+                                                                            </td>
+                                                                        </tr>
+                                                                    )
                                                                 ))}
                                                             </tbody>
                                                         </Table>

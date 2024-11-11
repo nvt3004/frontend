@@ -85,7 +85,7 @@ const StockIn = () => {
         slidesToScroll: 1
     };
 
-    const { setValue, getValues, setError, formState: {errors}, register, trigger, reset } = useForm();
+    const { setValue, getValues, setError, formState: { errors }, register, trigger, reset } = useForm();
 
     const getDate = () => {
         const now = new Date();
@@ -102,7 +102,7 @@ const StockIn = () => {
     const handleSubmit = async () => {
         if (selectedSupplier) {
             setValue('supplierId', selectedSupplier?.supplierId);
-        } else{
+        } else {
             setError('supplier', { type: 'manual', message: 'Supplier is required!' })
         }
 
@@ -111,7 +111,7 @@ const StockIn = () => {
             ...productQuantityFields,
             'supplierId'
         ]);
-    
+
         if (isValid) {
             console.log('value: ', getValues());
             setValue('description', `receipt-prod${selectedProduct?.id}-${getDate()}`);
@@ -139,7 +139,7 @@ const StockIn = () => {
                         <p className='fw-medium'>Stock in products</p>
                     </div>
                     <div>
-                        <CustomButton btnBG={'primary'} btnName={'STOCK!'} handleClick={handleSubmit}/>
+                        <CustomButton btnBG={'primary'} btnName={'STOCK!'} handleClick={handleSubmit} />
                     </div>
                 </div>
                 <div className='mt-2 d-flex'>
@@ -156,19 +156,13 @@ const StockIn = () => {
                                                         <tr className='custom-table'>
                                                             <td>
                                                                 <div style={{ maxWidth: '100px' }} className=''>
-                                                                    <Slider {...settings} infinite={item?.images.length > 1}>
-                                                                        {item?.images.map((image, index) => {
-                                                                            return (
-                                                                                <div key={index + 1} className='d-flex justify-content-center'>
-                                                                                    <img
-                                                                                        src={`${image?.name}`}
-                                                                                        alt={`${item?.versionName}`}
-                                                                                        style={{ maxHeight: '70px', width: 'auto' }}
-                                                                                    />
-                                                                                </div>
-                                                                            );
-                                                                        })}
-                                                                    </Slider>
+                                                                    <div key={index + 1} className='d-flex justify-content-center'>
+                                                                        <img
+                                                                            src={`${item?.image?.name}`}
+                                                                            alt={`${item?.versionName}`}
+                                                                            style={{ maxHeight: '70px', width: 'auto' }}
+                                                                        />
+                                                                    </div>
                                                                 </div>
                                                             </td>
                                                             <td>{item?.versionName}</td>
@@ -180,7 +174,7 @@ const StockIn = () => {
                                                                         required: "Quantity is required",
                                                                         min: { value: 1, message: "Must be at least 1 !" }
                                                                     })} />
-                                                                {errors.productVersions?.[index]?.quantity && 
+                                                                {errors.productVersions?.[index]?.quantity &&
                                                                     <p className='text-danger fw-medium'>{errors.productVersions[index].quantity.message}</p>}
                                                             </td>
                                                         </tr>
