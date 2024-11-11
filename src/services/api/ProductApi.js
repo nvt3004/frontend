@@ -331,6 +331,44 @@ const getOrder = async (size = 10, page = 0) => {
     }
   }
 };
+const getFeedback = async ({ idProduct, page}) => {
+  try {
+    const { data } = await axiosInstance.get("user/feedback", {
+      params: {
+        idProduct,
+        page,
+      },
+    });
+    return data;
+  } catch (error) {
+    if (error.response) {
+      const { status, data } = error.response;
+
+      switch (status) {
+        case 400:
+          console.log("Bad Request: ", data?.message || "Invalid product ID.");
+          break;
+        case 404:
+          console.log("Not Found: ", data?.message || "Product not found.");
+          break;
+        case 204:
+          console.log("No Content: No feedback found for this product.");
+          break;
+        case 500:
+          console.log("Error: ", data?.message || "An error occurred during fetching feedback.");
+          break;
+        default:
+          console.log("Unknown Error: An unexpected error occurred.");
+          break;
+      }
+    } else {
+      console.log(
+        "Connection Error: Failed to connect to the server. Error message:",
+        error.message
+      );
+    }
+  }
+};
 
 const productApi = {
   getProds: search,
@@ -342,5 +380,6 @@ const productApi = {
   getProductWish,
   getCartAll,
   getOrder,
+  getFeedback
 };
 export default productApi;

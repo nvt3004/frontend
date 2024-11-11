@@ -60,6 +60,32 @@ const ProductDetail = () => {
   // Ưu tiên param ID, nếu không có thì lấy query param
   const [productId, setProductId] = useState(null);
 
+  const [feedBack, setFeedBack] = useState(null);
+  const [feedBackPage, setFeedBackPage] = useState(0);
+  const [error, setError] = useState(null); // Để lưu lỗi nếu có
+
+  useEffect(() => {
+    const fetching = async () => {
+      const id = paramId || queryId;
+      if (id) {
+        try {
+          const response = await productApi.getFeedback({ idProduct: id, page: feedBackPage, pageSize: 10 });
+          if (response && response.data) {
+            console.log("Feedback data:", response.data);     
+          } else {
+            console.log("No data found in response");
+          }
+        } catch (error) {
+          setError(error.message);
+          console.error("Error fetching feedback:", error.message);
+        }
+      }
+    };
+    fetching();
+  }, [feedBackPage, paramId, queryId]); 
+
+
+
   useEffect(() => {
     const fetchProductDetail = async () => {
       const id = paramId || queryId;
