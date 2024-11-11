@@ -9,31 +9,29 @@ import {
   incrementWishlist,
   decrementWishlist,
 } from "../../store/actions/wishlistActions";
-const getProds = async ({
+const search = async ({
   query,
-  categoryName,
+  categoryID, // sửa thành categoryID
   minPrice,
   maxPrice,
-  color,
-  size,
-  sortPrice,
+  colorID, // sửa thành colorID
+  sizeID,  // sửa thành sizeID
+  sortMaxPrice, // sửa thành sortMaxPrice
   page,
   pageSize,
-  action,
 } = {}) => {
   try {
-    const { data } = await axiosInstance.get("product/getProds", {
+    const { data } = await axiosInstance.get("product/search", {
       params: {
         query,
-        categoryName,
+        categoryID, // sử dụng categoryID thay vì categoryName
         minPrice,
         maxPrice,
-        color,
-        size,
-        sortPrice,
+        colorID, // sử dụng colorID thay vì color
+        sizeID,  // sử dụng sizeID thay vì size
+        sortMaxPrice, // sử dụng sortMaxPrice thay vì sortPrice
         page,
         pageSize,
-        action,
       },
     });
     return data;
@@ -45,13 +43,13 @@ const getProds = async ({
         case 400:
           console.log(
             "Bad Request: ",
-            data?.message || "Invalid action value."
+            data?.message || "Invalid query parameters."
           );
           break;
         case 500:
           console.log(
             "Error: ",
-            data?.message || "An error occurred during get product."
+            data?.message || "An error occurred during product search."
           );
           break;
         case 204:
@@ -69,6 +67,7 @@ const getProds = async ({
     }
   }
 };
+
 
 const getFilterAttribute = async () => {
   try {
@@ -131,7 +130,7 @@ const addWishlist = async (productId, dispatch) => {
         text: "The product has been successfully added to your wishlist.",
       });
     }else{
-      return <Navigate to="/auth/login" />;
+      window.location.href = '/auth/login';
     }
 
     return data;
@@ -189,7 +188,7 @@ const removeWishlist = async (productId, dispatch) => {
         text: "The wishlist item has been successfully removed.",
       });
     }else{
-      return <Navigate to="/auth/login" />;
+      window.location.href = '/auth/login';
     }
 
     return data;
@@ -279,7 +278,7 @@ const getCartAll = async () => {
     const [error, data] = await stfExecAPI({
       url: "api/user/cart/all",
     });
-    return data.data;
+    return data?.data;
   } catch (err) {
     console.error("Unexpected error:", err);
   }
@@ -334,7 +333,7 @@ const getOrder = async (size = 10, page = 0) => {
 };
 
 const productApi = {
-  getProds,
+  getProds: search,
   getFilterAttribute,
   getTopProducts,
   getProductDetail,

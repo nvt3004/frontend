@@ -54,7 +54,7 @@ const PaymentSuccess = () => {
         <p style={styles.paragraph}>Payment success!</p>
 
         <Link to={"/"}>
-          <button type="button" class="btn btn-success mt-3">
+          <button type="button" className="btn btn-success mt-3">
             Back to home
           </button>
         </Link>

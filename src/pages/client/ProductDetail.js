@@ -18,6 +18,7 @@ import { incrementCart } from "../../store/actions/cartActions";
 import heart1 from "../../assets/images/icons/icon-heart-01.png";
 import heart2 from "../../assets/images/icons/icon-heart-02.png";
 import prod12 from "../../assets/images/product-01.jpg";
+import SizeGuideModal from "../../components/client/Modal/SizeGuideModal"
 
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
@@ -471,10 +472,11 @@ const ProductDetail = () => {
                       )} */}
                 </span>
 
-                <p className="stext-102 cl3 p-t-23">
-                  Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn sản
-                  phẩm phụ hợp với bạn nhất <Link>tại đây</Link>
-                </p>
+                
+                <div className="stext-102 cl3 p-t-23">
+                      Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
+                      sản phẩm phụ hợp với bạn nhất <SizeGuideModal/>
+                    </div>
 
                 {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
                 <div className="p-t-33">

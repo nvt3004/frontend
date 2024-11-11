@@ -15,6 +15,8 @@ import banner2 from "../../assets/images/banner-02.jpg";
 import banner3 from "../../assets/images/banner-03.jpg";
 
 import { incrementCart } from "../../store/actions/cartActions";
+import SizeGuideModal from "../../components/client/Modal/SizeGuideModal"
+
 
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
@@ -647,8 +649,7 @@ const Home = () => {
                       <div className="col-md-10 p-0">
                         {/* Large Image Carousel */}
                         <div className="carousel-inner" style={style.w500}>
-                          {
-                            ProductDetail?.versions?.length > 0 &&
+                          {ProductDetail?.versions?.length > 0 &&
                             ProductDetail?.versions?.map((version, index) => (
                               <div
                                 className={`carousel-item ${
@@ -693,10 +694,10 @@ const Home = () => {
                       )}
                     </span>
 
-                    <p className="stext-102 cl3 p-t-23">
+                    <div className="stext-102 cl3 p-t-23">
                       Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
-                      sản phẩm phụ hợp với bạn nhất <Link>tại đây</Link>
-                    </p>
+                      sản phẩm phụ hợp với bạn nhất <SizeGuideModal/>
+                    </div>
 
                     {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
                     <div className="p-t-33">

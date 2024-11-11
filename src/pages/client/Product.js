@@ -10,6 +10,7 @@ import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import { stfExecAPI, ghnExecAPI } from "../../stf/common";
 import { incrementCart } from "../../store/actions/cartActions";
+import SizeGuideModal from "../../components/client/Modal/SizeGuideModal"
 
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
@@ -32,7 +33,6 @@ function getRowCelCick(attributes = [], item) {
 const Product = () => {
   const dispatch = useDispatch();
 
-  // Danh sách sản phẩm
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -55,10 +55,9 @@ const Product = () => {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [sortOrder, setSortOrder] = useState("ASC");
-  const [action, setAction] = useState(0);
 
-  //
   const [ProductDetail, setProductDetail] = useState();
+  const [filtersChanged, setFiltersChanged] = useState(false);
   // Fetch bộ lọc một lần khi component mount
   useEffect(() => {
     const fetchFilterAttributes = async () => {
@@ -69,15 +68,13 @@ const Product = () => {
         console.error("Error fetching filter attributes:", error.message);
       }
     };
-
     fetchFilterAttributes();
   }, []);
 
   // Debounce search term
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-      setAction(1);
+      handleSelectChange("debouncedSearchTerm", searchTerm);
     }, 400);
 
     return () => {
@@ -85,70 +82,73 @@ const Product = () => {
     };
   }, [searchTerm]);
 
-  // Fetch sản phẩm khi debounce search term thay đổi
-  useEffect(() => {
-    if (debouncedSearchTerm !== "") {
-      resetProducts();
-      fetchProducts();
-    }
-  }, [debouncedSearchTerm]);
 
-  // Fetch sản phẩm khi bộ lọc thay đổi
-  useEffect(() => {
-    resetProducts();
+
+useEffect(() => {
+  // Khi bộ lọc thay đổi, reset sản phẩm và đánh dấu filtersChanged
+  resetProducts();
+  setFiltersChanged(true);
+}, [
+  selectedCategory,
+  selectedMinPrice,
+  selectedMaxPrice,
+  selectedColor,
+  selectedSize,
+  sortOrder,
+  debouncedSearchTerm
+]);
+
+useEffect(() => {
+  // Khi currentPage thay đổi và nếu filtersChanged là true, fetch products
+  if (currentPage === 0 && filtersChanged) {
     fetchProducts();
-  }, [
-    selectedCategory,
-    selectedMinPrice,
-    selectedMaxPrice,
-    selectedColor,
-    selectedSize,
-    sortOrder,
-  ]);
+    setFiltersChanged(false); 
+  }
+}, [currentPage, filtersChanged]);
 
-  const resetProducts = () => {
-    setProducts([]);
-    setCurrentPage(0);
-    setErrorMessage("No products found");
-    setHasMoreProducts(true);
-  };
+// Hàm khởi tạo lại các giá trị về trang và sản phẩm khi có tìm kiếm mới
+const resetProducts = () => {
+  setCurrentPage(0); 
+  setProducts([]);  
+  setErrorMessage("No products found");
+  setHasMoreProducts(true);
+};
 
+  // Hàm fetch sản phẩm từ API
   const fetchProducts = async () => {
     setLoading(true);
     const pageSize = 4;
     try {
       const response = await productApi.getProds({
         query: debouncedSearchTerm,
-        categoryName: selectedCategory,
+        categoryID: selectedCategory,
         minPrice: selectedMinPrice,
         maxPrice: selectedMaxPrice,
-        color: selectedColor,
-        size: selectedSize,
-        sortPrice: sortOrder,
+        colorID: selectedColor,
+        sizeID: selectedSize,
+        sortMaxPrice: sortOrder,
         page: currentPage,
         pageSize: pageSize,
-        action: action,
       });
 
-      // console.log("Fetching products with parameters:", {
-      //   query: debouncedSearchTerm,
-      //   categoryName: selectedCategory,
-      //   minPrice: selectedMinPrice,
-      //   maxPrice: selectedMaxPrice,
-      //   color: selectedColor,
-      //   size: selectedSize,
-      //   sortPrice: sortOrder,
-      //   page: currentPage,
-      //   pageSize: pageSize,
-      //   action: action,
-      // });
+      console.log("Fetching products with parameters:", {
+        query: debouncedSearchTerm,
+        categoryID: selectedCategory,
+        minPrice: selectedMinPrice,
+        maxPrice: selectedMaxPrice,
+        colorID: selectedColor,
+        sizeID: selectedSize,
+        sortMaxPrice: sortOrder,
+        page: currentPage,
+        pageSize: pageSize,
+      });
 
       let newProducts = response?.data || [];
 
       if (newProducts.length > 0) {
         setProducts((prevProducts) => [...prevProducts, ...newProducts]);
         setHasMoreProducts(newProducts.length === pageSize);
-        setErrorMessage(""); // Reset error message on successful fetch
+        setErrorMessage("");
       } else {
         setHasMoreProducts(false);
         if (currentPage === 0) {
@@ -163,6 +163,7 @@ const Product = () => {
     }
   };
 
+  // Xử lý thay đổi bộ lọc
   const handleSelectChange = (attribute, value) => {
     switch (attribute) {
       case "category":
@@ -183,12 +184,15 @@ const Product = () => {
       case "sortOrder":
         setSortOrder(value);
         break;
+      case "debouncedSearchTerm":
+        setDebouncedSearchTerm(value);
+        break;
       default:
         break;
     }
-    setAction(0);
   };
 
+  // Xử lý reset bộ lọc về giá trị mặc định
   const handleClearFilter = () => {
     resetProducts();
     setSelectedCategory(null);
@@ -197,7 +201,7 @@ const Product = () => {
     setSelectedColor(null);
     setSelectedSize(null);
     setSortOrder("ASC");
-    setAction(0);
+    setSearchTerm("");
   };
 
   // Load thêm sản phẩm khi currentPage thay đổi
@@ -207,10 +211,14 @@ const Product = () => {
     }
   }, [currentPage]);
 
+  // Xử lý tải thêm sản phẩm
   const handleLoadMore = () => {
-    setCurrentPage((prevPage) => prevPage + 1);
+    if (hasMoreProducts) {
+      setCurrentPage((prevPage) => prevPage + 1);
+    }
   };
 
+  // Xử lý tìm kiếm bằng giọng nói (nếu có)
   const handleSpeechText = (text) => {
     setSearchTerm(text);
   };
@@ -553,25 +561,24 @@ const Product = () => {
                     ? "how-active1"
                     : ""
                 }`}
-                onClick={() => handleSelectChange("category", "")}
+                onClick={() => handleSelectChange("category", null)}
               >
                 All Products
               </button>
-              {filterAttributes.category &&
-                filterAttributes.category.length > 0 &&
-                filterAttributes.category.map((category) => (
+              {filterAttributes?.category?.length > 0 &&
+                filterAttributes?.category?.map((category) => (
                   <button
-                    key={category.categoryId}
+                    key={category?.categoryId}
                     className={`stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5  ${
-                      selectedCategory === category.categoryName
+                      selectedCategory === category?.categoryId
                         ? "how-active1"
                         : ""
                     }`}
                     onClick={() =>
-                      handleSelectChange("category", category.categoryName)
+                      handleSelectChange("category", category?.categoryId)
                     }
                   >
-                    {category.categoryName}
+                    {category?.categoryName}
                   </button>
                 ))}
             </div>
@@ -758,37 +765,38 @@ const Product = () => {
                                 All
                               </span>
                             </li>
-                            {filterAttributes.color &&
-                              filterAttributes.color.length > 0 &&
-                              filterAttributes.color.map((colorItem, index) => (
-                                <li
-                                  key={colorItem.id ? colorItem.id : index}
-                                  className="p-b-6"
-                                >
-                                  <span
-                                    className="fs-15 lh-12 m-r-6"
-                                    style={{ color: "#222" }}
+                            {filterAttributes?.color?.length > 0 &&
+                              filterAttributes?.color?.map(
+                                (colorItem, index) => (
+                                  <li
+                                    key={colorItem?.id ? colorItem?.id : index}
+                                    className="p-b-6"
                                   >
-                                    <i className="zmdi zmdi-circle"></i>
-                                  </span>
+                                    <span
+                                      className="fs-15 lh-12 m-r-6"
+                                      style={{ color: "#222" }}
+                                    >
+                                      <i className="zmdi zmdi-circle"></i>
+                                    </span>
 
-                                  <span
-                                    className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                      selectedColor === colorItem.attributeValue
-                                        ? "filter-link-active"
-                                        : ""
-                                    }`}
-                                    onClick={() => {
-                                      handleSelectChange(
-                                        "color",
-                                        colorItem.attributeValue
-                                      );
-                                    }}
-                                  >
-                                    {colorItem.attributeValue}
-                                  </span>
-                                </li>
-                              ))}
+                                    <span
+                                      className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
+                                        selectedColor === colorItem?.id
+                                          ? "filter-link-active"
+                                          : ""
+                                      }`}
+                                      onClick={() => {
+                                        handleSelectChange(
+                                          "color",
+                                          colorItem?.id
+                                        );
+                                      }}
+                                    >
+                                      {colorItem?.attributeValue}
+                                    </span>
+                                  </li>
+                                )
+                              )}
                           </ul>
                         </div>
 
@@ -811,27 +819,23 @@ const Product = () => {
                                 All
                               </span>
                             </li>
-                            {filterAttributes.size &&
-                              filterAttributes.size.length > 0 &&
-                              filterAttributes.size.map((sizeItem, index) => (
+                            {filterAttributes?.size?.length > 0 &&
+                              filterAttributes?.size?.map((sizeItem, index) => (
                                 <li
-                                  key={sizeItem.id ? sizeItem.id : index}
+                                  key={sizeItem?.id ? sizeItem?.id : index}
                                   className="p-b-6"
                                 >
                                   <span
                                     className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                      selectedSize === sizeItem.attributeValue
+                                      selectedSize === sizeItem?.id
                                         ? "filter-link-active"
                                         : ""
                                     }`}
                                     onClick={() => {
-                                      handleSelectChange(
-                                        "size",
-                                        sizeItem.attributeValue
-                                      );
+                                      handleSelectChange("size", sizeItem?.id);
                                     }}
                                   >
-                                    {sizeItem.attributeValue}
+                                    {sizeItem?.attributeValue}
                                   </span>
                                 </li>
                               ))}
@@ -917,7 +921,7 @@ const Product = () => {
                           />
                           <SpeechToText speechText={handleSpeechText} />
                           <button className="size-113 flex-c-m fs-23 cl2 hov-cl1 trans-04 me-2">
-                            <i class="zmdi zmdi-wallpaper"></i>
+                            <i className="zmdi zmdi-wallpaper"></i>
                           </button>
                         </div>
                       </div>
@@ -1117,7 +1121,7 @@ const Product = () => {
 
                 <div className="col-md-6 col-lg-5 p-b-30">
                   <div className="p-r-50 p-t-5 p-lr-0-lg">
-                  <h4 className="mtext-105 cl2 js-name-detail p-b-14">
+                    <h4 className="mtext-105 cl2 js-name-detail p-b-14">
                       {ProductDetail ? ProductDetail?.product?.productName : ""}
                     </h4>
 
@@ -1139,11 +1143,11 @@ const Product = () => {
                       )}
                     </span>
 
-                    <p className="stext-102 cl3 p-t-23">
+                
+                    <div className="stext-102 cl3 p-t-23">
                       Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
-                      sản phẩm phụ hợp với bạn nhất <Link>tại đây</Link>
-                    </p>
-
+                      sản phẩm phụ hợp với bạn nhất <SizeGuideModal/>
+                    </div>
 
                     {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
                     <div className="p-t-33">

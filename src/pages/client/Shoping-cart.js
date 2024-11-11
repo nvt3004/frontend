@@ -1349,14 +1349,14 @@ const ShopingCart = () => {
 
       {/* Modal đổi sản phẩm trong giỏ */}
       <div
-        class="modal fade"
+        className="modal fade"
         id="staticBackdrop"
         tabindex="-1"
         aria-hidden="true"
       >
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-          <div class="modal-content rounded-0">
-            <div class="modal-header py-0">
+        <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+          <div className="modal-content rounded-0">
+            <div className="modal-header py-0">
               <h1
                 className="modal-title  stext-101 cl5 size-103 d-flex align-items-center"
                 id="exampleModalLabel"
@@ -1365,7 +1365,7 @@ const ShopingCart = () => {
               </h1>
               <button
                 type="button"
-                class="btn-close"
+                className="btn-close"
                 data-bs-dismiss="modal"
                 aria-label="Close"
               ></button>

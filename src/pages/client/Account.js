@@ -646,7 +646,7 @@ const Account = () => {
             <div className="w-full pb-3 d-flex justify-content-end">
               <button
                 type="button"
-                class="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10 rounded-0"
+                className="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10 rounded-0"
                 data-bs-toggle="modal"
                 data-bs-target="#exampleModal9"
                 onClick={() => {
