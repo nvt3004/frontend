@@ -1,183 +1,233 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
-import { FaEye, FaFileExport, FaPlus, FaSearch } from 'react-icons/fa';
-import users from './data';
-import UserModal from './UserModal';
-import { HiMiniUserGroup } from "react-icons/hi2";
-import { IoIosFemale, IoIosMale } from 'react-icons/io';
-import { IoPersonRemoveSharp } from 'react-icons/io5';
-import Swal from 'sweetalert2';
-import { toast, ToastContainer } from 'react-toastify';
-import EmptyValues from '../../component/errorPages/EmptyValues';
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import PaginationSft from "../../../../PaginationSft";
+import DataTableSft from "../../../../DataTableSft";
+import ModalSft from "../../../../ModalSft";
+import { Pencil, Trash, Plus } from "phosphor-react";
+
+const dataSource = [
+  {
+    key: "1",
+    name: "Mike",
+    age: 32,
+    address: "10 Downing Street",
+    email: "mike@example.com",
+    phone: "123-456-7890",
+    company: "ABC Corp",
+  },
+  {
+    key: "2",
+    name: "John",
+    age: 42,
+    address: "20 Downing Street",
+    email: "john@example.com",
+    phone: "234-567-8901",
+    company: "XYZ Ltd",
+  },
+  {
+    key: "3",
+    name: "Sara",
+    age: 29,
+    address: "30 Oak Street",
+    email: "sara@example.com",
+    phone: "345-678-9012",
+    company: "Tech Solutions",
+  },
+  {
+    key: "4",
+    name: "David",
+    age: 35,
+    address: "40 Elm Street",
+    email: "david@example.com",
+    phone: "456-789-0123",
+    company: "Innovate LLC",
+  },
+  {
+    key: "5",
+    name: "Emma",
+    age: 28,
+    address: "50 Maple Avenue",
+    email: "emma@example.com",
+    phone: "567-890-1234",
+    company: "GreenTech Inc.",
+  },
+  {
+    key: "6",
+    name: "Chris",
+    age: 38,
+    address: "60 Pine Street",
+    email: "chris@example.com",
+    phone: "678-901-2345",
+    company: "Design Studio",
+  },
+];
 
 const UserTable = () => {
-    let active = 2;
-    let items = [];
-    for (let number = 1; number <= 2; number++) {
-        items.push(
-            <Pagination.Item className='' key={number} active={number === active}>
-                {number}
-            </Pagination.Item>,
-        );
-    }
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const [showModal, setShowModal] = useState(false);
-    const [selecteddUser, setSelectedUser] = useState(null);
-    const [isNew, setNew] = useState(false);
-    const [isCollapse, setCollapse] = useState(false);
-    const [isEdit, setEdit] = useState(false);
-
-    const handleShowModal = (user) => {
-        setShowModal(true);
-        if (user) {
-            setSelectedUser(user);
+  // ********** Cấu hình table*********
+  const columns = [
+    { title: "Username", dataIndex: "name", key: "name" },
+    { title: "Fullname", dataIndex: "age", key: "age" },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Phone", dataIndex: "phone", key: "phone" },
+    {
+      title: "Status",
+      dataIndex: "age",
+      key: "phone",
+      render: (text, record) => {
+        if (record.key == 2 || record.key == 5) {
+          return (
+            <span class="badge bg-label-danger me-1" style={{ width: "80px" }}>
+              inactive
+            </span>
+          );
         } else {
-            setNew(true);
+          return (
+            <span class="badge bg-label-success me-1" style={{ width: "80px" }}>
+              active
+            </span>
+          );
         }
-    }
-    const handleCloseModal = () => {
-        setShowModal(false);
-        setNew(false);
-        setSelectedUser(null);
-    }
-    const handleCollapse = () => {
-        setCollapse(!isCollapse);
-    }
-    const handleEdit = () => {
-        setEdit(true);
-    }
-    const handleCancel = () => {
-        setShowModal(false);
-        setEdit(false);
-        setSelectedUser(null);
-    }
-
-    const handleRemoveUser = (user) => {
-        Swal.fire({
-            title: 'Confirm to remove',
-            text: 'Are you sure ? You might not recover this account !!',
-            icon: 'warning',
-            showCancelButton: true,
-            showConfirmButton: true,
-            confirmButtonText: `Yes, I'm sure !`
-        }).then((isConfirm) => {
-            if (isConfirm.isConfirmed) {
-
-                // const doRemoveAPI = () => {
-                //     const removeUser = DoRequest({ token: token }).delete(`/api/test/user/delete/${user?.userId}`)
-                //         .then(() => {
-                //             handleGetUser();
-                //         });
-                //     return removeUser;
-                // }
-
-                // toast.promise(
-                //     doRemoveAPI, {
-                //     pending: 'Removing...',
-                //     success: `${user?.fullName} has been removed !!`,
-                //     error: `There's something wrong...`
-                // }, {
-                //     position: 'top-right',
-                //     autoClose: 3000,
-                //     closeOnClick: true,
-                // }
-                // )
-                toast.success(`${user?.fullName} has been removed !!`, {
-                    position: 'top-right',
-                    autoClose: 3000,
-                    closeOnClick: true,
-                })
-            }
-        });
-    }
-
-    return (
-        <div className='font-14'>
-            <div className='bg-body-tertiary d-flex align-items-center' style={{ height: "50px" }}>
-                <div className='container d-flex justify-content-between align-items-center'>
-                    <h4 className='m-0 col-2 d-flex align-items-center'><HiMiniUserGroup />&ensp;Users</h4>
-                    <div className='col-10 d-flex justify-content-around'>
-                        <InputGroup className='w-30'>
-                            <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
-                            <Form.Control className='custom-radius' placeholder='Search users . . .' />
-                        </InputGroup>
-                        <Form.Select className='w-15 bg-body-secondary font-14 custom-radius custom-hover'>
-                            <option className='text-center'>Filter by gender</option>
-                            <option>Male</option>
-                            <option>Female</option>
-                        </Form.Select>
-                        <Button variant='secondary' className='font-14 custom-radius custom-hover'><FaFileExport /> {` Export`}</Button>
-                        <Button className='font-14 custom-radius custom-hover' onClick={() => handleShowModal()}><FaPlus />{` Add new user`}</Button>
-                        {/* <CustomButton btnBG={'primary'} btnName={'Load data'} handleClick={handleGetUser} /> */}
-                    </div>
-                </div>
-            </div>
-            <div>
-
-                {users.length > 0 ? (
-                    <div>
-                        <Table className='mb-0' variant='' hover>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Username</th>
-                                    <th>Fullname</th>
-                                    <th>Birthday</th>
-                                    <th>Gender</th>
-                                    <th>Email</th>
-                                    <th>Active</th>
-                                    <th></th>
-                                    <th className=''>Remove</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users?.map((item, index) => (
-                                    <tr className='font-13 custom-table'>
-                                        <td>{index + 1}</td>
-                                        <td>
-                                            <img src={`${process.env.PUBLIC_URL}/images/DefaultAvatar.png`} alt='staff avatar' style={{ height: "50px", width: "auto" }} />
-                                            {` ${item?.username}`}
-                                        </td>
-                                        <td>{item?.fullName}</td>
-                                        <td>{item?.birthday}</td>
-                                        <td>
-                                            {item?.gender ? (<><IoIosMale className='text-primary fs-5' /> &ensp;{`Male`}</>)
-                                                : (<><IoIosFemale className='text-danger fs-5' /> &ensp;{`Female`}</>)}
-                                        </td>
-                                        <td>{item?.email}</td>
-                                        <td className={`${item?.active ? 'text-success' : 'text-danger'} fw-medium`}>{item?.active ? 'Activating' : 'Inactive'}</td>
-                                        <td className='font-16'><FaEye className='eye-show' onClick={() => handleShowModal(item)} /></td>
-                                        <td className=''>
-                                            {item?.active ? '' : (
-                                                <Button variant='danger' className='d-flex align-items-center custom-radius' onClick={() => handleRemoveUser(item)}>
-                                                    <IoPersonRemoveSharp className='font-16 fw-medium' />
-                                                </Button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </Table>
-                        <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
-                            <p className='font-13'>{`1 to 10 items of 15 `} <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span></p>
-                            <Pagination className='border-0'>
-                                <Pagination.First>{`<`}</Pagination.First>
-                                {items}
-                                <Pagination.Last>{`>`}</Pagination.Last>
-                            </Pagination>
-                        </div>
-                    </div>
-
-                ) : (<div><EmptyValues text={'Data may have a bit time to load success !!'}/></div>)}
-            </div>
-            <div>
-                <UserModal show={showModal} handleClose={handleCloseModal} handleCancel={handleCancel} user={selecteddUser} isNew={isNew}
-                    isCollapse={isCollapse} handleCollapse={handleCollapse}
-                    isEdit={isEdit} handleEdit={handleEdit} />
-                <ToastContainer />
-            </div>
+      },
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (text, record) => (
+        <div>
+          <button
+            className="btn btn-dark btn-sm me-2"
+            onClick={() => handleEdit(record.key)}
+          >
+            <Pencil weight="fill" />
+          </button>
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => handleDelete(record.key)}
+          >
+            <Trash weight="fill" />
+          </button>
         </div>
+      ),
+    },
+  ];
+
+  const btnTable = () => {
+    return (
+      <>
+        <button className="btn btn-dark me-2" onClick={() => handleClickAdd()}>
+          Add new <Plus weight="fill" />
+        </button>
+      </>
     );
-}
+  };
+
+  // ********** Các hành động xử lý logic*********
+  const handleEdit = (key) => {
+    alert("Edit item with key: " + key);
+  };
+
+  const handleDelete = (key) => {
+    alert("Deleted item with key: " + key);
+  };
+
+  const handleClickAdd = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleOk = () => {
+    console.log("Changes saved!");
+    setIsModalOpen(false); // Đóng modal khi nhấn "Save changes"
+  };
+
+  const handleCancel = () => {
+    console.log("Modal closed");
+    setIsModalOpen(false); // Đóng modal khi nhấn "Close"
+  };
+
+  return (
+    <>
+      <DataTableSft
+        dataSource={dataSource}
+        columns={columns}
+        title={"User list"}
+        isSearch={true}
+        buttonTable={btnTable()}
+      />
+
+      <div className="d-flex justify-content-end align-items-center mt-3">
+        <p className="me-3">Total 247 item</p>
+        <PaginationSft count={100} defaultPage={50} siblingCount={1} />
+      </div>
+
+      <ModalSft
+        title="Infomation user"
+        titleOk={"Add new"}
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <form>
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <label className="form-label" htmlFor="basic-default-fullname">
+                Full Name
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="basic-default-fullname"
+                placeholder="Enter fullname"
+              />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label" htmlFor="basic-default-company">
+                Username
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="basic-default-company"
+                placeholder="Enter username"
+              />
+            </div>
+          </div>
+
+          <div className="row mb-3">
+            <div className="col-md-6">
+              <label className="form-label" htmlFor="basic-default-email">
+                Email
+              </label>
+              <div className="input-group input-group-merge">
+                <input
+                  type="text"
+                  id="basic-default-email"
+                  className="form-control"
+                  placeholder="Enter email"
+                  aria-label="john.doe"
+                  aria-describedby="basic-default-email2"
+                />
+                <span className="input-group-text" id="basic-default-email2">
+                  @example.com
+                </span>
+              </div>
+            </div>
+            <div className="col-md-6">
+              <label className="form-label" htmlFor="basic-default-phone">
+                Birthday
+              </label>
+              <input
+                type="date"
+                id="basic-default-phone"
+                className="form-control"
+              />
+            </div>
+          </div>
+        </form>
+      </ModalSft>
+    </>
+  );
+};
 
 export default UserTable;
