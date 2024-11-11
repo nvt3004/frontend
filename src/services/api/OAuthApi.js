@@ -2,6 +2,7 @@ import Cookies from "js-cookie";
 import axiosInstance from "../axiosConfig";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from "../../config/FirebaseConfig";
+import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 
 export const loginSocial = async (userData) => {
   try {
@@ -133,7 +134,10 @@ export const updateUser = async (userId, updatedUser) => {
         },
       }
     );
-
+    SuccessAlert({
+      title: "Product Added!",
+      text: "The product has been successfully added to your wishlist.",
+    });
     return response.data;
   } catch (error) {
     console.error("Error updating user:", error.message);

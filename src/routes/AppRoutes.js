@@ -165,20 +165,20 @@ const router = createBrowserRouter([
           { path: "add", element: <AddNewSupplier /> },
         ],
       },
-      {
-        path: "permission",
-        children: [
-          // { path: 'manage', element: <WarehouseManagement/>},
-          { path: "stock-in", element: <StockIn /> },
-        ],
-      },
       // {
-      //   path: 'permission',
+      //   path: "permission",
       //   children: [
-      //     { path: 'manage', element: <PermissionManagement /> },
-      //     { path: 'add', element: <NewPermission /> },
+      //     // { path: 'manage', element: <WarehouseManagement/>},
+      //     { path: "stock-in", element: <StockIn /> },
       //   ],
       // },
+      {
+        path: 'permission',
+        children: [
+          { path: 'manage', element: <PermissionManagement /> },
+          { path: 'new', element: <NewPermission /> },
+        ],
+      },
       {
         path: "feedback",
         children: [{ path: "manage", element: <FeedbackManagement /> }],
