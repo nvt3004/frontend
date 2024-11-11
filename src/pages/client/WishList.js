@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import productApi from "../../services/api/ProductApi"; // Import API service
 import Wish from "../../components/client/ProdWish/Wish";
-
+import { useDispatch } from "react-redux";
 const WishList = () => {
+  const dispatch = useDispatch();
   const [products, setProducts] = useState([]); // State to hold wishlist products
 
   // Fetch wishlist products on component mount
@@ -23,7 +24,7 @@ const WishList = () => {
   // Handlers for adding/removing items from wishlist
   const handleAddWishlist = async (id) => {
     try {
-      await productApi.addWishlist(id);
+      await productApi.addWishlist(id, dispatch);
       setProducts((prevProducts) =>
         prevProducts.map((prod) =>
           prod.id === id
@@ -37,7 +38,7 @@ const WishList = () => {
   };
   const handleRemoveWishlist = async (id) => {
     try {
-      await productApi.removeWishlist(id);
+      await productApi.removeWishlist(id, dispatch);
       setProducts((prevProducts) =>
         prevProducts.map((prod) =>
           prod.id === id
@@ -49,16 +50,15 @@ const WishList = () => {
       console.error("Error removing from Wishlist:", error.message);
     }
   };
-  
 
   const style = {
-    m: { marginTop: "80px", minHeight:"80vh" },
-    h: {minHeight:"60vh"}
+    m: { marginTop: "80px", minHeight: "80vh" },
+    h: { minHeight: "60vh" },
   };
 
   return (
     <div style={style.m}>
-      <section className="bg0 p-t-23 p-b-140" >
+      <section className="bg0 p-t-23 p-b-140">
         <div className="container">
           <div className="p-b-10 mb-4">
             <h3 className="ltext-103 cl5">Wish Lists</h3>
@@ -78,7 +78,6 @@ const WishList = () => {
                         className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none"
                         data-bs-toggle="modal"
                         data-bs-target="#exampleModal"
-  
                       >
                         Quick View
                       </button>
@@ -113,7 +112,9 @@ const WishList = () => {
                 </div>
               ))
             ) : (
-              <div className="w-100 d-flex align-items-center justify-content-center fs-4 text-muted">No products in wishlist...</div>
+              <div className="w-100 d-flex align-items-center justify-content-center fs-4 text-muted">
+                No products in wishlist...
+              </div>
             )}
           </div>
         </div>

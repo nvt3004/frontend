@@ -5,7 +5,7 @@ import "../../assets/style/custom-scroll.css";
 import QuickViewProdDetail from "../../components/client/Modal/QuickViewProdDetail";
 
 import { stfExecAPI, ghnExecAPI } from "../../stf/common";
-import ava from "../../assets/images/avatar-01.jpg"
+import ava from "../../assets/images/avatar-01.jpg";
 import productApi from "../../services/api/ProductApi";
 import AddCartItem from "../../components/client/AddCartItem/AddCartItem";
 import DangerAlert from "../../components/client/sweetalert/DangerAlert";
@@ -15,9 +15,10 @@ import { useDispatch } from "react-redux";
 
 import { incrementCart } from "../../store/actions/cartActions";
 
-import heart1 from "../../assets/images/icons/icon-heart-01.png"
-import heart2 from "../../assets/images/icons/icon-heart-02.png"
-import prod12 from "../../assets/images/product-01.jpg"
+import heart1 from "../../assets/images/icons/icon-heart-01.png";
+import heart2 from "../../assets/images/icons/icon-heart-02.png";
+import prod12 from "../../assets/images/product-01.jpg";
+import SizeGuideModal from "../../components/client/Modal/SizeGuideModal"
 
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
@@ -41,7 +42,6 @@ function getRowCelCick(attributes = [], item) {
 const ProductDetail = () => {
   const dispatch = useDispatch();
 
-
   //Minh ty làm *************************************
   const [product, setProduct] = useState([]);
   const [ProductDetail, setProductDetail] = useState();
@@ -50,26 +50,48 @@ const ProductDetail = () => {
   const [err, setErr] = useState();
   const [price, setPrice] = useState(0);
 
-
   const [rating, setRating] = useState(0); // Trạng thái lưu số sao được chọn
-   // Lấy param từ URL (nếu có)
-   const { id: paramId } = useParams();
-   // Lấy query param từ URL
-   const location = useLocation();
-   const queryParams = new URLSearchParams(location.search);
-   const queryId = queryParams.get("id");
-   // Ưu tiên param ID, nếu không có thì lấy query param
-   const [productId, setProductId] = useState(null);
- 
+  // Lấy param từ URL (nếu có)
+  const { id: paramId } = useParams();
+  // Lấy query param từ URL
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const queryId = queryParams.get("id");
+  // Ưu tiên param ID, nếu không có thì lấy query param
+  const [productId, setProductId] = useState(null);
+
+  const [feedBack, setFeedBack] = useState(null);
+  const [feedBackPage, setFeedBackPage] = useState(0);
+  const [error, setError] = useState(null); // Để lưu lỗi nếu có
+
+  useEffect(() => {
+    const fetching = async () => {
+      const id = paramId || queryId;
+      if (id) {
+        try {
+          const response = await productApi.getFeedback({ idProduct: id, page: feedBackPage, pageSize: 10 });
+          if (response && response.data) {
+            console.log("Feedback data:", response.data);     
+          } else {
+            console.log("No data found in response");
+          }
+        } catch (error) {
+          setError(error.message);
+          console.error("Error fetching feedback:", error.message);
+        }
+      }
+    };
+    fetching();
+  }, [feedBackPage, paramId, queryId]); 
 
 
-   
-   useEffect(() => {
+
+  useEffect(() => {
     const fetchProductDetail = async () => {
       const id = paramId || queryId;
       if (id) {
-        setProductId(id);  // Đặt productId theo `paramId` hoặc `queryId`
-        
+        setProductId(id); // Đặt productId theo `paramId` hoặc `queryId`
+
         try {
           const response = await productApi.getProductDetail(id);
           setProductDetail(response.data.data); // Lưu chi tiết sản phẩm vào state
@@ -78,305 +100,297 @@ const ProductDetail = () => {
         }
       }
     };
-  
+
     fetchProductDetail();
   }, [paramId, queryId]);
-  
 
+  //Xử lý thay đổi phiên bản sản phẩm trong giỏ hàng
+  const findAllValueInAttributes = useCallback(
+    (atbs, products, keyToEetrieve) => {
+      const atbsTemp = [...atbs];
 
+      if (atbsTemp.length >= 2) {
+        atbsTemp.splice(-1, 1);
+      }
 
-
-
-//Xử lý thay đổi phiên bản sản phẩm trong giỏ hàng
-const findAllValueInAttributes = useCallback(
-  (atbs, products, keyToEetrieve) => {
-    const atbsTemp = [...atbs];
-
-    if (atbsTemp.length >= 2) {
-      atbsTemp.splice(-1, 1);
-    }
-
-    const versionTemps = { ...products }.versions.filter((item, index) => {
-      const atbVersionTemps = item.attributes.filter((a) => {
-        return (
-          atbsTemp.find(
-            (o) =>
-              o?.key?.toLowerCase() == a?.key?.toLowerCase() &&
-              o?.value?.toLowerCase() == a?.value?.toLowerCase()
-          ) !== undefined
-        );
-      });
-
-      return atbVersionTemps.length === atbsTemp.length;
-    });
-
-    const values = versionTemps.map((vs) => {
-      const ob = vs.attributes.find((a) => {
-        return a?.key?.toLowerCase() == keyToEetrieve?.toLowerCase();
-      });
-      return ob ? ob?.value?.toLowerCase() : "";
-    });
-
-    return [...new Set(values.filter((i) => i !== ""))];
-  },
-  []
-);
-
-const partitionProduct = useCallback(
-  (
-    products,
-    atbSelected,
-    rowCelClick = [0, 0],
-    keySelectedWhenClick = "size"
-  ) => {
-    const arrs = [...products.attributes].map((a) => {
-      return a.values;
-    });
-    const [row, cel] = rowCelClick;
-    const valueReduces = [
-      { key: keySelectedWhenClick, value: arrs[row][cel] },
-    ];
-    let atbProducts = JSON.parse(JSON.stringify(products.attributes));
-
-    let t = { ...atbProducts[row] };
-    atbProducts[row] = atbProducts[0];
-    atbProducts[0] = t;
-
-    let results = [];
-
-    atbProducts.forEach((item, index) => {
-      const key = item.key;
-      const values = item.values;
-
-      const ob = {
-        key: key,
-        values: [],
-      };
-
-      const valueByVersion = findAllValueInAttributes(
-        valueReduces,
-        products,
-        key
-      );
-
-      values.forEach((vl) => {
-        let active = false;
-        let disible = false;
-
-        if (
-          key?.toLowerCase() == keySelectedWhenClick?.toLowerCase() &&
-          arrs[row][cel]?.toLowerCase() == vl?.toLowerCase()
-        ) {
-          active = true;
-        } else if (
-          key?.toLowerCase() !== keySelectedWhenClick?.toLowerCase()
-        ) {
-          const isInner = valueByVersion.includes(vl?.toLowerCase());
-          const valueActive = [...atbSelected].find(
-            (o) => o.key == key && o.value == vl
+      const versionTemps = { ...products }.versions.filter((item, index) => {
+        const atbVersionTemps = item.attributes.filter((a) => {
+          return (
+            atbsTemp.find(
+              (o) =>
+                o?.key?.toLowerCase() == a?.key?.toLowerCase() &&
+                o?.value?.toLowerCase() == a?.value?.toLowerCase()
+            ) !== undefined
           );
-          disible = !isInner;
-          active = valueActive !== undefined && isInner ? true : false;
-        }
+        });
 
-        if (active === true && index > 0) {
-          valueReduces.push({ key, value: vl });
-        }
-
-        ob.values.push({ val: vl, active, disible });
+        return atbVersionTemps.length === atbsTemp.length;
       });
 
-      results.push(ob);
-    });
+      const values = versionTemps.map((vs) => {
+        const ob = vs.attributes.find((a) => {
+          return a?.key?.toLowerCase() == keyToEetrieve?.toLowerCase();
+        });
+        return ob ? ob?.value?.toLowerCase() : "";
+      });
 
-    let rs = { ...results[row] };
-    results[row] = results[0];
-    results[0] = rs;
-    return results;
-  },
-  []
-);
-
-const handleClickItemAttribute = ({ key, value, rowCel, pdu }) => {
-  const [row, cel] = rowCel;
-  const tem = attriTest.map((o) => {
-    const isEqual = o?.key?.toLowerCase() == key?.toLowerCase();
-    return isEqual ? { ...o, value: value } : o;
-  });
-
-  setAttriTest(tem);
-  setProduct(partitionProduct(pd, tem, [row, cel], key));
-
-  console.log("test ", partitionProduct(pd, tem, [row, cel], key));
-
-  setPriceWhenChangeVersion(partitionProduct(pd, tem, [row, cel], key));
-};
-
-const setPriceWhenChangeVersion = (product) => {
-  const length = product.length;
-  let numberReduce = 0;
-  const versionCompare = [];
-
-  product.forEach((p) => {
-    p.values.forEach((vl) => {
-      if (vl.active && !vl.disible) {
-        numberReduce += 1;
-        versionCompare.push({ key: p.key, value: vl.val });
-      }
-    });
-  });
-
-  console.log("Versioncompate: ", versionCompare);
-
-  if (length == numberReduce) {
-    for (let vs of ProductDetail.versions) {
-      let checkCount = vs.attributes.length;
-      let temp = 0;
-
-      for (let att of vs.attributes) {
-        if (
-          versionCompare.find(
-            (i) =>
-              i.key.toLowerCase() == att.key.toLowerCase() &&
-              i.value.toLowerCase() == att.value.toLowerCase()
-          )
-        ) {
-          temp += 1;
-        }
-      }
-
-      if (checkCount == temp) {
-        setPrice(vs.price);
-        break;
-      }
-    }
-  }
-};
-
-const handleClickSaveUpdateVersion = async (product) => {
-  const length = product.length;
-  let numberReduce = 0;
-  const versionCompare = [];
-
-  product.forEach((p) => {
-    p.values.forEach((vl) => {
-      if (vl.active && !vl.disible) {
-        numberReduce += 1;
-        versionCompare.push({ key: p.key, value: vl.val });
-      }
-    });
-  });
-
-  console.log("Versioncompate: ", versionCompare);
-
-  if (length == numberReduce) {
-    setErr("");
-
-    for (let vs of ProductDetail.versions) {
-      let checkCount = vs.attributes.length;
-      let temp = 0;
-
-      for (let att of vs.attributes) {
-        if (
-          versionCompare.find(
-            (i) =>
-              i.key.toLowerCase() == att.key.toLowerCase() &&
-              i.value.toLowerCase() == att.value.toLowerCase()
-          )
-        ) {
-          temp += 1;
-        }
-      }
-
-      if (checkCount == temp) {
-        //Thêm vào giỏ hàng
-        await handleAddVersionToCart({ versionId: vs.id, quantity: 1 });
-        break;
-      }
-    }
-  } else {
-    setErr("Please select full attributes!");
-  }
-};
-
-//Thêm sản phẩm vào giỏ hàng
-const handleAddVersionToCart = async ({ versionId, quantity }) => {
-  const [error, data] = await stfExecAPI({
-    method: "post",
-    url: "api/user/cart/add",
-    data: {
-      versionId: versionId,
-      quantity: quantity,
+      return [...new Set(values.filter((i) => i !== ""))];
     },
-  });
-
-  if (error) {
-    DangerAlert({
-      text:
-        `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-        "Server error",
-    });
-    return;
-  } else {
-    dispatch(incrementCart());
-  }
-
-  SuccessAlert({
-    text: "Add product to cart success!",
-  });
-};
-
-const getProductDetail = async (id) => {
-  try {
-    const response = await productApi.getProductDetail(id);
-    setProductDetail(response.data.data);
-  } catch (error) {
-    console.error("Error fetching product:", error.message);
-  }
-};
-const findProductDetailById = async (id) => {
-  try {
-    const response = await productApi.getProductDetail(id);
-
-    return response.data.data;
-  } catch (error) {
-    console.error("Error fetching product:", error.message);
-  }
-};
-
-const handleProductClick = async (id) => {
-  const product = await findProductDetailById(id);
-
-  console.log("Ty", product);
-  getProductDetail(id);
-
-  setPd(product);
-  setProduct(
-    partitionProduct(
-      product,
-      product.attributes,
-      getRowCelCick(product.versions.attributes, product.attributes[0]),
-      product.attributes[0].key
-    )
+    []
   );
-  setAttriTest(product.attributes);
-};
 
+  const partitionProduct = useCallback(
+    (
+      products,
+      atbSelected,
+      rowCelClick = [0, 0],
+      keySelectedWhenClick = "size"
+    ) => {
+      const arrs = [...products.attributes].map((a) => {
+        return a.values;
+      });
+      const [row, cel] = rowCelClick;
+      const valueReduces = [
+        { key: keySelectedWhenClick, value: arrs[row][cel] },
+      ];
+      let atbProducts = JSON.parse(JSON.stringify(products.attributes));
 
+      let t = { ...atbProducts[row] };
+      atbProducts[row] = atbProducts[0];
+      atbProducts[0] = t;
 
+      let results = [];
 
-   // Kiểm tra nếu không có id từ cả hai nguồn
-   if (!productId) {
+      atbProducts.forEach((item, index) => {
+        const key = item.key;
+        const values = item.values;
+
+        const ob = {
+          key: key,
+          values: [],
+        };
+
+        const valueByVersion = findAllValueInAttributes(
+          valueReduces,
+          products,
+          key
+        );
+
+        values.forEach((vl) => {
+          let active = false;
+          let disible = false;
+
+          if (
+            key?.toLowerCase() == keySelectedWhenClick?.toLowerCase() &&
+            arrs[row][cel]?.toLowerCase() == vl?.toLowerCase()
+          ) {
+            active = true;
+          } else if (
+            key?.toLowerCase() !== keySelectedWhenClick?.toLowerCase()
+          ) {
+            const isInner = valueByVersion.includes(vl?.toLowerCase());
+            const valueActive = [...atbSelected].find(
+              (o) => o.key == key && o.value == vl
+            );
+            disible = !isInner;
+            active = valueActive !== undefined && isInner ? true : false;
+          }
+
+          if (active === true && index > 0) {
+            valueReduces.push({ key, value: vl });
+          }
+
+          ob.values.push({ val: vl, active, disible });
+        });
+
+        results.push(ob);
+      });
+
+      let rs = { ...results[row] };
+      results[row] = results[0];
+      results[0] = rs;
+      return results;
+    },
+    []
+  );
+
+  const handleClickItemAttribute = ({ key, value, rowCel, pdu }) => {
+    const [row, cel] = rowCel;
+    const tem = attriTest.map((o) => {
+      const isEqual = o?.key?.toLowerCase() == key?.toLowerCase();
+      return isEqual ? { ...o, value: value } : o;
+    });
+
+    setAttriTest(tem);
+    setProduct(partitionProduct(pd, tem, [row, cel], key));
+
+    console.log("test ", partitionProduct(pd, tem, [row, cel], key));
+
+    setPriceWhenChangeVersion(partitionProduct(pd, tem, [row, cel], key));
+  };
+
+  const setPriceWhenChangeVersion = (product) => {
+    const length = product.length;
+    let numberReduce = 0;
+    const versionCompare = [];
+
+    product.forEach((p) => {
+      p.values.forEach((vl) => {
+        if (vl.active && !vl.disible) {
+          numberReduce += 1;
+          versionCompare.push({ key: p.key, value: vl.val });
+        }
+      });
+    });
+
+    console.log("Versioncompate: ", versionCompare);
+
+    if (length == numberReduce) {
+      for (let vs of ProductDetail.versions) {
+        let checkCount = vs.attributes.length;
+        let temp = 0;
+
+        for (let att of vs.attributes) {
+          if (
+            versionCompare.find(
+              (i) =>
+                i.key.toLowerCase() == att.key.toLowerCase() &&
+                i.value.toLowerCase() == att.value.toLowerCase()
+            )
+          ) {
+            temp += 1;
+          }
+        }
+
+        if (checkCount == temp) {
+          setPrice(vs.price);
+          break;
+        }
+      }
+    }
+  };
+
+  const handleClickSaveUpdateVersion = async (product) => {
+    const length = product.length;
+    let numberReduce = 0;
+    const versionCompare = [];
+
+    product.forEach((p) => {
+      p.values.forEach((vl) => {
+        if (vl.active && !vl.disible) {
+          numberReduce += 1;
+          versionCompare.push({ key: p.key, value: vl.val });
+        }
+      });
+    });
+
+    console.log("Versioncompate: ", versionCompare);
+
+    if (length == numberReduce) {
+      setErr("");
+
+      for (let vs of ProductDetail.versions) {
+        let checkCount = vs.attributes.length;
+        let temp = 0;
+
+        for (let att of vs.attributes) {
+          if (
+            versionCompare.find(
+              (i) =>
+                i.key.toLowerCase() == att.key.toLowerCase() &&
+                i.value.toLowerCase() == att.value.toLowerCase()
+            )
+          ) {
+            temp += 1;
+          }
+        }
+
+        if (checkCount == temp) {
+          //Thêm vào giỏ hàng
+          await handleAddVersionToCart({ versionId: vs.id, quantity: 1 });
+          break;
+        }
+      }
+    } else {
+      setErr("Please select full attributes!");
+    }
+  };
+
+  //Thêm sản phẩm vào giỏ hàng
+  const handleAddVersionToCart = async ({ versionId, quantity }) => {
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: "api/user/cart/add",
+      data: {
+        versionId: versionId,
+        quantity: quantity,
+      },
+    });
+
+    if (error) {
+      DangerAlert({
+        text:
+          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
+          "Server error",
+      });
+      return;
+    } else {
+      dispatch(incrementCart());
+    }
+
+    SuccessAlert({
+      text: "Add product to cart success!",
+    });
+  };
+
+  const getProductDetail = async (id) => {
+    try {
+      const response = await productApi.getProductDetail(id);
+      setProductDetail(response.data.data);
+    } catch (error) {
+      console.error("Error fetching product:", error.message);
+    }
+  };
+  const findProductDetailById = async (id) => {
+    try {
+      const response = await productApi.getProductDetail(id);
+
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching product:", error.message);
+    }
+  };
+
+  const handleProductClick = async (id) => {
+    const product = await findProductDetailById(id);
+
+    console.log("Ty", product);
+    getProductDetail(id);
+
+    setPd(product);
+    setProduct(
+      partitionProduct(
+        product,
+        product?.attributes,
+        getRowCelCick(product?.versions?.attributes, product?.attributes[0]),
+        product?.attributes[0]?.key
+      )
+    );
+    setAttriTest(product?.attributes);
+  };
+
+  // Kiểm tra nếu không có id từ cả hai nguồn
+  if (!productId) {
     return (
-      <div 
+      <div
         className="d-flex align-items-center justify-content-center fs-4 text-muted mt-3"
-        style={{ height: "80vh" }} 
+        style={{ height: "80vh" }}
       >
         Product ID not found
       </div>
     );
   }
-  
+
   function formatCurrencyVND(amount) {
     return amount.toLocaleString("vi-VN", {
       style: "currency",
@@ -396,78 +410,79 @@ const handleProductClick = async (id) => {
       {/* <!-- Product Detail --> */}
       <section className="sec-product-detail bg0 p-t-65 p-b-60">
         <div>
-           <div className="row">
-                <div className="col-md-6 col-lg-7 p-b-30">
-                  <div
-                    id="productCarousel"
-                    className="carousel slide carousel-fade"
-                  >
-                    <div className="row m-0">
-                      <div className="col-md-2">
-                        {/* Thumbnail Images as Indicators */}
-                        <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
-                          {ProductDetail &&
-                            ProductDetail?.versions &&
-                            ProductDetail?.versions?.length > 0 &&
-                            ProductDetail?.versions?.map((version, index) => (
-                              <button
-                                key={index}
-                                type="button"
-                                data-bs-target="#productCarousel"
-                                data-bs-slide-to={index}
-                                className={index === 0 ? "active" : ""}
-                                aria-label={`Slide ${index + 1}`}
-                                style={style.wh}
-                              >
-                                <img
-                                  src={version?.images}
-                                  className={
-                                    index === 0
-                                      ? "d-block w-100 h-full"
-                                      : "d-block w-100"
-                                  }
-                                  alt=""
-                                />
-                              </button>
-                            ))}
-                        </div>
-                      </div>
+          <div className="row">
+            <div className="col-md-6 col-lg-7 p-b-30">
+              <div
+                id="productCarousel"
+                className="carousel slide carousel-fade"
+              >
+                <div className="row m-0">
+                  <div className="col-md-2">
+                    {/* Thumbnail Images as Indicators */}
+                    <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
+                      {ProductDetail &&
+                        ProductDetail?.versions &&
+                        ProductDetail?.versions?.length > 0 &&
+                        ProductDetail?.versions?.map((version, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            data-bs-target="#productCarousel"
+                            data-bs-slide-to={index}
+                            className={index === 0 ? "active" : ""}
+                            aria-label={`Slide ${index + 1}`}
+                            style={style.wh}
+                          >
+                            <img
+                              src={version?.image}
+                              className={
+                                index === 0
+                                  ? "d-block w-100 h-full"
+                                  : "d-block w-100"
+                              }
+                              alt=""
+                            />
+                          </button>
+                        ))}
+                    </div>
+                  </div>
 
-                      <div className="col-md-10 p-0">
-                        {/* Large Image Carousel */}
-                        <div className="carousel-inner" style={style.w500}>
-                          {ProductDetail &&
-                            ProductDetail?.versions &&
-                            ProductDetail?.versions?.length > 0 &&
-                            ProductDetail?.versions.map((version, index) => (
-                              <div
-                                className={`carousel-item ${
-                                  index === 0 ? "active" : ""
-                                }`}
-                                key={index}
-                              >
-                                <img
-                                  src={version?.images}
-                                  className="d-block w-100"
-                                  alt={version?.versionName}
-                                />
-                              </div>
-                            ))}
-                        </div>
-                      </div>
+                  <div className="col-md-10 p-0">
+                    {/* Large Image Carousel */}
+                    <div className="carousel-inner" style={style.w500}>
+                      {ProductDetail &&
+                        ProductDetail?.versions &&
+                        ProductDetail?.versions?.length > 0 &&
+                        ProductDetail?.versions.map((version, index) => (
+                          <div
+                            className={`carousel-item ${
+                              index === 0 ? "active" : ""
+                            }`}
+                            key={index}
+                          >
+                            <img
+                              src={version?.image}
+                              className="d-block w-100"
+                              alt={version?.versionName}
+                            />
+                          </div>
+                        ))}
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <div className="col-md-6 col-lg-5 p-b-30">
-                  <div className="p-r-50 p-t-5 p-lr-0-lg">
-                    <h4 className="mtext-105 cl2 js-name-detail p-b-14">
-                      {ProductDetail ? ProductDetail?.product?.productName : ""}
-                    </h4>
+            <div className="col-md-6 col-lg-5 p-b-30">
+              <div className="p-r-50 p-t-5 p-lr-0-lg">
+                <h4 className="mtext-105 cl2 js-name-detail p-b-14">
+                  {ProductDetail ? ProductDetail?.product?.productName : ""}
+                </h4>
 
-                    <span className="mtext-106 cl2">
-                      {" "} 123456
-                      {/* {Products.map((product1, index) =>
+                <span className="mtext-106 cl2">
+                  {" "}
+                  123456
+                  {/* {Products.map((product1, index) =>
                         product1?.id == ProductDetail?.product?.id ? (
                           <span key={index}>
                             {`
@@ -481,62 +496,61 @@ const handleProductClick = async (id) => {
                           </span>
                         ) : null
                       )} */}
-                    </span>
+                </span>
 
-                    <p className="stext-102 cl3 p-t-23">
+                
+                <div className="stext-102 cl3 p-t-23">
                       Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
-                      sản phẩm phụ hợp với bạn nhất <Link>tại đây</Link>
-                    </p>
-
-                    {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
-                    <div className="p-t-33">
-                      {
-                        <AddCartItem
-                          pd={product}
-                          onClick={handleClickItemAttribute}
-                          clickSave={handleClickSaveUpdateVersion}
-                          message={err}
-                        />
-                      }
-
-                 
+                      sản phẩm phụ hợp với bạn nhất <SizeGuideModal/>
                     </div>
 
-                    {/* <!--  --> */}
-                    <div className="flex-w flex-m p-l-100 p-t-40 respon7">
-                      <div className="flex-m bor9 p-r-10 m-r-11">
-                        <Link
-                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
-                          data-tooltip="Add to Wishlist"
-                        >
-                          <i className="zmdi zmdi-favorite"></i>
-                        </Link>
-                      </div>
+                {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
+                <div className="p-t-33">
+                  {
+                    <AddCartItem
+                      pd={product}
+                      onClick={handleClickItemAttribute}
+                      clickSave={handleClickSaveUpdateVersion}
+                      message={err}
+                    />
+                  }
+                </div>
 
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Facebook"
-                      >
-                        <i className="fa fa-facebook"></i>
-                      </Link>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Twitter"
-                      >
-                        <i className="fa fa-twitter"></i>
-                      </Link>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Google Plus"
-                      >
-                        <i className="fa fa-google-plus"></i>
-                      </Link>
-                    </div>
+                {/* <!--  --> */}
+                <div className="flex-w flex-m p-l-100 p-t-40 respon7">
+                  <div className="flex-m bor9 p-r-10 m-r-11">
+                    <Link
+                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
+                      data-tooltip="Add to Wishlist"
+                    >
+                      <i className="zmdi zmdi-favorite"></i>
+                    </Link>
                   </div>
+
+                  <Link
+                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                    data-tooltip="Facebook"
+                  >
+                    <i className="fa fa-facebook"></i>
+                  </Link>
+
+                  <Link
+                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                    data-tooltip="Twitter"
+                  >
+                    <i className="fa fa-twitter"></i>
+                  </Link>
+
+                  <Link
+                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                    data-tooltip="Google Plus"
+                  >
+                    <i className="fa fa-google-plus"></i>
+                  </Link>
                 </div>
               </div>
+            </div>
+          </div>
 
           <div className="bor10 m-t-50 p-t-43 p-b-40">
             {/* <!-- Tab01 --> */}
@@ -608,49 +622,22 @@ const handleProductClick = async (id) => {
                   <div className="row">
                     <div className="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
                       <ul className="p-lr-28 p-lr-15-sm">
-                        <li className="flex-w flex-t p-b-7">
-                          <span className="stext-102 cl3 size-205">Weight</span>
-
-                          <span className="stext-102 cl6 size-206">
-                            0.79 kg
-                          </span>
-                        </li>
-
-                        <li className="flex-w flex-t p-b-7">
-                          <span className="stext-102 cl3 size-205">
-                            Dimensions
-                          </span>
-
-                          <span className="stext-102 cl6 size-206">
-                            110 x 33 x 100 cm
-                          </span>
-                        </li>
-
-                        <li className="flex-w flex-t p-b-7">
-                          <span className="stext-102 cl3 size-205">
-                            Materials
-                          </span>
-
-                          <span className="stext-102 cl6 size-206">
-                            60% cotton
-                          </span>
-                        </li>
-
-                        <li className="flex-w flex-t p-b-7">
-                          <span className="stext-102 cl3 size-205">Color</span>
-
-                          <span className="stext-102 cl6 size-206">
-                            Black, Blue, Grey, Green, Red, White
-                          </span>
-                        </li>
-
-                        <li className="flex-w flex-t p-b-7">
-                          <span className="stext-102 cl3 size-205">Size</span>
-
-                          <span className="stext-102 cl6 size-206">
-                            XL, L, M, S
-                          </span>
-                        </li>
+                        {ProductDetail?.attributes?.length > 0 &&
+                          ProductDetail.attributes.map((attribute, index) => (
+                            <li className="flex-w flex-t p-b-7" key={index}>
+                              <span className="stext-102 cl3 size-205">
+                                {attribute.key}
+                              </span>
+                              <div className="stext-102 cl6 size-206">
+                                {attribute.values.length > 0 &&
+                                  attribute.values.map((value, valueIndex) => (
+                                    <span className="me-2" key={valueIndex}>
+                                      {value}
+                                    </span>
+                                  ))}
+                              </div>
+                            </li>
+                          ))}
                       </ul>
                     </div>
                   </div>
@@ -799,8 +786,8 @@ const handleProductClick = async (id) => {
                   <div className="block2-pic hov-img0">
                     <img src={prod12} alt="IMG-PRODUCT" />
 
-                   {/* Quick View */}
-                   <QuickViewProdDetail />
+                    {/* Quick View */}
+                    <QuickViewProdDetail />
                   </div>
 
                   <div className="block2-txt flex-w flex-t p-t-14">
@@ -838,8 +825,8 @@ const handleProductClick = async (id) => {
               {/* ADD PRODUCT chỗ này */}
             </div>
           </div>
-            {/* <!-- Load more --> */}
-            <div className="flex-c-m flex-w w-full p-t-45">
+          {/* <!-- Load more --> */}
+          <div className="flex-c-m flex-w w-full p-t-45">
             <Link
               href="#"
               className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04"

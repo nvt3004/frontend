@@ -170,7 +170,7 @@ const SpeechToText = ({ speechText }) => {
         </div>
       )}
 
-      <style jsx global>{`
+      <style>{`
         @keyframes pulse {
           0%,
           100% {

@@ -81,7 +81,7 @@ const menus = [
         label: "Permissions",
         icon: <UserGear  />,
         subItems: [
-          { id: "10", label: "New permissions", link: "/admin/permission/add" },
+          { id: "10", label: "New permissions", link: "/admin/permission/new" },
           { id: "11", label: "Manage permissions", link: "/admin/permission/manage" },
         ],
       }

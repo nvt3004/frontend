@@ -60,7 +60,7 @@ const AttributeItem = ({ pd, onClick, clickSave = () => {}, message }) => {
         </span>
       </div>
 
-      <div class="modal-footer">
+      <div className="modal-footer">
         <button
           type="button"
           className="btn stext-101 cl0  bg2 bor14 text-black hov1 trans-04 pointer rounded-0"
