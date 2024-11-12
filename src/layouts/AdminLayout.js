@@ -73,8 +73,11 @@ const menus = [
         id: "8",
         label: "Warehouse",
         icon: <Package />,
-        link: "/admin/warehouse/stock-in",
-        subItems: null,
+        // link: "/admin/warehouse/stock-in",
+        subItems: [
+          {id: '12', label: 'Stock-in', link: "/admin/warehouse/stockin"},
+          {id: '13', label: 'Receipt list', link: "/admin/warehouse/manage"}
+        ],
       },
       {
         id: "9",

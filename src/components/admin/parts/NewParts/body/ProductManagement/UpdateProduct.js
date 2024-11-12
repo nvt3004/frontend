@@ -238,59 +238,65 @@ const UpdateProduct = () => {
         )
     }
     const handleAddNewVersion = async () => {
-
         let isValid = await trigger(['addNewSize', 'addNewColor', 'addNewRetailPrice', 'addNewWholesalePrice']);
 
-        if (imageVersionPreview) {
-            setValue('imageVersion', await FileToBase64(imageVersionPreview));
-        } else {
+        if (!imageVersionPreview) {
             setError('imageVersion', { type: 'manual', message: 'Version image is required!' });
-        }
-
-        if (isValid) {
-            const data = getValues();
-
-            const formattedData = {
-                idProduct: selectedProduct?.id,
-                versionName: `${selectedProduct?.productName}-ver-${getDate()}`,
-                retailPrice: parseFloat(data.addNewRetailPrice),
-                wholesalePrice: parseFloat(data.addNewWholesalePrice),
-                image: {
-                    name: data?.imageVersion,
-                },
-                attributes: [
-                    {
-                        id: data.addNewSize?.id,
-                        key: "size",
-                        value: data.addNewSize?.name
-                    },
-                    {
-                        id: data.addNewColor?.id,
-                        key: "color",
-                        value: data.addNewColor?.name
-                    }
-                ]
-            };
-
-            console.log('add new value: ', formattedData);
-            axiosInstance.post('/staff/version/add', formattedData).then(
-                (response) => {
-                    if (response?.data?.code === 200) {
-                        toast.success('Added product version successfully');
-                        setOpenNewVersion(false);
-                        reset(['addNewSize', 'addNewColor', 'addNewRetailPrice', 'addNewWholesalePrice']);
-                        setImageVersionPreview(null)
-                        handleRefreshSelectedProduct();
-                    } else {
-                        toast.error(`Couldn't add this product version. Please try again !`);
-                    }
-                }
-            );
+            isValid = false;
         } else {
-            console.log('add new value: false');
-
+            setValue('imageVersion', await FileToBase64(imageVersionPreview));
         }
+
+        if (!isValid) {
+            toast.error("Please fill all required fields correctly.");
+            return;
+        }
+
+        const data = getValues();
+
+        const formattedData = {
+            idProduct: selectedProduct?.id,
+            versionName: `${selectedProduct?.productName}-ver-${getDate()}`,
+            retailPrice: parseFloat(data.addNewRetailPrice),
+            wholesalePrice: parseFloat(data.addNewWholesalePrice),
+            image: {
+                name: data?.imageVersion,
+            },
+            attributes: [
+                {
+                    id: data.addNewSize?.id,
+                    key: "size",
+                    value: data.addNewSize?.name
+                },
+                {
+                    id: data.addNewColor?.id,
+                    key: "color",
+                    value: data.addNewColor?.name
+                }
+            ]
+        };
+
+        console.log("Data to be sent:", formattedData); // Log dữ liệu gửi lên API
+
+        axiosInstance.post('/staff/version/add', formattedData).then(
+            (response) => {
+                if (response?.data?.code === 200) {
+                    toast.success('Added product version successfully');
+                    setOpenNewVersion(false);
+                    reset(['addNewSize', 'addNewColor', 'addNewRetailPrice', 'addNewWholesalePrice']);
+                    setImageVersionPreview(null);
+                    handleRefreshSelectedProduct();
+                } else {
+                    console.error("API Error:", response.data);
+                    toast.error(response.data?.message || `Couldn't add this product version. Please try again!`);
+                }
+            }
+        ).catch((error) => {
+            console.error("API Error:", error);
+            toast.error("An error occurred while adding the product version.");
+        });
     }
+
     const handleUpdateVersion = async () => {
         const version = selectedProduct?.versions.find(item => item?.id === versionID);
         console.log('found version: ', version);
@@ -538,7 +544,7 @@ const UpdateProduct = () => {
                                                     <div className='d-flex justify-content-center'>
                                                         <div className='d-flex justify-content-around' style={{ minWidth: '350px' }}>
                                                             <CustomButton btnBG={'warning'} btnName={'Add new version'} btnType={'button'} textColor={'text-white'}
-                                                                handleClick={() => { setOpenNewVersion(true) }} />
+                                                                handleClick={() => { setOpenNewVersion(true); setVersionID(null); setImageVersionPreview(null); }} />
                                                         </div>
                                                     </div>
                                                 </td>

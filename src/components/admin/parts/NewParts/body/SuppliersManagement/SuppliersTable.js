@@ -59,12 +59,13 @@ const SuppliersTable = () => {
     const handleGetSuppliersAPI = () => {
         axiosInstance.get(`/staff/suppliers?size=10&page=${currentPage}`).then(
             (response) => {
-                setSuppliers(response?.data?.data?.content);
+                const sortedSuppliers = response?.data?.data?.content.sort((a, b) => b.supplierId + a.supplierId);
+                setSuppliers(sortedSuppliers);
                 setTotalPage(response?.data?.data?.totalPages);
                 setTotalElements(response?.data?.data?.totalElements);
             }
         );
-    }
+    }    
     const handleSetPage = (page) => {
         if (page !== currentPage) {
             setCurrentPage(page);
@@ -82,10 +83,14 @@ const SuppliersTable = () => {
     useEffect(
         () => {
             handleGetSuppliersAPI();
-            console.log('is edit: ' + isEdit);
-            console.log('is new: ' + isNew);
         }, [currentPage, isEdit, isNew]
     );
+    useEffect(
+        () => {
+            console.log('supplier list: ', suppliers);
+            
+        }, [suppliers]
+    )
 
     const { register, formState: { errors }, setValue, reset, getValues, trigger } = useForm();
 
@@ -106,11 +111,12 @@ const SuppliersTable = () => {
         ]);
 
         console.log('is valid: ' + isValid);
+        setValue('isActive', true);
         const supplier = getValues();
         if (!isValid) {
             toast.error('Form is not valid !!');
         } else {
-            axiosInstance.put(`/staff/suppliers?id=${supplier?.supplierId}`, supplier).then(
+            axiosInstance.put(`/staff/suppliers?id=${supplier?.id}`, supplier).then(
                 (response) => {
                     if (response?.data?.errorCode === 200) {
                         toast.success(`Supplier updated successfully !!`);
@@ -191,7 +197,7 @@ const SuppliersTable = () => {
     useEffect(
         () => {
             if (selectedSupplier) {
-                setValue("supplierId", selectedSupplier?.supplierId);
+                setValue("id", selectedSupplier?.supplierId);
             }
         }, [selectedSupplier]
     );

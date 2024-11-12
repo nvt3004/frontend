@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Form, InputGroup, Table } from 'react-bootstrap';
+import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
 import { FaClipboardList, FaSearch, FaFileExport } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import axiosInstance from '../../../../../../services/axiosConfig';
 import CustomButton from '../../component/CustomButton';
-import { TbTrashXFilled } from "react-icons/tb";
-import { MdModeEdit } from "react-icons/md";
 import Select from 'react-select'
 import Swal from 'sweetalert2';
-import { CiEdit } from "react-icons/ci";
+import { MdModeEdit } from 'react-icons/md';
+import { FaTrash } from 'react-icons/fa';
+import { HiCheck } from 'react-icons/hi';
+import { ImCancelCircle } from 'react-icons/im';
 
 const OrderTable = () => {
     // START GET orders
@@ -20,7 +21,10 @@ const OrderTable = () => {
         axiosInstance.get(`/staff/orders?page=${currentPage}&size=5`).then(
             (response) => {
                 if (response?.data?.errorCode === 200) {
-                    setOrders(response?.data?.data?.content);
+                    // Sắp xếp danh sách orders theo orderId giảm dần
+                    const sortedOrders = response.data.data.content.sort((a, b) => b.orderId - a.orderId);
+
+                    setOrders(sortedOrders);
                     setTotalPage(response?.data?.data?.totalPages);
                     setTotalElements(response?.data?.data?.totalElements);
                 } else {
@@ -32,7 +36,7 @@ const OrderTable = () => {
     useEffect(
         () => {
             handleGetOrderAPI();
-        }, []
+        }, [currentPage]
     );
     useEffect(
         () => {
@@ -41,27 +45,41 @@ const OrderTable = () => {
             }
         }, [orders]
     )
+    const handleSetPage = (page) => {
+        if (page !== currentPage) {
+            setCurrentPage(page);
+        }
+    }
+    const paginationItems = [];
+    for (let number = 0; number < totalPage; number++) {
+        paginationItems.push(
+            <Pagination.Item key={number} active={number === currentPage}
+                onClick={() => handleSetPage(number)}>
+                {number + 1}
+            </Pagination.Item>
+        );
+    }
     // END GET orders
 
     // START GET status
-    const [selectedStatusOption, setSelectedStatusOption] = useState(null);
     const customReactSelectOrderStatusOptionsStyles = {
         option: (provided, { data, isFocused, isSelected }) => ({
             ...provided,
             backgroundColor: isSelected
-                ? data.color || '#E0E0E0' // Màu nền khi được chọn, xám nếu không có
+                ? data.color || '#E0E0E0'
                 : isFocused
-                    ? `${data.color || '#E0E0E0'}99`  // Màu nhạt hơn khi hover
-                    : '#fff',                         // Mặc định là trắng nếu không được chọn hoặc hover
-            color: '#000', // Màu chữ khi chọn hoặc hover
+                    ? `${data.color || '#E0E0E0'}99`
+                    : '#fff',
+            color: '#000',
             cursor: 'pointer'
         }),
         singleValue: (provided, { data }) => ({
             ...provided,
-            backgroundColor: data.color || '#E0E0E0', // Màu nền cho giá trị đã chọn
-            color: '#000',      // Màu chữ trắng nếu có màu nền, đen nếu không
+            backgroundColor: data.color || '#E0E0E0',
+            color: '#000',
             padding: '2px 8px',
-            borderRadius: '4px'
+            borderRadius: '4px',
+            opacity: 0.8,
         }),
     };
 
@@ -114,17 +132,119 @@ const OrderTable = () => {
         isOpen: false,
         value: 0
     });
-    const [orderDetails, setOrderDetails] = useState(null);
+    const [orderDetails, setOrderDetails] = useState(
+        {
+            orderId: '',
+            orderDetail: [
+                {
+                    orderDetailId: '',
+                    product: [
+                        {
+                            productID: '',
+                            productName: '',
+                            productVersionID: '',
+                            productAttributes: {
+                                colors: [
+                                    {
+                                        value: '',
+                                        label: ''
+                                    }
+                                ],
+                                sizes: [
+                                    {
+                                        value: '',
+                                        label: ''
+                                    }
+                                ]
+                            },
+                            orderVersionnAttribute: {
+                                color: {
+                                    value: '',
+                                    label: ''
+                                },
+                                size: {
+                                    value: '',
+                                    label: ''
+                                },
+                            }
+
+                        }
+                    ]
+                }
+            ]
+        }
+    );
     const handleGetOrderDetail = () => {
         axiosInstance.get(`/staff/orders/${orderID?.value}`).then(
             (response) => {
                 if (response?.data?.errorCode === 200) {
-                    setOrderDetails(response?.data?.data?.orderDetail);
+                    const temp = response?.data?.data?.orderDetail[0];
+                    console.log("temp:", temp);
+                    console.log("temp.productDetails:", temp?.productDetails);
+
+                    if (temp?.productDetails.length > 0) {
+
+                    }
+                    setOrderDetails({
+                        orderId: temp?.orderId,
+                        orderDetail: temp?.productDetails.map((item) => ({
+                            orderDetailId: item.orderDetailId,
+                            product: [
+                                {
+                                    productID: item.productId,
+                                    productName: item?.productName,
+                                    productVersionID: item.productVersionId,
+                                    productAttributes: {
+                                        colors: item.attributeProducts && item.attributeProducts[0] && item.attributeProducts[0].colors
+                                            ? Array.from(
+                                                new Set(item.attributeProducts[0].colors.map(color => color.colorId))
+                                            ).map(uniqueColorId => {
+                                                return item.attributeProducts[0].colors.find(color => color.colorId === uniqueColorId);
+                                            }).map(color => ({
+                                                value: color.colorId,
+                                                label: color.color
+                                            }))
+                                            : [],
+
+                                        sizes: item.attributeProducts && item.attributeProducts[0] && item.attributeProducts[0].sizes
+                                            ? Array.from(
+                                                new Set(item.attributeProducts[0].sizes.map(size => size.sizeId))
+                                            ).map(uniqueSizeId => {
+                                                return item.attributeProducts[0].sizes.find(size => size.sizeId === uniqueSizeId);
+                                            }).map(size => ({
+                                                value: size.sizeId,
+                                                label: size.size
+                                            }))
+                                            : []
+                                    },
+                                    orderVersionAttribute: {
+                                        color: {
+                                            value: item.attributeProductVersion?.color?.colorId,
+                                            label: item.attributeProductVersion?.color?.color,
+                                        },
+                                        size: {
+                                            value: item.attributeProductVersion?.size?.sizeId,
+                                            label: item.attributeProductVersion?.size?.size,
+                                        }
+                                    }
+                                    ,
+                                    price: item.price,
+                                    quantity: item.quantity,
+                                    imageUrl: item.imageUrl,
+                                    description: item.description,
+                                    total: item.total
+                                }
+                            ]
+                        }))
+                    });
                 } else {
-                    toast.error('Could not get details of order. Please try again !');
+                    toast.error('Could not get details of order. Please try again!');
                 }
             }
-        );
+        ).catch(error => {
+            console.error("Error fetching order details:", error);
+            toast.error("An error occurred while fetching order details.");
+        });
     };
     useEffect(() => {
         if (orderID.isOpen && orderID.value) {
@@ -136,7 +256,7 @@ const OrderTable = () => {
         }
     }, [orderID.isOpen, orderID.value]);
     const handleChangeStatus = (option, orderID) => {
-        if ((option?.value < 4)) {
+        if ((option?.value < 4 || option?.value === 5)) {
             Swal.fire(
                 {
                     title: 'Confirm to change status',
@@ -167,7 +287,72 @@ const OrderTable = () => {
             toast.warning(`You can not to set the status to ${option?.label.toLowerCase()}`)
         }
     }
+    useEffect(
+        () => {
+            if (orderDetails) {
+                console.log('order details: ', orderDetails);
+            }
+        }, [orderDetails]
+    );
+
+    const [isEditVersion, setEditVersion] = useState({ isEdit: '', orderDetailsID: '' });
+    const handleSaveVersionChanges = (orderDetail) => {
+        const { orderDetailId, product } = orderDetail;
+        const { productID, orderVersionAttribute } = product[0];
+        const colorId = orderVersionAttribute.color?.value;
+        const sizeId = orderVersionAttribute.size?.value;
+
+        if (!colorId || !sizeId) {
+            toast.error("Please select both color and size.");
+            return;
+        }
+
+        console.log("Selected colorId:", colorId);
+        console.log("Selected sizeId:", sizeId);
+
+        axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`)
+            .then((response) => {
+                console.log("API Response:", response);
+                if (response.data?.errorCode === 200) {
+                    toast.success("Updated order detail successfully!");
+                    handleGetOrderDetail();
+
+                    setEditVersion({ isEdit: false, orderDetailsID: null });
+                } else {
+                    console.log("Error Response:", response.data);
+                    toast.error(response.data?.errorMessage || "Could not update order detail. Please try again!");
+                }
+            })
+            .catch((error) => {
+                console.error("Error updating order detail:", error);
+                toast.error("An error occurred while updating order detail.");
+            });
+    };
+
+    const handleQuantityChange = (orderDetailId, currentQuantity, change) => {
+        const newQuantity = currentQuantity + change;
+        if (newQuantity < 1) {
+            toast.error("Quantity cannot be less than 1.");
+            return;
+        }
+
+        axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&quantity=${newQuantity}`)
+            .then((response) => {
+                if (response.data?.errorCode === 200) {
+                    toast.success("Updated quantity successfully!");
+                    handleGetOrderDetail();
+                } else {
+                    toast.error(response.data?.errorMessage || "Could not update quantity. Please try again!");
+                }
+            })
+            .catch((error) => {
+                console.error("Error updating quantity:", error);
+                toast.error("An error occurred while updating quantity.");
+            });
+    };
+
     // END HANDLE order
+
     return (
         <div>
             <div className='font-14'>
@@ -232,17 +417,158 @@ const OrderTable = () => {
                                                     />
                                                 </td>
                                                 <td>
-                                                    <CustomButton btnBG={'secondary'} btnName={'Details'} textColor={'text-light'}
-                                                        handleClick={() => { setOrderID({ isOpen: !orderID?.isOpen, value: order?.orderId }) }} />
+                                                    {
+                                                        orderID?.isOpen && orderID?.value === order?.orderId ? (
+                                                            <CustomButton btnBG={'secondary'} btnName={'Details'} textColor={'text-light'}
+                                                                handleClick={() => { setOrderID({ isOpen: false, value: null }) }} />
+                                                        ) : (
+                                                            <CustomButton btnBG={'secondary'} btnName={'Details'} textColor={'text-light'}
+                                                                handleClick={() => { setOrderID({ isOpen: true, value: order?.orderId }) }} />
+                                                        )
+                                                    }
                                                 </td>
                                             </tr>
                                             {(orderID?.value === order?.orderId && orderDetails) &&
                                                 (
                                                     <tr>
                                                         <td colSpan={7}>
-                                                            <Table>
+                                                            <Table hover striped>
+                                                                <thead>
+                                                                    <th>#</th>
+                                                                    <th style={{ width: '450px' }}>Product</th>
+                                                                    <th style={{ width: '200px' }}></th>
+                                                                    <th colSpan={2} className='text-center'>Attributes</th>
+                                                                    <th>Unit price</th>
+                                                                    <th>Quantity</th>
+                                                                    <th>Total</th>
+                                                                    <th colSpan={2}></th>
+                                                                </thead>
                                                                 <tbody>
-
+                                                                    {
+                                                                        orderDetails?.orderDetail?.map((orderDetail, index) => (
+                                                                            orderDetail?.product.map((item) => (
+                                                                                <tr key={index} className='custom-table'>
+                                                                                    <td>{index + 1}</td>
+                                                                                    <td>{item?.productName}</td>
+                                                                                    <td className='d-flex justify-content-center'>
+                                                                                        <img src={item?.imageUrl} alt={item?.productName} style={{ maxWidth: '120px', height: 'auto' }} />
+                                                                                    </td>
+                                                                                    {
+                                                                                        isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                            // Nếu đang ở chế độ chỉnh sửa
+                                                                                            <React.Fragment>
+                                                                                                <td>
+                                                                                                    <Select
+                                                                                                        options={item?.productAttributes?.colors}
+                                                                                                        value={item?.orderVersionAttribute?.color}
+                                                                                                        onChange={(selectedOption) => {
+                                                                                                            // Cập nhật color trong orderDetails cho sản phẩm hiện tại
+                                                                                                            setOrderDetails((prevOrderDetails) => {
+                                                                                                                const updatedOrderDetails = { ...prevOrderDetails };
+                                                                                                                const targetDetail = updatedOrderDetails.orderDetail.find(detail => detail.orderDetailId === orderDetail.orderDetailId);
+                                                                                                                if (targetDetail) {
+                                                                                                                    const targetProduct = targetDetail.product.find(p => p.productID === item.productID);
+                                                                                                                    if (targetProduct) {
+                                                                                                                        targetProduct.orderVersionAttribute.color = selectedOption;
+                                                                                                                    }
+                                                                                                                }
+                                                                                                                return updatedOrderDetails;
+                                                                                                            });
+                                                                                                        }}
+                                                                                                    />
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <Select
+                                                                                                        options={item?.productAttributes?.sizes}
+                                                                                                        value={item?.orderVersionAttribute?.size}
+                                                                                                        onChange={(selectedOption) => {
+                                                                                                            // Cập nhật size trong orderDetails cho sản phẩm hiện tại
+                                                                                                            setOrderDetails((prevOrderDetails) => {
+                                                                                                                const updatedOrderDetails = { ...prevOrderDetails };
+                                                                                                                const targetDetail = updatedOrderDetails.orderDetail.find(detail => detail.orderDetailId === orderDetail.orderDetailId);
+                                                                                                                if (targetDetail) {
+                                                                                                                    const targetProduct = targetDetail.product.find(p => p.productID === item.productID);
+                                                                                                                    if (targetProduct) {
+                                                                                                                        targetProduct.orderVersionAttribute.size = selectedOption;
+                                                                                                                    }
+                                                                                                                }
+                                                                                                                return updatedOrderDetails;
+                                                                                                            });
+                                                                                                        }}
+                                                                                                    />
+                                                                                                </td>
+                                                                                            </React.Fragment>
+                                                                                        ) : (
+                                                                                            // Nếu đang ở chế độ xem
+                                                                                            <React.Fragment>
+                                                                                                <td>{item?.orderVersionAttribute?.color?.label}</td>
+                                                                                                <td>{item?.orderVersionAttribute?.size?.label}</td>
+                                                                                            </React.Fragment>
+                                                                                        )
+                                                                                    }
+                                                                                    <td>{`${item?.price} VND`}</td>
+                                                                                    <td>
+                                                                                        {
+                                                                                            order?.statusName === 'Pending' ? (
+                                                                                                <div className='d-flex align-items-center'>
+                                                                                                    <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.quantity, -1)}>
+                                                                                                        -
+                                                                                                    </Button>
+                                                                                                    <span className="mx-2">{item?.quantity}</span>
+                                                                                                    <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.quantity, 1)}>
+                                                                                                        +
+                                                                                                    </Button>
+                                                                                                </div>
+                                                                                            ) : (
+                                                                                                item?.quantity
+                                                                                            )
+                                                                                        }
+                                                                                    </td>
+                                                                                    <td>{`${item?.total} VND`}</td>
+                                                                                    {
+                                                                                        order?.statusName === 'Pending' &&
+                                                                                        (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                            <React.Fragment>
+                                                                                                <td>
+                                                                                                    <CustomButton
+                                                                                                        btnBG={'success'}
+                                                                                                        btnType={'button'}
+                                                                                                        textColor={'text-white'}
+                                                                                                        btnName={<HiCheck />}
+                                                                                                        handleClick={() => handleSaveVersionChanges(orderDetail)}
+                                                                                                    />
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <CustomButton
+                                                                                                        btnBG={'danger'}
+                                                                                                        btnType={'button'}
+                                                                                                        textColor={'text-white'}
+                                                                                                        btnName={<ImCancelCircle />}
+                                                                                                        handleClick={() => setEditVersion({ isEdit: false, orderDetailsID: null })}
+                                                                                                    />
+                                                                                                </td>
+                                                                                            </React.Fragment>
+                                                                                        ) : (
+                                                                                            <React.Fragment>
+                                                                                                <td>
+                                                                                                    <CustomButton btnBG={'danger'} btnType={'button'} textColor={'text-white'} btnName={<FaTrash />} />
+                                                                                                </td>
+                                                                                                <td>
+                                                                                                    <CustomButton
+                                                                                                        btnBG={'warning'}
+                                                                                                        btnType={'button'}
+                                                                                                        textColor={'text-white'}
+                                                                                                        btnName={<MdModeEdit />}
+                                                                                                        handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
+                                                                                                    />
+                                                                                                </td>
+                                                                                            </React.Fragment>
+                                                                                        ))
+                                                                                    }
+                                                                                </tr>
+                                                                            ))
+                                                                        ))
+                                                                    }
                                                                 </tbody>
                                                             </Table>
                                                         </td>
@@ -255,6 +581,16 @@ const OrderTable = () => {
                             }
                         </tbody>
                     </Table>
+                    <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
+                        <p className='font-13'>{`${(currentPage + 1) * 5 <= totalElements ? (currentPage + 1) * 5 : totalElements} of ${totalElements} `}
+                            <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span>
+                        </p>
+                        <Pagination className='border-0'>
+                            <Pagination.First>{`<`}</Pagination.First>
+                            {paginationItems}
+                            <Pagination.Last>{`>`}</Pagination.Last>
+                        </Pagination>
+                    </div>
                 </div>
             </div>
             <div>

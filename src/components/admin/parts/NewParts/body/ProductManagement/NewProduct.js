@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, version } from 'react';
-import { Button, Form, InputGroup, Table } from 'react-bootstrap';
+import { Button, Form, InputGroup, Modal, Table } from 'react-bootstrap';
 import { RiAddBoxFill } from "react-icons/ri";
 import CustomButton from '../../component/CustomButton';
 import suppliers from '../SuppliersManagement/data';
@@ -19,14 +19,14 @@ const NewProduct = () => {
     const location = useLocation();
 
     const [categories, setCategories] = useState([]);
-    useEffect(() => {
+    const handleGetCategory = () => {
         axiosInstance.get('/home/category/dashboard/get-all').then(
             (response) => {
                 if (response?.data?.code === 200) {
                     let list = response?.data?.data?.map(item => ({
                         value: item?.categoryId,
                         label: item?.categoryName,
-                    })).sort((a, b) => a.value - b.value);
+                    })).sort((a, b) => b.value - a.value);
 
                     setCategories(list);
                 } else {
@@ -34,6 +34,9 @@ const NewProduct = () => {
                 }
             }
         );
+    }
+    useEffect(() => {
+        handleGetCategory();
     }, []);
 
     const [attributes, setAttributes] = useState({
@@ -79,7 +82,7 @@ const NewProduct = () => {
     }, []);
 
     const defaultValues = location?.state?.product;
-    const { register, trigger, setValue, getValues, formState: { errors }, setError, control, watch, reset } = useForm({ defaultValues });
+    const { register, trigger, setValue, getValues, formState: { errors }, setError, control, watch, reset, handleSubmit } = useForm({ defaultValues });
 
     const [selectedSizes, setSelectedSize] = useState([]);
     const [selectedColors, setSelectedColor] = useState([]);
@@ -101,7 +104,7 @@ const NewProduct = () => {
                             value: color?.label
                         }
                     ],
-                    images: [], retailPrice: "", wholesalePrice: ""
+                    images: [],
                 });
             });
         });
@@ -177,7 +180,7 @@ const NewProduct = () => {
         }, [sizes, colors]
     );
 
-    const handleSubmit = async () => {
+    const handleSubmitAdd = async () => {
         if (mainImage) {
             setValue('image', await FileToBase64(mainImage));
         } else {
@@ -277,9 +280,35 @@ const NewProduct = () => {
         }, [selectedProduct]
     );
 
-    const handleSubmitUpdate = () => {
-        console.log('values: ', getValues());
+    const [isModal, setIsModal] = useState({ cate: false, size: false, color: false });
+    const handleOpenCateModal = () => {
+        setIsModal({ cate: !isModal.cate });
     }
+    const handleCancelCateModal = () => {
+        setIsModal({ cate: !isModal.cate });
+
+    }
+    const handleSubmitAddNewCategory = async () => {
+        let valid = await trigger('categoryNameNew');
+        if (valid) {
+            const categoryName = getValues('categoryNameNew') || '';
+            axiosInstance.post("/home/category/add", { categoryName }).then((response) => {
+                if (response?.status === 200) {
+                    toast.success('Added new category successfully!');
+                    handleCancelCateModal();
+                    handleGetCategory();
+                    reset({ categoryNameNew: '' });
+                } else {
+                    toast.error('Failed to add new category. Please check for errors and try again!');
+                }
+            }).catch((error) => {
+                console.error('Error adding category:', error);
+                toast.error('An error occurred while adding the category.');
+            });
+        } else {
+            setError('categoryNameNew', { type: 'manual', message: 'Category name cannot be null!' });
+        }
+    };
 
     return (
         <div className='mt-2'>
@@ -290,7 +319,7 @@ const NewProduct = () => {
                         <p className='fw-medium'>{`Add a new product to your store`}</p>
                     </div>
                     <div>
-                        <CustomButton btnType={'button'} btnBG={'primary'} btnName={'Publish product'} textColor={'text-white'} handleClick={handleSubmit} />
+                        <CustomButton btnType={'button'} btnBG={'primary'} btnName={'Publish product'} textColor={'text-white'} handleClick={handleSubmitAdd} />
                     </div>
                 </div>
                 <div className='d-flex justify-content-between custom-form'>
@@ -408,7 +437,7 @@ const NewProduct = () => {
                         </div>
                     </div>
                     <div className='col-3'>
-                        <Organize errors={errors} categories={categories} control={control} />
+                        <Organize errors={errors} categories={categories} control={control} handleOpenCateModal={() => { handleOpenCateModal() }} />
                         <Variants
                             sizes={attributes?.sizes} colors={attributes?.colors}
                             control={control} errors={errors}
@@ -417,6 +446,28 @@ const NewProduct = () => {
                 </div>
                 <div>
                     <ToastContainer />
+                    <div>
+                        <Form>
+                            <Modal show={isModal.cate}>
+                                <Modal.Body>
+                                    <Form.Control
+                                        type='text'
+                                        placeholder={`Category's name. . .`}
+                                        {...register("categoryNameNew", { required: true })}
+                                    />
+                                    {errors?.categoryNameNew && (
+                                        <p className='fw-bold text-danger'>Category name is required</p>
+                                    )}
+                                </Modal.Body>
+                                <Modal.Footer>
+                                    <div className='d-flex justify-content-between' style={{ minWidth: '140px' }}>
+                                        <CustomButton btnBG={'success'} btnName={'Save'} handleClick={handleSubmitAddNewCategory} />
+                                        <CustomButton btnBG={'danger'} btnName={'Cancel'} handleClick={handleCancelCateModal} />
+                                    </div>
+                                </Modal.Footer>
+                            </Modal>
+                        </Form>
+                    </div>
                 </div>
             </div>
         </div>

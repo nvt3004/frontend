@@ -4,7 +4,7 @@ import Select from 'react-select';
 import { motion } from 'framer-motion';
 import { Controller } from 'react-hook-form';
 
-const Organize = ({ categories, errors, control, cateDefault }) => {
+const Organize = ({ categories, errors, control, cateDefault, handleOpenCateModal }) => {
     return (
         <div>
             <div className='bg-white rounded-2 border py-2 px-4 mb-4'>
@@ -14,7 +14,7 @@ const Organize = ({ categories, errors, control, cateDefault }) => {
                         <div className='d-flex align-items-center mb-1'>
                             <Form.Label className='fs-6 fw-medium mb-0'>Category</Form.Label>
                             <motion.label className='ms-3 mb-0 font-12 fw-medium text-primary'
-                                whileHover={{ opacity: 0.8, scale: 1.08 }} >New category</motion.label>
+                                whileHover={{ opacity: 0.8, scale: 1.08 }} onClick={handleOpenCateModal}>New category</motion.label>
                         </div>
                         <Controller
                             name='categories'
