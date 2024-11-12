@@ -118,7 +118,7 @@ const UserTable = () => {
 
   // ********** Cấu hình table*********
   const columns = [
-    { title: "Username", dataIndex: "username", key: "name" },
+    { title: "Email / Phone number", dataIndex: "username", key: "name" },
     { title: "Fullname", dataIndex: "fullname", key: "age" },
     { title: "Birthday", dataIndex: "birthday", key: "birthday" },
     {
@@ -504,7 +504,7 @@ const UserTable = () => {
 
               <div className="row mb-4">
                 <label className="form-label" htmlFor="basic-default-email">
-                  Username <span className="text-danger">*</span>
+                  Email / Phone number <span className="text-danger">*</span>
                 </label>
                 <div className="input-group input-group-merge">
                   <input

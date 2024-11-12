@@ -275,7 +275,10 @@ const OrderTable = () => {
                                 if (response.data?.errorCode === 200) {
                                     toast.success('Updated order status successfully !');
                                     handleGetOrderAPI();
-                                } else {
+                                } else if (response.data?.errorCode === 400) {
+                                    toast.error(response.data?.message);
+                                }
+                                else {
                                     toast.error('Could not update status of the order. Please try again !');
                                 }
                             }

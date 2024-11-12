@@ -146,6 +146,7 @@ const SuppliersTable = () => {
         ]);
 
         console.log('is valid: ' + isValid);
+        setValue('isActive', true);
         const supplier = getValues();
         if (!isValid) {
             toast.error('Form is not valid !!');

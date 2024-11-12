@@ -471,7 +471,7 @@ const UpdateProduct = () => {
                                                                         )
                                                                     }
                                                                 </td>
-                                                                {selectedProduct?.versions.length > 1 && (
+                                                                {!selectedProduct?.versions.length === 1 && (
                                                                     <td>
                                                                         <CustomButton btnType={'button'}
                                                                             btnBG={'danger'} btnName={<FaTrash />}
