@@ -18,7 +18,7 @@ import { incrementCart } from "../../store/actions/cartActions";
 import heart1 from "../../assets/images/icons/icon-heart-01.png";
 import heart2 from "../../assets/images/icons/icon-heart-02.png";
 import prod12 from "../../assets/images/product-01.jpg";
-import SizeGuideModal from "../../components/client/Modal/SizeGuideModal"
+import SizeGuideModal from "../../components/client/Modal/SizeGuideModal";
 
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
@@ -69,9 +69,14 @@ const ProductDetail = () => {
       const id = paramId || queryId;
       if (id) {
         try {
-          const response = await productApi.getFeedback({ idProduct: id, page: feedBackPage, pageSize: 10 });
+          const response = await productApi.getFeedback({
+            idProduct: id,
+            page: feedBackPage,
+            pageSize: 10,
+          });
           if (response && response.data) {
-            console.log("Feedback data:", response.data);     
+            console.log("Feedback data:", response.data);
+            setFeedBack(response.data);
           } else {
             console.log("No data found in response");
           }
@@ -82,9 +87,7 @@ const ProductDetail = () => {
       }
     };
     fetching();
-  }, [feedBackPage, paramId, queryId]); 
-
-
+  }, [feedBackPage, paramId, queryId]);
 
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -420,9 +423,7 @@ const ProductDetail = () => {
                   <div className="col-md-2">
                     {/* Thumbnail Images as Indicators */}
                     <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
-                      {ProductDetail &&
-                        ProductDetail?.versions &&
-                        ProductDetail?.versions?.length > 0 &&
+                      {ProductDetail?.versions?.length > 0 &&
                         ProductDetail?.versions?.map((version, index) => (
                           <button
                             key={index}
@@ -450,9 +451,7 @@ const ProductDetail = () => {
                   <div className="col-md-10 p-0">
                     {/* Large Image Carousel */}
                     <div className="carousel-inner" style={style.w500}>
-                      {ProductDetail &&
-                        ProductDetail?.versions &&
-                        ProductDetail?.versions?.length > 0 &&
+                      {ProductDetail?.versions?.length > 0 &&
                         ProductDetail?.versions.map((version, index) => (
                           <div
                             className={`carousel-item ${
@@ -498,11 +497,10 @@ const ProductDetail = () => {
                       )} */}
                 </span>
 
-                
                 <div className="stext-102 cl3 p-t-23">
-                      Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
-                      sản phẩm phụ hợp với bạn nhất <SizeGuideModal/>
-                    </div>
+                  Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn sản
+                  phẩm phụ hợp với bạn nhất <SizeGuideModal />
+                </div>
 
                 {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
                 <div className="p-t-33">
@@ -649,33 +647,53 @@ const ProductDetail = () => {
                     <div className="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
                       <div className="p-b-30 m-lr-15-sm">
                         {/* <!-- Review --> */}
-                        <div className="flex-w flex-t p-b-68">
-                          <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                            <img src={ava} alt="AVATAR" />
-                          </div>
-
-                          <div className="size-207">
-                            <div className="flex-w flex-sb-m p-b-17">
-                              <span className="mtext-107 cl2 p-r-20">
-                                Ariana Grande
-                              </span>
-
-                              <span className="fs-18 cl11">
-                                <i className="zmdi zmdi-star"></i>
-                                <i className="zmdi zmdi-star"></i>
-                                <i className="zmdi zmdi-star"></i>
-                                <i className="zmdi zmdi-star"></i>
-                                <i className="zmdi zmdi-star-half"></i>
-                              </span>
+                        {feedBack?.contents?.map((fb) => (
+                          <div className="flex-w flex-t p-b-68">
+                            <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                              <img src={fb?.user?.image} alt="User Avatar" />
                             </div>
 
-                            <p className="stext-102 cl6">
-                              Quod autem in homine praestantissimum atque
-                              optimum est, id deseruit. Apud ceteros autem
-                              philosophos
-                            </p>
+                            <div className="size-207">
+                              <div className="flex-w flex-sb-m p-b-17">
+                                {/* User Name */}
+                                <span className="mtext-107 cl2 p-r-20">
+                                  {fb?.user?.fullName}
+                                </span>
+                                <span className="fs-18 cl11">
+                                  {Array.from({ length: 5 }, (_, i) => (
+                                    <i
+                                      key={i}
+                                      className={`zmdi zmdi-star${
+                                        i < fb?.rating ? "" : "-outline"
+                                      }`}
+                                    ></i>
+                                  ))}
+                                </span>
+                              </div>
+
+                              <p className="stext-102 cl6">{fb.comment}</p>
+                              {/* Reply Section */}
+                              {fb.reply && (
+                                <div className="flex-w flex-t reply-section">
+                                  <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                    <img
+                                      src={fb?.reply?.userReply?.image}
+                                      alt="Reply Avatar"
+                                    />
+                                  </div>
+                                  <div>
+                                    <span className="mtext-107 cl2">
+                                      {fb?.reply?.userReply?.fullName}
+                                    </span>
+                                    <p className="stext-102 cl6">
+                                      {fb?.reply?.content}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        ))}
 
                         {/* <!-- Add review --> */}
                         <form className="w-full">
