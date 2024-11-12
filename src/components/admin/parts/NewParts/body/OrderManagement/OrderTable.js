@@ -458,14 +458,12 @@ const OrderTable = () => {
                                                                                     </td>
                                                                                     {
                                                                                         isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
-                                                                                            // Nếu đang ở chế độ chỉnh sửa
                                                                                             <React.Fragment>
                                                                                                 <td>
                                                                                                     <Select
                                                                                                         options={item?.productAttributes?.colors}
                                                                                                         value={item?.orderVersionAttribute?.color}
                                                                                                         onChange={(selectedOption) => {
-                                                                                                            // Cập nhật color trong orderDetails cho sản phẩm hiện tại
                                                                                                             setOrderDetails((prevOrderDetails) => {
                                                                                                                 const updatedOrderDetails = { ...prevOrderDetails };
                                                                                                                 const targetDetail = updatedOrderDetails.orderDetail.find(detail => detail.orderDetailId === orderDetail.orderDetailId);
@@ -485,7 +483,6 @@ const OrderTable = () => {
                                                                                                         options={item?.productAttributes?.sizes}
                                                                                                         value={item?.orderVersionAttribute?.size}
                                                                                                         onChange={(selectedOption) => {
-                                                                                                            // Cập nhật size trong orderDetails cho sản phẩm hiện tại
                                                                                                             setOrderDetails((prevOrderDetails) => {
                                                                                                                 const updatedOrderDetails = { ...prevOrderDetails };
                                                                                                                 const targetDetail = updatedOrderDetails.orderDetail.find(detail => detail.orderDetailId === orderDetail.orderDetailId);
@@ -502,7 +499,6 @@ const OrderTable = () => {
                                                                                                 </td>
                                                                                             </React.Fragment>
                                                                                         ) : (
-                                                                                            // Nếu đang ở chế độ xem
                                                                                             <React.Fragment>
                                                                                                 <td>{item?.orderVersionAttribute?.color?.label}</td>
                                                                                                 <td>{item?.orderVersionAttribute?.size?.label}</td>
