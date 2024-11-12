@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { CaretDoubleLeft, CaretDoubleRight } from "phosphor-react";
 
-const PaginationSft = ({ count, defaultPage, siblingCount }) => {
+const PaginationSft = ({ count, defaultPage, siblingCount, onPageChange = (pagenum)=>{} }) => {
   const [currentPage, setCurrentPage] = useState(defaultPage);
 
   // Hàm xử lý thay đổi trang
   const handlePageChange = (event, page) => {
     setCurrentPage(page);
+    onPageChange(page);
   };
 
   // Tạo mảng các trang cần hiển thị

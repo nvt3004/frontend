@@ -26,7 +26,9 @@ const DataTableSft = ({
               </span>
               <input
                 onChange={(e) => {
+                 setTimeout(()=>{
                   onChangeSearch(e.target.value);
+                 },1000);
                 }}
                 type="text"
                 className="form-control"
@@ -52,7 +54,7 @@ const DataTableSft = ({
             {dataSource.map((item, index) => (
               <tr key={item.key || index}>
                 {columns.map((col) => (
-                  <td key={col.key || col.dataIndex}>
+                  <td key={col.key || col.dataIndex} className={col.className? `text-${col.className}`:''}>
                     {col.render
                       ? col.render(item[col.dataIndex], item, index)
                       : item[col.dataIndex]}

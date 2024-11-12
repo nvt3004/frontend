@@ -19011,3 +19011,23 @@ html:not(.layout-menu-collapsed) .bg-menu-theme .menu-inner .menu-item .menu-lin
     background-color: #233446 !important;
     color: white !important;
 }
+
+
+.upload-area {
+    border: 2px dashed #233446; 
+    padding: 20px;  
+    width: 100%;  
+    max-width: 500px;  
+    margin: 0 auto;  
+    text-align: center;  
+    border-radius: 8px;  
+}
+
+.upload-area:hover {
+    background-color: #f0f0f0; /* Thêm hiệu ứng hover với nền sáng */
+}
+
+.upload-area p {
+    margin: 0;
+    color: #666;  /* Màu chữ */
+}

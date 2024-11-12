@@ -1,4 +1,4 @@
-const ModalSft = ({ title, titleOk, open, onOk, onCancel, children }) => {
+const ModalSft = ({ title, size ='' ,titleOk, open, onOk, onCancel, children }) => {
   // Kiểm tra xem modal có đang mở không
   if (!open) return null;
 
@@ -9,7 +9,7 @@ const ModalSft = ({ title, titleOk, open, onOk, onCancel, children }) => {
       style={{ display: "block" }}
       aria-hidden="true"
     >
-      <div className="modal-dialog modal-lg" role="document">
+      <div className={`modal-dialog ${size}`} role="document">
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title" id="exampleModalLabel1">
