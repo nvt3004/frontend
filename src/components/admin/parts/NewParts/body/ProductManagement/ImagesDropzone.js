@@ -1,12 +1,13 @@
 import React from 'react';
 import { useDropzone } from 'react-dropzone';
 
-const ImagesDropzone = ({ onDrop }) => {
+const ImagesDropzone = ({ onDrop, maxFile, maxFileNum }) => {
     const { getRootProps, getInputProps } = useDropzone({
         onDrop: (acceptedFiles) => {
             onDrop(acceptedFiles);
         },
-        accept: {'image/*': []},
+        accept: { 'image/*': [] },
+        ...({ maxFiles: 1, multiple: false }),
     });
 
     return (

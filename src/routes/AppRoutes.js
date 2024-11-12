@@ -43,6 +43,9 @@ import StockIn from "../components/admin/parts/NewParts/body/WarehouseManagement
 import ProductCategories from "../components/admin/parts/NewParts/body/ProductManagement/ProductCategories";
 
 import ProtectedRoute from "./ProtectedRoute";
+import UpdateProduct from "../components/admin/parts/NewParts/body/ProductManagement/UpdateProduct";
+import ReceiptList from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptList";
+import OrderTable from "../components/admin/parts/NewParts/body/OrderManagement/OrderTable";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -128,7 +131,7 @@ const router = createBrowserRouter([
             path: "manage",
             element: (
               <ProtectedRoute
-                element={<OrderManagement />}
+                element={<OrderTable />}
                 requiredRole="Admin,Staff"
               />
             ),
@@ -161,8 +164,8 @@ const router = createBrowserRouter([
       {
         path: "warehouse",
         children: [
-          { path: "manage", element: <SuppliersTable /> },
-          { path: "add", element: <AddNewSupplier /> },
+          { path: "manage", element: <ReceiptList /> },
+          { path: "stockin", element: <StockIn /> },
         ],
       },
       // {
@@ -189,6 +192,7 @@ const router = createBrowserRouter([
           { path: "manage", element: <ProductTable /> },
           { path: "new", element: <NewProduct /> },
           { path: "categories", element: <ProductCategories /> },
+          { path: "update", element: <UpdateProduct /> },
         ],
       },
     ],

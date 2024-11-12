@@ -92,51 +92,11 @@ const UserModal = ({ user, show, handleClose, handleCancel, isNew, isCollapse, h
                                                 }} />
                                         </Form.Group>
                                         <Form.Group className='mt-1'>
-                                            <Form.Label>Permissions</Form.Label> <br />
-                                            {/* <Form.Select>
-                                            <option>--- --- ---</option>
-                                            <option onClick={() => {setCollapse(!isCollapse) ; console.log('select permissions');
-                                            }}>Select permission</option>
-                                        </Form.Select> */}
-                                            <Button variant='secondary' className='w-100 custom-radius' onClick={handleCollapse}>
-                                                {`${isCollapse ? 'Hide permissions' : 'Show permissions'}`}
-                                            </Button>
-                                            <Collapse in={isCollapse}>
-                                                <div className='mt-2'>
-                                                    <Accordion alwaysOpen>
-                                                        <Accordion.Item eventKey="0">
-                                                            <Accordion.Header>User Management</Accordion.Header>
-                                                            <Accordion.Body className='d-flex align-items-center'>
-                                                                <div className='col d-flex align-items-center'>
-                                                                    <Form.Group controlId='c-user' className=''>
-                                                                        <Form.Label className='m-0'>Create new user</Form.Label>
-                                                                    </Form.Group>
-                                                                </div>
-                                                                <div className='col d-flex align-items-center justify-content-center'>
-                                                                    <Form.Group controlId='c-user'>
-                                                                        <Form.Check type='checkbox' />
-                                                                    </Form.Group>
-                                                                </div>
-                                                            </Accordion.Body>
-                                                        </Accordion.Item>
-                                                        <Accordion.Item eventKey="1">
-                                                            <Accordion.Header>Supplier Management</Accordion.Header>
-                                                            <Accordion.Body className='d-flex align-items-center'>
-                                                                <div className='col d-flex align-items-center'>
-                                                                    <Form.Group controlId='c-supplier' className=''>
-                                                                        <Form.Label className='m-0'>Create new supplier</Form.Label>
-                                                                    </Form.Group>
-                                                                </div>
-                                                                <div className='col d-flex align-items-center justify-content-center'>
-                                                                    <Form.Group controlId='c-supplier'>
-                                                                        <Form.Check type='checkbox' />
-                                                                    </Form.Group>
-                                                                </div>
-                                                            </Accordion.Body>
-                                                        </Accordion.Item>
-                                                    </Accordion>
-                                                </div>
-                                            </Collapse>
+                                            <Form.Label>Gender</Form.Label>
+                                            <div className='d-flex'>
+                                                <Form.Check type='radio' name='role' label='Staff' value='Male' className='col' defaultChecked={user?.gender} />
+                                                <Form.Check type='radio' name='role' label='Customer' value='Female' className='col' defaultChecked={!user?.gender} />
+                                            </div>
                                         </Form.Group>
                                     </div>
                                 </div>

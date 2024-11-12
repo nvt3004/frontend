@@ -44,7 +44,7 @@ const menus = [
         label: "Product",
         icon: <Archive />,
         subItems: [
-          { id: "3", label: "Category", link: "/admin/products/category" },
+          { id: "3", label: "Category", link: "/admin/products/categories" },
           { id: "4", label: "New product", link: "/admin/products/new" },
           { id: "5", label: "Manage product", link: "/admin/products/manage" },
         ],
@@ -57,7 +57,7 @@ const menus = [
       },
       {
         id: "6",
-        label: "Order",
+        label: "Orders",
         icon: <FileText />,
         link: "/admin/orders/manage",
         subItems: null,
@@ -73,8 +73,11 @@ const menus = [
         id: "8",
         label: "Warehouse",
         icon: <Package />,
-        link: "/admin/warehouse/stock-in",
-        subItems: null,
+        // link: "/admin/warehouse/stock-in",
+        subItems: [
+          {id: '12', label: 'Stock-in', link: "/admin/warehouse/stockin"},
+          {id: '13', label: 'Receipt list', link: "/admin/warehouse/manage"}
+        ],
       },
       {
         id: "9",
@@ -146,7 +149,7 @@ const AdminLayout = () => {
   return (
     <div className={`container-stf`}>
       <div className={`sidebar-stf ${sidebarActive ? "active" : ""}`}>
-        <div className="menu-btn-stf" onClick={toggleSidebar}>
+        <div className="menu-btn-stf bg-secondary text-white" onClick={toggleSidebar}>
           <CaretLeft className={`ph-bold ${sidebarActive ? "active" : ""}`} />
         </div>
         <div className="head-stf">
