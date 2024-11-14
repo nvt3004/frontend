@@ -6,6 +6,9 @@ const DangerAlert = ({ title, text }) => {
     text: text || "Something went wrong!",
     icon: "error",
     confirmButtonText: "OK",
+    customClass: {
+      container: 'swal2-container-custom',
+    }
   });
 };
 

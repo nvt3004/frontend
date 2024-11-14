@@ -954,32 +954,8 @@ const ShopingCart = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop"
                                 onClick={() => {
-                                  console.log(1, product);
-                                  console.log(
-                                    2,
-                                    product.productDetail.attributes
-                                  );
-                                  console.log(3, product.attributes[0]);
-                                  console.log(4, product.attributes[0].key);
-                                  console.log(
-                                    5,
-                                    partitionProduct(
-                                      product,
-                                      product.attributes,
-                                      getRowCelCick(
-                                        product.productDetail.attributes,
-                                        product.attributes[0]
-                                      ),
-                                      product.attributes[0].key
-                                    )
-                                  );
-                                  console.log(
-                                    "Rowcel: ",
-                                    getRowCelCick(
-                                      product.productDetail.attributes,
-                                      product.attributes[0]
-                                    )
-                                  );
+                          
+                          
                                   setItemCartUpdate({
                                     cartItemId: product.catrItemId,
                                     versions: [

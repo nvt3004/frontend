@@ -11,25 +11,26 @@ import {
 } from "../../store/actions/wishlistActions";
 const search = async ({
   query,
-  categoryID, // sửa thành categoryID
+  categoryID, 
   minPrice,
   maxPrice,
-  colorID, // sửa thành colorID
-  sizeID,  // sửa thành sizeID
-  sortMaxPrice, // sửa thành sortMaxPrice
+  attributes, // Danh sách attribute IDs
+  sortMaxPrice, 
   page,
   pageSize,
 } = {}) => {
   try {
+    // Chuyển attributes thành chuỗi ID phân tách bởi dấu phẩy
+    const attribute = attributes ? attributes.join(',') : null;
+
     const { data } = await axiosInstance.get("product/search", {
       params: {
         query,
-        categoryID, // sử dụng categoryID thay vì categoryName
+        categoryID, 
         minPrice,
         maxPrice,
-        colorID, // sử dụng colorID thay vì color
-        sizeID,  // sử dụng sizeID thay vì size
-        sortMaxPrice, // sử dụng sortMaxPrice thay vì sortPrice
+        attribute, // Sử dụng chuỗi attribute ID đã được định dạng
+        sortMaxPrice,
         page,
         pageSize,
       },
@@ -67,6 +68,7 @@ const search = async ({
     }
   }
 };
+
 
 
 const getFilterAttribute = async () => {

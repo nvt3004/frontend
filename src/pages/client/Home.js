@@ -15,8 +15,7 @@ import banner2 from "../../assets/images/banner-02.jpg";
 import banner3 from "../../assets/images/banner-03.jpg";
 
 import { incrementCart } from "../../store/actions/cartActions";
-import SizeGuideModal from "../../components/client/Modal/SizeGuideModal"
-
+import SizeGuide from "../../components/client/Modal/SizeGuideModal";
 
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
@@ -38,23 +37,13 @@ function getRowCelCick(attributes = [], item) {
 }
 const Home = () => {
   const dispatch = useDispatch();
-  // SuccessAlert({ title: 'Product Added', text: 'The product was added to your cart!' });
-  // const handleAction = async () => {
-  //   const confirmed = await ConfirmAlert({
-  //     title: "Delete this item?",
-  //     text: "This action cannot be undone.",
-  //     confirmText: "Delete",
-  //     cancelText: "Cancel",
-  //   });
 
-  //   if (confirmed) {
-  //     console.log("Action confirmed!");
-  //     // Thực hiện hành động khi người dùng xác nhận
-  //   } else {
-  //     console.log("Action cancelled!");
-  //     // Thực hiện hành động khi người dùng hủy
-  //   }
-  // };
+  const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
+
+  const toggleOffcanvas = () => {
+    setIsOffcanvasOpen((prev) => !prev);
+  };
+
   const [Products, setProducts] = useState([]);
   const [ProductDetail, setProductDetail] = useState();
   const [ErrorCode] = useState("204");
@@ -66,6 +55,9 @@ const Home = () => {
   const [pd, setPd] = useState();
   const [err, setErr] = useState();
   const [price, setPrice] = useState(0);
+  const [verName, setVername] = useState();
+
+  const [verId, setVerId] = useState(null);
 
   const [priceMin, setPriceMin] = useState();
   const [priceMax, setPriceMax] = useState();
@@ -230,6 +222,8 @@ const Home = () => {
 
         if (checkCount == temp) {
           setPrice(vs.price);
+          setVername(vs.versionName);
+          setVerId(vs.id);
           break;
         }
       }
@@ -294,11 +288,12 @@ const Home = () => {
     });
 
     if (error) {
-      DangerAlert({
-        text:
-          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Server error",
-      });
+      // DangerAlert({
+      //   text:
+      //     `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
+      //     "Server error",
+      // });
+      window.location.href = "/auth/login";
       return;
     } else {
       dispatch(incrementCart());
@@ -360,6 +355,8 @@ const Home = () => {
       )
     );
     setAttriTest(product?.attributes);
+    setVername();
+    setVerId(null);
   };
 
   const style = {
@@ -408,7 +405,7 @@ const Home = () => {
   return (
     <div>
       <Slider />
-
+      <SizeGuide isOpen={isOffcanvasOpen} onClose={toggleOffcanvas} />
       {/* <!-- Banner --> */}
       <div className="sec-banner bg0 p-t-80">
         <div className="container">
@@ -624,21 +621,33 @@ const Home = () => {
                           {ProductDetail?.versions?.length > 0 &&
                             ProductDetail?.versions?.map((version, index) => (
                               <button
-                                key={index}
+                                key={version.id}
                                 type="button"
                                 data-bs-target="#productCarousel"
                                 data-bs-slide-to={index}
-                                className={index === 0 ? "active" : ""}
+                                className={`${
+                                  (index === 0 &&
+                                    (verId == null || verId == undefined)) ||
+                                  verId === version.id
+                                    ? "active"
+                                    : ""
+                                }`}
                                 aria-label={`Slide ${index + 1}`}
                                 style={style.wh}
+                                onClick={() =>
+                                  version?.attributes.forEach((f, index2) => {
+                                    handleClickItemAttribute({
+                                      key: f?.key,
+                                      value: f?.value,
+                                      rowCel: [Number(index2), Number(index)],
+                                      pdu: product,
+                                    });
+                                  })
+                                }
                               >
                                 <img
-                                  src={version?.image}
-                                  className={
-                                    index === 0
-                                      ? "d-block w-100 h-full"
-                                      : "d-block w-100"
-                                  }
+                                  src={version.image}
+                                  className="d-block w-100"
                                   alt=""
                                 />
                               </button>
@@ -649,21 +658,24 @@ const Home = () => {
                       <div className="col-md-10 p-0">
                         {/* Large Image Carousel */}
                         <div className="carousel-inner" style={style.w500}>
-                          {ProductDetail?.versions?.length > 0 &&
-                            ProductDetail?.versions?.map((version, index) => (
-                              <div
-                                className={`carousel-item ${
-                                  index === 0 ? "active" : ""
-                                }`}
-                                key={index}
-                              >
-                                <img
-                                  src={version?.image}
-                                  className="d-block w-100"
-                                  alt={version?.versionName}
-                                />
-                              </div>
-                            ))}
+                          {ProductDetail?.versions?.map((version, index) => (
+                            <div
+                              className={`carousel-item ${
+                                index === 0 && verId == null
+                                  ? "active"
+                                  : verId === version.id
+                                  ? "active"
+                                  : ""
+                              }`}
+                              key={version.id}
+                            >
+                              <img
+                                src={version.image}
+                                className="d-block w-100"
+                                alt={version.versionName}
+                              />
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -680,15 +692,17 @@ const Home = () => {
                       {" "}
                       {Products?.map((product1, index) =>
                         product1?.id == ProductDetail?.product?.id ? (
-                          <span key={index}>
-                            {`
-  ${
-    product1?.minPrice !== product1?.maxPrice
-      ? `${formatCurrencyVND(product1?.minPrice ?? "N/A")} ~ `
-      : ""
-  }
-  ${formatCurrencyVND(product1?.maxPrice ?? "N/A")}
-`}
+                          <span className="mtext-106 cl2">
+                            {price > 0
+                              ? formatCurrencyVND(price)
+                              : `${formatCurrencyVND(
+                                  ProductDetail?.product?.minPrice ?? "N/A"
+                                )} - ${formatCurrencyVND(
+                                  ProductDetail?.product?.maxPrice ?? "N/A"
+                                )}`}{" "}
+                            {verName && (
+                              <span className="fs-17"> - {verName}</span>
+                            )}
                           </span>
                         ) : null
                       )}
@@ -696,7 +710,13 @@ const Home = () => {
 
                     <div className="stext-102 cl3 p-t-23">
                       Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
-                      sản phẩm phụ hợp với bạn nhất <SizeGuideModal/>
+                      sản phẩm phụ hợp với bạn nhất{" "}
+                      <button
+                        onClick={toggleOffcanvas}
+                        className="text-decoration-underline text-primary"
+                      >
+                        Tại đây
+                      </button>
                     </div>
 
                     {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
@@ -740,36 +760,39 @@ const Home = () => {
                     </div>
 
                     {/* <!--  --> */}
-                    <div className="flex-w flex-m p-l-100 p-t-40 respon7">
-                      <div className="flex-m bor9 p-r-10 m-r-11">
+                    <div className="d-flex justify-content-center">
+                      {/* <!--  --> */}
+                      <div className="flex-w flex-m  p-t-40 respon7">
+                        <div className="flex-m bor9 p-r-10 m-r-11">
+                          <Link
+                            className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
+                            data-tooltip="Add to Wishlist"
+                          >
+                            <i className="zmdi zmdi-favorite"></i>
+                          </Link>
+                        </div>
+
                         <Link
-                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
-                          data-tooltip="Add to Wishlist"
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Facebook"
                         >
-                          <i className="zmdi zmdi-favorite"></i>
+                          <i className="fa fa-facebook"></i>
+                        </Link>
+
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Twitter"
+                        >
+                          <i className="fa fa-twitter"></i>
+                        </Link>
+
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Google Plus"
+                        >
+                          <i className="fa fa-google-plus"></i>
                         </Link>
                       </div>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Facebook"
-                      >
-                        <i className="fa fa-facebook"></i>
-                      </Link>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Twitter"
-                      >
-                        <i className="fa fa-twitter"></i>
-                      </Link>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Google Plus"
-                      >
-                        <i className="fa fa-google-plus"></i>
-                      </Link>
                     </div>
                   </div>
                 </div>
