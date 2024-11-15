@@ -25,6 +25,7 @@ import AddNewSupplier from "../components/admin/parts/AddNewSupplier";
 import PermissionManagement from "../components/admin/parts/PermissionManagement";
 import NewPermission from "../components/admin/parts/NewPermission";
 import FeedbackManagement from "../components/admin/parts/FeedbackManagement";
+import CustomerTable from "../components/admin/parts/NewParts/body/CustomerManagement/CustomerTable";
 
 // Auth Pages
 import AuthLayout from "../layouts/AuthLayout";
@@ -85,6 +86,15 @@ const router = createBrowserRouter([
     path: "/admin",
     element: <AdminLayout />,
     children: [
+      {
+        path: "customers/manage",
+        element: (
+          <ProtectedRoute
+            element={<CustomerTable />}
+            requiredRole="Admin,Staff"
+          />
+        ),
+      },
       {
         index: true,
         element: (

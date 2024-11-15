@@ -11,25 +11,26 @@ import {
 } from "../../store/actions/wishlistActions";
 const search = async ({
   query,
-  categoryID, // sửa thành categoryID
+  categoryID, 
   minPrice,
   maxPrice,
-  colorID, // sửa thành colorID
-  sizeID,  // sửa thành sizeID
-  sortMaxPrice, // sửa thành sortMaxPrice
+  attributes, // Danh sách attribute IDs
+  sortMaxPrice, 
   page,
   pageSize,
 } = {}) => {
   try {
+    // Chuyển attributes thành chuỗi ID phân tách bởi dấu phẩy
+    const attribute = attributes ? attributes.join(',') : null;
+
     const { data } = await axiosInstance.get("product/search", {
       params: {
         query,
-        categoryID, // sử dụng categoryID thay vì categoryName
+        categoryID, 
         minPrice,
         maxPrice,
-        colorID, // sử dụng colorID thay vì color
-        sizeID,  // sử dụng sizeID thay vì size
-        sortMaxPrice, // sử dụng sortMaxPrice thay vì sortPrice
+        attribute, // Sử dụng chuỗi attribute ID đã được định dạng
+        sortMaxPrice,
         page,
         pageSize,
       },
@@ -69,6 +70,7 @@ const search = async ({
 };
 
 
+
 const getFilterAttribute = async () => {
   try {
     const response = await axiosInstance.get("/product/FilterAttribute");
@@ -86,6 +88,20 @@ const getFilterAttribute = async () => {
 const getTopProducts = async () => {
   try {
     const response = await axiosInstance.get("/product/getTopProducts");
+    return response;
+  } catch (error) {
+    console.error("Error fetching Products:", error);
+    if (error.response && error.response.status === 404) {
+      console.warn("No Products found");
+    } else {
+      console.error("An unexpected error occurred");
+    }
+  }
+};
+
+const getRecommendedProducts  = async () => {
+  try {
+    const response = await axiosInstance.get("/product/getRecommendedProducts");
     return response;
   } catch (error) {
     console.error("Error fetching Products:", error);
@@ -288,7 +304,7 @@ const getOrder = async (size = 10, page = 0) => {
   try {
     const [error, data] = await stfExecAPI({
       method: "get",
-      url: "api/staff/orders/username",
+      url: "api/user/orders/username",
       params: {
         size: size,
         page: page,
@@ -380,6 +396,7 @@ const productApi = {
   getProductWish,
   getCartAll,
   getOrder,
-  getFeedback
+  getFeedback,
+  getRecommendedProducts
 };
 export default productApi;

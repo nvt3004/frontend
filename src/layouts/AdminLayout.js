@@ -33,11 +33,13 @@ const menus = [
         subItems: null,
       },
       {
-        id: "1",
-        label: "User",
+        id: "100",
+        label: "Users",
         icon: <User />,
-        link: "/admin/users/manage",
-        subItems: null,
+        subItems: [
+          { id: "101", label: "Staff", link: "/admin/users/manage" },
+          { id: "102", label: "Customer", link: "/admin/customers/manage" },
+        ],
       },
       {
         id: "2",

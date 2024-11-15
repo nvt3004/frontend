@@ -6,6 +6,9 @@ const InfoAlert = ({ title, text }) => {
     text: text || "Here is some information.",
     icon: "info",
     confirmButtonText: "OK",
+    customClass: {
+      container: 'swal2-container-custom',
+    }
   });
 };
 

@@ -1,26 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-export default function SizeGuide() {
+import React, { useEffect , useState} from "react";
+
+export default function SizeGuide({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState("tops");
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
 
   return (
     <>
-      <Link
-        to="#"
-        data-bs-toggle="offcanvas"
-        data-bs-target="#sizeGuideOffcanvas"
-        aria-controls="sizeGuideOffcanvas"
-      >
-        Tại đây
-      </Link>
-
       {/* Offcanvas */}
       <div
-        className="offcanvas offcanvas-end"
+        className={`offcanvas offcanvas-end position-fixed ontop ${isOpen ? "show" : ""}`}
         tabIndex="-1"
-        id="sizeGuideOffcanvas"
+        style={{ visibility: isOpen ? "visible" : "hidden" }}
         aria-labelledby="sizeGuideOffcanvasLabel"
       >
         <div className="offcanvas-header">
@@ -30,8 +30,8 @@ export default function SizeGuide() {
           <button
             type="button"
             className="btn-close text-reset"
-            data-bs-dismiss="offcanvas"
             aria-label="Đóng"
+            onClick={onClose}
           ></button>
         </div>
         <div className="offcanvas-body">
@@ -175,7 +175,7 @@ export default function SizeGuide() {
         </div>
       </div>
 
-      <style >{`
+      <style>{`
         .size-guide {
           font-family: Arial, sans-serif;
           max-width: 800px;
@@ -246,6 +246,15 @@ export default function SizeGuide() {
           padding-left: 20px;
           margin-top: 10px;
         }
+       .offcanvas {
+          transition: transform 0.3s ease-in-out;
+          transform: ${isOpen ? "translateX(0)" : "translateX(100%)"};
+          visibility: ${isOpen ? "visible" : "hidden"};
+        }
+        .show {
+          transform: translateX(0);
+        }
+
         @media (max-width: 600px) {
           .size-guide__table th,
           .size-guide__table td {

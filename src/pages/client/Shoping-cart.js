@@ -250,6 +250,7 @@ const ShopingCart = () => {
 
     setAttriTest(tem);
     setProduct(partitionProduct(pd, tem, [row, cel], key));
+    console.log(8666,pd)
   };
 
   //Đổ danh sách cart của user
@@ -337,156 +338,156 @@ const ShopingCart = () => {
   };
 
   //Thanh toán
-  const handleProceedToCheckout = async () => {
-    if (selectedItems.length <= 0) {
-      toast.info("Please select product before checkout!", {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-      return;
-    }
+ //Thanh toán
+ const handleProceedToCheckout = async () => {
+  if (selectedItems.length <= 0) {
+    toast.info("Please select product before checkout!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+    return;
+  }
 
-    if (!address) {
-      toast.info("Please select address before checkout!", {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-      return;
-    }
+  if (!address) {
+    toast.info("Please select address before checkout!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+    return;
+  }
 
-    //Đổ carts
-    const fetchCarts = async () => {
-      const [error, data] = await stfExecAPI({
-        url: "api/user/cart/all",
-      });
-
-      if (data) {
-        setCarts(data.data);
-      }
-    };
-
-    if (couponRead.trim() !== "") {
-      const [error, data] = await stfExecAPI({
-        url: `api/user/coupon/${iputEnter}`,
-      });
-
-      if (error) {
-        toast.info("Coupon not found!", {
-          className: "toast-message",
-          position: "top-right",
-          autoClose: 5000,
-        });
-        return;
-      }
-    }
-
-    //Pay == true thanh toán khi nhận hàng , ngược lại VNPay
-    const detail = [...selectedItems].map((i) => {
-      return {
-        idVersion: i.versionId,
-        quantity: i.quantity,
-      };
+  //Đổ carts
+  const fetchCarts = async () => {
+    const [error, data] = await stfExecAPI({
+      url: "api/user/cart/all",
     });
 
-    if (pay) {
-      const [error, data] = await stfExecAPI({
-        method: "post",
-        url: `api/user/cart/checkout`,
-        data: {
-          address: addressTitle,
-          couponCode: iputEnter || null,
-          creatorIsAdmin: false,
-          statusId: 1,
-          paymentMethodId: 2,
-          orderDetails: detail,
-        },
+    if (data) {
+      setCarts(data.data);
+    }
+  };
+
+  if (couponRead.trim() !== "") {
+    const [error, data] = await stfExecAPI({
+      url: `api/user/coupon?code=${iputEnter}`,
+    });
+
+    if (error) {
+      toast.info("Coupon not found!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
+      return;
+    }
+  }
 
-      if (error) {
-        fetchCarts();
+  //Pay == true thanh toán khi nhận hàng , ngược lại VNPay
+  const detail = [...selectedItems].map((i) => {
+    return {
+      idVersion: i.versionId,
+      quantity: i.quantity,
+    };
+  });
 
-        setSubTotal(0);
-        setTotal(0);
-        setCouponRead("");
-        setIputEnter("");
-        setSelectAll(false);
-        setSelectedItems([]);
+  if (pay) {
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: `api/user/cart/checkout`,
+      data: {
+        address: addressTitle,
+        couponCode: iputEnter || null,
+       creatorIsAdmin: false, 
+        statusId: 1,
+        paymentMethodId: 2,
+        orderDetails: detail,
+      },
+    });
 
-        toast.info(`${error?.response?.data?.message}`, {
-          className: "toast-message",
-          position: "top-right",
-          autoClose: 5000,
-        });
-        return;
-      }
-
-      //Đổ coupon
-      const fetchCoupon = async () => {
-        const [error, data] = await stfExecAPI({
-          url: "api/user/get-all-coupon",
-        });
-
-        if (data) {
-          setCoupons(data.data);
-        }
-      };
-
-      fetchCoupon();
+    if (error) {
       fetchCarts();
 
       setSubTotal(0);
       setTotal(0);
       setCouponRead("");
       setIputEnter("");
+      setSelectAll(false);
+      setSelectedItems([]);
 
-      toast.success("Checkout success!", {
+      toast.info(`${error?.response?.data?.message}`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
       });
-    } else {
+      return;
+    }
+
+    //Đổ coupon
+    const fetchCoupon = async () => {
       const [error, data] = await stfExecAPI({
-        method: "post",
-        url: `api/vnp/create-payment`,
-        data: {
-          address: addressTitle,
-          couponCode: iputEnter || null,
-          creatorIsAdmin: false,
-          fee: fee,
-          statusId: 1,
-          paymentMethodId: 2,
-          orderDetails: detail,
-          vnpay: {
-            orderInfo: "Thanh toán đơn hàng chuyển khoản",
-            bankCode: "NCB",
-          },
-        },
+        url: "api/user/get-all-coupon",
       });
 
-      if (error) {
-        fetchCarts();
-
-        setSubTotal(0);
-        setTotal(0);
-        setCouponRead("");
-        setIputEnter("");
-        setSelectAll(false);
-        setSelectedItems([]);
-
-        toast.info(`${error?.response?.data?.message}`, {
-          className: "toast-message",
-          position: "top-right",
-          autoClose: 5000,
-        });
-        return;
+      if (data) {
+        setCoupons(data.data);
       }
+    };
 
-      window.location.href = data.data;
+    fetchCoupon();
+    fetchCarts();
+
+    setSubTotal(0);
+    setTotal(0);
+    setCouponRead("");
+    setIputEnter("");
+
+    toast.success("Checkout success!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+  } else {
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: `api/vnp/create-payment`,
+      data: {
+        address: addressTitle,
+        couponCode: iputEnter || null,
+        creatorIsAdmin: false,
+        fee: fee,
+        statusId: 1,
+        paymentMethodId: 2,
+        orderDetails: detail,
+        vnpay: {
+          orderInfo: "Thanh toán đơn hàng chuyển khoản",
+          bankCode: "NCB",
+        },
+},
+    });
+
+    if (error) {
+      fetchCarts();
+
+      setSubTotal(0);
+      setTotal(0);
+      setCouponRead("");
+      setIputEnter("");
+      setSelectAll(false);
+      setSelectedItems([]);
+
+      toast.info(`${error?.response?.data?.message}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
     }
-  };
 
+    window.location.href = data.data;
+  }
+};
   //Chọn coupon
   const handleCoupon = (event) => {
     const v = event.target.value.trim();
@@ -744,7 +745,7 @@ const ShopingCart = () => {
   useEffect(() => {
     const fetchCouponRead = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/user/coupon/${iputEnter}`,
+        url: `api/user/coupon?code=${iputEnter}`,
       });
 
       if (error) {
@@ -766,7 +767,7 @@ const ShopingCart = () => {
   //Áp dụng coupon
   const handleApplyCoupon = async () => {
     const [error, data] = await stfExecAPI({
-      url: `api/user/coupon/${iputEnter}`,
+      url: `api/user/coupon?code=${iputEnter}`,
     });
 
     if (error) {
@@ -798,7 +799,7 @@ const ShopingCart = () => {
   useEffect(() => {
     const fetchCouponRead = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/user/coupon/${iputEnter}`,
+        url: `api/user/coupon?code=${iputEnter}`,
       });
 
       if (error) {
@@ -954,32 +955,8 @@ const ShopingCart = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop"
                                 onClick={() => {
-                                  console.log(1, product);
-                                  console.log(
-                                    2,
-                                    product.productDetail.attributes
-                                  );
-                                  console.log(3, product.attributes[0]);
-                                  console.log(4, product.attributes[0].key);
-                                  console.log(
-                                    5,
-                                    partitionProduct(
-                                      product,
-                                      product.attributes,
-                                      getRowCelCick(
-                                        product.productDetail.attributes,
-                                        product.attributes[0]
-                                      ),
-                                      product.attributes[0].key
-                                    )
-                                  );
-                                  console.log(
-                                    "Rowcel: ",
-                                    getRowCelCick(
-                                      product.productDetail.attributes,
-                                      product.attributes[0]
-                                    )
-                                  );
+                          
+                          
                                   setItemCartUpdate({
                                     cartItemId: product.catrItemId,
                                     versions: [

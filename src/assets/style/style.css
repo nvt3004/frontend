@@ -8,4 +8,14 @@
     background: linear-gradient(90deg, #717fe0, #000000);
     border-radius: 100px;
   }
-  
+  /* CSS */
+.swal2-container-custom {
+  z-index: 99999 !important;
+}
+.setposision{
+  position: absolute !important;
+}
+
+.ontop {
+  z-index: 99998 !important;
+}

@@ -19,7 +19,7 @@ import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import ConfirmAlert from "../../components/client/sweetalert/ConfirmAlert";
 import { getProfile, updateUser } from "../../services/api/OAuthApi";
 import { format } from "date-fns";
-
+import moment from 'moment';
 import productApi from "../../services/api/ProductApi";
 function getNameAddress(nameId) {
   return nameId.substring(nameId.indexOf(" "), nameId.length).trim();
@@ -56,7 +56,7 @@ const Account = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    phone: ""
+    phone: "",
   });
 
   // const formattedBirthday = birthday ? format(new Date(birthday), 'yyyy/MM/dd') : null;
@@ -104,10 +104,10 @@ const Account = () => {
           : profile.listData.gender === 0
           ? "Female"
           : "Other"
-      ); 
+      );
       setBirthday(
         profile.listData.birthday ? profile.listData.birthday.split("T")[0] : ""
-      ); 
+      );
     }
   }, [profile]);
 
@@ -117,18 +117,18 @@ const Account = () => {
       fullName: formData.fullName,
       email: formData.email,
       phone: formData.phone,
-      gender: gender === "Male" ? 1 : gender === "Female" ? 0 : 2, 
-      birthday: birthday ? new Date(birthday).toISOString().split("T")[0] : null,
-      image: selectedImage || profile?.listData?.image, 
+      gender: gender === "Male" ? 1 : gender === "Female" ? 0 : 2,
+      birthday: birthday
+        ? new Date(birthday).toISOString().split("T")[0]
+        : null,
+      image: selectedImage || profile?.listData?.image,
     };
 
     try {
       const response = await updateUser(profile.listData.userId, updatedUser);
       console.log("Update successful:", response);
-
     } catch (error) {
       console.error("Error updating profile:", error.message);
-
     }
   };
 
@@ -170,20 +170,19 @@ const Account = () => {
   }, [profile]); // Chạy effect khi profile thay đổi
 
   const handleBirthdayChange = (event) => {
-    console.log('ngay sinh'+event.target.value); 
-    setBirthday(event.target.value); 
+    console.log("ngay sinh" + event.target.value);
+    setBirthday(event.target.value);
   };
-  
 
   useEffect(() => {
     if (profile && profile.listData && profile.listData.gender !== undefined) {
-      const genderValue = profile.listData.gender; 
+      const genderValue = profile.listData.gender;
       if (genderValue === 1) {
         setGender("Male");
       } else if (genderValue === 0) {
         setGender("Female");
       } else {
-        setGender("Other"); 
+        setGender("Other");
       }
     }
   }, [profile]);
@@ -541,7 +540,7 @@ const Account = () => {
                           </strong>{" "}
                           <br />
                           <small className=" stext-113">
-                            {new Date(order.orderDate).toLocaleString()}
+                          {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')}
                           </small>
                         </div>
                         <span
@@ -618,26 +617,27 @@ const Account = () => {
                 ))
               )}
             </div>
-            {/* Pagination */}
-            <div className="pagination my-3 ">
-              <button
-                className="rounded-0 flex-c-m  cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4"
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 0}
-              >
-                Previous
-              </button>
-              <span className="mx-3 pt-1 mt-2 stext-103">
-                Page {page + 1} of {totalPages}
-              </span>
-              <button
-                className="rounded-0 flex-c-m  cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4"
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages - 1}
-              >
-                Next
-              </button>
-            </div>
+            {orders?.length > 0 && (
+              <div className="pagination my-3">
+                <button
+                  className="rounded-0 flex-c-m cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4"
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 0}
+                >
+                  Previous
+                </button>
+                <span className="mx-3 pt-1 mt-2 stext-103">
+                  Page {page + 1} of {totalPages}
+                </span>
+                <button
+                  className="rounded-0 flex-c-m cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4"
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages - 1}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="col-md-4">

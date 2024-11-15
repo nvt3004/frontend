@@ -18,7 +18,7 @@ import { incrementCart } from "../../store/actions/cartActions";
 import heart1 from "../../assets/images/icons/icon-heart-01.png";
 import heart2 from "../../assets/images/icons/icon-heart-02.png";
 import prod12 from "../../assets/images/product-01.jpg";
-import SizeGuideModal from "../../components/client/Modal/SizeGuideModal"
+import SizeGuide from "../../components/client/Modal/SizeGuideModal";
 
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
@@ -41,7 +41,11 @@ function getRowCelCick(attributes = [], item) {
 
 const ProductDetail = () => {
   const dispatch = useDispatch();
+  const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
 
+  const toggleOffcanvas = () => {
+    setIsOffcanvasOpen((prev) => !prev);
+  };
   //Minh ty làm *************************************
   const [product, setProduct] = useState([]);
   const [ProductDetail, setProductDetail] = useState();
@@ -49,6 +53,10 @@ const ProductDetail = () => {
   const [pd, setPd] = useState();
   const [err, setErr] = useState();
   const [price, setPrice] = useState(0);
+
+  const [verName, setVername] = useState();
+
+  const [verId, setVerId] = useState(null);
 
   const [rating, setRating] = useState(0); // Trạng thái lưu số sao được chọn
   // Lấy param từ URL (nếu có)
@@ -61,17 +69,28 @@ const ProductDetail = () => {
   const [productId, setProductId] = useState(null);
 
   const [feedBack, setFeedBack] = useState(null);
-  const [feedBackPage, setFeedBackPage] = useState(0);
+  const [feedBackPage, setFeedBackPage] = useState(1);
   const [error, setError] = useState(null); // Để lưu lỗi nếu có
 
+  // Hàm để chuyển trang
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= feedBack?.totalPage) {
+      setFeedBackPage(newPage);
+    }
+  };
   useEffect(() => {
     const fetching = async () => {
       const id = paramId || queryId;
       if (id) {
         try {
-          const response = await productApi.getFeedback({ idProduct: id, page: feedBackPage, pageSize: 10 });
+          const response = await productApi.getFeedback({
+            idProduct: id,
+            page: feedBackPage,
+            pageSize: 10,
+          });
           if (response && response.data) {
-            console.log("Feedback data:", response.data);     
+            console.log("Feedback data:", response.data);
+            setFeedBack(response.data);
           } else {
             console.log("No data found in response");
           }
@@ -82,9 +101,7 @@ const ProductDetail = () => {
       }
     };
     fetching();
-  }, [feedBackPage, paramId, queryId]); 
-
-
+  }, [feedBackPage, paramId, queryId]);
 
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -95,6 +112,26 @@ const ProductDetail = () => {
         try {
           const response = await productApi.getProductDetail(id);
           setProductDetail(response.data.data); // Lưu chi tiết sản phẩm vào state
+
+          const product = await findProductDetailById(id);
+          console.log("Ty", product);
+          getProductDetail(id);
+
+          setPd(product);
+          setProduct(
+            partitionProduct(
+              product,
+              product?.attributes,
+              getRowCelCick(
+                product?.versions?.attributes,
+                product?.attributes[0]
+              ),
+              product?.attributes[0]?.key
+            )
+          );
+          setAttriTest(product?.attributes);
+          setVername();
+          setVerId(null);
         } catch (error) {
           console.error("Error fetching product:", error.message);
         }
@@ -264,6 +301,8 @@ const ProductDetail = () => {
 
         if (checkCount == temp) {
           setPrice(vs.price);
+          setVername(vs.versionName);
+          setVerId(vs.id);
           break;
         }
       }
@@ -328,11 +367,12 @@ const ProductDetail = () => {
     });
 
     if (error) {
-      DangerAlert({
-        text:
-          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Server error",
-      });
+      // DangerAlert({
+      //   text:
+      //     `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
+      //     "Server error",
+      // });
+      window.location.href = "/auth/login";
       return;
     } else {
       dispatch(incrementCart());
@@ -361,24 +401,6 @@ const ProductDetail = () => {
     }
   };
 
-  const handleProductClick = async (id) => {
-    const product = await findProductDetailById(id);
-
-    console.log("Ty", product);
-    getProductDetail(id);
-
-    setPd(product);
-    setProduct(
-      partitionProduct(
-        product,
-        product?.attributes,
-        getRowCelCick(product?.versions?.attributes, product?.attributes[0]),
-        product?.attributes[0]?.key
-      )
-    );
-    setAttriTest(product?.attributes);
-  };
-
   // Kiểm tra nếu không có id từ cả hai nguồn
   if (!productId) {
     return (
@@ -391,14 +413,20 @@ const ProductDetail = () => {
     );
   }
 
-  function formatCurrencyVND(amount) {
+  const formatCurrencyVND = (amount) => {
+    if (amount == null) return "";
     return amount.toLocaleString("vi-VN", {
       style: "currency",
       currency: "VND",
     });
-  }
+  };
+
   const handleRating = (index) => {
     setRating(index); // Cập nhật trạng thái khi người dùng chọn sao
+  };
+  const findIndexByKeyValue = (attributes, key, value) => {
+    const attribute = attributes.find((attr) => attr.key === key);
+    return attribute && attribute.values ? attribute.values.indexOf(value) : -1;
   };
   const style = {
     m: { marginTop: "80px" },
@@ -408,6 +436,7 @@ const ProductDetail = () => {
   return (
     <div className="container" style={style.m}>
       {/* <!-- Product Detail --> */}
+      <SizeGuide isOpen={isOffcanvasOpen} onClose={toggleOffcanvas} />
       <section className="sec-product-detail bg0 p-t-65 p-b-60">
         <div>
           <div className="row">
@@ -420,26 +449,43 @@ const ProductDetail = () => {
                   <div className="col-md-2">
                     {/* Thumbnail Images as Indicators */}
                     <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
-                      {ProductDetail &&
-                        ProductDetail?.versions &&
-                        ProductDetail?.versions?.length > 0 &&
-                        ProductDetail?.versions?.map((version, index) => (
+                      {ProductDetail?.versions?.length > 0 &&
+                        ProductDetail.versions.map((version, index) => (
                           <button
-                            key={index}
+                            key={version.id}
                             type="button"
                             data-bs-target="#productCarousel"
                             data-bs-slide-to={index}
-                            className={index === 0 ? "active" : ""}
+                            className={`${
+                              (index === 0 && !verId) || verId === version.id
+                                ? "active"
+                                : ""
+                            }`}
                             aria-label={`Slide ${index + 1}`}
                             style={style.wh}
+                            onClick={() =>
+                              version?.attributes.forEach((f, index2) => {
+                                handleClickItemAttribute({
+                                  key: f?.key,
+                                  value: f?.value,
+                                  rowCel: [
+                                    Number(index2),
+                                    Number(
+                                      findIndexByKeyValue(
+                                        ProductDetail?.attributes,
+                                        f?.key,
+                                        f?.value
+                                      )
+                                    ),
+                                  ],
+                                  pdu: product,
+                                });
+                              })
+                            }
                           >
                             <img
-                              src={version?.image}
-                              className={
-                                index === 0
-                                  ? "d-block w-100 h-full"
-                                  : "d-block w-100"
-                              }
+                              src={version.image}
+                              className="d-block w-100"
                               alt=""
                             />
                           </button>
@@ -450,23 +496,24 @@ const ProductDetail = () => {
                   <div className="col-md-10 p-0">
                     {/* Large Image Carousel */}
                     <div className="carousel-inner" style={style.w500}>
-                      {ProductDetail &&
-                        ProductDetail?.versions &&
-                        ProductDetail?.versions?.length > 0 &&
-                        ProductDetail?.versions.map((version, index) => (
-                          <div
-                            className={`carousel-item ${
-                              index === 0 ? "active" : ""
-                            }`}
-                            key={index}
-                          >
-                            <img
-                              src={version?.image}
-                              className="d-block w-100"
-                              alt={version?.versionName}
-                            />
-                          </div>
-                        ))}
+                      {ProductDetail?.versions?.map((version, index) => (
+                        <div
+                          className={`carousel-item ${
+                            index === 0 && verId == null
+                              ? "active"
+                              : verId === version.id
+                              ? "active"
+                              : ""
+                          }`}
+                          key={version.id}
+                        >
+                          <img
+                            src={version.image}
+                            className="d-block w-100"
+                            alt={version.versionName}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -476,33 +523,30 @@ const ProductDetail = () => {
             <div className="col-md-6 col-lg-5 p-b-30">
               <div className="p-r-50 p-t-5 p-lr-0-lg">
                 <h4 className="mtext-105 cl2 js-name-detail p-b-14">
-                  {ProductDetail ? ProductDetail?.product?.productName : ""}
+                  {ProductDetail?.product?.productName || ""}
                 </h4>
 
                 <span className="mtext-106 cl2">
-                  {" "}
-                  123456
-                  {/* {Products.map((product1, index) =>
-                        product1?.id == ProductDetail?.product?.id ? (
-                          <span key={index}>
-                            {`
-  ${
-    product1?.minPrice !== product1?.maxPrice
-      ? `${formatCurrencyVND(product1?.minPrice ?? "N/A")} ~ `
-      : ""
-  }
-  ${formatCurrencyVND(product1?.maxPrice ?? "N/A")}
-`}
-                          </span>
-                        ) : null
-                      )} */}
+                  {price > 0
+                    ? formatCurrencyVND(price)
+                    : `${formatCurrencyVND(
+                        ProductDetail?.product?.minPrice ?? "N/A"
+                      )} - ${formatCurrencyVND(
+                        ProductDetail?.product?.maxPrice ?? "N/A"
+                      )}`}{" "}
+                  {verName && <span className="fs-17"> - {verName}</span>}
                 </span>
 
-                
                 <div className="stext-102 cl3 p-t-23">
-                      Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
-                      sản phẩm phụ hợp với bạn nhất <SizeGuideModal/>
-                    </div>
+                  Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn sản
+                  phẩm phụ hợp với bạn nhất{" "}
+                  <button
+                    onClick={toggleOffcanvas}
+                    className="text-decoration-underline text-primary"
+                  >
+                    Tại đây
+                  </button>
+                </div>
 
                 {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
                 <div className="p-t-33">
@@ -516,37 +560,39 @@ const ProductDetail = () => {
                   }
                 </div>
 
-                {/* <!--  --> */}
-                <div className="flex-w flex-m p-l-100 p-t-40 respon7">
-                  <div className="flex-m bor9 p-r-10 m-r-11">
+                <div className="d-flex justify-content-center">
+                  {/* <!--  --> */}
+                  <div className="flex-w flex-m  p-t-40 respon7">
+                    <div className="flex-m bor9 p-r-10 m-r-11">
+                      <Link
+                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
+                        data-tooltip="Add to Wishlist"
+                      >
+                        <i className="zmdi zmdi-favorite"></i>
+                      </Link>
+                    </div>
+
                     <Link
-                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
-                      data-tooltip="Add to Wishlist"
+                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                      data-tooltip="Facebook"
                     >
-                      <i className="zmdi zmdi-favorite"></i>
+                      <i className="fa fa-facebook"></i>
+                    </Link>
+
+                    <Link
+                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                      data-tooltip="Twitter"
+                    >
+                      <i className="fa fa-twitter"></i>
+                    </Link>
+
+                    <Link
+                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                      data-tooltip="Google Plus"
+                    >
+                      <i className="fa fa-google-plus"></i>
                     </Link>
                   </div>
-
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Facebook"
-                  >
-                    <i className="fa fa-facebook"></i>
-                  </Link>
-
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Twitter"
-                  >
-                    <i className="fa fa-twitter"></i>
-                  </Link>
-
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Google Plus"
-                  >
-                    <i className="fa fa-google-plus"></i>
-                  </Link>
                 </div>
               </div>
             </div>
@@ -586,7 +632,7 @@ const ProductDetail = () => {
                     href="#reviews"
                     role="tab"
                   >
-                    Reviews (1)
+                    Reviews ({feedBack?.totalElements ?? 0})
                   </a>
                 </li>
               </ul>
@@ -601,18 +647,7 @@ const ProductDetail = () => {
                 >
                   <div className="how-pos2 p-lr-15-md">
                     <p className="stext-102 cl6">
-                      Aenean sit amet gravida nisi. Nam fermentum est felis,
-                      quis feugiat nunc fringilla sit amet. Ut in blandit ipsum.
-                      Quisque luctus dui at ante aliquet, in hendrerit lectus
-                      interdum. Morbi elementum sapien rhoncus pretium maximus.
-                      Nulla lectus enim, cursus et elementum sed, sodales vitae
-                      eros. Ut ex quam, porta consequat interdum in, faucibus eu
-                      velit. Quisque rhoncus ex ac libero varius molestie.
-                      Aenean tempor sit amet orci nec iaculis. Cras sit amet
-                      nulla libero. Curabitur dignissim, nunc nec laoreet
-                      consequat, purus nunc porta lacus, vel efficitur tellus
-                      augue in ipsum. Cras in arcu sed metus rutrum iaculis.
-                      Nulla non tempor erat. Duis in egestas nunc.
+                      {ProductDetail?.product?.description}
                     </p>
                   </div>
                 </div>
@@ -649,33 +684,81 @@ const ProductDetail = () => {
                     <div className="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
                       <div className="p-b-30 m-lr-15-sm">
                         {/* <!-- Review --> */}
-                        <div className="flex-w flex-t p-b-68">
-                          <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                            <img src={ava} alt="AVATAR" />
-                          </div>
-
-                          <div className="size-207">
-                            <div className="flex-w flex-sb-m p-b-17">
-                              <span className="mtext-107 cl2 p-r-20">
-                                Ariana Grande
-                              </span>
-
-                              <span className="fs-18 cl11">
-                                <i className="zmdi zmdi-star"></i>
-                                <i className="zmdi zmdi-star"></i>
-                                <i className="zmdi zmdi-star"></i>
-                                <i className="zmdi zmdi-star"></i>
-                                <i className="zmdi zmdi-star-half"></i>
-                              </span>
+                        {feedBack?.contents?.map((fb) => (
+                          <div className="flex-w flex-t p-b-68">
+                            <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                              <img src={fb?.user?.image} alt="User Avatar" />
                             </div>
 
-                            <p className="stext-102 cl6">
-                              Quod autem in homine praestantissimum atque
-                              optimum est, id deseruit. Apud ceteros autem
-                              philosophos
-                            </p>
+                            <div className="size-207">
+                              <div className="flex-w flex-sb-m p-b-17">
+                                {/* User Name */}
+                                <span className="mtext-107 cl2 p-r-20">
+                                  {fb?.user?.fullName}
+                                </span>
+                                <span className="fs-18 cl11">
+                                  {Array.from({ length: 5 }, (_, i) => (
+                                    <i
+                                      key={i}
+                                      className={`zmdi zmdi-star${
+                                        i < fb?.rating ? "" : "-outline"
+                                      }`}
+                                    ></i>
+                                  ))}
+                                </span>
+                              </div>
+
+                              <p className="stext-102 cl6">{fb.comment}</p>
+                              {/* Reply Section */}
+                              {fb.reply && (
+                                <div className="flex-w flex-t reply-section">
+                                  <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                    <img
+                                      src={fb?.reply?.userReply?.image}
+                                      alt="Reply Avatar"
+                                    />
+                                  </div>
+                                  <div>
+                                    <span className="mtext-107 cl2">
+                                      {fb?.reply?.userReply?.fullName}
+                                    </span>
+                                    <p className="stext-102 cl6">
+                                      {fb?.reply?.content}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        ))}
+                        {feedBack?.totalElements > 0 && (
+                          <div>
+                            <div className="pagination">
+                              <button
+                                className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5"
+                                onClick={() =>
+                                  handlePageChange(feedBackPage - 1)
+                                }
+                                disabled={feedBackPage === 1}
+                              >
+                                Previous
+                              </button>
+                              <span className="stext-106 cl6 bor3 trans-04 m-r-32 m-tb-5">
+                                Page {feedBackPage} of{" "}
+                                {feedBack?.totalPage || 1}
+                              </span>
+                              <button
+                                className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5"
+                                onClick={() =>
+                                  handlePageChange(feedBackPage + 1)
+                                }
+                                disabled={feedBackPage === feedBack?.totalPage}
+                              >
+                                Next
+                              </button>
+                            </div>
+                          </div>
+                        )}
 
                         {/* <!-- Add review --> */}
                         <form className="w-full">
