@@ -43,7 +43,7 @@ const OrderTable = () => {
                     setTotalPage(response?.data?.data?.totalPages);
                     setTotalElements(response?.data?.data?.totalElements);
                 }
-                 else {
+                else {
                     if (response?.data?.errorCode === 404) {
                         setOrders([]);
                         setTotalPage(0);
@@ -216,6 +216,7 @@ const OrderTable = () => {
                                     productID: item.productId,
                                     productName: item?.productVersionName,
                                     productVersionID: item.productVersionId,
+                                   
                                     productAttributes: {
                                         colors: item.attributeProducts?.[0]?.colors
                                             ? Array.from(new Set(item.attributeProducts[0].colors.map(color => color.colorId)))
@@ -568,6 +569,28 @@ const OrderTable = () => {
         return () => clearTimeout(timer);
     }, [keyword]);
 
+    const handleSelectChange = (orderDetail, item, attribute, selectedOption) => {
+        // Cập nhật giá trị mới vào state
+        setOrderDetails((prevOrderDetails) => {
+            const updatedOrderDetails = { ...prevOrderDetails };
+
+            // Tìm orderDetail cần cập nhật
+            const targetDetail = updatedOrderDetails.orderDetail.find(detail => detail.orderDetailId === orderDetail.orderDetailId);
+
+            if (targetDetail) {
+                // Tìm sản phẩm trong orderDetail
+                const targetProduct = targetDetail.product.find(p => p.productID === item.productID);
+
+                if (targetProduct) {
+                    // Cập nhật thuộc tính của sản phẩm (color hoặc size)
+                    targetProduct.orderVersionAttribute[attribute] = selectedOption;
+                }
+            }
+
+            return updatedOrderDetails;
+        });
+    };
+
     // END HANDLE order
 
     return (
@@ -703,164 +726,164 @@ const OrderTable = () => {
                                                                     <th colSpan={2}></th>
                                                                 </thead>
                                                                 <tbody>
-                                                                    {
-                                                                        orderDetails?.orderDetail?.map((orderDetail, index) => (
-                                                                            orderDetail?.product.map((item) => (
-                                                                                <tr key={index} className='custom-table'>
-                                                                                    <td>{index + 1}</td>
-                                                                                    <td style={{
-                                                                                        maxWidth: '150px',
-                                                                                        overflow: 'hidden',
-                                                                                        textOverflow: 'ellipsis',
-                                                                                        whiteSpace: 'nowrap'
-                                                                                    }}>
-                                                                                        {item?.productName}
-                                                                                    </td>
+                                                                    {orderDetails?.orderDetail?.map((orderDetail) => (
+                                                                        orderDetail?.product.map((item) => (
+                                                                            <tr key={item.productID} className='custom-table'>
+                                                                                <td>{orderDetails?.orderDetail.indexOf(orderDetail) + 1}</td>
+                                                                                <td style={{
+                                                                                    maxWidth: '150px',
+                                                                                    overflow: 'hidden',
+                                                                                    textOverflow: 'ellipsis',
+                                                                                    whiteSpace: 'nowrap'
+                                                                                }}>
+                                                                                    {item?.productName}
+                                                                                </td>
 
-                                                                                    <td className='d-flex justify-content-center'>
-                                                                                        <img
-                                                                                            src={item?.imageUrl}
-                                                                                            alt={item?.productName}
-                                                                                            style={{
-                                                                                                maxWidth: '120px',
-                                                                                                maxHeight: '80px',
-                                                                                                width: 'auto',
-                                                                                                height: 'auto',
-                                                                                                objectFit: 'contain' /* Giữ toàn bộ ảnh trong khung mà không bị cắt */
-                                                                                            }}
-                                                                                        />
-                                                                                    </td>
+                                                                                <td className='d-flex justify-content-center'>
+                                                                                    <img
+                                                                                        src={item?.imageUrl}
+                                                                                        alt={item?.productName}
+                                                                                        style={{
+                                                                                            maxWidth: '120px',
+                                                                                            maxHeight: '80px',
+                                                                                            width: 'auto',
+                                                                                            height: 'auto',
+                                                                                            objectFit: 'contain'
+                                                                                        }}
+                                                                                    />
+                                                                                </td>
 
-                                                                                    {
-                                                                                        isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
-                                                                                            <React.Fragment>
-                                                                                                <td>
-                                                                                                    <Select
-                                                                                                        options={item?.productAttributes?.colors}
-                                                                                                        value={item?.orderVersionAttribute?.color}
-                                                                                                        onChange={(selectedOption) => {
-                                                                                                            setOrderDetails((prevOrderDetails) => {
-                                                                                                                const updatedOrderDetails = { ...prevOrderDetails };
-                                                                                                                const targetDetail = updatedOrderDetails.orderDetail.find(detail => detail.orderDetailId === orderDetail.orderDetailId);
-                                                                                                                if (targetDetail) {
-                                                                                                                    const targetProduct = targetDetail.product.find(p => p.productID === item.productID);
-                                                                                                                    if (targetProduct) {
-                                                                                                                        targetProduct.orderVersionAttribute.color = selectedOption;
-                                                                                                                    }
-                                                                                                                }
-                                                                                                                return updatedOrderDetails;
-                                                                                                            });
-                                                                                                        }}
-                                                                                                    />
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <Select
-                                                                                                        options={item?.productAttributes?.sizes}
-                                                                                                        value={item?.orderVersionAttribute?.size}
-                                                                                                        onChange={(selectedOption) => {
-                                                                                                            setOrderDetails((prevOrderDetails) => {
-                                                                                                                const updatedOrderDetails = { ...prevOrderDetails };
-                                                                                                                const targetDetail = updatedOrderDetails.orderDetail.find(detail => detail.orderDetailId === orderDetail.orderDetailId);
-                                                                                                                if (targetDetail) {
-                                                                                                                    const targetProduct = targetDetail.product.find(p => p.productID === item.productID);
-                                                                                                                    if (targetProduct) {
-                                                                                                                        targetProduct.orderVersionAttribute.size = selectedOption;
-                                                                                                                    }
-                                                                                                                }
-                                                                                                                return updatedOrderDetails;
-                                                                                                            });
-                                                                                                        }}
-                                                                                                    />
-                                                                                                </td>
-                                                                                            </React.Fragment>
-                                                                                        ) : (
-                                                                                            <React.Fragment>
-                                                                                                <td>{item?.orderVersionAttribute?.color?.label}</td>
-                                                                                                <td>{item?.orderVersionAttribute?.size?.label}</td>
-                                                                                            </React.Fragment>
-                                                                                        )
-                                                                                    }
-                                                                                    <td>{`${item?.price} VND`}</td>
-                                                                                    <td>
-                                                                                        {
-                                                                                            order?.statusName === 'Pending' ? (
-                                                                                                <div className='d-flex align-items-center'>
-                                                                                                    <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}>
-                                                                                                        -
-                                                                                                    </Button>
-                                                                                                    <input
-                                                                                                        type="text"
-                                                                                                        className="mx-2"
-                                                                                                        value={quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetail.orderDetailId}-${item.productID}`] : item.quantity}
-                                                                                                        onChange={(e) => handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                        onBlur={(e) => handleQuantityInputBlur(orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                        onKeyDown={(e) => handleKeyPress(e, orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                        style={{ width: '50px', textAlign: 'center' }}
-                                                                                                    />
+                                                                                {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                    <React.Fragment>
+                                                                                        <td>
+                                                                                            <Select
+                                                                                                options={item?.productAttributes?.colors}
+                                                                                                value={item?.orderVersionAttribute?.color}
+                                                                                                onChange={selectedOption => handleSelectChange(orderDetail, item, 'color', selectedOption)}
+                                                                                            />
+                                                                                        </td>
+                                                                                        <td>
+                                                                                            <Select
+                                                                                                options={item?.productAttributes?.sizes}
+                                                                                                value={item?.orderVersionAttribute?.size}
+                                                                                                onChange={selectedOption => handleSelectChange(orderDetail, item, 'size', selectedOption)}
+                                                                                            />
+                                                                                        </td>
+                                                                                    </React.Fragment>
+                                                                                ) : (
+                                                                                    <React.Fragment>
+                                                                                        <td>{item?.orderVersionAttribute?.color?.label}</td>
+                                                                                        <td>{item?.orderVersionAttribute?.size?.label}</td>
+                                                                                    </React.Fragment>
+                                                                                )}
 
-                                                                                                    <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}>
-                                                                                                        +
-                                                                                                    </Button>
-                                                                                                </div>
-                                                                                            ) : (
-                                                                                                item?.quantity
-                                                                                            )
-                                                                                        }
-                                                                                    </td>
+                                                                                <td>{`${item?.price} VND`}</td>
 
-                                                                                    <td>{`${item?.total} VND`}</td>
-                                                                                    {
-                                                                                        order?.statusName === 'Pending' &&
-                                                                                        (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
-                                                                                            <React.Fragment>
-                                                                                                <td>
-                                                                                                    <CustomButton
-                                                                                                        btnBG={'success'}
-                                                                                                        btnType={'button'}
-                                                                                                        textColor={'text-white'}
-                                                                                                        btnName={<HiCheck />}
-                                                                                                        handleClick={() => handleSaveVersionChanges(orderDetail)}
-                                                                                                    />
-                                                                                                </td>
-                                                                                                <td>
-                                                                                                    <CustomButton
-                                                                                                        btnBG={'danger'}
-                                                                                                        btnType={'button'}
-                                                                                                        textColor={'text-white'}
-                                                                                                        btnName={<ImCancelCircle />}
-                                                                                                        handleClick={() => setEditVersion({ isEdit: false, orderDetailsID: null })}
-                                                                                                    />
-                                                                                                </td>
-                                                                                            </React.Fragment>
-                                                                                        ) : (
-                                                                                            <React.Fragment>
-                                                                                                <td>
-                                                                                                    <CustomButton
-                                                                                                        btnBG={'danger'}
-                                                                                                        btnType={'button'}
-                                                                                                        textColor={'text-white'}
-                                                                                                        btnName={<FaTrash />}
-                                                                                                        handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
-                                                                                                    />
-                                                                                                </td>
+                                                                                <td>
+                                                                                    {order?.statusName === 'Pending' ? (
+                                                                                        <div className='d-flex align-items-center'>
+                                                                                            <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}>
+                                                                                                -
+                                                                                            </Button>
+                                                                                            <input
+                                                                                                type="text"
+                                                                                                className="mx-2"
+                                                                                                value={quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetail.orderDetailId}-${item.productID}`] : item.quantity}
+                                                                                                onChange={(e) => handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)}
+                                                                                                onBlur={(e) => handleQuantityInputBlur(orderDetail.orderDetailId, item.productID, e.target.value)}
+                                                                                                onKeyDown={(e) => handleKeyPress(e, orderDetail.orderDetailId, item.productID, e.target.value)}
+                                                                                                style={{ width: '50px', textAlign: 'center' }}
+                                                                                            />
+                                                                                            <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}>
+                                                                                                +
+                                                                                            </Button>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        item?.quantity
+                                                                                    )}
+                                                                                </td>
 
-                                                                                                <td>
-                                                                                                    <CustomButton
-                                                                                                        btnBG={'warning'}
-                                                                                                        btnType={'button'}
-                                                                                                        textColor={'text-white'}
-                                                                                                        btnName={<MdModeEdit />}
-                                                                                                        handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
-                                                                                                    />
-                                                                                                </td>
-                                                                                            </React.Fragment>
-                                                                                        ))
-                                                                                    }
-                                                                                </tr>
-                                                                            ))
+                                                                                <td>{`${item?.total} VND`}</td>
+
+                                                                                {order?.statusName === 'Pending' &&
+                                                                                    (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                        <React.Fragment>
+                                                                                            <td>
+                                                                                                <CustomButton
+                                                                                                    btnBG={'success'}
+                                                                                                    btnType={'button'}
+                                                                                                    textColor={'text-white'}
+                                                                                                    btnName={<HiCheck />}
+                                                                                                    handleClick={() => handleSaveVersionChanges(orderDetail)}
+                                                                                                />
+                                                                                            </td>
+                                                                                            <td>
+                                                                                                <CustomButton
+                                                                                                    btnBG={'danger'}
+                                                                                                    btnType={'button'}
+                                                                                                    textColor={'text-white'}
+                                                                                                    btnName={<ImCancelCircle />}
+                                                                                                    handleClick={() => setEditVersion({ isEdit: false, orderDetailsID: null })}
+                                                                                                />
+                                                                                            </td>
+                                                                                        </React.Fragment>
+                                                                                    ) : (
+                                                                                        <React.Fragment>
+                                                                                            <td>
+                                                                                                <CustomButton
+                                                                                                    btnBG={'danger'}
+                                                                                                    btnType={'button'}
+                                                                                                    textColor={'text-white'}
+                                                                                                    btnName={<FaTrash />}
+                                                                                                    handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
+                                                                                                />
+                                                                                            </td>
+
+                                                                                            <td>
+                                                                                                <CustomButton
+                                                                                                    btnBG={'warning'}
+                                                                                                    btnType={'button'}
+                                                                                                    textColor={'text-white'}
+                                                                                                    btnName={<MdModeEdit />}
+                                                                                                    handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
+                                                                                                />
+                                                                                            </td>
+                                                                                        </React.Fragment>
+                                                                                    ))}
+                                                                            </tr>
                                                                         ))
-                                                                    }
+                                                                    ))}
+                                                                    <tr>
+                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
+                                                                        <td>{`${orderDetails?.orderDetail?.reduce((total, orderDetail) => total + orderDetail.product.reduce((subTotal, item) => subTotal + item.total, 0), 0)} VND`}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
+                                                                        <td>{`${order?.shippingFee ? order?.shippingFee : 0} VND`}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Giảm giá:</td>
+                                                                        <td>{`${order?.disCount || 0} VND`}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
+                                                                        <td>{`${(
+                                                                            (orderDetails?.orderDetail?.reduce((total, orderDetail) => total + orderDetail.product.reduce((subTotal, item) => subTotal + item.total, 0), 0) || 0) +
+                                                                            (order?.shippingFee || 0) -
+                                                                            (order?.disCount || 0)
+                                                                        ).toLocaleString()} VND`}</td>
+                                                                    </tr>
+
+                                                                    <tr>
+                                                                        <td colSpan={8} style={{ textAlign: 'right' }}>
+                                                                            <button className="btn btn-primary">
+                                                                                Xuất hóa đơn
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+
                                                                 </tbody>
+
                                                             </Table>
                                                         </td>
                                                     </tr>
