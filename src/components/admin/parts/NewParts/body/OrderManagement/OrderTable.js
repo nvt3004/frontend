@@ -26,8 +26,6 @@ const OrderTable = () => {
     const [pageSize, setPageSize] = useState(5);
 
     const handleGetOrderAPI = () => {
-        console.log(isAdminOrder + " isAdminOrder");
-
         axiosInstance.get(`/staff/orders`, {
             params: {
                 page: currentPage,
@@ -688,7 +686,7 @@ const OrderTable = () => {
                                                         )
                                                     }
                                                 </td>
-                                                <td> {moment(order?.orderDate).format('DD/MM/YYYY HH:mm')} </td>
+                                                <td> {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')} </td>
                                                 <td style={{ width: '200px' }}>
                                                     <Select options={orderStatus}
                                                         value={
