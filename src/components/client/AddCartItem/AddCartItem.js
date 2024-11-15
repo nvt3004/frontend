@@ -8,7 +8,7 @@ const style = {
 
 const AddCartItem = ({ pd, onClick, clickSave = () => {}, message }) => {
   
-
+console.log(15,pd)
   const temppd = {...pd};
 
   return (

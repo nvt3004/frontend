@@ -43,7 +43,7 @@ const WishList = () => {
   const toggleOffcanvas = () => {
     setIsOffcanvasOpen((prev) => !prev);
   };
- 
+
   const [Products, setProducts] = useState([]);
   const [ProductDetail, setProductDetail] = useState();
   const [ErrorCode] = useState("204");
@@ -359,7 +359,6 @@ const WishList = () => {
     setVerId(null);
   };
 
-
   const handleCheckColorAndSize = (key, value) => {
     let attribute = [];
     ProductDetail.versions.forEach((element) => {});
@@ -399,7 +398,10 @@ const WishList = () => {
       currency: "VND",
     });
   }
-
+  const findIndexByKeyValue = (attributes, key, value) => {
+    const attribute = attributes.find((attr) => attr.key === key);
+    return attribute && attribute.values ? attribute.values.indexOf(value) : -1;
+  };
   const style = {
     m: { marginTop: "80px", minHeight: "80vh" },
     h: { minHeight: "60vh" },
@@ -409,45 +411,45 @@ const WishList = () => {
 
   return (
     <div style={style.m}>
-        <SizeGuide isOpen={isOffcanvasOpen} onClose={toggleOffcanvas} />
+      <SizeGuide isOpen={isOffcanvasOpen} onClose={toggleOffcanvas} />
       <section className="bg0 p-t-23 p-b-140">
         <div className="container">
           <div className="p-b-10 mb-4">
             <h3 className="ltext-103 cl5">Wish Lists</h3>
           </div>
           <div className="row isotope-grid" style={style.h}>
-                {!Products || Products?.length ? (
-                  Products?.map((product, index) => (
-                    <div
-                      key={index}
-                      className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
-                    >
-                      <div className="block2">
-                        <div className="block2-pic hov-img0">
-                          <img src={product?.imgName} alt="IMG-PRODUCT" />
-                          {/* Quick View */}
-                          <button
-                            type="button"
-                            className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none "
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal"
-                            onClick={() => handleProductClick(product?.id)}
-                          >
-                            Quick View
-                          </button>
-                        </div>
+            {!Products || Products?.length ? (
+              Products?.map((product, index) => (
+                <div
+                  key={index}
+                  className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
+                >
+                  <div className="block2">
+                    <div className="block2-pic hov-img0">
+                      <img src={product?.imgName} alt="IMG-PRODUCT" />
+                      {/* Quick View */}
+                      <button
+                        type="button"
+                        className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none "
+                        data-bs-toggle="modal"
+                        data-bs-target="#exampleModal"
+                        onClick={() => handleProductClick(product?.id)}
+                      >
+                        Quick View
+                      </button>
+                    </div>
 
-                        <div className="block2-txt flex-w flex-t p-t-14">
-                          <div className="block2-txt-child1 flex-col-l">
-                            <Link
-                              to={`/product-detail/${product?.id}`}
-                              className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
-                            >
-                              {product?.name}
-                            </Link>
+                    <div className="block2-txt flex-w flex-t p-t-14">
+                      <div className="block2-txt-child1 flex-col-l">
+                        <Link
+                          to={`/product-detail/${product?.id}`}
+                          className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
+                        >
+                          {product?.name}
+                        </Link>
 
-                            <span className="stext-105 cl3">
-                              {`
+                        <span className="stext-105 cl3">
+                          {`
   ${
     product?.minPrice !== product?.maxPrice
       ? `${formatCurrencyVND(product?.minPrice ?? "N/A")} ~ `
@@ -455,33 +457,33 @@ const WishList = () => {
   }
   ${formatCurrencyVND(product?.maxPrice ?? "N/A")}
 `}
-                            </span>
-                          </div>
+                        </span>
+                      </div>
 
-                          <div className="block2-txt-child2 flex-r p-t-3">
-                            <Wish
-                              prodID={product?.id}
-                              isWish={product?.like}
-                              handleAddWish={() => {
-                                handleAddWishlist(product?.id);
-                              }}
-                              handleRemoveWish={() =>
-                                handleRemoveWishlist(product?.id)
-                              }
-                            />
-                          </div>
-                        </div>
+                      <div className="block2-txt-child2 flex-r p-t-3">
+                        <Wish
+                          prodID={product?.id}
+                          isWish={product?.like}
+                          handleAddWish={() => {
+                            handleAddWishlist(product?.id);
+                          }}
+                          handleRemoveWish={() =>
+                            handleRemoveWishlist(product?.id)
+                          }
+                        />
                       </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="d-flex justify-content-center mt-5 mb-5">
-                    <div className=" pt-5 pb-5 opacity-50">
-                      <p className="fs-4 text-muted mt-3">{ErrorMessage}</p>
-                    </div>
                   </div>
-                )}
+                </div>
+              ))
+            ) : (
+              <div className="d-flex justify-content-center mt-5 mb-5">
+                <div className=" pt-5 pb-5 opacity-50">
+                  <p className="fs-4 text-muted mt-3">{ErrorMessage}</p>
+                </div>
               </div>
+            )}
+          </div>
         </div>
       </section>
       {/*  */}
@@ -533,13 +535,21 @@ const WishList = () => {
                                     : ""
                                 }`}
                                 aria-label={`Slide ${index + 1}`}
-                                style={style.wh}
                                 onClick={() =>
                                   version?.attributes.forEach((f, index2) => {
                                     handleClickItemAttribute({
                                       key: f?.key,
                                       value: f?.value,
-                                      rowCel: [Number(index2), Number(index)],
+                                      rowCel: [
+                                        Number(index2),
+                                        Number(
+                                          findIndexByKeyValue(
+                                            ProductDetail?.attributes,
+                                            f?.key,
+                                            f?.value
+                                          )
+                                        ),
+                                      ],
                                       pdu: product,
                                     });
                                   })
@@ -661,39 +671,39 @@ const WishList = () => {
 
                     {/* <!--  --> */}
                     <div className="d-flex justify-content-center">
-                  {/* <!--  --> */}
-                  <div className="flex-w flex-m  p-t-40 respon7">
-                  <div className="flex-m bor9 p-r-10 m-r-11">
-                    <Link
-                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
-                      data-tooltip="Add to Wishlist"
-                    >
-                      <i className="zmdi zmdi-favorite"></i>
-                    </Link>
-                  </div>
+                      {/* <!--  --> */}
+                      <div className="flex-w flex-m  p-t-40 respon7">
+                        <div className="flex-m bor9 p-r-10 m-r-11">
+                          <Link
+                            className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
+                            data-tooltip="Add to Wishlist"
+                          >
+                            <i className="zmdi zmdi-favorite"></i>
+                          </Link>
+                        </div>
 
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Facebook"
-                  >
-                    <i className="fa fa-facebook"></i>
-                  </Link>
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Facebook"
+                        >
+                          <i className="fa fa-facebook"></i>
+                        </Link>
 
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Twitter"
-                  >
-                    <i className="fa fa-twitter"></i>
-                  </Link>
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Twitter"
+                        >
+                          <i className="fa fa-twitter"></i>
+                        </Link>
 
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Google Plus"
-                  >
-                    <i className="fa fa-google-plus"></i>
-                  </Link>
-                </div>
-            </div>
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Google Plus"
+                        >
+                          <i className="fa fa-google-plus"></i>
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

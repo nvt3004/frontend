@@ -98,6 +98,20 @@ const getTopProducts = async () => {
     }
   }
 };
+
+const getRecommendedProducts  = async () => {
+  try {
+    const response = await axiosInstance.get("/product/getRecommendedProducts");
+    return response;
+  } catch (error) {
+    console.error("Error fetching Products:", error);
+    if (error.response && error.response.status === 404) {
+      console.warn("No Products found");
+    } else {
+      console.error("An unexpected error occurred");
+    }
+  }
+};
 const getProductDetail = async (id) => {
   try {
     const response = await axiosInstance.get(`/home/product/${id}`);
@@ -382,6 +396,7 @@ const productApi = {
   getProductWish,
   getCartAll,
   getOrder,
-  getFeedback
+  getFeedback,
+  getRecommendedProducts
 };
 export default productApi;

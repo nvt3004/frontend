@@ -250,6 +250,7 @@ const ShopingCart = () => {
 
     setAttriTest(tem);
     setProduct(partitionProduct(pd, tem, [row, cel], key));
+    console.log(866645645645645645645656565645645645645,pd)
   };
 
   //Đổ danh sách cart của user

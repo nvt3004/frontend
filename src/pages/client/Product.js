@@ -67,7 +67,6 @@ const Product = () => {
 
   const [filteredAttributes, setFilteredAttributes] = useState([]); // State để lưu các thuộc tính cần render
 
-
   // Cập nhật filteredAttributes mỗi khi filterAttributes hoặc selectedAttribute thay đổi
   useEffect(() => {
     if (filterAttributes?.attribute?.names?.length > 0) {
@@ -490,8 +489,7 @@ const Product = () => {
         if (checkCount == temp) {
           //Thêm vào giỏ hàng
           await handleAddVersionToCart({ versionId: vs.id, quantity: 1 });
-    
-    
+
           break;
         }
       }
@@ -573,6 +571,10 @@ const Product = () => {
       currency: "VND",
     });
   }
+  const findIndexByKeyValue = (attributes, key, value) => {
+    const attribute = attributes.find((attr) => attr.key === key);
+    return attribute && attribute.values ? attribute.values.indexOf(value) : -1;
+  };
   const style = {
     m: { marginTop: "40px" },
     h: { height: "60vh" },
@@ -1056,13 +1058,20 @@ const Product = () => {
                                     handleClickItemAttribute({
                                       key: f?.key,
                                       value: f?.value,
-                                      rowCel: [Number(index2), Number(index)],
+                                      rowCel: [
+                                        Number(index2),
+                                        Number(
+                                          findIndexByKeyValue(
+                                            ProductDetail?.attributes,
+                                            f?.key,
+                                            f?.value
+                                          )
+                                        ),
+                                      ],
                                       pdu: product,
                                     });
                                   })
                                 }
-                                
-                                
                               >
                                 <img
                                   src={version.image}
@@ -1180,39 +1189,39 @@ const Product = () => {
 
                     {/* <!--  --> */}
                     <div className="d-flex justify-content-center">
-                  {/* <!--  --> */}
-                  <div className="flex-w flex-m  p-t-40 respon7">
-                  <div className="flex-m bor9 p-r-10 m-r-11">
-                    <Link
-                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
-                      data-tooltip="Add to Wishlist"
-                    >
-                      <i className="zmdi zmdi-favorite"></i>
-                    </Link>
-                  </div>
+                      {/* <!--  --> */}
+                      <div className="flex-w flex-m  p-t-40 respon7">
+                        <div className="flex-m bor9 p-r-10 m-r-11">
+                          <Link
+                            className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
+                            data-tooltip="Add to Wishlist"
+                          >
+                            <i className="zmdi zmdi-favorite"></i>
+                          </Link>
+                        </div>
 
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Facebook"
-                  >
-                    <i className="fa fa-facebook"></i>
-                  </Link>
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Facebook"
+                        >
+                          <i className="fa fa-facebook"></i>
+                        </Link>
 
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Twitter"
-                  >
-                    <i className="fa fa-twitter"></i>
-                  </Link>
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Twitter"
+                        >
+                          <i className="fa fa-twitter"></i>
+                        </Link>
 
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Google Plus"
-                  >
-                    <i className="fa fa-google-plus"></i>
-                  </Link>
-                </div>
-            </div>
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Google Plus"
+                        >
+                          <i className="fa fa-google-plus"></i>
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

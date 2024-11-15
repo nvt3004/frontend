@@ -180,6 +180,7 @@ const Home = () => {
     });
 
     setAttriTest(tem);
+    console.log(53453453534534534534,tem);
     setProduct(partitionProduct(pd, tem, [row, cel], key));
 
     console.log("test ", partitionProduct(pd, tem, [row, cel], key));
@@ -402,6 +403,13 @@ const Home = () => {
       currency: "VND",
     });
   }
+  const findIndexByKeyValue = (attributes, key, value) => {
+    const attribute = attributes.find((attr) => attr.key === key);
+    console.log(
+      attribute && attribute.values ? attribute.values.indexOf(value) : -1
+    );
+    return attribute && attribute.values ? attribute.values.indexOf(value) : -1;
+  };
   return (
     <div>
       <Slider />
@@ -639,7 +647,16 @@ const Home = () => {
                                     handleClickItemAttribute({
                                       key: f?.key,
                                       value: f?.value,
-                                      rowCel: [Number(index2), Number(index)],
+                                      rowCel: [
+                                        Number(index2),
+                                        Number(
+                                          findIndexByKeyValue(
+                                            ProductDetail?.attributes,
+                                            f?.key,
+                                            f?.value
+                                          )
+                                        ),
+                                      ],
                                       pdu: product,
                                     });
                                   })

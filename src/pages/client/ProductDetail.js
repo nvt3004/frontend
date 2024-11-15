@@ -401,8 +401,6 @@ const ProductDetail = () => {
     }
   };
 
-
-
   // Kiểm tra nếu không có id từ cả hai nguồn
   if (!productId) {
     return (
@@ -425,6 +423,10 @@ const ProductDetail = () => {
 
   const handleRating = (index) => {
     setRating(index); // Cập nhật trạng thái khi người dùng chọn sao
+  };
+  const findIndexByKeyValue = (attributes, key, value) => {
+    const attribute = attributes.find((attr) => attr.key === key);
+    return attribute && attribute.values ? attribute.values.indexOf(value) : -1;
   };
   const style = {
     m: { marginTop: "80px" },
@@ -466,7 +468,16 @@ const ProductDetail = () => {
                                 handleClickItemAttribute({
                                   key: f?.key,
                                   value: f?.value,
-                                  rowCel: [Number(index2), Number(index)],
+                                  rowCel: [
+                                    Number(index2),
+                                    Number(
+                                      findIndexByKeyValue(
+                                        ProductDetail?.attributes,
+                                        f?.key,
+                                        f?.value
+                                      )
+                                    ),
+                                  ],
                                   pdu: product,
                                 });
                               })
@@ -549,40 +560,40 @@ const ProductDetail = () => {
                   }
                 </div>
 
-            <div className="d-flex justify-content-center">
+                <div className="d-flex justify-content-center">
                   {/* <!--  --> */}
                   <div className="flex-w flex-m  p-t-40 respon7">
-                  <div className="flex-m bor9 p-r-10 m-r-11">
+                    <div className="flex-m bor9 p-r-10 m-r-11">
+                      <Link
+                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
+                        data-tooltip="Add to Wishlist"
+                      >
+                        <i className="zmdi zmdi-favorite"></i>
+                      </Link>
+                    </div>
+
                     <Link
-                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
-                      data-tooltip="Add to Wishlist"
+                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                      data-tooltip="Facebook"
                     >
-                      <i className="zmdi zmdi-favorite"></i>
+                      <i className="fa fa-facebook"></i>
+                    </Link>
+
+                    <Link
+                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                      data-tooltip="Twitter"
+                    >
+                      <i className="fa fa-twitter"></i>
+                    </Link>
+
+                    <Link
+                      className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                      data-tooltip="Google Plus"
+                    >
+                      <i className="fa fa-google-plus"></i>
                     </Link>
                   </div>
-
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Facebook"
-                  >
-                    <i className="fa fa-facebook"></i>
-                  </Link>
-
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Twitter"
-                  >
-                    <i className="fa fa-twitter"></i>
-                  </Link>
-
-                  <Link
-                    className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                    data-tooltip="Google Plus"
-                  >
-                    <i className="fa fa-google-plus"></i>
-                  </Link>
                 </div>
-            </div>
               </div>
             </div>
           </div>
