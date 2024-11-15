@@ -6,7 +6,6 @@ import ModalSft from "../../../../ModalSft";
 import AvatarUpload from "../../../../AvatarUpload ";
 import { Pencil, Trash, Plus, UserCirclePlus } from "phosphor-react";
 import { stfExecAPI } from "../../../../../../stf/common";
-import FullScreenSpinner from "../../../FullScreenSpinner";
 
 const convertToBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -47,11 +46,9 @@ function formatDateString(dateString, format) {
   return format.replace("DD", day).replace("MM", month).replace("YYYY", year);
 }
 
-const UserTable = () => {
+const CustomerTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
-  const [isModalQuyenOpen, setIsModalQuyenOpen] = useState(false);
-  const [permissions, setPermissions] = useState([]);
   const [file, setFile] = useState(null);
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState({});
@@ -63,12 +60,15 @@ const UserTable = () => {
   const [showPass, setShowPass] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
 
   // ********** Cấu hình table*********
   const columns = [
-    { title: "Email / Phone number", dataIndex: "username", key: "name" },
+    { title: "Username", dataIndex: "username", key: "name" },
     { title: "Fullname", dataIndex: "fullname", key: "age" },
+    { title: "Email", dataIndex: "email", key: "email" },
+    { title: "Phone", dataIndex: "phone", key: "phone" },
     { title: "Birthday", dataIndex: "birthday", key: "birthday" },
     {
       title: "Gender",
@@ -122,25 +122,6 @@ const UserTable = () => {
         );
       },
     },
-    {
-      title: "Permissions",
-      key: "permissions",
-      render: (text, record) => {
-        return record.status === 0 ? (
-          ""
-        ) : (
-          <div>
-            <button
-              className="btn btn-dark btn-sm me-2"
-              onClick={() => handleClickPermission(record)}
-            >
-              <UserCirclePlus size={17} weight="fill" />
-            </button>
-          </div>
-        );
-      },
-      className: "center",
-    },
   ];
 
   const btnTable = () => {
@@ -169,20 +150,17 @@ const UserTable = () => {
   //Change trạng thái lọc
   const handleChangeSelectFilterActive = async (value) => {
     const fetchUsers = async () => {
-      setLoading(true);
       const [error, data] = await stfExecAPI({
-        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${keyword}&status=${Number(
+        url: `api/admin/customer/all?page=${1}&size=${6}&keyword=${keyword}&status=${Number(
           value
         )}`,
       });
 
       if (data) {
-        setLoading(false);
         setUsers(data.data);
         return;
       }
 
-      setLoading(false);
       const err =
         error.status === 403
           ? "Account does not have permission to perform this function"
@@ -216,36 +194,6 @@ const UserTable = () => {
     setUser({ ...record });
   };
 
-  const handleClickPermission = async (record) => {
-    setIsModalQuyenOpen(true);
-    setUser({ ...record });
-
-    const fetchPermissions = async () => {
-      const [error, data] = await stfExecAPI({
-        url: `api/admin/userpermissions/${record.userId}`,
-      });
-
-      if (data) {
-        setPermissions(data.data);
-        return;
-      }
-
-      setPermissions([]);
-      const err =
-        error.status === 403
-          ? "Account does not have permission to perform this function"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-    };
-
-    fetchPermissions();
-  };
-
   //Nhấn nút thêm mới
   const handleClickAdd = () => {
     setFullName("");
@@ -273,8 +221,6 @@ const UserTable = () => {
       return;
     }
 
-    setLoading(true);
-
     const [error, data] = await stfExecAPI({
       method: isAdd ? "post" : "put",
       url: isAdd
@@ -291,7 +237,6 @@ const UserTable = () => {
       },
     });
 
-    setLoading(false);
     if (error) {
       const err =
         error.status === 403
@@ -308,7 +253,7 @@ const UserTable = () => {
 
     const fetchUsers = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
+        url: `api/admin/customer/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
       });
 
       if (data) {
@@ -333,14 +278,11 @@ const UserTable = () => {
 
   //Modal xóa
   const handleModalDeleteOk = async () => {
-    setLoading(true);
-
     const [error, data] = await stfExecAPI({
       method: "delete",
       url: `api/admin/userpermissions/delete/${user.userId}`,
     });
 
-    setLoading(false);
     if (error) {
       const err =
         error.status === 403
@@ -357,7 +299,7 @@ const UserTable = () => {
 
     const fetchUsers = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
+        url: `api/admin/customer/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
       });
 
       if (data) {
@@ -380,48 +322,6 @@ const UserTable = () => {
     setIsModalDeleteOpen(false); // Đóng modal khi nhấn "Close"
   };
 
-  //Modal phân quyền
-  const handleModalQuyenOk = async () => {
-    const pers = permissions.flatMap((item) => item.permission);
-    setLoading(true);
-    const [error, data] = await stfExecAPI({
-      method: "post",
-      url: `api/admin/userpermissions/save-per`,
-      data: {
-        userId: user.userId,
-        permission: pers,
-      },
-    });
-
-    setLoading(false);
-    if (error) {
-      const err =
-        error.status === 403
-          ? "Account does not have permission to perform this function"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-      return;
-    }
-
-    toast.success(`Save role success!`, {
-      className: "toast-message",
-      position: "top-right",
-      autoClose: 5000,
-    });
-
-    setIsModalQuyenOpen(false); // Đóng modal khi nhấn "Save changes"
-  };
-
-  const handleModalQuyenCancel = () => {
-    setPermissions([]);
-    setIsModalQuyenOpen(false); // Đóng modal khi nhấn "Close"
-  };
-
   // Hàm nhận file từ component con
   const handleFileSelect = async (selectedFile) => {
     if (!selectedFile) {
@@ -437,115 +337,14 @@ const UserTable = () => {
     }
   };
 
-  //Phân quyền
-  // Cập nhật trạng thái checkbox cho từng checkbox
-  const handleCheckboxChange = (uTitle, pId, checked) => {
-    setPermissions((prevPermissions) =>
-      prevPermissions.map((u) =>
-        u.title === uTitle
-          ? {
-              ...u,
-              permission: u.permission.map((p) => {
-                if (p.id === pId) {
-                  return { ...p, use: checked };
-                }
-                return p;
-              }),
-            }
-          : u
-      )
-    );
-  };
-
-  const handleUpdateOrDeleteChange = (uTitle, pId, checked) => {
-    setPermissions((prevPermissions) => {
-      return prevPermissions.map((u) => {
-        if (u.title.toLowerCase() == uTitle.toLowerCase()) {
-          const updatedPermissions = u.permission.map((p) => {
-            // Nếu chọn Update hoặc Delete, tự động chọn View nếu chưa chọn
-            if ((p.name == "Delete" || p.name == "Update") && checked) {
-              const viewPermission = u.permission.find(
-                (p) => p.name === "View"
-              );
-
-              if (viewPermission && !viewPermission.checked) {
-                viewPermission.use = true;
-              }
-            }
-
-            if (p.id === pId) {
-              return { ...p, use: checked };
-            }
-
-            return p;
-          });
-          return { ...u, permission: updatedPermissions };
-        }
-
-        return u;
-      });
-    });
-  };
-
-  const handleViewChange = (uTitle, checked) => {
-    setPermissions((prevPermissions) =>
-      prevPermissions.map((u) => {
-        if (u.title === uTitle) {
-          const updatedPermissions = u.permission.map((p) => {
-            if (p.name === "View") {
-              // Nếu bỏ chọn View, kiểm tra và bỏ chọn các quyền Update/Delete nếu cần
-              if (!checked) {
-                const updatePermission = u.permission.find(
-                  (p) => p.name === "Update"
-                );
-                const deletePermission = u.permission.find(
-                  (p) => p.name === "Delete"
-                );
-                if (updatePermission) updatePermission.use = false;
-                if (deletePermission) deletePermission.use = false;
-              }
-              return { ...p, use: checked };
-            }
-            return p;
-          });
-          return { ...u, permission: updatedPermissions };
-        }
-        return u;
-      })
-    );
-  };
-
-  const handleAllCheckboxStatus = (uTitle) => {
-    const userPerm = permissions.find((u) => u.title === uTitle);
-    return userPerm?.permission.every((p) => p.use) || false; // kiểm tra tất cả các checkbox đã được chọn chưa
-  };
-
-  const handleAllCheckboxChange = (uTitle, checked) => {
-    setPermissions((prevPermissions) =>
-      prevPermissions.map((u) =>
-        u.title === uTitle
-          ? {
-              ...u,
-              permission: u.permission.map((p) => ({
-                ...p,
-                use: checked,
-              })),
-            }
-          : u
-      )
-    );
-  };
-
   //Đổ danh sách user
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoading(true);
       const [error, data] = await stfExecAPI({
-        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
+        url: `api/admin/customer/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
       });
 
       if (data) {
-        setLoading(false);
         setUsers(data.data);
         return;
       }
@@ -560,23 +359,18 @@ const UserTable = () => {
         position: "top-right",
         autoClose: 5000,
       });
-
-      setLoading(false);
     };
 
     fetchUsers();
   }, []);
 
   const onChangePagination = async (page) => {
-    setLoading(true);
-
     const [error, data] = await stfExecAPI({
-      url: `api/admin/user/all?page=${page}&size=${6}&keyword=${
+      url: `api/admin/customer/all?page=${page}&size=${6}&keyword=${
         keyword || ""
       }&status=${Number(status)}`,
     });
 
-    setLoading(false);
     if (data) {
       setUsers(data.data);
     }
@@ -584,14 +378,13 @@ const UserTable = () => {
 
   const onChangeInputSearch = async (value) => {
     setKeyword(value);
-    setLoading(true);
+
     const [error, data] = await stfExecAPI({
-      url: `api/admin/user/all?page=${
+      url: `api/admin/customer/all?page=${
         (users.number || 0) + 1
       }&size=${6}&keyword=${value}&status=${Number(status)}`,
     });
 
-    setLoading(false);
     if (data) {
       setUsers(data.data);
     } else {
@@ -611,11 +404,10 @@ const UserTable = () => {
 
   return (
     <>
-      <FullScreenSpinner isLoading={loading} />
       <DataTableSft
         dataSource={users?.content || []}
         columns={columns}
-        title={"Staff list"}
+        title={"Customer list"}
         isSearch={true}
         onChangeSearch={onChangeInputSearch}
         keyword={keyword}
@@ -635,7 +427,7 @@ const UserTable = () => {
       </div>
 
       <ModalSft
-        title="Infomation staff"
+        title="Infomation Customer"
         titleOk={Object.keys(user || {}).length === 0 ? "Add new" : "Update"}
         open={isModalOpen}
         onOk={handleOk}
@@ -673,7 +465,7 @@ const UserTable = () => {
 
               <div className="row mb-4">
                 <label className="form-label" htmlFor="basic-default-email">
-                  Email / Phone number <span className="text-danger">*</span>
+                  Username <span className="text-danger">*</span>
                 </label>
                 <div className="input-group input-group-merge">
                   <input
@@ -776,12 +568,40 @@ const UserTable = () => {
               </select>
             </div>
           </div>
+
+          <div className="row">
+            <div className="col-md-5 mb-3">
+              <label className="form-label" htmlFor="basic-default-birthday">
+                Email
+              </label>
+              <input
+                type="text"
+                id="basic-default-birthday"
+                className="form-control"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="col-md-7 mb-3">
+              <label className="form-label" htmlFor="basic-default-birthday">
+                Phone
+              </label>
+              <input
+                type="text"
+                id="basic-default-birthday"
+                className="form-control"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+          </div>
         </form>
       </ModalSft>
 
       {/* Modal xóa */}
       <ModalSft
-        title="Delete staff"
+        title="Delete customer"
         titleOk={"Delete"}
         open={isModalDeleteOpen}
         onOk={handleModalDeleteOk}
@@ -790,88 +610,8 @@ const UserTable = () => {
       >
         <span>Are you sure you want to delete?</span>
       </ModalSft>
-
-      {/* Modal phân quyền */}
-      <ModalSft
-        title="Permission"
-        titleOk={"Save"}
-        open={isModalQuyenOpen}
-        onOk={handleModalQuyenOk}
-        onCancel={handleModalQuyenCancel}
-        size="modal-lg"
-      >
-        {permissions &&
-          permissions.map((u) => {
-            return (
-              <div className="row mb-3" key={u.title}>
-                <div className="col-md-3">
-                  <label className="me-3">{u.title}:</label>
-                </div>
-
-                <div className="col-md-9">
-                  <div className="d-flex gap-4">
-                    {u.permission.map((up) => (
-                      <div className="form-check me-4" key={up.id}>
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={up.use}
-                          onChange={(e) => {
-                            if (up.name === "Update" || up.name === "Delete") {
-                              handleUpdateOrDeleteChange(
-                                u.title,
-                                up.id,
-                                e.target.checked
-                              );
-                            } else if (up.name === "View") {
-                              handleViewChange(u.title, e.target.checked);
-                            } else {
-                              handleCheckboxChange(
-                                u.title,
-                                up.id,
-                                e.target.checked
-                              );
-                            }
-
-                            // const per = permissions.find(
-                            //   (p) =>
-                            //     p.title.toLowerCase() === u.title.toLowerCase()
-                            // );
-                            // setPermissions();
-                          }}
-                          id={up.id}
-                        />
-                        <label className="form-check-label" htmlFor={up.id}>
-                          {up.name}
-                        </label>
-                      </div>
-                    ))}
-
-                    <div className="form-check me-4">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        checked={handleAllCheckboxStatus(u.title)}
-                        onChange={(e) =>
-                          handleAllCheckboxChange(u.title, e.target.checked)
-                        }
-                        id={u.title + "all"}
-                      />
-                      <label
-                        className="form-check-label"
-                        htmlFor={u.title + "all"}
-                      >
-                        All
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-      </ModalSft>
     </>
   );
 };
 
-export default UserTable;
+export default CustomerTable;
