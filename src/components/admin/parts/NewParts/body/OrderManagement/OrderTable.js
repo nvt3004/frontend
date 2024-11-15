@@ -21,7 +21,6 @@ const OrderTable = () => {
         axiosInstance.get(`/staff/orders?page=${currentPage}&size=5`).then(
             (response) => {
                 if (response?.data?.errorCode === 200) {
-                    // Sắp xếp danh sách orders theo orderId giảm dần
                     const sortedOrders = response.data.data.content.sort((a, b) => b.orderId - a.orderId);
 
                     setOrders(sortedOrders);
@@ -255,41 +254,53 @@ const OrderTable = () => {
             console.log('is open: ', orderID?.isOpen);
         }
     }, [orderID.isOpen, orderID.value]);
+
+    const canChangeStatus = (currentStatus, newStatus) => {
+        const validTransitions = {
+            "pending": ["processed", "cancelled"],
+            "processed": ["shipped"],
+            "shipped": ["delivered"],
+            "delivered": [],
+            "cancelled": []
+        };
+        return validTransitions[currentStatus]?.includes(newStatus);
+    };
+
     const handleChangeStatus = (option, orderID) => {
-        if ((option?.value < 4 || option?.value === 5)) {
-            Swal.fire(
-                {
-                    title: 'Confirm to change status',
-                    text: 'Do youu want to change the status of this order ?',
-                    icon: 'question',
-                    showConfirmButton: true,
-                    showCancelButton: true,
-                    confirmButtonText: 'OK!',
-                    cancelButtonText: 'Cancel'
-                }
-            ).then(
-                (result) => {
-                    if (result.isConfirmed) {
-                        axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`).then(
-                            (response) => {
-                                if (response.data?.errorCode === 200) {
-                                    toast.success('Updated order status successfully !');
-                                    handleGetOrderAPI();
-                                } else if (response.data?.errorCode === 400) {
-                                    toast.error(response.data?.message);
-                                }
-                                else {
-                                    toast.error('Could not update status of the order. Please try again !');
-                                }
-                            }
-                        )
-                    }
-                }
-            );
-        } else {
-            toast.warning(`You can not to set the status to ${option?.label.toLowerCase()}`)
+        const currentStatus = orders.find(order => order.orderId === orderID)?.statusName.toLowerCase();
+        const newStatus = option?.label.toLowerCase();
+
+        if (!canChangeStatus(currentStatus, newStatus)) {
+            toast.warning(`Cannot change status from ${currentStatus} to ${newStatus}`);
+            return;
         }
-    }
+
+        Swal.fire({
+            title: 'Confirm to change status',
+            text: 'Do you want to change the status of this order?',
+            icon: 'question',
+            showConfirmButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'OK!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`).then(
+                    (response) => {
+                        if (response.data?.errorCode === 200) {
+                            toast.success('Updated order status successfully!');
+                            handleGetOrderAPI();
+                        } else if (response.data?.errorCode === 400) {
+                            toast.error(response.data?.message);
+                        } else {
+                            toast.error('Could not update status of the order. Please try again!');
+                        }
+                    }
+                );
+            }
+        });
+    };
+
     useEffect(
         () => {
             if (orderDetails) {

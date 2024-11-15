@@ -471,13 +471,11 @@ const UpdateProduct = () => {
                                                                         )
                                                                     }
                                                                 </td>
-                                                                {!selectedProduct?.versions.length === 1 && (
-                                                                    <td>
-                                                                        <CustomButton btnType={'button'}
-                                                                            btnBG={'danger'} btnName={<FaTrash />}
-                                                                            handleClick={() => { handleRemoveVersion(version) }} />
-                                                                    </td>
-                                                                )}
+                                                                <td>
+                                                                    <CustomButton btnType={'button'}
+                                                                        btnBG={'danger'} btnName={<FaTrash />}
+                                                                        handleClick={() => { handleRemoveVersion(version) }} />
+                                                                </td>
                                                                 <td>
                                                                     <div style={{ minWidth: '90px' }}>
                                                                         {!(versionID === version?.id) ?
