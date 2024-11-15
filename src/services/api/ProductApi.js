@@ -304,7 +304,7 @@ const getOrder = async (size = 10, page = 0) => {
   try {
     const [error, data] = await stfExecAPI({
       method: "get",
-      url: "api/staff/orders/username",
+      url: "api/user/orders/username",
       params: {
         size: size,
         page: page,

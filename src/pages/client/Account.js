@@ -19,7 +19,7 @@ import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import ConfirmAlert from "../../components/client/sweetalert/ConfirmAlert";
 import { getProfile, updateUser } from "../../services/api/OAuthApi";
 import { format } from "date-fns";
-
+import moment from 'moment';
 import productApi from "../../services/api/ProductApi";
 function getNameAddress(nameId) {
   return nameId.substring(nameId.indexOf(" "), nameId.length).trim();
@@ -540,7 +540,7 @@ const Account = () => {
                           </strong>{" "}
                           <br />
                           <small className=" stext-113">
-                            {new Date(order.orderDate).toLocaleString()}
+                          {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')}
                           </small>
                         </div>
                         <span
