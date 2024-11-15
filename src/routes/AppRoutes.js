@@ -17,16 +17,15 @@ import Account from "../pages/client/Account";
 import WishList from "../pages/client/WishList";
 import PageNotFound from "../pages/PageNotFound";
 // Admin Pages
-import Dashboard from '../pages/admin/Dashboard'; // Default Pages
-import Settings from '../pages/admin/Settings';
-import AddNewUser from '../components/admin/parts/AddNewUser';
-import OrderManagement from '../components/admin/parts/OrderManagement';
-import AddNewSupplier from '../components/admin/parts/AddNewSupplier';
-import PermissionManagement from '../components/admin/parts/PermissionManagement';
-import NewPermission from '../components/admin/parts/NewPermission';
-import FeedbackManagement from '../components/admin/parts/FeedbackManagement';
-
-
+import Dashboard from "../pages/admin/Dashboard"; // Default Pages
+import Settings from "../pages/admin/Settings";
+import AddNewUser from "../components/admin/parts/AddNewUser";
+import OrderManagement from "../components/admin/parts/OrderManagement";
+import AddNewSupplier from "../components/admin/parts/AddNewSupplier";
+import PermissionManagement from "../components/admin/parts/PermissionManagement";
+import NewPermission from "../components/admin/parts/NewPermission";
+import FeedbackManagement from "../components/admin/parts/FeedbackManagement";
+import CustomerTable from "../components/admin/parts/NewParts/body/CustomerManagement/CustomerTable";
 
 // Auth Pages
 import AuthLayout from "../layouts/AuthLayout";
@@ -34,16 +33,15 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
-import PaymentSuccess from '../pages/client/PaymentSuccess';
-import PaymentCancel from '../pages/client/PaymentCancel';
+import PaymentSuccess from "../pages/client/PaymentSuccess";
+import PaymentCancel from "../pages/client/PaymentCancel";
 // Admin new pages
-import UserTable from '../components/admin/parts/NewParts/body/UserManagement/UserTable';
-import SuppliersTable from '../components/admin/parts/NewParts/body/SuppliersManagement/SuppliersTable';
-import ProductTable from '../components/admin/parts/NewParts/body/ProductManagement/ProductTable';
-import NewProduct from '../components/admin/parts/NewParts/body/ProductManagement/NewProduct';
-import StockIn from '../components/admin/parts/NewParts/body/WarehouseManagement/StockIn';
-import ProductCategories from '../components/admin/parts/NewParts/body/ProductManagement/ProductCategories';
-
+import UserTable from "../components/admin/parts/NewParts/body/UserManagement/UserTable";
+import SuppliersTable from "../components/admin/parts/NewParts/body/SuppliersManagement/SuppliersTable";
+import ProductTable from "../components/admin/parts/NewParts/body/ProductManagement/ProductTable";
+import NewProduct from "../components/admin/parts/NewParts/body/ProductManagement/NewProduct";
+import StockIn from "../components/admin/parts/NewParts/body/WarehouseManagement/StockIn";
+import ProductCategories from "../components/admin/parts/NewParts/body/ProductManagement/ProductCategories";
 
 import ProtectedRoute from "./ProtectedRoute";
 const router = createBrowserRouter([
@@ -55,55 +53,131 @@ const router = createBrowserRouter([
       { path: "/home", element: <Home /> },
       { path: "/product", element: <Product /> },
       { path: "/product-detail", element: <ProductDetail /> },
-      { path: "/shoping-cart", element: <ProtectedRoute element={<ShopingCart />} requiredRole="User,Admin" /> },
+      {
+        path: "/shoping-cart",
+        element: (
+          <ProtectedRoute element={<ShopingCart />} requiredRole="User,Admin" />
+        ),
+      },
       { path: "/blog", element: <Blog /> },
       { path: "/blog-detail", element: <BlogDetail /> },
       { path: "/about", element: <About /> },
       { path: "/contact", element: <Contact /> },
-      { path: "/account", element: <ProtectedRoute element={<Account />} requiredRole="User,Admin" /> },
-      { path: "/wishlist", element: <ProtectedRoute element={<WishList />} requiredRole="User,Admin" /> },
+      {
+        path: "/account",
+        element: (
+          <ProtectedRoute element={<Account />} requiredRole="User,Admin" />
+        ),
+      },
+      {
+        path: "/wishlist",
+        element: (
+          <ProtectedRoute element={<WishList />} requiredRole="User,Admin" />
+        ),
+      },
     ],
   },
   {
     path: "/admin",
     element: <AdminLayout />,
     children: [
-      { index: true, element: <ProtectedRoute element={<Dashboard />} requiredRole="Admin" /> },
+      {
+        path: "customers/manage",
+        element: (
+          <ProtectedRoute
+            element={<CustomerTable />}
+            requiredRole="Admin,Staff"
+          />
+        ),
+      },
+      {
+        index: true,
+        element: (
+          <ProtectedRoute element={<Dashboard />} requiredRole="Admin" />
+        ),
+      },
       {
         path: "dashboard",
-        element: <ProtectedRoute element={<Dashboard />} requiredRole="Admin"/>,
+        element: (
+          <ProtectedRoute element={<Dashboard />} requiredRole="Admin" />
+        ),
       },
-      { path: "settings", element: <ProtectedRoute element={<Settings />} requiredRole="Admin"/> },
+      {
+        path: "settings",
+        element: <ProtectedRoute element={<Settings />} requiredRole="Admin" />,
+      },
       {
         path: "users",
         children: [
-          { path: "add", element: <ProtectedRoute element={<AddNewUser />} requiredRole="Admin,Staff"/> },
-          { path: "manage", element: <ProtectedRoute element={<UserTable />} requiredRole="Admin,Staff"/> },
+          {
+            path: "add",
+            element: (
+              <ProtectedRoute
+                element={<AddNewUser />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
+          {
+            path: "manage",
+            element: (
+              <ProtectedRoute
+                element={<UserTable />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
         ],
       },
       {
         path: "orders",
-        children: [{ path: "manage", element: <ProtectedRoute element={<OrderManagement />} requiredRole="Admin,Staff"/> }],
+        children: [
+          {
+            path: "manage",
+            element: (
+              <ProtectedRoute
+                element={<OrderManagement />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
+        ],
       },
       {
         path: "suppliers",
         children: [
-          { path: "manage", element: <ProtectedRoute element={<SuppliersTable />} requiredRole="Admin,Staff"/> },
-          { path: "add", element: <ProtectedRoute element={<AddNewSupplier />} requiredRole="Admin,Staff"/> },
+          {
+            path: "manage",
+            element: (
+              <ProtectedRoute
+                element={<SuppliersTable />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
+          {
+            path: "add",
+            element: (
+              <ProtectedRoute
+                element={<AddNewSupplier />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
         ],
       },
       {
         path: "warehouse",
         children: [
-          { path: 'manage', element: <SuppliersTable /> },
-          { path: 'add', element: <AddNewSupplier /> },
+          { path: "manage", element: <SuppliersTable /> },
+          { path: "add", element: <AddNewSupplier /> },
         ],
       },
       {
         path: "permission",
         children: [
           // { path: 'manage', element: <WarehouseManagement/>},
-          { path: 'stock-in', element: <StockIn /> },
+          { path: "stock-in", element: <StockIn /> },
         ],
       },
       // {
@@ -114,17 +188,15 @@ const router = createBrowserRouter([
       //   ],
       // },
       {
-        path: 'feedback',
-        children: [
-          { path: 'manage', element: <FeedbackManagement /> },
-        ],
+        path: "feedback",
+        children: [{ path: "manage", element: <FeedbackManagement /> }],
       },
       {
-        path: 'products',
+        path: "products",
         children: [
-          { path: 'manage', element: <ProductTable /> },
-          { path: 'new', element: <NewProduct /> },
-          { path: 'categories', element: <ProductCategories /> },
+          { path: "manage", element: <ProductTable /> },
+          { path: "new", element: <NewProduct /> },
+          { path: "categories", element: <ProductCategories /> },
         ],
       },
     ],
@@ -143,8 +215,8 @@ const router = createBrowserRouter([
     path: "*", // Catch-all route for 404 pages
     element: <PageNotFound />,
   },
-  { path: '/pm-success', element: <PaymentSuccess /> },
-  { path: '/pm-cancel', element: <PaymentCancel /> },
+  { path: "/pm-success", element: <PaymentSuccess /> },
+  { path: "/pm-cancel", element: <PaymentCancel /> },
 ]);
 
 function AppRoutes() {

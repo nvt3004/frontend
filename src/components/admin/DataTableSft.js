@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
+import debounce from "lodash.debounce"; // Import debounce từ lodash
 import { MagnifyingGlass } from "phosphor-react";
 
 const DataTableSft = ({
@@ -8,13 +9,28 @@ const DataTableSft = ({
   buttonTable,
   isSearch,
   onChangeSearch = (value) => {},
+  keyword = "", // Thêm prop keyword để nhận giá trị tìm kiếm
 }) => {
+  const [searchKeyword, setSearchKeyword] = useState(keyword);
+
+  const debouncedSearch = useCallback(
+    debounce((value) => {
+      onChangeSearch(value);
+    }, 500),
+    []
+  );
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchKeyword(value);
+    debouncedSearch(value); // Thực hiện debounce khi người dùng gõ
+  };
+
   return (
     <div className="card">
       <h5 className="card-header">{title}</h5>
 
       <div className="row">
-        {/* Các nút xử lý trên table */}
         <div className="col-9 px-4 mb-3">{buttonTable && buttonTable}</div>
 
         {/* Thanh tìm kiếm */}
@@ -22,14 +38,11 @@ const DataTableSft = ({
           <div className="col-3 px-4">
             <div className="input-group input-group-merge">
               <span className="input-group-text" id="basic-addon-search31">
-                {<MagnifyingGlass />}
+                <MagnifyingGlass />
               </span>
               <input
-                onChange={(e) => {
-                 setTimeout(()=>{
-                  onChangeSearch(e.target.value);
-                 },1000);
-                }}
+                onChange={handleSearchChange} // Sử dụng hàm handleSearchChange thay vì onChangeSearch trực tiếp
+                value={searchKeyword} // Hiển thị giá trị keyword trong input
                 type="text"
                 className="form-control"
                 placeholder="Search..."
@@ -54,7 +67,10 @@ const DataTableSft = ({
             {dataSource.map((item, index) => (
               <tr key={item.key || index}>
                 {columns.map((col) => (
-                  <td key={col.key || col.dataIndex} className={col.className? `text-${col.className}`:''}>
+                  <td
+                    key={col.key || col.dataIndex}
+                    className={col.className ? `text-${col.className}` : ""}
+                  >
                     {col.render
                       ? col.render(item[col.dataIndex], item, index)
                       : item[col.dataIndex]}
