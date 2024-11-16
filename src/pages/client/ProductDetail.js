@@ -14,7 +14,7 @@ import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import { useDispatch } from "react-redux";
 
 import { incrementCart } from "../../store/actions/cartActions";
-
+import Wish from "../../components/client/ProdWish/Wish";
 import heart1 from "../../assets/images/icons/icon-heart-01.png";
 import heart2 from "../../assets/images/icons/icon-heart-02.png";
 import prod12 from "../../assets/images/product-01.jpg";
@@ -46,6 +46,51 @@ const ProductDetail = () => {
   const toggleOffcanvas = () => {
     setIsOffcanvasOpen((prev) => !prev);
   };
+
+  const [Products, setProducts] = useState([]);
+  const [ErrorMessage] = useState("No products found");
+  useEffect(() => {
+    const fetchRecommendedProducts = async () => {
+      try {
+        const response = await productApi.getRecommendedProducts();
+        setProducts(response.data.data);
+      } catch (error) {
+        console.error("Error fetching products:", error.message);
+      }
+    };
+
+    fetchRecommendedProducts();
+  }, []);
+
+  const handleAddWishlist = async (id) => {
+    try {
+      await productApi.addWishlist(id, dispatch);
+      setProducts((prevProducts) =>
+        prevProducts.map((prod) =>
+          prod.id === id
+            ? { ...prod, like: true } // Đánh dấu sản phẩm là 'liked'
+            : prod
+        )
+      );
+    } catch (error) {
+      console.error("Error adding to Wishlist:", error.message);
+    }
+  };
+  const handleRemoveWishlist = async (id) => {
+    try {
+      await productApi.removeWishlist(id, dispatch);
+      setProducts((prevProducts) =>
+        prevProducts.map((prod) =>
+          prod.id === id
+            ? { ...prod, like: false } // Gỡ dấu 'liked' khỏi sản phẩm
+            : prod
+        )
+      );
+    } catch (error) {
+      console.error("Error removing from Wishlist:", error.message);
+    }
+  };
+
   //Minh ty làm *************************************
   const [product, setProduct] = useState([]);
   const [ProductDetail, setProductDetail] = useState();
@@ -421,6 +466,11 @@ const ProductDetail = () => {
     });
   };
 
+
+
+
+
+  
   const handleRating = (index) => {
     setRating(index); // Cập nhật trạng thái khi người dùng chọn sao
   };
@@ -860,62 +910,87 @@ const ProductDetail = () => {
             <h3 className="ltext-106 cl5 txt-center">Related Products</h3>
           </div>
 
-          {/* <!-- Slide2 --> */}
-          <div className="wrap-slick2">
-            <div className="row isotope-grid">
-              <div className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women">
-                {/* <!-- Block2 --> */}
-                <div className="block2">
-                  <div className="block2-pic hov-img0">
-                    <img src={prod12} alt="IMG-PRODUCT" />
+          <section className="sec-relate-product bg0 p-t-45 p-b-64">
+          <div className="p-3 pt-0 pb-0">
+            {/* <!-- Slide2 --> */}
+            <div className="wrap-slick2">
+              <div className="row isotope-grid">
+                {!Products || Products?.length ? (
+                  Products?.map((product, index) => (
+                    <div
+                      key={index}
+                      className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
+                    >
+                      <div className="block2">
+                        <div className="block2-pic hov-img0">
+                          <img src={product?.imgName} alt="IMG-PRODUCT" />
+                          {/* Quick View */}
+                          <Link
+                                to={`/product-detail/${product?.id}`}
+                            type="button"
+                            className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none "
+                           
+                          >
+                      View
+                          </Link>
+                        </div>
 
-                    {/* Quick View */}
-                    <QuickViewProdDetail />
-                  </div>
+                        <div className="block2-txt flex-w flex-t p-t-14">
+                          <div className="block2-txt-child1 flex-col-l">
+                            <Link
+                              to={`/product-detail/${product?.id}`}
+                              className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
+                            >
+                              {product?.name}
+                            </Link>
 
-                  <div className="block2-txt flex-w flex-t p-t-14">
-                    <div className="block2-txt-child1 flex-col-l">
-                      <Link
-                        to="/product-detail"
-                        className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
-                      >
-                        Esprit Ruffle Shirt
-                      </Link>
+                            <span className="stext-105 cl3">
+                              {`
+  ${
+    product?.minPrice !== product?.maxPrice
+      ? `${formatCurrencyVND(product?.minPrice ?? "N/A")} ~ `
+      : ""
+  }
+  ${formatCurrencyVND(product?.maxPrice ?? "N/A")}
+`}
+                            </span>
+                          </div>
 
-                      <span className="stext-105 cl3"> $16.64 </span>
+                          <div className="block2-txt-child2 flex-r p-t-3">
+                            <Wish
+                              prodID={product?.id}
+                              isWish={product?.like}
+                              handleAddWish={() => {
+                                handleAddWishlist(product?.id);
+                              }}
+                              handleRemoveWish={() =>
+                                handleRemoveWishlist(product?.id)
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
-
-                    <div className="block2-txt-child2 flex-r p-t-3">
-                      <Link
-                        href="#"
-                        className="btn-addwish-b2 dis-block pos-relative js-addwish-b2"
-                      >
-                        <img
-                          className="icon-heart1 dis-block trans-04"
-                          src={heart1}
-                          alt="ICON"
-                        />
-                        <img
-                          className="icon-heart2 dis-block trans-04 ab-t-l"
-                          src={heart2}
-                          alt="ICON"
-                        />
-                      </Link>
+                  ))
+                ) : (
+                  <div className="d-flex justify-content-center mt-5 mb-5">
+                    <div className=" pt-5 pb-5 opacity-50">
+                      <p className="fs-4 text-muted mt-3">{ErrorMessage}</p>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
-              {/* ADD PRODUCT chỗ này */}
             </div>
           </div>
+        </section>
           {/* <!-- Load more --> */}
-          <div className="flex-c-m flex-w w-full p-t-45">
-            <Link
+          <div className="flex-c-m flex-w w-full">
+            <span
               href="#"
-              className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04"
+              className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 p-lr-15 trans-04"
             >
-              Load More
-            </Link>
+             END
+            </span>
           </div>
         </div>
       </section>

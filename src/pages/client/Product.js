@@ -589,36 +589,7 @@ const Product = () => {
       <section id="productTop" className="bg0 p-t-23 p-b-64">
         <div className="container">
           <div className="flex-w flex-sb-m p-b-52">
-            {/* Bộ lọc Category */}
-            <div className="flex-w flex-l-m filter-tope-group m-tb-10">
-              <button
-                className={`stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 ${
-                  selectedCategory === null || selectedCategory === ""
-                    ? "how-active1"
-                    : ""
-                }`}
-                onClick={() => handleSelectChange("category", null)}
-              >
-                All Products
-              </button>
-              {filterAttributes?.categories?.length > 0 &&
-                filterAttributes?.categories?.map((category) => (
-                  <button
-                    key={category?.categoryId}
-                    className={`stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5  ${
-                      selectedCategory === category?.categoryId
-                        ? "how-active1"
-                        : ""
-                    }`}
-                    onClick={() =>
-                      handleSelectChange("category", category?.categoryId)
-                    }
-                  >
-                    {category?.categoryName}
-                  </button>
-                ))}
-            </div>
-
+          
             {/* Nút mở bộ lọc và tìm kiếm */}
             <div className="flex-w flex-c-m m-tb-10">
               <div>
@@ -663,202 +634,110 @@ const Product = () => {
                   data-bs-parent="#accordionFlushExample"
                 >
                   <div className="accordion-body p-0">
-                    {/* <!-- Filter --> */}
-                    <div className="panel-filter w-full mb-3">
-                      <div className="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
-                        {/* Price Filter */}
-                        <div className="filter-col2 p-r-15 p-b-27">
-                          <div className="mtext-102 cl2 p-b-15">Price</div>
+         {/* Filter Section */}
+<div className="panel-filter w-full mb-3">
+  <div className="wrap-filter flex-w bg-light w-full p-lr-40 p-t-27 p-lr-15-sm">
 
-                          <ul className="list-unstyled">
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === null &&
-                                  selectedMaxPrice === null
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", null);
-                                  handleSelectChange("maxPrice", null);
-                                }}
-                              >
-                                All
-                              </span>
-                            </li>
+    {/* Bộ lọc Category */}
+    <div className="filter-col p-r-15 p-b-27">
+      <div className="mtext-102 cl2 p-b-15">Category</div>
+      <div className="category-filter">
+        <button
+          className={`filter-btn ${!selectedCategory ? 'active' : ''}`}
+          onClick={() => handleSelectChange("category", null)}
+        >
+          All Products
+        </button>
+        {filterAttributes?.categories?.map((category) => (
+          <button
+            key={category?.categoryId}
+            className={`filter-btn ${selectedCategory === category?.categoryId ? 'active' : ''}`}
+            onClick={() => handleSelectChange("category", category?.categoryId)}
+          >
+            {category?.categoryName}
+          </button>
+        ))}
+      </div>
+    </div>
 
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === 0 &&
-                                  selectedMaxPrice === 200000
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", 0);
-                                  handleSelectChange("maxPrice", 200000);
-                                }}
-                              >
-                                0.000 VND - 200.000 VND
-                              </span>
-                            </li>
+    {/* Bộ lọc Price */}
+    <div className="filter-col p-r-15 p-b-27">
+      <div className="mtext-102 cl2 p-b-15">Price</div>
+      <ul className="list-unstyled">
+        {[
+          { label: "All", min: null, max: null },
+          { label: "0.000 VND - 200.000 VND", min: 0, max: 200000 },
+          { label: "200.000 VND - 400.000 VND", min: 200000, max: 400000 },
+          { label: "400.000 VND - 600.000 VND", min: 400000, max: 600000 },
+          { label: "600.000 VND - 800.000 VND", min: 600000, max: 800000 },
+          { label: "1.000.000 VND +", min: 1000000, max: null },
+        ].map(({ label, min, max }, index) => (
+          <li key={index} className="p-b-6">
+            <button
+              className={`filter-btn ${selectedMinPrice === min && selectedMaxPrice === max ? 'active' : ''}`}
+              onClick={() => {
+                handleSelectChange("minPrice", min);
+                handleSelectChange("maxPrice", max);
+              }}
+            >
+              {label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
 
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === 200000 &&
-                                  selectedMaxPrice === 400000
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", 200000);
-                                  handleSelectChange("maxPrice", 400000);
-                                }}
-                              >
-                                200.000 VND - 400.000 VND
-                              </span>
-                            </li>
+    {/* Bộ lọc Attribute */}
+    <div className="filter-col p-r-15 p-b-27">
+      <div className="mtext-102 cl2 p-b-15">Attribute</div>
+      <div className="attribute-filter">
+        <button
+          onClick={() => handleSelectChange("attribute", null)}
+          className={`filter-btn ${selectedAttribute.length === 0 ? 'active' : ''}`}
+        >
+          All
+        </button>
+        {filteredAttributes.map(({ name, attributeId, isSelected }) => (
+          <button
+            key={attributeId}
+            className={`filter-btn ${isSelected ? 'active' : ''}`}
+            onClick={() => handleSelectChange("attribute", attributeId)}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+    </div>
 
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === 400000 &&
-                                  selectedMaxPrice === 600000
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", 400000);
-                                  handleSelectChange("maxPrice", 600000);
-                                }}
-                              >
-                                400.000 VND - 600.000 VND
-                              </span>
-                            </li>
+    {/* Bộ lọc Sort By */}
+    <div className="filter-col p-r-15 p-b-27">
+      <div className="mtext-102 cl2 p-b-15">Sort By</div>
+      <ul className="list-unstyled">
+        {[
+          { label: "Price: Low to High", order: "ASC" },
+          { label: "Price: High to Low", order: "DESC" },
+        ].map(({ label, order }, index) => (
+          <li key={index} className="p-b-6">
+            <button
+              className={`filter-btn ${sortOrder === order ? 'active' : ''}`}
+              onClick={() => handleSelectChange("sortOrder", order)}
+            >
+              {label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
 
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === 600000 &&
-                                  selectedMaxPrice === 800000
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", 600000);
-                                  handleSelectChange("maxPrice", 800000);
-                                }}
-                              >
-                                600.000 VND - 800.000 VND
-                              </span>
-                            </li>
+    {/* Clear Filters Button */}
+    <div className="clear-filters p-t-10 p-b-15 ms-auto">
+      <button onClick={handleClearFilter} className="btn-clear-filters">
+        Clear All Filters
+      </button>
+    </div>
+  </div>
+</div>
 
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === 1000000 &&
-                                  selectedMaxPrice === null
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", 1000000);
-                                  handleSelectChange("maxPrice", null);
-                                }}
-                              >
-                                1.000.000 VND +
-                              </span>
-                            </li>
-                          </ul>
-                        </div>
-                        <div className="filter-col3 p-r-15 p-b-27">
-                          <div className="flex-w flex-l-m filter-tope-group m-tb-10">
-                            Attribute
-                          </div>
-
-                          <div className="flex-w flex-l-m filter-tope-group m-tb-10">
-                            {/* "All" Option */}
-                            <div
-                              onClick={() =>
-                                handleSelectChange("attribute", null)
-                              }
-                              className={`stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 ${
-                                selectedAttribute.length === 0
-                                  ? "how-active1"
-                                  : ""
-                              }`}
-                            >
-                              All
-                            </div>
-
-                            {/* Render filteredAttributes */}
-                            {filteredAttributes.map(
-                              ({ name, attributeId, isSelected }) => (
-                                <div
-                                  key={attributeId}
-                                  className={`stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 ${
-                                    isSelected ? "how-active1" : ""
-                                  }`}
-                                  onClick={() =>
-                                    handleSelectChange("attribute", attributeId)
-                                  }
-                                >
-                                  {name}
-                                </div>
-                              )
-                            )}
-                          </div>
-                        </div>
-                        {/* Sort By */}
-                        <div className="filter-col1 p-r-15 p-b-27">
-                          <div className="mtext-102 cl2 p-b-15">Sort By</div>
-
-                          <ul className="list-unstyled">
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  sortOrder === "ASC"
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("sortOrder", "ASC");
-                                }}
-                              >
-                                Price: Low to High
-                              </span>
-                            </li>
-
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  sortOrder === "DESC"
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("sortOrder", "DESC");
-                                }}
-                              >
-                                Price: High to Low
-                              </span>
-                            </li>
-                          </ul>
-                        </div>
-                        {/* Nút Bỏ Chọn Bộ Lọc */}
-                        <div className="clear-filters p-t-10 p-b-15 ms-auto">
-                          <button
-                            onClick={handleClearFilter}
-                            className="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 ps-3 pe-3"
-                          >
-                            Clear All Filters
-                          </button>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
                 {/* Accordion Search */}

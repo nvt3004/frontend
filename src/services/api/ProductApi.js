@@ -300,17 +300,16 @@ const getCartAll = async () => {
   }
 };
 
-const getOrder = async (size = 10, page = 0) => {
+const getOrder = async (keyword, statusId, size, page) => {
   try {
-    const [error, data] = await stfExecAPI({
-      method: "get",
-      url: "api/user/orders/username",
+    const { data } = await axiosInstance.get("user/orders/username", {
       params: {
+        keyword:keyword,
+        statusId:statusId,
         size: size,
         page: page,
       },
     });
-
     return data.data;
   } catch (error) {
     if (error.response) {
@@ -338,6 +337,51 @@ const getOrder = async (size = 10, page = 0) => {
         case 204:
           console.log("No Content: No orders found for the user.");
           break;
+          case 500:
+            console.log("Error: ", data?.message || "An error occurred during fetching feedback.");
+            break;
+        default:
+          console.log("Unknown Error: An unexpected error occurred.");
+          break;
+      }
+    } else {
+      console.log("Connection Error: Failed to connect to the server.");
+    }
+  }
+};
+const getOrderStatus = async (size, page) => {
+  try {
+    const data = await axiosInstance.get("/staff/orders/statuses");
+    return data.data;
+  } catch (error) {
+    if (error.response) {
+      const { status, data } = error.response;
+
+      switch (status) {
+        case 400:
+          console.log(
+            "Bad Request: ",
+            data.message || "Authorization header or token is missing."
+          );
+          break;
+        case 401:
+          console.log(
+            "Unauthorized: ",
+            data.message || "Token is missing, empty, or expired."
+          );
+          break;
+        case 403:
+          console.log("Forbidden: ", data.message || "Account is locked.");
+          break;
+        case 404:
+          console.log("Not Found: ", data.message || "User not found.");
+          break;
+        case 204:
+          console.log("No Content: No orders found for the user.");
+          break;
+          case 500:
+            console.log("Error: ", data?.message || "An error occurred during fetching feedback.");
+            break;
         default:
           console.log("Unknown Error: An unexpected error occurred.");
           break;
@@ -397,6 +441,7 @@ const productApi = {
   getCartAll,
   getOrder,
   getFeedback,
-  getRecommendedProducts
+  getRecommendedProducts,
+  getOrderStatus
 };
 export default productApi;
