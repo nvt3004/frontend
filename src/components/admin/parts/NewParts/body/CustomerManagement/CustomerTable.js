@@ -192,6 +192,7 @@ const CustomerTable = () => {
         position: "top-right",
         autoClose: 5000,
       });
+      setLoading(false);
       return;
     }
 
@@ -213,7 +214,6 @@ const CustomerTable = () => {
       autoClose: 5000,
     });
 
-    setLoading(false);
     setIsModalDeleteOpen(false); // Đóng modal khi nhấn "Save changes"
     setStatus(!isblock);
   };
@@ -224,13 +224,13 @@ const CustomerTable = () => {
 
   //Đổ danh sách user
   useEffect(() => {
-    setLoading(true);
-
     const fetchUsers = async () => {
+      setLoading(true);
       const [error, data] = await stfExecAPI({
         url: `api/admin/customer/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
       });
 
+      setLoading(false);
       if (data) {
         setUsers(data.data);
         return;
@@ -249,7 +249,6 @@ const CustomerTable = () => {
     };
 
     fetchUsers();
-    setLoading(false);
   }, []);
 
   const onChangePagination = async (page) => {
