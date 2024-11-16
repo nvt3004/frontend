@@ -3,6 +3,38 @@ import axiosInstance from "../axiosConfig";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from "../../config/FirebaseConfig";
 import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
+import { jwtDecode } from "jwt-decode";
+
+// export const refreshToken = async (refresh) => {
+//   try {
+//     // const token = Cookies.get("refreshToken");
+//     // console.log("RefreshToken là: " + token);
+
+//     const response = await axiosInstance.post("/auth/refresh", {token:refresh});
+
+//     // console.log("Dữ liệu: " + response.data);
+
+//     // console.log("Trạng thái: " + response.status);
+
+//     if (response.status === 200) {
+//       console.log("Token refreshed successfully:", response.data);
+//       // const decodedToken = jwtDecode(response.data.token);
+//       // const expTimeInSeconds = decodedToken.exp - Math.floor(Date.now() / 1000);
+//       // const expTimeInDays = expTimeInSeconds / (24 * 60 * 60);
+//       const thirtyMinutesInDays = 30 / (24 * 60);
+
+//       Cookies.set("token", response.data.token, {
+//         expires: thirtyMinutesInDays,
+//       });
+//       return response.data.token;
+//     } else {
+//       throw new Error("Làm mới token thất bại");
+//     }
+//   } catch (error) {
+//     console.error("Error refreshing token:", error.message);
+//     throw error;
+//   }
+// };
 
 export const loginSocial = async (userData) => {
   try {
@@ -20,10 +52,28 @@ export const loginSocial = async (userData) => {
 export const loginWithEmail = async (username, password) => {
   try {
     const response = await axiosInstance.post("/login", { username, password });
-    const thirtyMinutesInDays = 30 / (24 * 60);
-    Cookies.set("token", response.data.token, { expires: thirtyMinutesInDays });
     if (response.status === 200) {
       console.log("User login successfully:", response.data);
+
+      // const decodedToken = jwtDecode(response.data.token);
+      // const expTimeInSeconds = decodedToken.exp - Math.floor(Date.now() / 1000);
+      // const expTimeInDays = expTimeInSeconds / (24 * 60 * 60);
+
+      const thirtyMinutesInDays = 30 / (24 * 60);
+
+      const decodedRefreshToken = jwtDecode(response.data.refreshToken);
+      const expTimeInSecondRefreshToken =
+        decodedRefreshToken.exp - Math.floor(Date.now() / 1000);
+      const expTimeInDayRefreshToken =
+        expTimeInSecondRefreshToken / (24 * 60 * 60);
+
+      Cookies.set("token", response.data.token, {
+        expires: thirtyMinutesInDays,
+      });
+      Cookies.set("refreshToken", response.data.refreshToken, {
+        expires: expTimeInDayRefreshToken,
+      });
+
       return response;
     } else {
       console.error(
@@ -52,7 +102,9 @@ export const registerUser = async (userData) => {
 export const getProfile = async () => {
   try {
     const token = Cookies.get("token");
-
+    // const refresh = Cookies.get("refreshToken");
+    // const newToken = await refreshToken(refresh);
+    // console.log̣("Data "+newToken)
     if (!token) {
       throw new Error("Token không tồn tại");
     }
