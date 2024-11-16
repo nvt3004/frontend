@@ -770,6 +770,7 @@ const Product = () => {
                             placeholder="Search"
                           />
                           <SpeechToText speechText={handleSpeechText} />
+                          
                           <button className="size-113 flex-c-m fs-23 cl2 hov-cl1 trans-04 me-2">
                             <i className="zmdi zmdi-wallpaper"></i>
                           </button>
