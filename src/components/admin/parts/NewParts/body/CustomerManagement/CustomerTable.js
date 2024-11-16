@@ -4,8 +4,9 @@ import PaginationSft from "../../../../PaginationSft";
 import DataTableSft from "../../../../DataTableSft";
 import ModalSft from "../../../../ModalSft";
 import AvatarUpload from "../../../../AvatarUpload ";
-import { Pencil, Trash, Plus, UserCirclePlus } from "phosphor-react";
+import { Lock, LockOpen, Plus, Eye } from "phosphor-react";
 import { stfExecAPI } from "../../../../../../stf/common";
+import FullScreenSpinner from "../../../FullScreenSpinner";
 
 const convertToBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -49,26 +50,19 @@ function formatDateString(dateString, format) {
 const CustomerTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
-  const [file, setFile] = useState(null);
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState({});
-  const [fullName, setFullName] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [birthday, setBirthday] = useState("");
-  const [gender, setGender] = useState("0");
-  const [showPass, setShowPass] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState(1);
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [reason, setReason] = useState("");
+  const [isblock, setIsBlock] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   // ********** Cấu hình table*********
   const columns = [
     { title: "Username", dataIndex: "username", key: "name" },
     { title: "Fullname", dataIndex: "fullname", key: "age" },
     { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Phone", dataIndex: "phone", key: "phone" },
     { title: "Birthday", dataIndex: "birthday", key: "birthday" },
     {
       title: "Gender",
@@ -102,21 +96,15 @@ const CustomerTable = () => {
       title: "Actions",
       key: "actions",
       render: (text, record) => {
-        return record.status === 0 ? (
-          ""
-        ) : (
+        return (
           <div>
             <button
-              className="btn btn-dark btn-sm me-2"
-              onClick={() => handleEdit(record)}
-            >
-              <Pencil weight="fill" />
-            </button>
-            <button
-              className="btn btn-danger btn-sm"
+              className={`btn ${
+                record.status === 1 ? "btn-danger" : "btn-primary"
+              } btn-sm`}
               onClick={() => handleDelete(record)}
             >
-              <Trash weight="fill" />
+              {record.status === 1 ? "Block" : "Unblock"}
             </button>
           </div>
         );
@@ -127,12 +115,12 @@ const CustomerTable = () => {
   const btnTable = () => {
     return (
       <div className="d-flex">
-        <button className="btn btn-dark me-3" onClick={handleClickAdd}>
-          Add new <Plus weight="fill" />
-        </button>
+        {/* <button className="btn btn-dark me-3" onClick={handleClickAdd}>
+          Add new d<Plus weight="fill" />
+        </button> */}
 
         <select
-          className="form-select w-25"
+          className="form-select w-25 mx-2"
           id="exampleFormControlSelect1"
           onChange={(e) => {
             handleChangeSelectFilterActive(e.target.value);
@@ -176,111 +164,21 @@ const CustomerTable = () => {
     fetchUsers();
   };
 
-  //Click vào edit trên bảng
-  const handleEdit = (record) => {
-    setFullName(record.fullname);
-    setUsername(record.username);
-    setPassword("");
-    setGender(record.gender);
-    setBirthday(formatDate(record.birthday, "YYYY-MM-DD"));
-    setIsModalOpen(true);
-    setUser({ ...record });
-    setShowPass(false);
-  };
-
   //Nhấn nút delete
   const handleDelete = (record) => {
+    setReason('');
+    setIsBlock(record.status === 1);
     setIsModalDeleteOpen(true);
     setUser({ ...record });
   };
 
-  //Nhấn nút thêm mới
-  const handleClickAdd = () => {
-    setFullName("");
-    setUsername("");
-    setPassword("");
-    setGender(0);
-    setBirthday("");
-    setIsModalOpen(true);
-    setUser(null);
-  };
-
-  // Modal thêm mới
-  const handleOk = async () => {
-    const isAdd = Object.keys(user || {}).length === 0;
-
-    if (!isAdd && showPass && !password.trim()) {
-      toast.error(
-        `Password must be at least 8 characters long, contain one uppercase letter, one lowercase letter, one number, and one special character`,
-        {
-          className: "toast-message",
-          position: "top-right",
-          autoClose: 5000,
-        }
-      );
-      return;
-    }
-
-    const [error, data] = await stfExecAPI({
-      method: isAdd ? "post" : "put",
-      url: isAdd
-        ? `api/admin/userpermissions/add`
-        : "api/admin/userpermissions/update",
-      data: {
-        id: user?.userId || 0,
-        fullName: fullName,
-        username: username,
-        password: isAdd ? password : showPass ? password : "",
-        image: isAdd ? file : file !== null ? file : "",
-        birthday: birthday,
-        gender: gender,
-      },
-    });
-
-    if (error) {
-      const err =
-        error.status === 403
-          ? "Account does not have permission to perform this function"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-      return;
-    }
-
-    const fetchUsers = async () => {
-      const [error, data] = await stfExecAPI({
-        url: `api/admin/customer/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
-      });
-
-      if (data) {
-        setUsers(data.data);
-      }
-    };
-
-    fetchUsers();
-
-    toast.success(`${isAdd ? "Add" : "Update"} user success!`, {
-      className: "toast-message",
-      position: "top-right",
-      autoClose: 5000,
-    });
-
-    setIsModalOpen(false); // Đóng modal khi nhấn "Save changes"
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false); // Đóng modal khi nhấn "Close"
-  };
-
   //Modal xóa
   const handleModalDeleteOk = async () => {
+    setLoading(true);
+
     const [error, data] = await stfExecAPI({
-      method: "delete",
-      url: `api/admin/userpermissions/delete/${user.userId}`,
+      method: "get",
+      url: `api/admin/customer/delete?id=${user.userId}&reason=${reason}`,
     });
 
     if (error) {
@@ -309,36 +207,25 @@ const CustomerTable = () => {
 
     fetchUsers();
 
-    toast.success(`Delete user success!`, {
+    toast.success(`Success!`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
     });
 
+    setLoading(false);
     setIsModalDeleteOpen(false); // Đóng modal khi nhấn "Save changes"
+    setStatus(!isblock);
   };
 
   const handleModalDeleteCancel = () => {
     setIsModalDeleteOpen(false); // Đóng modal khi nhấn "Close"
   };
 
-  // Hàm nhận file từ component con
-  const handleFileSelect = async (selectedFile) => {
-    if (!selectedFile) {
-      setFile(null);
-      return;
-    }
-
-    try {
-      const base64String = await convertToBase64(selectedFile);
-      setFile(base64String.split(",")[1]); // Lưu chuỗi Base64 vào state
-    } catch (error) {
-      console.error("Lỗi chuyển đổi file:", error);
-    }
-  };
-
   //Đổ danh sách user
   useEffect(() => {
+    setLoading(true);
+
     const fetchUsers = async () => {
       const [error, data] = await stfExecAPI({
         url: `api/admin/customer/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
@@ -362,9 +249,12 @@ const CustomerTable = () => {
     };
 
     fetchUsers();
+    setLoading(false);
   }, []);
 
   const onChangePagination = async (page) => {
+    setLoading(true);
+
     const [error, data] = await stfExecAPI({
       url: `api/admin/customer/all?page=${page}&size=${6}&keyword=${
         keyword || ""
@@ -374,9 +264,11 @@ const CustomerTable = () => {
     if (data) {
       setUsers(data.data);
     }
+    setLoading(false);
   };
 
   const onChangeInputSearch = async (value) => {
+    setLoading(true);
     setKeyword(value);
 
     const [error, data] = await stfExecAPI({
@@ -400,10 +292,12 @@ const CustomerTable = () => {
       });
       setUser({});
     }
+    setLoading(false);
   };
 
   return (
     <>
+    <FullScreenSpinner isLoading={loading} />
       <DataTableSft
         dataSource={users?.content || []}
         columns={columns}
@@ -426,189 +320,29 @@ const CustomerTable = () => {
         )}
       </div>
 
-      <ModalSft
-        title="Infomation Customer"
-        titleOk={Object.keys(user || {}).length === 0 ? "Add new" : "Update"}
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        size="modal-lg"
-      >
-        <form>
-          <div className="row">
-            <div className="col-md-5">
-              <AvatarUpload
-                pathImage={user ? user.image || "" : ""}
-                onFileSelect={handleFileSelect}
-              />
-            </div>
-
-            <div className="col-md-7">
-              <div className="row mb-4">
-                <div className="col-md-12">
-                  <label
-                    className="form-label"
-                    htmlFor="basic-default-fullname"
-                  >
-                    Full Name <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="basic-default-fullname"
-                    placeholder="Enter fullname"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="row mb-4">
-                <label className="form-label" htmlFor="basic-default-email">
-                  Username <span className="text-danger">*</span>
-                </label>
-                <div className="input-group input-group-merge">
-                  <input
-                    type="text"
-                    id="basic-default-email"
-                    className="form-control"
-                    placeholder="Enter username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    disabled={Object.keys(user || {}).length > 0}
-                  />
-                </div>
-              </div>
-
-              <div className="row mb-3">
-                <div className="col-md-12">
-                  <label
-                    className="form-label d-flex"
-                    htmlFor="basic-default-password"
-                  >
-                    {Object.keys(user || {}).length === 0
-                      ? "Password"
-                      : "Change password"}{" "}
-                    <span className="text-danger">
-                      {Object.keys(user || {}).length === 0 ? "*" : ""}
-                    </span>{" "}
-                    {/* Checkbox pasword */}
-                    <div
-                      class="form-check form-switch mb-2"
-                      style={{ marginLeft: "10px" }}
-                    >
-                      {Object.keys(user || {}).length === 0 ? (
-                        ""
-                      ) : (
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          id="flexSwitchCheckChecked"
-                          onChange={(e) => {
-                            setShowPass(e.target.checked);
-                          }}
-                        />
-                      )}
-                    </div>
-                  </label>
-
-                  {Object.keys(user || {}).length === 0 ? (
-                    <input
-                      type="password"
-                      className="form-control"
-                      id="basic-default-password"
-                      placeholder="Enter password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  ) : showPass ? (
-                    <input
-                      type="password"
-                      className="form-control"
-                      id="basic-default-password"
-                      placeholder="Enter password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  ) : (
-                    ""
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-5 mb-3">
-              <label className="form-label" htmlFor="basic-default-birthday">
-                Birthday
-              </label>
-              <input
-                type="date"
-                id="basic-default-birthday"
-                className="form-control"
-                value={birthday}
-                onChange={(e) => setBirthday(e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-7">
-              <label htmlFor="exampleFormControlSelect1" className="form-label">
-                Gender
-              </label>
-              <select
-                className="form-select"
-                id="exampleFormControlSelect1"
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-              >
-                <option value="0">Chose gender</option>
-                <option value="1">Male</option>
-                <option value="2">Female</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-5 mb-3">
-              <label className="form-label" htmlFor="basic-default-birthday">
-                Email
-              </label>
-              <input
-                type="text"
-                id="basic-default-birthday"
-                className="form-control"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            <div className="col-md-7 mb-3">
-              <label className="form-label" htmlFor="basic-default-birthday">
-                Phone
-              </label>
-              <input
-                type="text"
-                id="basic-default-birthday"
-                className="form-control"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-          </div>
-        </form>
-      </ModalSft>
-
       {/* Modal xóa */}
       <ModalSft
-        title="Delete customer"
-        titleOk={"Delete"}
+        title="Block account"
+        titleOk={"Ok"}
         open={isModalDeleteOpen}
         onOk={handleModalDeleteOk}
         onCancel={handleModalDeleteCancel}
         size="modal-lg"
       >
-        <span>Are you sure you want to delete?</span>
+        {isblock ? (
+          <div>
+            <label for="exampleFormControlTextarea1" class="form-label">
+              Reason
+            </label>
+            <textarea
+              class="form-control"
+              id="exampleFormControlTextarea1"
+              rows="3"
+              value={reason}
+              onInput={(e) => setReason(e.target.value)}
+            ></textarea>
+          </div>
+        ):'Are you sure you want to unlock this account?'}
       </ModalSft>
     </>
   );

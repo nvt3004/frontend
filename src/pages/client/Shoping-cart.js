@@ -340,11 +340,86 @@ const ShopingCart = () => {
     });
   };
 
-  //Thanh toán
-  //Thanh toán
-  const handleProceedToCheckout = async () => {
-    if (selectedItems.length <= 0) {
-      toast.info("Please select product before checkout!", {
+
+ //Thanh toán
+ const handleProceedToCheckout = async () => {
+  if (selectedItems.length <= 0) {
+    toast.info("Please select product before checkout!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+    return;
+  }
+
+  if (!address) {
+    toast.info("Please select address before checkout!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+    return;
+  }
+
+  //Đổ carts
+  const fetchCarts = async () => {
+    const [error, data] = await stfExecAPI({
+      url: "api/user/cart/all",
+    });
+
+    if (data) {
+      setCarts(data.data);
+    }
+  };
+
+  if (couponRead.trim() !== "") {
+    const [error, data] = await stfExecAPI({
+      url: `api/user/coupon?code=${iputEnter}`,
+    });
+
+    if (error) {
+      toast.info("Coupon not found!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+  }
+
+  //Pay == true thanh toán khi nhận hàng , ngược lại VNPay
+  const detail = [...selectedItems].map((i) => {
+    return {
+      idVersion: i.versionId,
+      quantity: i.quantity,
+    };
+  });
+
+  if (pay) {
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: `api/user/cart/checkout`,
+      data: {
+        address: addressTitle,
+        couponCode: iputEnter || null,
+       creatorIsAdmin: false, 
+        statusId: 1,
+        paymentMethodId: 2,
+        orderDetails: detail,
+      },
+    });
+
+    if (error) {
+      fetchCarts();
+
+      setSubTotal(0);
+      setTotal(0);
+      setCouponRead("");
+      setIputEnter("");
+      setSelectAll(false);
+      setSelectedItems([]);
+
+      toast.info(`${error?.response?.data?.message}`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -628,16 +703,16 @@ const ShopingCart = () => {
       });
 
       if (data) {
-        // const temp = [...selectedItems].map((s) => {
-        //   if (s.catrItemId === id) {
-        //     return { ...s, quantity: quantity };
-        //   } else {
-        //     return s;
-        //   }
-        // });
+        const temp = [...selectedItems].map((s) => {
+          if (s.catrItemId === id) {
+            return { ...s, quantity: quantity };
+          } else {
+            return s;
+          }
+        });
         setCarts(data.data);
-        // setSelectedItems(temp);
-        // setSubTotal(totalPrice(temp));
+        setSelectedItems(temp);
+        setSubTotal(totalPrice(temp));
       }
     };
 
@@ -1070,43 +1145,43 @@ const ShopingCart = () => {
                                       parseInt(e.target.value) || 1
                                     ); // Chặn số âm và giá trị 0
 
-                                    if (value === 1) {
-                                      const [error, data] = await stfExecAPI({
-                                        url: "api/user/cart/all",
-                                      });
+                                    // if (value === 1) {
+                                    //   const [error, data] = await stfExecAPI({
+                                    //     url: "api/user/cart/all",
+                                    //   });
 
-                                      value = data.data?.find(
-                                        (o) =>
-                                          o.catrItemId === product.catrItemId
-                                      )?.quantity;
+                                    //   value = data.data?.find(
+                                    //     (o) =>
+                                    //       o.catrItemId === product.catrItemId
+                                    //   )?.quantity;
 
-                                      setCarts(
-                                        carts.map((i) => {
-                                          if (
-                                            i.catrItemId === product.catrItemId
-                                          ) {
-                                            return { ...i, quantity: value };
-                                          } else {
-                                            return i;
-                                          }
-                                        })
-                                      );
+                                    //   setCarts(
+                                    //     carts.map((i) => {
+                                    //       if (
+                                    //         i.catrItemId === product.catrItemId
+                                    //       ) {
+                                    //         return { ...i, quantity: value };
+                                    //       } else {
+                                    //         return i;
+                                    //       }
+                                    //     })
+                                    //   );
 
-                                      const temp = [...selectedItems].map(
-                                        (s) => {
-                                          if (
-                                            s.catrItemId === product.catrItemId
-                                          ) {
-                                            return { ...s, quantity: value };
-                                          } else {
-                                            return s;
-                                          }
-                                        }
-                                      );
-                                      setSelectedItems(temp);
-                                      setSubTotal(totalPrice(temp));
-                                      return;
-                                    }
+                                    //   const temp = [...selectedItems].map(
+                                    //     (s) => {
+                                    //       if (
+                                    //         s.catrItemId === product.catrItemId
+                                    //       ) {
+                                    //         return { ...s, quantity: value };
+                                    //       } else {
+                                    //         return s;
+                                    //       }
+                                    //     }
+                                    //   );
+                                    //   setSelectedItems(temp);
+                                    //   setSubTotal(totalPrice(temp));
+                                    //   return;
+                                    // }
 
                                     handleUpdateQuantiy(
                                       product.catrItemId,
