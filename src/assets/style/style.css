@@ -47,8 +47,8 @@
 
 .filter-btn.active {
   color: #fff;
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: #717fe0;
+  border-color: #717fe0;
 }
 
 .filter-btn:hover {
@@ -66,16 +66,16 @@
   background-color: #f7f7f7;
   border: 2px solid #ddd;
   border-radius: 25px;
-  color: #007bff;
+  color: #717fe0;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .btn-clear-filters:hover {
-  background-color: #007bff;
+  background-color: #717fe0;
   color: #fff;
-  border-color: #007bff;
+  border-color: #717fe0;
 }
 
 .clear-filters {
