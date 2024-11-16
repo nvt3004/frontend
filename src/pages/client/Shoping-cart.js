@@ -337,7 +337,7 @@ const ShopingCart = () => {
     });
   };
 
-  //Thanh toán
+
  //Thanh toán
  const handleProceedToCheckout = async () => {
   if (selectedItems.length <= 0) {
