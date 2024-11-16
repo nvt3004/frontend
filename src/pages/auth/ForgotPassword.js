@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { sendResetPasswordEmail } from "../../services/api/OAuthApi"; // Giả sử bạn vẫn sử dụng email
+import { sendResetPasswordEmail } from "../../services/api/OAuthApi";
 import { Link } from "react-router-dom";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from "../../config/FirebaseConfig";
@@ -11,21 +11,23 @@ const ForgotPassword = () => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
-  const [confirmationResult, setConfirmationResult] = useState(null); // Lưu trữ kết quả xác nhận
+  const [confirmationResult, setConfirmationResult] = useState(null);
 
   useEffect(() => {
-    if (isPhone) {
-      const recaptchaContainer = document.getElementById("recaptcha-container");
-      if (recaptchaContainer) {
-        const recaptchaVerifier = new RecaptchaVerifier(          auth,
-          recaptchaContainer,
-          {
-            size: "invisible",
-            callback: (response) => {},
-            "expired-callback": () => {},
-          }
-        );
-      }
+    if (isPhone && !window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        {
+          size: "invisible",
+          callback: (response) => {
+            console.log("reCAPTCHA verified.");
+          },
+          "expired-callback": () => {
+            console.warn("reCAPTCHA expired.");
+          },
+        }
+      );
     }
   }, [isPhone]);
 
@@ -34,19 +36,15 @@ const ForgotPassword = () => {
       const confirmationResult = await signInWithPhoneNumber(
         auth,
         phoneNumber,
-        new RecaptchaVerifier(auth, "recaptcha-container", {
-          size: "invisible",
-          callback: (response) => {},
-          "expired-callback": () => {},
-        })
+        window.recaptchaVerifier
       );
-      window.confirmationResult = confirmationResult; 
-      setConfirmationResult(confirmationResult); 
+      window.confirmationResult = confirmationResult;
+      setConfirmationResult(confirmationResult);
       alert("Đã gửi OTP thành công");
       return confirmationResult;
     } catch (error) {
       console.error("Error sending SMS:", error);
-      throw new Error(error.message);
+      setError("Có lỗi xảy ra khi gửi SMS");
     }
   };
 
@@ -160,7 +158,6 @@ const ForgotPassword = () => {
                 )}
               </form>
 
-              {/* Phần nhập mã xác thực nếu là số điện thoại */}
               {isPhone && confirmationResult && (
                 <div className="mt-4">
                   <h5>Nhập mã xác thực:</h5>
