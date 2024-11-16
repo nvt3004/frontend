@@ -622,16 +622,16 @@ const ShopingCart = () => {
       });
 
       if (data) {
-        // const temp = [...selectedItems].map((s) => {
-        //   if (s.catrItemId === id) {
-        //     return { ...s, quantity: quantity };
-        //   } else {
-        //     return s;
-        //   }
-        // });
+        const temp = [...selectedItems].map((s) => {
+          if (s.catrItemId === id) {
+            return { ...s, quantity: quantity };
+          } else {
+            return s;
+          }
+        });
         setCarts(data.data);
-        // setSelectedItems(temp);
-        // setSubTotal(totalPrice(temp));
+        setSelectedItems(temp);
+        setSubTotal(totalPrice(temp));
       }
     };
 
@@ -1066,43 +1066,43 @@ const ShopingCart = () => {
                                       parseInt(e.target.value) || 1
                                     ); // Chặn số âm và giá trị 0
 
-                                    if (value === 1) {
-                                      const [error, data] = await stfExecAPI({
-                                        url: "api/user/cart/all",
-                                      });
+                                    // if (value === 1) {
+                                    //   const [error, data] = await stfExecAPI({
+                                    //     url: "api/user/cart/all",
+                                    //   });
 
-                                      value = data.data?.find(
-                                        (o) =>
-                                          o.catrItemId === product.catrItemId
-                                      )?.quantity;
+                                    //   value = data.data?.find(
+                                    //     (o) =>
+                                    //       o.catrItemId === product.catrItemId
+                                    //   )?.quantity;
 
-                                      setCarts(
-                                        carts.map((i) => {
-                                          if (
-                                            i.catrItemId === product.catrItemId
-                                          ) {
-                                            return { ...i, quantity: value };
-                                          } else {
-                                            return i;
-                                          }
-                                        })
-                                      );
+                                    //   setCarts(
+                                    //     carts.map((i) => {
+                                    //       if (
+                                    //         i.catrItemId === product.catrItemId
+                                    //       ) {
+                                    //         return { ...i, quantity: value };
+                                    //       } else {
+                                    //         return i;
+                                    //       }
+                                    //     })
+                                    //   );
 
-                                      const temp = [...selectedItems].map(
-                                        (s) => {
-                                          if (
-                                            s.catrItemId === product.catrItemId
-                                          ) {
-                                            return { ...s, quantity: value };
-                                          } else {
-                                            return s;
-                                          }
-                                        }
-                                      );
-                                      setSelectedItems(temp);
-                                      setSubTotal(totalPrice(temp));
-                                      return;
-                                    }
+                                    //   const temp = [...selectedItems].map(
+                                    //     (s) => {
+                                    //       if (
+                                    //         s.catrItemId === product.catrItemId
+                                    //       ) {
+                                    //         return { ...s, quantity: value };
+                                    //       } else {
+                                    //         return s;
+                                    //       }
+                                    //     }
+                                    //   );
+                                    //   setSelectedItems(temp);
+                                    //   setSubTotal(totalPrice(temp));
+                                    //   return;
+                                    // }
 
                                     handleUpdateQuantiy(
                                       product.catrItemId,
