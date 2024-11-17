@@ -957,7 +957,7 @@ const ShopingCart = () => {
                                     : {}
                                 }
                                 type="button"
-                                className="mb-2 stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
+                                className="text-ellipsis mb-2 stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
                                 data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop"
                                 onClick={() => {
@@ -983,6 +983,7 @@ const ShopingCart = () => {
                                   );
                                   setAttriTest(product.attributes);
                                 }}
+                                
                               >
                                 {product.productDetail.versions.find(
                                   (o) => o.id == product.versionId
@@ -1214,7 +1215,7 @@ const ShopingCart = () => {
                       <span className="stext-110 cl2">Address*:</span>
                       <div className="mt-2">
                         <select
-                          className="w-100 border border-1 p-2 form-select stext-111"
+                          className="pe-5 text-ellipsis w-100 border border-1 p-2 form-select stext-111"
                           aria-label="Default select example"
                           onChange={handleAddress}
                         >    <option value="">
@@ -1231,6 +1232,7 @@ const ShopingCart = () => {
                                 <option
                                   selected={item?.addressId === Number(address)}
                                   value={item?.addressId}
+                          
                                 >
                                   {`${getNameAddress(
                                     item?.province

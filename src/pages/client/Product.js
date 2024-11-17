@@ -68,6 +68,15 @@ const Product = () => {
   const [filteredAttributes, setFilteredAttributes] = useState([]); // State để lưu các thuộc tính cần render
 
   // Cập nhật filteredAttributes mỗi khi filterAttributes hoặc selectedAttribute thay đổi
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   useEffect(() => {
     if (filterAttributes?.attribute?.names?.length > 0) {
       const updatedAttributes = filterAttributes.attribute.names.map(
@@ -586,6 +595,11 @@ const Product = () => {
     <div style={style.m}>
       {/* <!-- Product --> */}
       <SizeGuide isOpen={isOffcanvasOpen} onClose={toggleOffcanvas} />
+      <SpeechToText
+        speechText={handleSpeechText}
+        isModalOpen={isModalOpen}
+        onCloseModal={handleCloseModal}
+      />
       <section id="productTop" className="bg0 p-t-23 p-b-64">
         <div className="container">
           <div className="flex-w flex-sb-m p-b-52">
@@ -769,7 +783,12 @@ const Product = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search"
                           />
-                          <SpeechToText speechText={handleSpeechText} />
+                        <button
+        className="size-113 flex-c-m fs-23 cl2 hov-cl1 trans-04 me-2"
+        onClick={handleOpenModal}
+      >
+        <i className="zmdi zmdi-mic"></i>
+      </button>
                           
                           <button className="size-113 flex-c-m fs-23 cl2 hov-cl1 trans-04 me-2">
                             <i className="zmdi zmdi-wallpaper"></i>
