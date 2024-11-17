@@ -7,6 +7,8 @@ import { stfExecAPI, ghnExecAPI } from "../../stf/common";
 import AttributeItem from "../../components/client/AttributeItem/AttributeItem";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const getEndDate = (end) => {
   const now = new Date();
@@ -74,6 +76,7 @@ function getRowCelCick(attributes = [], item) {
 }
 
 const ShopingCart = () => {
+  const navigate = useNavigate();
   const [carts, setCarts] = useState([]);
   console.log("@carts: ", carts);
   //ví dụ
@@ -337,7 +340,7 @@ const ShopingCart = () => {
     });
   };
 
-  //Thanh toán
+
  //Thanh toán
  const handleProceedToCheckout = async () => {
   if (selectedItems.length <= 0) {
@@ -552,6 +555,9 @@ const ShopingCart = () => {
   };
 
   const handleAddress = async (e) => {
+    if (e.target.value === "") {
+      navigate("/account"); // Điều hướng tới trang Add new address
+    };
     const a = addresses.find((o) => o?.addressId == e.target.value);
 
     const feeS = await feeShip(
@@ -622,16 +628,16 @@ const ShopingCart = () => {
       });
 
       if (data) {
-        // const temp = [...selectedItems].map((s) => {
-        //   if (s.catrItemId === id) {
-        //     return { ...s, quantity: quantity };
-        //   } else {
-        //     return s;
-        //   }
-        // });
+        const temp = [...selectedItems].map((s) => {
+          if (s.catrItemId === id) {
+            return { ...s, quantity: quantity };
+          } else {
+            return s;
+          }
+        });
         setCarts(data.data);
-        // setSelectedItems(temp);
-        // setSubTotal(totalPrice(temp));
+        setSelectedItems(temp);
+        setSubTotal(totalPrice(temp));
       }
     };
 
@@ -1066,43 +1072,43 @@ const ShopingCart = () => {
                                       parseInt(e.target.value) || 1
                                     ); // Chặn số âm và giá trị 0
 
-                                    if (value === 1) {
-                                      const [error, data] = await stfExecAPI({
-                                        url: "api/user/cart/all",
-                                      });
+                                    // if (value === 1) {
+                                    //   const [error, data] = await stfExecAPI({
+                                    //     url: "api/user/cart/all",
+                                    //   });
 
-                                      value = data.data?.find(
-                                        (o) =>
-                                          o.catrItemId === product.catrItemId
-                                      )?.quantity;
+                                    //   value = data.data?.find(
+                                    //     (o) =>
+                                    //       o.catrItemId === product.catrItemId
+                                    //   )?.quantity;
 
-                                      setCarts(
-                                        carts.map((i) => {
-                                          if (
-                                            i.catrItemId === product.catrItemId
-                                          ) {
-                                            return { ...i, quantity: value };
-                                          } else {
-                                            return i;
-                                          }
-                                        })
-                                      );
+                                    //   setCarts(
+                                    //     carts.map((i) => {
+                                    //       if (
+                                    //         i.catrItemId === product.catrItemId
+                                    //       ) {
+                                    //         return { ...i, quantity: value };
+                                    //       } else {
+                                    //         return i;
+                                    //       }
+                                    //     })
+                                    //   );
 
-                                      const temp = [...selectedItems].map(
-                                        (s) => {
-                                          if (
-                                            s.catrItemId === product.catrItemId
-                                          ) {
-                                            return { ...s, quantity: value };
-                                          } else {
-                                            return s;
-                                          }
-                                        }
-                                      );
-                                      setSelectedItems(temp);
-                                      setSubTotal(totalPrice(temp));
-                                      return;
-                                    }
+                                    //   const temp = [...selectedItems].map(
+                                    //     (s) => {
+                                    //       if (
+                                    //         s.catrItemId === product.catrItemId
+                                    //       ) {
+                                    //         return { ...s, quantity: value };
+                                    //       } else {
+                                    //         return s;
+                                    //       }
+                                    //     }
+                                    //   );
+                                    //   setSelectedItems(temp);
+                                    //   setSubTotal(totalPrice(temp));
+                                    //   return;
+                                    // }
 
                                     handleUpdateQuantiy(
                                       product.catrItemId,
@@ -1211,7 +1217,14 @@ const ShopingCart = () => {
                           className="w-100 border border-1 p-2 form-select stext-111"
                           aria-label="Default select example"
                           onChange={handleAddress}
+                        >    <option value="">
+                        <Link
+                          to="/account"
+                          className="text-decoration-none"
                         >
+                          Add new address
+                        </Link>
+                      </option>
                           {addresses &&
                             addresses.map((item) => {
                               return (

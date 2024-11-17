@@ -61,7 +61,7 @@ const router = createBrowserRouter([
       {
         path: "/shoping-cart",
         element: (
-          <ProtectedRoute element={<ShopingCart />} requiredRole="User,Admin" />
+          <ProtectedRoute element={<ShopingCart />} requiredRole="User,Staff,Admin" />
         ),
       },
       { path: "/blog", element: <Blog /> },
@@ -71,13 +71,19 @@ const router = createBrowserRouter([
       {
         path: "/account",
         element: (
-          <ProtectedRoute element={<Account />} requiredRole="User,Admin" />
+          <ProtectedRoute
+            element={<Account />}
+            requiredRole="User, Staff,Admin"
+          />
         ),
       },
       {
         path: "/wishlist",
         element: (
-          <ProtectedRoute element={<WishList />} requiredRole="User,Admin" />
+          <ProtectedRoute
+            element={<WishList />}
+            requiredRole="User,Staff,Admin"
+          />
         ),
       },
     ],
@@ -186,10 +192,10 @@ const router = createBrowserRouter([
       //   ],
       // },
       {
-        path: 'permission',
+        path: "permission",
         children: [
-          { path: 'manage', element: <PermissionManagement /> },
-          { path: 'new', element: <NewPermission /> },
+          { path: "manage", element: <PermissionManagement /> },
+          { path: "new", element: <NewPermission /> },
         ],
       },
       {

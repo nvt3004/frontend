@@ -2,15 +2,13 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import { getProfile } from "../services/api/OAuthApi";
 
-
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState(null);
-  const [profile, setProfile] = useState(null); 
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -18,7 +16,7 @@ export const AuthProvider = ({ children }) => {
         const token = Cookies.get("token");
         if (token) {
           setIsAuthenticated(true);
-          const profileData = await getProfile(); 
+          const profileData = await getProfile();
           setProfile(profileData);
 
           if (
@@ -26,8 +24,10 @@ export const AuthProvider = ({ children }) => {
             profileData.listData.authorities &&
             profileData.listData.authorities.length > 0
           ) {
-            setRole(profileData.listData.authorities[0].authority); 
-            console.log('Vai trò '+profileData.listData.authorities[0].authority)
+            setRole(profileData.listData.authorities[0].authority);
+            console.log(
+              "Vai trò: " + profileData.listData.authorities[0].authority
+            );
           }
         } else {
           setIsAuthenticated(false);
@@ -35,11 +35,19 @@ export const AuthProvider = ({ children }) => {
       } catch (error) {
         console.error("Error fetching profile:", error.message);
       } finally {
-        setLoading(false); 
+        setLoading(false);
       }
     };
 
     fetchProfile();
+
+    const intervalId = setInterval(() => {
+      if (!Cookies.get("token")) {
+        setIsAuthenticated(false);
+      }
+    }, 1000 * 10);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
