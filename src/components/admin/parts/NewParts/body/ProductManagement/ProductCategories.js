@@ -45,28 +45,28 @@ const ProductCategories = () => {
 
     const onSubmit = async (data) => {
         console.log(data);
-        try {
-            if (!isNew) {
-                await axiosInstance.put("/home/category/update", data).then((response) => {
-                    if (response?.status === 200) {
-                        toast.success('Category updated successfully!');
-                        handleGetCategoriesAPI();
-                        handleClear();
+        if (!isNew) {
+            await axiosInstance.put("/home/category/update", data).then((response) => {
+                if (response?.status === 200) {
+                    toast.success('Category updated successfully!');
+                    handleGetCategoriesAPI();
+                    handleClear();
+                }
+            });
+        } else {
+            await axiosInstance.post("/home/category/add", data).then((response) => {
+                if (response?.status === 200) {
+                    toast.success('Added new category successfully!');
+                    handleGetCategoriesAPI();
+                    handleClear();
+                }
+            }).catch(
+                (error) => {
+                    if (error.response?.data?.message === 'Category name already exists') {
+                        toast.error(error.response?.data?.message || 'Category name already exists');
                     }
-                });
-            } else {
-                await axiosInstance.post("/home/category/add", data).then((response) => {
-                    if (response?.status === 200) {
-                        toast.success('Added new category successfully!');
-                        handleGetCategoriesAPI();
-                        handleClear();
-                    }
-                });
-            }
-
-        } catch (error) {
-            toast.error('Failed to update category. Try again !!');
-            console.log(error);
+                }
+            );
         }
     }
 
@@ -118,7 +118,7 @@ const ProductCategories = () => {
                                                 borderWidth: selectedCategory?.categoryId === item?.categoryId ? '1px' : '1px',
                                                 opacity: selectedCategory?.categoryId === item?.categoryId ? 0.8 : 1
                                             }}>
-                                            <motion.label whileHover={{ color: '#0d6efd' }} 
+                                            <motion.label whileHover={{ color: '#0d6efd' }}
                                                 style={{ color: selectedCategory?.categoryId === item?.categoryId ? '#0d6efd' : 'black' }}>
                                                 <h6 className='mb-0'>{item?.categoryName}</h6>
                                             </motion.label>
