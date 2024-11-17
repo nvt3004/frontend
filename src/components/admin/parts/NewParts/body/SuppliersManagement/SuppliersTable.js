@@ -59,13 +59,13 @@ const SuppliersTable = () => {
     const handleGetSuppliersAPI = () => {
         axiosInstance.get(`/staff/suppliers?size=10&page=${currentPage}`).then(
             (response) => {
-                const sortedSuppliers = response?.data?.data?.content.sort((a, b) => b.supplierId + a.supplierId);
+                const sortedSuppliers = response?.data?.data?.content;
                 setSuppliers(sortedSuppliers);
                 setTotalPage(response?.data?.data?.totalPages);
                 setTotalElements(response?.data?.data?.totalElements);
             }
         );
-    }    
+    }
     const handleSetPage = (page) => {
         if (page !== currentPage) {
             setCurrentPage(page);
@@ -88,7 +88,7 @@ const SuppliersTable = () => {
     useEffect(
         () => {
             console.log('supplier list: ', suppliers);
-            
+
         }, [suppliers]
     )
 
@@ -255,11 +255,13 @@ const SuppliersTable = () => {
                     <p className='font-13'>{`${(currentPage + 1) * 10 <= totalElements ? (currentPage + 1) * 10 : totalElements} of ${totalElements} `}
                         <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span>
                     </p>
-                    <Pagination className='border-0'>
-                        <Pagination.First>{`<`}</Pagination.First>
-                        {paginationItems}
-                        <Pagination.Last>{`>`}</Pagination.Last>
-                    </Pagination>
+                    {totalPage > 1 && (
+                        <Pagination className='border-0'>
+                            <Pagination.First>{`<`}</Pagination.First>
+                            {paginationItems}
+                            <Pagination.Last>{`>`}</Pagination.Last>
+                        </Pagination>
+                    )}
                 </div>
             </div>
             <div>

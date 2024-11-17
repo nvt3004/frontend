@@ -332,6 +332,56 @@ const UpdateProduct = () => {
             }
         );
     }
+
+    const [selectedVersions, setSelectedVersions] = useState([]);
+
+    // Hàm xử lý toggle phiên bản trong danh sách chọn
+    const toggleVersionSelection = (id) => {
+        setSelectedVersions((prev) =>
+            prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
+        );
+    };
+
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    const handleBulkUpdateVersions = async () => {
+        setIsUpdating(true);
+        const data = getValues();
+        const updates = selectedVersions.map((id) => ({
+            id,
+            versionName: `Updated version ${id}`, // Có thể thay đổi theo yêu cầu
+            retailPrice: data.bulkRetailPrice || null,
+            wholesalePrice: data.bulkWholesalePrice || null,
+            image: {
+                name: data.bulkImage || "" // Base64 của ảnh nếu cần cập nhật, truyền "" nếu không
+            },
+        }));
+
+        try {
+            const responses = await Promise.all(
+                updates.map((update) =>
+                    axiosInstance.put('/staff/version/update', update)
+                )
+            );
+
+            responses.forEach((response, index) => {
+                if (response?.data?.code === 200) {
+                    toast.success(`Version ${updates[index].id} updated successfully!`);
+                } else {
+                    toast.error(response?.data?.message || `Couldn't update version ${updates[index].id}!`);
+                }
+            });
+
+            setSelectedVersions([]); // Clear selected versions
+            handleRefreshSelectedProduct(); // Refresh product details
+        } catch (error) {
+            setIsUpdating(false);
+            console.error("Error updating versions:", error);
+            toast.error("An error occurred while updating versions.");
+        }
+    };
+
+
     // END HANDLE changeVersionInfo
 
     const ChangeInput = (e, condition) => {
@@ -371,7 +421,14 @@ const UpdateProduct = () => {
                                         {changeMainInfo && (
                                             <div {...getRootProps({ className: 'dropzone' })}>
                                                 <input {...getInputProps()} />
-                                                <p>Drag 'n' drop some files here, or click to select files</p>
+                                                <p>
+                                                    <div className='d-flex flex-column align-items-center'>
+                                                        <img src={`${process.env.PUBLIC_URL}/images/admin/svg/image.svg`} alt='version'
+                                                            style={{ maxWidth: '120px', height: 'auto' }} />
+                                                        <p className='row'>Choose new image</p>
+                                                    </div>
+                                                    <hr />
+                                                </p>
                                             </div>
                                         )}
                                         <div className='d-flex justify-content-around'>
@@ -420,14 +477,13 @@ const UpdateProduct = () => {
                                 {selectedProduct ? (
                                     <Table hover striped>
                                         <thead>
-                                            <th>Version name</th>
-                                            <th>Size</th>
-                                            <th>Color</th>
-                                            <th>Quantity</th>
-                                            <th>Retail price</th>
-                                            <th>Wholesale price</th>
-                                            <th>Remove</th>
                                             <th></th>
+                                            <th>Version name</th>
+                                            <th colSpan={2} className='text-center'>Attributes</th>
+                                            <th></th>
+                                            <th>Retail</th>
+                                            <th>Wholesale</th>
+                                            <th colSpan={2} className='text-center'>Remove</th>
                                         </thead>
                                         <tbody>
                                             {selectedProduct?.versions.map(
@@ -435,19 +491,26 @@ const UpdateProduct = () => {
                                                     version?.active && (
                                                         <React.Fragment key={index}>
                                                             <tr className='custom-table'>
+                                                                <td>
+                                                                    <Form.Check
+                                                                        type="checkbox"
+                                                                        checked={selectedVersions.includes(version?.id)}
+                                                                        onChange={() => toggleVersionSelection(version?.id)}
+                                                                    />
+                                                                </td>
                                                                 <td style={{ maxWidth: '250px' }}>{version?.versionName}</td>
                                                                 <td>{version?.attributes[0]?.value}</td>
                                                                 <td>{version?.attributes[1]?.value}</td>
                                                                 <td>{version?.quantity}</td>
-                                                                <td>
+                                                                <td style={{ minWidth: '150px' }}>
                                                                     {(version?.id === versionID) ?
                                                                         (
                                                                             <InputGroup>
                                                                                 <Form.Control type='number'
-                                                                                    placeholder='Retail price. . .'
+                                                                                    placeholder='Retail price. . . (VND)'
                                                                                     {...register(`retailPrice`)}
                                                                                     onKeyDown={(e) => { ChangeInput(e, (version?.id === versionID)) }} />
-                                                                                <InputGroup.Text>VND</InputGroup.Text>
+                                                                                {/* <InputGroup.Text>VND</InputGroup.Text> */}
                                                                             </InputGroup>
                                                                         ) :
                                                                         (
@@ -455,15 +518,15 @@ const UpdateProduct = () => {
                                                                         )
                                                                     }
                                                                 </td>
-                                                                <td>
+                                                                <td style={{ minWidth: '150px' }}>
                                                                     {(version?.id === versionID) ?
                                                                         (
                                                                             <InputGroup>
                                                                                 <Form.Control type='number'
-                                                                                    placeholder='Wholesale price. . .'
+                                                                                    placeholder='Wholesale price. . . (VND)'
                                                                                     {...register(`wholesalePrice`)}
                                                                                     onKeyDown={(e) => { ChangeInput(e, (version?.id === versionID)) }} />
-                                                                                <InputGroup.Text>VND</InputGroup.Text>
+                                                                                {/* <InputGroup.Text>VND</InputGroup.Text> */}
                                                                             </InputGroup>
                                                                         ) :
                                                                         (
@@ -472,15 +535,16 @@ const UpdateProduct = () => {
                                                                     }
                                                                 </td>
                                                                 <td>
-                                                                    <CustomButton btnType={'button'}
-                                                                        btnBG={'danger'} btnName={<FaTrash />}
-                                                                        handleClick={() => { handleRemoveVersion(version) }} />
+
                                                                 </td>
                                                                 <td>
-                                                                    <div style={{ minWidth: '90px' }}>
+                                                                    <div style={{ minWidth: '120px' }}>
                                                                         {!(versionID === version?.id) ?
                                                                             (
-                                                                                <div className='d-flex justify-content-center'>
+                                                                                <div className='d-flex justify-content-around'>
+                                                                                    <CustomButton btnType={'button'}
+                                                                                        btnBG={'danger'} btnName={<FaTrash />}
+                                                                                        handleClick={() => { handleRemoveVersion(version) }} />
                                                                                     <CustomButton btnType={'button'}
                                                                                         btnBG={'warning'} btnName={<MdModeEdit />} textColor={'text-white'}
                                                                                         handleClick={() => {
@@ -515,11 +579,18 @@ const UpdateProduct = () => {
                                                                 </td>
                                                             </tr>
                                                             <tr>
-                                                                <td colSpan={8}>
+                                                                <td colSpan={9}>
                                                                     {(versionID === version?.id) && (
                                                                         <div {...getRootProps({ className: 'dropzone' })}>
                                                                             <input {...getInputProps()} />
-                                                                            <p>Drag 'n' drop some files here, or click to select files</p>
+                                                                            <p>
+                                                                                <div className='d-flex flex-column align-items-center'>
+                                                                                    <img src={`${process.env.PUBLIC_URL}/images/admin/svg/image.svg`} alt='version'
+                                                                                        style={{ maxWidth: '120px', height: 'auto' }} />
+                                                                                    <p className='row'>Choose new image</p>
+                                                                                    <hr />
+                                                                                </div>
+                                                                            </p>
                                                                         </div>
                                                                     )}
                                                                     {
@@ -551,6 +622,35 @@ const UpdateProduct = () => {
                                     </Table>
                                 ) : ''}
                             </div>
+                            {selectedVersions.length > 0 && (
+                                <div className="bulk-edit-container">
+                                    <h5>Bulk Edit Versions</h5>
+                                    <Form.Group>
+                                        <Form.Label>Retail Price</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            placeholder="Enter new retail price"
+                                            {...register("bulkRetailPrice")}
+                                        />
+                                    </Form.Group>
+                                    <Form.Group>
+                                        <Form.Label>Wholesale Price</Form.Label>
+                                        <Form.Control
+                                            type="number"
+                                            placeholder="Enter new wholesale price"
+                                            {...register("bulkWholesalePrice")}
+                                        />
+                                    </Form.Group>
+                                    {isUpdating && <p>Updating versions, please wait...</p>}
+                                    <CustomButton
+                                        btnType="button"
+                                        btnBG="success"
+                                        btnName={isUpdating ? "Updating..." : "Update Versions"}
+                                        handleClick={handleBulkUpdateVersions}
+                                        disabled={isUpdating}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className='col-3'>
@@ -701,7 +801,14 @@ const UpdateProduct = () => {
                                         <Form.Label>Version image</Form.Label>
                                         <div {...getRootProps({ className: 'dropzone' })}>
                                             <input {...getInputProps()} />
-                                            <p>Drag 'n' drop some files here, or click to select files</p>
+                                            <p>
+                                                <div className='d-flex flex-column align-items-center'>
+                                                    <img src={`${process.env.PUBLIC_URL}/images/admin/svg/image.svg`} alt='version'
+                                                        style={{ maxWidth: '120px', height: 'auto' }} />
+                                                    <p className='row'>Choose new image</p>
+                                                    <hr />
+                                                </div>
+                                            </p>
                                         </div>
                                         {imageVersionPreview && (
                                             <div className='position-relative' style={{ width: '100%' }}>

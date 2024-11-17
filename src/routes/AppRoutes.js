@@ -47,6 +47,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import UpdateProduct from "../components/admin/parts/NewParts/body/ProductManagement/UpdateProduct";
 import ReceiptList from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptList";
 import OrderTable from "../components/admin/parts/NewParts/body/OrderManagement/OrderTable";
+import CouponTable from "../components/admin/parts/NewParts/body/CouponManagement/CouponTable";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -184,18 +185,10 @@ const router = createBrowserRouter([
           { path: "stockin", element: <StockIn /> },
         ],
       },
-      // {
-      //   path: "permission",
-      //   children: [
-      //     // { path: 'manage', element: <WarehouseManagement/>},
-      //     { path: "stock-in", element: <StockIn /> },
-      //   ],
-      // },
       {
-        path: "permission",
+        path: "coupon",
         children: [
-          { path: "manage", element: <PermissionManagement /> },
-          { path: "new", element: <NewPermission /> },
+          { path: "manage", element: <CouponTable /> },
         ],
       },
       {

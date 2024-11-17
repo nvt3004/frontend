@@ -5,15 +5,17 @@ import { RiFileList2Fill } from "react-icons/ri";
 import axiosInstance from '../../../../../../services/axiosConfig';
 import NotSelectYet from '../../component/errorPages/NotSelectYet';
 import { isElement } from 'react-dom/test-utils';
+import { motion } from 'framer-motion';
 
 const ReceiptList = () => {
     const [receipts, setReceipt] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPage, setTotalPage] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
     useEffect(
         () => {
-            axiosInstance.get(`/staff/receipt?page=${currentPage}&size=10`).then(
+            axiosInstance.get(`/staff/receipt?page=${currentPage}&size=${pageSize}`).then(
                 (response) => {
                     if (response?.data?.errorCode === 200) {
                         setReceipt(response?.data?.data?.content);
@@ -104,7 +106,10 @@ const ReceiptList = () => {
                         </div>
                         <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
                             <p className='font-13'>{`${currentPage * 5 + 5 <= totalElements ? currentPage * 5 + 5 : totalElements} of ${totalElements} `}
-                                <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span>
+                                <span>
+                                    <motion.a initial={{ color: '#29B6F6' }} className='text-decoration-none fw-medium'
+                                        onClick={() => { setPageSize(totalElements) }}>{`View all >`}</motion.a>
+                                </span>
                             </p>
                             <Pagination className='border-0'>
                                 <Pagination.First onClick={() => handleSetPage(0)}>{`<`}</Pagination.First>
@@ -125,6 +130,8 @@ const ReceiptList = () => {
                                         {selectedReceipt?.receiptDetailDTO?.map(
                                             (item, index) => (
                                                 <div className='ms-3 mb-2' key={index} style={{ maxHeight: '550px', overflowY: 'auto' }}>
+                                                    <img src={`${item?.productVersionDTO?.versionImage}`} alt={`${item.productVersionDTO.productVersionName}`}
+                                                        style={{ maxWidth: '80px', height: 'auto' }} />
                                                     <Form.Label className='mb-0'>{`Product: ${item.productVersionDTO.productVersionName}`}</Form.Label>
                                                     <Form.Label>{`Quantity: ${item.quantity}`}</Form.Label>
                                                 </div>

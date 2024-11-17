@@ -59,7 +59,7 @@ export const loginWithEmail = async (username, password) => {
       // const expTimeInSeconds = decodedToken.exp - Math.floor(Date.now() / 1000);
       // const expTimeInDays = expTimeInSeconds / (24 * 60 * 60);
 
-      const thirtyMinutesInDays = 30 / (24 * 60);
+      const thirtyMinutesInDays = (5 * 60) / (24 * 60);
 
       const decodedRefreshToken = jwtDecode(response.data.refreshToken);
       const expTimeInSecondRefreshToken =

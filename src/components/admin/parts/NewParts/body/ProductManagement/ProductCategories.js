@@ -27,7 +27,7 @@ const ProductCategories = () => {
     }, [selectedCategory]);
 
     const [isEdit, setEdit] = useState(false);
-    const [isNew, setNew] = useState(false);
+    const [isNew, setNew] = useState(true);
 
     const handleChange = (e) => {
         if (!isEdit && !isNew) {
@@ -90,7 +90,6 @@ const ProductCategories = () => {
     const handleClear = () => {
         setSelectedCategory(null);
         setEdit(false);
-        setNew(false);
         reset()
     }
 
@@ -136,7 +135,7 @@ const ProductCategories = () => {
                                     <Form.Label>Category name: </Form.Label>
                                     <Form.Control type='text' defaultValue={selectedCategory ? selectedCategory?.categoryName : ''}
                                         {...register("categoryName", { required: true })}
-                                        placeholder={`${(!isNew && !isEdit) ? `Click create button to do create new !` : ''}`}
+                                        placeholder={`${(!isNew && !isEdit) ? `Click create button to do create new !` : 'Category name'}`}
                                         onKeyDown={handleChange} onPaste={handleChange}
                                         disabled={!selectedCategory && !isNew} />
                                     {errors?.categoryName && (
@@ -181,15 +180,15 @@ const ProductCategories = () => {
                                             </>
                                         ) : isNew ? (
                                             <>
-                                                <button type='submit' className='btn btn-success custom-radius custom-hover text-white'>Save</button>
-                                                <CustomButton
+                                                <button type='submit' className='btn btn-primary custom-radius custom-hover text-white'>Create</button>
+                                                {/* <CustomButton
                                                     btnBG={'danger'}
                                                     btnName={'Cancel'}
                                                     textColor={'text-white'}
                                                     handleClick={() => {
                                                         handleClear()
                                                     }}
-                                                />
+                                                /> */}
                                             </>
                                         ) : (
                                             <CustomButton

@@ -11,6 +11,7 @@ import { FaTrash } from 'react-icons/fa';
 import { HiCheck } from 'react-icons/hi';
 import { ImCancelCircle } from 'react-icons/im';
 import moment from 'moment';
+import { motion } from 'framer-motion';
 
 const OrderTable = () => {
     // START GET orders
@@ -214,7 +215,7 @@ const OrderTable = () => {
                                     productID: item.productId,
                                     productName: item?.productVersionName,
                                     productVersionID: item.productVersionId,
-                                   
+
                                     productAttributes: {
                                         colors: item.attributeProducts?.[0]?.colors
                                             ? Array.from(new Set(item.attributeProducts[0].colors.map(color => color.colorId)))
@@ -724,10 +725,10 @@ const OrderTable = () => {
                                                                     <th colSpan={2}></th>
                                                                 </thead>
                                                                 <tbody>
-                                                                    {orderDetails?.orderDetail?.map((orderDetail) => (
-                                                                        orderDetail?.product.map((item) => (
+                                                                    {orderDetails?.orderDetail?.map((orderDetailItem) => (
+                                                                        orderDetailItem?.product.map((item) => (
                                                                             <tr key={item.productID} className='custom-table'>
-                                                                                <td>{orderDetails?.orderDetail.indexOf(orderDetail) + 1}</td>
+                                                                                <td>{orderDetails?.orderDetail.indexOf(orderDetailItem) + 1}</td>
                                                                                 <td style={{
                                                                                     maxWidth: '150px',
                                                                                     overflow: 'hidden',
@@ -751,20 +752,20 @@ const OrderTable = () => {
                                                                                     />
                                                                                 </td>
 
-                                                                                {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetailItem.orderDetailId ? (
                                                                                     <React.Fragment>
                                                                                         <td>
                                                                                             <Select
                                                                                                 options={item?.productAttributes?.colors}
                                                                                                 value={item?.orderVersionAttribute?.color}
-                                                                                                onChange={selectedOption => handleSelectChange(orderDetail, item, 'color', selectedOption)}
+                                                                                                onChange={selectedOption => handleSelectChange(orderDetailItem, item, 'color', selectedOption)}
                                                                                             />
                                                                                         </td>
                                                                                         <td>
                                                                                             <Select
                                                                                                 options={item?.productAttributes?.sizes}
                                                                                                 value={item?.orderVersionAttribute?.size}
-                                                                                                onChange={selectedOption => handleSelectChange(orderDetail, item, 'size', selectedOption)}
+                                                                                                onChange={selectedOption => handleSelectChange(orderDetailItem, item, 'size', selectedOption)}
                                                                                             />
                                                                                         </td>
                                                                                     </React.Fragment>
@@ -780,19 +781,19 @@ const OrderTable = () => {
                                                                                 <td>
                                                                                     {order?.statusName === 'Pending' ? (
                                                                                         <div className='d-flex align-items-center'>
-                                                                                            <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}>
+                                                                                            <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetailItem.orderDetailId, item.productID, item.quantity, -1)}>
                                                                                                 -
                                                                                             </Button>
                                                                                             <input
                                                                                                 type="text"
                                                                                                 className="mx-2"
-                                                                                                value={quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetail.orderDetailId}-${item.productID}`] : item.quantity}
-                                                                                                onChange={(e) => handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                onBlur={(e) => handleQuantityInputBlur(orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                onKeyDown={(e) => handleKeyPress(e, orderDetail.orderDetailId, item.productID, e.target.value)}
+                                                                                                value={quantities[`${orderDetailItem.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetailItem.orderDetailId}-${item.productID}`] : item.quantity}
+                                                                                                onChange={(e) => handleQuantityInputChange(orderDetailItem.orderDetailId, item.productID, e.target.value)}
+                                                                                                onBlur={(e) => handleQuantityInputBlur(orderDetailItem.orderDetailId, item.productID, e.target.value)}
+                                                                                                onKeyDown={(e) => handleKeyPress(e, orderDetailItem.orderDetailId, item.productID, e.target.value)}
                                                                                                 style={{ width: '50px', textAlign: 'center' }}
                                                                                             />
-                                                                                            <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}>
+                                                                                            <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetailItem.orderDetailId, item.productID, item.quantity, 1)}>
                                                                                                 +
                                                                                             </Button>
                                                                                         </div>
@@ -804,7 +805,7 @@ const OrderTable = () => {
                                                                                 <td>{`${item?.total} VND`}</td>
 
                                                                                 {order?.statusName === 'Pending' &&
-                                                                                    (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                    (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetailItem.orderDetailId ? (
                                                                                         <React.Fragment>
                                                                                             <td>
                                                                                                 <CustomButton
@@ -812,7 +813,7 @@ const OrderTable = () => {
                                                                                                     btnType={'button'}
                                                                                                     textColor={'text-white'}
                                                                                                     btnName={<HiCheck />}
-                                                                                                    handleClick={() => handleSaveVersionChanges(orderDetail)}
+                                                                                                    handleClick={() => handleSaveVersionChanges(orderDetailItem)}
                                                                                                 />
                                                                                             </td>
                                                                                             <td>
@@ -827,15 +828,19 @@ const OrderTable = () => {
                                                                                         </React.Fragment>
                                                                                     ) : (
                                                                                         <React.Fragment>
-                                                                                            <td>
-                                                                                                <CustomButton
-                                                                                                    btnBG={'danger'}
-                                                                                                    btnType={'button'}
-                                                                                                    textColor={'text-white'}
-                                                                                                    btnName={<FaTrash />}
-                                                                                                    handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
-                                                                                                />
-                                                                                            </td>
+                                                                                            {
+                                                                                                orderDetails?.orderDetail?.length > 1 && (
+                                                                                                    <td>
+                                                                                                        <CustomButton
+                                                                                                            btnBG={'danger'}
+                                                                                                            btnType={'button'}
+                                                                                                            textColor={'text-white'}
+                                                                                                            btnName={<FaTrash />}
+                                                                                                            handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetailItem?.orderDetailId)}
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                )
+                                                                                            }
 
                                                                                             <td>
                                                                                                 <CustomButton
@@ -843,7 +848,7 @@ const OrderTable = () => {
                                                                                                     btnType={'button'}
                                                                                                     textColor={'text-white'}
                                                                                                     btnName={<MdModeEdit />}
-                                                                                                    handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
+                                                                                                    handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetailItem.orderDetailId })}
                                                                                                 />
                                                                                             </td>
                                                                                         </React.Fragment>
@@ -852,19 +857,19 @@ const OrderTable = () => {
                                                                         ))
                                                                     ))}
                                                                     <tr>
-                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
+                                                                        <td colSpan={8} style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
                                                                         <td>{`${orderDetails?.orderDetail?.reduce((total, orderDetail) => total + orderDetail.product.reduce((subTotal, item) => subTotal + item.total, 0), 0)} VND`}</td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
+                                                                        <td colSpan={8} style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
                                                                         <td>{`${order?.shippingFee ? order?.shippingFee : 0} VND`}</td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Giảm giá:</td>
+                                                                        <td colSpan={8} style={{ textAlign: 'right', fontWeight: 'bold' }}>Giảm giá:</td>
                                                                         <td>{`${order?.disCount || 0} VND`}</td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
+                                                                        <td colSpan={8} style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
                                                                         <td>{`${(
                                                                             (orderDetails?.orderDetail?.reduce((total, orderDetail) => total + orderDetail.product.reduce((subTotal, item) => subTotal + item.total, 0), 0) || 0) +
                                                                             (order?.shippingFee || 0) -
@@ -873,7 +878,7 @@ const OrderTable = () => {
                                                                     </tr>
 
                                                                     <tr>
-                                                                        <td colSpan={8} style={{ textAlign: 'right' }}>
+                                                                        <td colSpan={9} style={{ textAlign: 'right' }}>
                                                                             <button className="btn btn-primary">
                                                                                 Xuất hóa đơn
                                                                             </button>
@@ -896,7 +901,10 @@ const OrderTable = () => {
                     </Table>
                     <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
                         <p className='font-13'>{`${(currentPage + 1) * 5 <= totalElements ? (currentPage + 1) * 5 : totalElements} of ${totalElements} `}
-                            <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span>
+                            <span>
+                                <motion.a initial={{ color: '#29B6F6' }} className='text-decoration-none fw-medium' 
+                                    onClick={() => { setPageSize(totalElements) }}>{`View all >`}</motion.a>
+                            </span>
                         </p>
                         <Pagination className='border-0'>
                             <Pagination.First>{`<`}</Pagination.First>

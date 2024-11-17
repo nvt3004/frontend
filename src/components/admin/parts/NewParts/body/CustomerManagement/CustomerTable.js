@@ -115,10 +115,6 @@ const CustomerTable = () => {
   const btnTable = () => {
     return (
       <div className="d-flex">
-        {/* <button className="btn btn-dark me-3" onClick={handleClickAdd}>
-          Add new d<Plus weight="fill" />
-        </button> */}
-
         <select
           className="form-select w-25 mx-2"
           id="exampleFormControlSelect1"

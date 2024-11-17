@@ -113,10 +113,10 @@ const ProductTable = () => {
                 <div className='bg-body-tertiary d-flex align-items-center' style={{ height: "50px" }}>
                     <div className='container d-flex justify-content-between align-items-center'>
                         <h4 className='m-0 col-2 d-flex align-items-center'><AiFillProduct />&ensp;Products</h4>
-                        <div className='col-10 d-flex justify-content-around'>
-                            <InputGroup className='w-30'>
+                        <div className='col-10 d-flex justify-content-around' style={{height: '50px'}}>
+                            <InputGroup className='w-30' style={{width: '450px'}}>
                                 <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
-                                <Form.Control className='custom-radius' placeholder='Search users . . .' />
+                                <Form.Control className='custom-radius' placeholder='Search product . . .' />
                             </InputGroup>
                             <Button variant='secondary' className='font-14 custom-radius custom-hover'><FaFileExport /> {` Export`}</Button>
                             {/* <Button className='font-14 custom-radius custom-hover' onClick={() => handleShowModal()}><FaPlus />{` Add new supplier`}</Button> */}

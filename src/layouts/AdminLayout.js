@@ -3,6 +3,7 @@ import { Dropdown } from "react-bootstrap";
 import { HiUserCircle } from "react-icons/hi";
 import { Outlet, Link } from "react-router-dom";
 import { getProfile } from "../services/api/OAuthApi";
+import { FaAdversal } from "react-icons/fa";
 import {
   CaretDown,
   CaretLeft,
@@ -17,7 +18,8 @@ import {
   Archive,
   Storefront ,
   Package,
-  UserGear 
+  UserGear,
+  Ticket 
 } from "phosphor-react";
 import "./style.css";
 
@@ -83,12 +85,15 @@ const menus = [
       },
       {
         id: "9",
-        label: "Permissions",
-        icon: <UserGear  />,
-        subItems: [
-          { id: "10", label: "New permissions", link: "/admin/permission/new" },
-          { id: "11", label: "Manage permissions", link: "/admin/permission/manage" },
-        ],
+        label: "Coupon",
+        icon: <Ticket  />,
+        link: "/admin/coupon/manage",
+      },
+      {
+        id: "14",
+        label: "Advertisement",
+        icon: <FaAdversal  />,
+        link: "/admin/coupon/manage",
       }
     ],
   },
