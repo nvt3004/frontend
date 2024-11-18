@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { UploadSimple } from "phosphor-react";
 
-const AvatarUpload = ({ onFileSelect, pathImage = "" }) => {
+const AvatarUpload = ({ onFileSelect, pathImage = "" , marginRight = '50px'}) => {
   const [previewImage, setPreviewImage] = useState(pathImage);
 
   // Xử lý khi chọn file
@@ -46,7 +46,7 @@ const AvatarUpload = ({ onFileSelect, pathImage = "" }) => {
         ) : (
           <div
             class="upload-area d-block rounded mb-2"
-            style={{ width: "200px", height: "200px", marginRight: "50px" }}
+            style={{ width: "200px", height: "200px", marginRight: marginRight }}
           >
             <p>None image</p>
           </div>
