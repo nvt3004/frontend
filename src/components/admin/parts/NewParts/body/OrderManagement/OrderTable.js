@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+
+// import './style/invoice.css';
+// import styles from'./style/_invoice.scss'
 import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
 import { FaClipboardList, FaSearch, FaFileExport } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
@@ -11,6 +14,8 @@ import { FaTrash } from 'react-icons/fa';
 import { HiCheck } from 'react-icons/hi';
 import { ImCancelCircle } from 'react-icons/im';
 import moment from 'moment';
+import InvoicePrint from './Invoice'
+import { useReactToPrint } from 'react-to-print';
 
 const OrderTable = () => {
     // START GET orders
@@ -30,7 +35,6 @@ const OrderTable = () => {
             params: {
                 page: currentPage,
                 size: pageSize,
-                isAdminOrder: isAdminOrder !== null ? isAdminOrder : undefined,
                 keyword: keyword || undefined,
                 statusId: statusId || undefined,
             }
@@ -197,6 +201,7 @@ const OrderTable = () => {
             ]
         }
     );
+
     const handleGetOrderDetail = () => {
         axiosInstance.get(`/staff/orders/${orderID?.value}`).then(
             (response) => {
@@ -214,7 +219,7 @@ const OrderTable = () => {
                                     productID: item.productId,
                                     productName: item?.productVersionName,
                                     productVersionID: item.productVersionId,
-                                   
+
                                     productAttributes: {
                                         colors: item.attributeProducts?.[0]?.colors
                                             ? Array.from(new Set(item.attributeProducts[0].colors.map(color => color.colorId)))
@@ -413,6 +418,7 @@ const OrderTable = () => {
                         ...prevQuantities,
                         [`${orderDetailId}-${productID}`]: newQuantity,
                     }));
+                    handleGetOrderDetail();
                 } else {
                     toast.error(response.data?.message || "Could not update quantity. Please try again!");
                 }
@@ -428,12 +434,6 @@ const OrderTable = () => {
             handleQuantityInputBlur(orderDetailId, productID, newQuantity);
         }
     };
-
-    const isAdminOrderOptions = [
-        { value: true, label: 'Admin Orders' },
-        { value: false, label: 'User Orders' },
-        { value: null, label: 'All Orders' }
-    ];
 
     useEffect(() => {
         const fetchStatuses = async () => {
@@ -467,11 +467,7 @@ const OrderTable = () => {
 
         const value = event ? event.target ? event.target.value : event.value : null;
         setCurrentPage(0);
-
         switch (type) {
-            case 'adminOrder':
-                setIsAdminOrder(value);
-                break;
             case 'status':
                 setStatusId(value);
                 break;
@@ -515,11 +511,10 @@ const OrderTable = () => {
 
             // Xóa link sau khi tải
             document.body.removeChild(link);
-            handleGetOrderDetail();
             toast.success('Xuất file thành công');
         } catch (error) {
             console.error('Error exporting orders:', error);
-            toast.error('There was an error exporting the orders.');
+            toast.error(error.response.data.message || 'There was an error exporting the orders.');
         }
     };
 
@@ -589,6 +584,248 @@ const OrderTable = () => {
         });
     };
 
+    const componentRef = React.useRef();
+
+    const handlePrint = () => {
+        const printContents = componentRef.current.innerHTML;
+
+        const width = 900;
+        const height = 650;
+
+        // Tính toán vị trí để cửa sổ xuất hiện ở giữa
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
+
+        // Mở cửa sổ ở vị trí giữa màn hình
+        const printWindow = window.open('', '', `width=${width},height=${height},top=${top},left=${left}`);
+        
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Invoice</title>
+                    <style>
+
+                        /*@page {
+                            size: 8.5in 11in; /* Kích thước tương đương Letter */
+                            margin: 1in; /* Lề trên, dưới, trái, phải đều 1 inch */
+                        }*/
+
+                      
+                        body {
+                            font-size: 12px;
+                            color: #333;
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 0;
+                          /*  transform: scale(1); */
+                          /* Giảm kích thước nội dung */
+                        }
+
+                        h3 {
+                            text-align: center;
+                            color: #444;
+                            margin-bottom: 20px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 20px;
+                        }
+
+                        .no-print {
+                            display: none !important;
+                        }
+                        .product-name {
+                            max-width: 150px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                        .order-table-img {
+                            max-width: 120px;
+                            max-height: 80px;
+                            width: auto;
+                            height: auto;
+                            object-fit: contain;
+                        }
+                        .custom-button {
+                            display: none;
+                        }
+                        .order-summary td {
+                            font-weight: bold;
+                        }
+                        .order-summary {
+                            margin-top: 20px;
+                        }
+                    
+                       .print-text-wrap {
+                                white-space: normal !important;
+                                word-wrap: break-word !important;
+                                overflow: visible !important;
+                       }
+                        
+                       table {
+                        width: 100%;
+                        border-collapse: collapse;  /* Hợp nhất các đường viền */
+                    }
+
+                    th, td {
+                        border: 1px solid #000; 
+                        padding: 8px; 
+                        text-align: left; 
+                        word-wrap: break-word;
+                    }                      
+
+                  
+                    th:nth-child(2),
+                    td:nth-child(2) {
+                        width: auto !important; 
+                    }
+
+                    th:nth-child(3),
+                    td:nth-child(3) {
+                        width: 80px !important; 
+                    }
+                    
+                    
+                    th:nth-child(5),
+                    td:nth-child(5) {
+                        width: 100px !important; 
+                    }
+
+
+                    /*Cột quantity*/
+                    th:nth-child(7),
+                    td:nth-child(7) {
+                         width: 10px !important; 
+                    }
+
+                    /*Cột tiền*/
+                    th:nth-child(8),
+                    td:nth-child(8) {
+                         width: 150px !important; 
+                    }
+                            
+                    .print {
+                        display: table-row !important;
+                    }
+                    .no-print {
+                        display: none !important;
+                    }
+
+                    .text-center {
+                        text-align: center;
+                    }
+
+                     .text-right {
+                        text-align: right;
+                    }
+
+                    th {
+                        background-color: #f8f8f8;
+                        font-weight: bold;
+                    }
+
+                    tr {
+                        page-break-inside: avoid;  /* Tránh chia cắt các dòng khi in */
+                    }
+                    .quantity-custom{
+                        background: none !important;
+                        box-shadow: none !important; 
+                        border: none !important; 
+                        text-align: center !important; 
+                        padding: 0;
+                    }
+                      
+                    .print-width {
+                        width: 600px !important;
+                    }
+                    .deo-print{
+                        width: 20px !important;
+                    }
+
+                    </style>
+                </head>
+                <body>
+                ${printContents}
+                </body>
+            </html>
+        `);
+
+        const checkIfAllImagesLoaded = (images) => {
+            let loadedImagesCount = 0;
+
+            const imageLoadHandler = () => {
+                loadedImagesCount++;
+                if (loadedImagesCount === images.length) {
+                    printWindow.document.close();
+                    printWindow.print();
+                    printWindow.close();
+                }
+            };
+
+            if (images.length > 0) {
+                for (let img of images) {
+                    if (img.complete) {
+                        imageLoadHandler();
+                    } else {
+                        img.onload = imageLoadHandler;
+                        img.onerror = imageLoadHandler;
+                    }
+                }
+            } else {
+                printWindow.document.close();
+                printWindow.print();
+                printWindow.close();
+            }
+        };
+
+        const images = printWindow.document.images;
+        checkIfAllImagesLoaded(images);
+    };
+
+
+    // Helper function to convert numbers to Vietnamese words
+    const numberToWords = (num) => {
+        const thousands = ["", "nghìn", "triệu", "tỷ"];
+
+        if (num === 0) return "Không đồng";
+
+        let result = '';
+        let groupIndex = 0;
+
+        while (num > 0) {
+            let group = num % 1000;
+            if (group > 0) {
+                result = `${convertGroupToWords(group)} ${thousands[groupIndex]} ${result}`;
+            }
+            num = Math.floor(num / 1000);
+            groupIndex++;
+        }
+
+        // Capitalize the first letter of the result and lowercase the rest
+        return result.charAt(0).toUpperCase() + result.slice(1).toLowerCase();
+    };
+
+    const convertGroupToWords = (num) => {
+        const ones = ["", "Một", "Hai", "Ba", "Bốn", "Năm", "Sáu", "Bảy", "Tám", "Chín"];
+        const tens = ["", "Mười", "Hai mươi", "Ba mươi", "Bốn mươi", "Năm mươi", "Sáu mươi", "Bảy mươi", "Tám mươi", "Chín mươi"];
+        const hundreds = ["", "Một trăm", "Hai trăm", "Ba trăm", "Bốn trăm", "Năm trăm", "Sáu trăm", "Bảy trăm", "Tám trăm", "Chín trăm"];
+
+        let result = '';
+        const h = Math.floor(num / 100);
+        const t = Math.floor((num % 100) / 10);
+        const o = num % 10;
+
+        if (h > 0) result += hundreds[h] + ' ';
+        if (t > 1) result += tens[t] + ' ';
+        else if (t === 1) result += "Mười ";
+
+        if (o > 0) result += ones[o];
+
+        return result.trim();
+    };
+
     // END HANDLE order
 
     return (
@@ -611,15 +848,7 @@ const OrderTable = () => {
                             </InputGroup>
                         </div>
 
-                        <div className='d-flex justify-content-between align-items-center' style={{ width: "55%" }}>
-                            <Select
-                                className="w-20 mx-3"
-                                options={isAdminOrderOptions}
-                                placeholder="Admin Order"
-                                onChange={(selectedOption) => handleChange(selectedOption, 'adminOrder')}
-                                isClearable
-                            />
-
+                        <div className='d-flex justify-content-between align-items-center' style={{ width: "40%" }}>
                             <Select
                                 className="w-20 mx-3"
                                 options={statusOptions}
@@ -644,8 +873,6 @@ const OrderTable = () => {
                             </Button>
                         </div>
                     </div>
-
-
 
                 </div>
                 <div>
@@ -711,33 +938,51 @@ const OrderTable = () => {
                                             {(orderID?.value === order?.orderId && orderID.isOpen && orderDetails) &&
                                                 (
                                                     <tr>
-                                                        <td colSpan={7}>
+                                                        <td colSpan={7} ref={componentRef}>
+                                                            <div className='d-none' style={{ padding: '0 20px 20px 20px', borderBottom: '1px solid #ddd', marginBottom: '20px' }}>
+                                                                {/* Thông tin công ty */}
+                                                                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                                                    <h3>HÓA ĐƠN BÁN HÀNG</h3>
+                                                                    <p><strong>Công ty TNHH Step To The Future</strong></p>
+                                                                    <p>Địa chỉ: Đ. Số 22, Thường Thạnh, Cái Răng, Cần Thơ, Việt Nam</p>
+                                                                    <p>Số điện thoại: 098 388 11 00</p>
+                                                                    <p>Email: caodangfptcantho@gmail.com</p>
+                                                                </div>
+
+                                                                {/* Thông tin khách hàng */}
+                                                                <div style={{ marginBottom: '20px' }}>
+                                                                    <p><strong>Thông tin khách hàng</strong></p>
+                                                                    <p>Tên khách hàng: {order?.fullname || 'N/A'}</p>
+                                                                    <p>Địa chỉ: {order?.address || 'N/A'}</p>
+                                                                    <p>Số điện thoại: {order?.phone || 'N/A'}</p>
+                                                                </div>
+                                                            </div>
                                                             <Table hover striped>
                                                                 <thead>
-                                                                    <th>#</th>
-                                                                    <th style={{ width: '100px' }}>Product</th>
-                                                                    <th style={{ width: '150px' }}></th>
-                                                                    <th colSpan={2} className='text-center'>Attributes</th>
-                                                                    <th>Unit price</th>
-                                                                    <th>Quantity</th>
-                                                                    <th>Total</th>
-                                                                    <th colSpan={2}></th>
+                                                                    <th className='text-center'>#</th>
+                                                                    <th style={{ width: '100px' }} className='text-center'>Product</th>
+                                                                    <th style={{ width: '150px' }} className='text-center'></th>
+                                                                    <th colSpan={2} className='text-center no-print'>Attributes</th>
+                                                                    <th className='text-center'>Unit price</th>
+                                                                    <th className='text-center'>Quantity</th>
+                                                                    <th className='text-center'>Total</th>
+                                                                    <th colSpan={2} className='no-print'></th>
                                                                 </thead>
                                                                 <tbody>
                                                                     {orderDetails?.orderDetail?.map((orderDetail) => (
                                                                         orderDetail?.product.map((item) => (
                                                                             <tr key={item.productID} className='custom-table'>
-                                                                                <td>{orderDetails?.orderDetail.indexOf(orderDetail) + 1}</td>
+                                                                                <td >{orderDetails?.orderDetail.indexOf(orderDetail) + 1}</td>
                                                                                 <td style={{
                                                                                     maxWidth: '150px',
                                                                                     overflow: 'hidden',
                                                                                     textOverflow: 'ellipsis',
                                                                                     whiteSpace: 'nowrap'
-                                                                                }}>
-                                                                                    {item?.productName}
+                                                                                }} className="print-text-wrap">
+                                                                                    {item?.productName} <span> - [{item?.orderVersionAttribute?.color?.label} - {item?.orderVersionAttribute?.size?.label}]</span>
                                                                                 </td>
 
-                                                                                <td className='d-flex justify-content-center'>
+                                                                                <td className='d-flex justify-content-center text-center'>
                                                                                     <img
                                                                                         src={item?.imageUrl}
                                                                                         alt={item?.productName}
@@ -753,14 +998,14 @@ const OrderTable = () => {
 
                                                                                 {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
                                                                                     <React.Fragment>
-                                                                                        <td>
+                                                                                        <td className='no-print text-center'>
                                                                                             <Select
                                                                                                 options={item?.productAttributes?.colors}
                                                                                                 value={item?.orderVersionAttribute?.color}
                                                                                                 onChange={selectedOption => handleSelectChange(orderDetail, item, 'color', selectedOption)}
                                                                                             />
                                                                                         </td>
-                                                                                        <td>
+                                                                                        <td className='no-print text-center'>
                                                                                             <Select
                                                                                                 options={item?.productAttributes?.sizes}
                                                                                                 value={item?.orderVersionAttribute?.size}
@@ -770,29 +1015,29 @@ const OrderTable = () => {
                                                                                     </React.Fragment>
                                                                                 ) : (
                                                                                     <React.Fragment>
-                                                                                        <td>{item?.orderVersionAttribute?.color?.label}</td>
-                                                                                        <td>{item?.orderVersionAttribute?.size?.label}</td>
+                                                                                        <td className='no-print text-center'>{item?.orderVersionAttribute?.color?.label}</td>
+                                                                                        <td className='no-print text-center'>{item?.orderVersionAttribute?.size?.label}</td>
                                                                                     </React.Fragment>
                                                                                 )}
 
-                                                                                <td>{`${item?.price} VND`}</td>
+                                                                                <td className='text-center'>{`${item?.price} VND`}</td>
 
-                                                                                <td>
+                                                                                <td className='text-center'>
                                                                                     {order?.statusName === 'Pending' ? (
-                                                                                        <div className='d-flex align-items-center'>
-                                                                                            <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}>
+                                                                                        <div className='d-flex justify-content-center'>
+                                                                                            <Button className='no-print' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}>
                                                                                                 -
                                                                                             </Button>
                                                                                             <input
                                                                                                 type="text"
-                                                                                                className="mx-2"
+                                                                                                className="mx-2 text-center quantity-custom"
                                                                                                 value={quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetail.orderDetailId}-${item.productID}`] : item.quantity}
                                                                                                 onChange={(e) => handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)}
                                                                                                 onBlur={(e) => handleQuantityInputBlur(orderDetail.orderDetailId, item.productID, e.target.value)}
                                                                                                 onKeyDown={(e) => handleKeyPress(e, orderDetail.orderDetailId, item.productID, e.target.value)}
                                                                                                 style={{ width: '50px', textAlign: 'center' }}
                                                                                             />
-                                                                                            <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}>
+                                                                                            <Button className='no-print' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}>
                                                                                                 +
                                                                                             </Button>
                                                                                         </div>
@@ -801,12 +1046,12 @@ const OrderTable = () => {
                                                                                     )}
                                                                                 </td>
 
-                                                                                <td>{`${item?.total} VND`}</td>
+                                                                                <td className='text-end text-right'>{`${(item?.total || 0).toLocaleString('vi-VN')} VND`}</td>
 
                                                                                 {order?.statusName === 'Pending' &&
                                                                                     (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
                                                                                         <React.Fragment>
-                                                                                            <td>
+                                                                                            <td className='no-print'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'success'}
                                                                                                     btnType={'button'}
@@ -815,7 +1060,7 @@ const OrderTable = () => {
                                                                                                     handleClick={() => handleSaveVersionChanges(orderDetail)}
                                                                                                 />
                                                                                             </td>
-                                                                                            <td>
+                                                                                            <td className='no-print'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'danger'}
                                                                                                     btnType={'button'}
@@ -827,7 +1072,7 @@ const OrderTable = () => {
                                                                                         </React.Fragment>
                                                                                     ) : (
                                                                                         <React.Fragment>
-                                                                                            <td>
+                                                                                            <td className='no-print'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'danger'}
                                                                                                     btnType={'button'}
@@ -837,7 +1082,7 @@ const OrderTable = () => {
                                                                                                 />
                                                                                             </td>
 
-                                                                                            <td>
+                                                                                            <td className='no-print'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'warning'}
                                                                                                     btnType={'button'}
@@ -851,37 +1096,108 @@ const OrderTable = () => {
                                                                             </tr>
                                                                         ))
                                                                     ))}
-                                                                    <tr>
-                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
-                                                                        <td>{`${orderDetails?.orderDetail?.reduce((total, orderDetail) => total + orderDetail.product.reduce((subTotal, item) => subTotal + item.total, 0), 0)} VND`}</td>
+                                                                    <tr className='no-print'>
+                                                                        <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
+                                                                        <td className='text-end'>
+                                                                            {`${orderDetails?.orderDetail?.reduce((total, orderDetail) =>
+                                                                                total + orderDetail.product.reduce((subTotal, item) =>
+                                                                                    subTotal + item.total, 0), 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
                                                                     </tr>
-                                                                    <tr>
-                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
-                                                                        <td>{`${order?.shippingFee ? order?.shippingFee : 0} VND`}</td>
+                                                                    <tr className='no-print'>
+                                                                        <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
+                                                                        <td className='text-end'>
+                                                                            {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
                                                                     </tr>
-                                                                    <tr>
-                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Giảm giá:</td>
-                                                                        <td>{`${order?.disCount || 0} VND`}</td>
+                                                                    <tr className='no-print'>
+                                                                        <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Giảm giá:</td>
+                                                                        <td className='text-end'>
+                                                                            {`${(order?.disCount || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
                                                                     </tr>
-                                                                    <tr>
-                                                                        <td colSpan={7} style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
-                                                                        <td>{`${(
-                                                                            (orderDetails?.orderDetail?.reduce((total, orderDetail) => total + orderDetail.product.reduce((subTotal, item) => subTotal + item.total, 0), 0) || 0) +
-                                                                            (order?.shippingFee || 0) -
-                                                                            (order?.disCount || 0)
-                                                                        ).toLocaleString()} VND`}</td>
+                                                                    <tr className='no-print'>
+                                                                        <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
+                                                                        <td className='text-end'>
+                                                                            {`${(
+                                                                                (orderDetails?.orderDetail?.reduce((total, orderDetail) =>
+                                                                                    total + orderDetail.product.reduce((subTotal, item) =>
+                                                                                        subTotal + item.total, 0), 0) || 0) +
+                                                                                (order?.shippingFee || 0) -
+                                                                                (order?.disCount || 0)
+                                                                            ).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
                                                                     </tr>
 
-                                                                    <tr>
+                                                                    {/* Đoạn để hiển thị print đơn hàng */}
+
+
+                                                                    <tr className='print d-none'>
+                                                                        <td rowSpan={4} colSpan={3} className='text-center' style={{ fontWeight: 'bold', width: '200px' }}>
+                                                                            <div class="row mt-5 pt-5 border-top">
+                                                                                <div class="col-12 text-center" style={{ color: '#71bdd8' }}>
+                                                                                    <h1 class="display-4 font-weight-bold text-primary">Thank
+                                                                                        You!</h1>
+                                                                                    <p class="lead">Thank you for your order! We look
+                                                                                        forward to serving you again soon.</p>
+                                                                                </div>
+                                                                            </div>
+
+                                                                        </td>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
+                                                                        <td className='text-right print-width' style={{ width: '600px' }}>
+                                                                            {`${orderDetails?.orderDetail?.reduce((total, orderDetail) =>
+                                                                                total + orderDetail.product.reduce((subTotal, item) =>
+                                                                                    subTotal + item.total, 0), 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr className='print d-none'>
+                                                                        <td colSpan={2} className='reduce-colspan deo-print' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Phí vận chuyển:</td>
+                                                                        <td className='text-right print-width' style={{ width: '200px' }}>
+                                                                            {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr className='print d-none'>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Giảm giá:</td>
+                                                                        <td className='text-right'>
+                                                                            {`${(order?.disCount || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr className='print d-none'>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Tổng cộng:</td>
+                                                                        <td className='text-right'>
+                                                                            {`${(
+                                                                                (orderDetails?.orderDetail?.reduce((total, orderDetail) =>
+                                                                                    total + orderDetail.product.reduce((subTotal, item) =>
+                                                                                        subTotal + item.total, 0), 0) || 0) +
+                                                                                (order?.shippingFee || 0) -
+                                                                                (order?.disCount || 0)
+                                                                            ).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>  
+                                                                        <td className='d-none text-center' colSpan={7} >
+                                                                       
+                                                                        Tổng cộng bằng chữ: {numberToWords((
+                                                                            (orderDetails?.orderDetail?.reduce((total, orderDetail) =>
+                                                                                total + orderDetail.product.reduce((subTotal, item) =>
+                                                                                    subTotal + item.total, 0), 0) || 0) +
+                                                                            (order?.shippingFee || 0) -
+                                                                            (order?.disCount || 0)
+                                                                        ))} VNĐ
+                                                                        </td>
+                                                          
+                                                                    </tr>
+
+                                                                    <tr className='no-print'>
                                                                         <td colSpan={8} style={{ textAlign: 'right' }}>
-                                                                            <button className="btn btn-primary">
+
+                                                                            <button className="btn btn-primary" onClick={handlePrint}>
                                                                                 Xuất hóa đơn
                                                                             </button>
                                                                         </td>
                                                                     </tr>
-
                                                                 </tbody>
-
                                                             </Table>
                                                         </td>
                                                     </tr>
