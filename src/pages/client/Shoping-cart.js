@@ -253,7 +253,7 @@ const ShopingCart = () => {
 
     setAttriTest(tem);
     setProduct(partitionProduct(pd, tem, [row, cel], key));
-    console.log(8666,pd)
+    console.log(8666, pd);
   };
 
   //Đổ danh sách cart của user
@@ -340,86 +340,10 @@ const ShopingCart = () => {
     });
   };
 
-
- //Thanh toán
- const handleProceedToCheckout = async () => {
-  if (selectedItems.length <= 0) {
-    toast.info("Please select product before checkout!", {
-      className: "toast-message",
-      position: "top-right",
-      autoClose: 5000,
-    });
-    return;
-  }
-
-  if (!address) {
-    toast.info("Please select address before checkout!", {
-      className: "toast-message",
-      position: "top-right",
-      autoClose: 5000,
-    });
-    return;
-  }
-
-  //Đổ carts
-  const fetchCarts = async () => {
-    const [error, data] = await stfExecAPI({
-      url: "api/user/cart/all",
-    });
-
-    if (data) {
-      setCarts(data.data);
-    }
-  };
-
-  if (couponRead.trim() !== "") {
-    const [error, data] = await stfExecAPI({
-      url: `api/user/coupon?code=${iputEnter}`,
-    });
-
-    if (error) {
-      toast.info("Coupon not found!", {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-      return;
-    }
-  }
-
-  //Pay == true thanh toán khi nhận hàng , ngược lại VNPay
-  const detail = [...selectedItems].map((i) => {
-    return {
-      idVersion: i.versionId,
-      quantity: i.quantity,
-    };
-  });
-
-  if (pay) {
-    const [error, data] = await stfExecAPI({
-      method: "post",
-      url: `api/user/cart/checkout`,
-      data: {
-        address: addressTitle,
-        couponCode: iputEnter || null,
-       creatorIsAdmin: false, 
-        statusId: 1,
-        paymentMethodId: 2,
-        orderDetails: detail,
-      },
-    });
-
-    if (error) {
-      fetchCarts();
-
-      setSubTotal(0);
-      setTotal(0);
-      setCouponRead("");
-      setIputEnter("");
-      setSelectAll(false);
-      setSelectedItems([]);
-
-      toast.info(`${error?.response?.data?.message}`, {
+  //Thanh toán
+  const handleProceedToCheckout = async () => {
+    if (selectedItems.length <= 0) {
+      toast.info("Please select product before checkout!", {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -427,70 +351,155 @@ const ShopingCart = () => {
       return;
     }
 
-    //Đổ coupon
-    const fetchCoupon = async () => {
+    if (!address) {
+      toast.info("Please select address before checkout!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    //Đổ carts
+    const fetchCarts = async () => {
       const [error, data] = await stfExecAPI({
-        url: "api/user/get-all-coupon",
+        url: "api/user/cart/all",
       });
 
       if (data) {
-        setCoupons(data.data);
+        setCarts(data.data);
       }
     };
 
-    fetchCoupon();
-    fetchCarts();
+    if (couponRead.trim() !== "") {
+      const [error, data] = await stfExecAPI({
+        url: `api/user/coupon?code=${iputEnter}`,
+      });
 
-    setSubTotal(0);
-    setTotal(0);
-    setCouponRead("");
-    setIputEnter("");
+      if (error) {
+        toast.info("Coupon not found!", {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
+        });
+        return;
+      }
+    }
 
-    toast.success("Checkout success!", {
-      className: "toast-message",
-      position: "top-right",
-      autoClose: 5000,
+    //Pay == true thanh toán khi nhận hàng , ngược lại VNPay
+    const detail = [...selectedItems].map((i) => {
+      return {
+        idVersion: i.versionId,
+        quantity: i.quantity,
+      };
     });
-  } else {
-    const [error, data] = await stfExecAPI({
-      method: "post",
-      url: `api/vnp/create-payment`,
-      data: {
-        address: addressTitle,
-        couponCode: iputEnter || null,
-        creatorIsAdmin: false,
-        fee: fee,
-        statusId: 1,
-        paymentMethodId: 2,
-        orderDetails: detail,
-        vnpay: {
-          orderInfo: "Thanh toán đơn hàng chuyển khoản",
-          bankCode: "NCB",
+
+    console.log("@ty", {
+      address: addressTitle,
+      couponCode: iputEnter || null,
+      creatorIsAdmin: false,
+      ["fee"]: feeShip,
+      statusId: 1,
+      paymentMethodId: 2,
+      orderDetails: detail,
+    });
+    if (pay) {
+      const [error, data] = await stfExecAPI({
+        method: "post",
+        url: `api/user/cart/checkout`,
+        data: {
+          address: addressTitle,
+          couponCode: iputEnter || null,
+          creatorIsAdmin: false,
+          fee,
+          statusId: 1,
+          paymentMethodId: 2,
+          orderDetails: detail,
         },
-},
-    });
+      });
 
-    if (error) {
+      if (error) {
+        fetchCarts();
+
+        setSubTotal(0);
+        setTotal(0);
+        setCouponRead("");
+        setIputEnter("");
+        setSelectAll(false);
+        setSelectedItems([]);
+
+        toast.info(`${error?.response?.data?.message}`, {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
+        });
+        return;
+      }
+
+      //Đổ coupon
+      const fetchCoupon = async () => {
+        const [error, data] = await stfExecAPI({
+          url: "api/user/get-all-coupon",
+        });
+
+        if (data) {
+          setCoupons(data.data);
+        }
+      };
+
+      fetchCoupon();
       fetchCarts();
 
       setSubTotal(0);
       setTotal(0);
       setCouponRead("");
       setIputEnter("");
-      setSelectAll(false);
-      setSelectedItems([]);
 
-      toast.info(`${error?.response?.data?.message}`, {
+      toast.success("Checkout success!", {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
       });
-      return;
-    }
+    } else {
+      const [error, data] = await stfExecAPI({
+        method: "post",
+        url: `api/vnp/create-payment`,
+        data: {
+          address: addressTitle,
+          couponCode: iputEnter || null,
+          creatorIsAdmin: false,
+          fee,
+          statusId: 1,
+          paymentMethodId: 2,
+          orderDetails: detail,
+          vnpay: {
+            orderInfo: "Thanh toán đơn hàng chuyển khoản",
+            bankCode: "NCB",
+          },
+        },
+      });
 
-    window.location.href = data.data;
-  }
-};
+      if (error) {
+        fetchCarts();
+
+        setSubTotal(0);
+        setTotal(0);
+        setCouponRead("");
+        setIputEnter("");
+        setSelectAll(false);
+        setSelectedItems([]);
+
+        toast.info(`${error?.response?.data?.message}`, {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
+        });
+        return;
+      }
+
+      window.location.href = data.data;
+    }
+  };
   //Chọn coupon
   const handleCoupon = (event) => {
     const v = event.target.value.trim();
@@ -557,7 +566,7 @@ const ShopingCart = () => {
   const handleAddress = async (e) => {
     if (e.target.value === "") {
       navigate("/account"); // Điều hướng tới trang Add new address
-    };
+    }
     const a = addresses.find((o) => o?.addressId == e.target.value);
 
     const feeS = await feeShip(
@@ -961,8 +970,6 @@ const ShopingCart = () => {
                                 data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop"
                                 onClick={() => {
-                          
-                          
                                   setItemCartUpdate({
                                     cartItemId: product.catrItemId,
                                     versions: [
@@ -1217,14 +1224,16 @@ const ShopingCart = () => {
                           className="w-100 border border-1 p-2 form-select stext-111"
                           aria-label="Default select example"
                           onChange={handleAddress}
-                        >    <option value="">
-                        <Link
-                          to="/account"
-                          className="text-decoration-none"
                         >
-                          Add new address
-                        </Link>
-                      </option>
+                          {" "}
+                          <option value="">
+                            <Link
+                              to="/account"
+                              className="text-decoration-none"
+                            >
+                              Add new address
+                            </Link>
+                          </option>
                           {addresses &&
                             addresses.map((item) => {
                               return (

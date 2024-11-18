@@ -23,6 +23,7 @@ const UpdateProduct = () => {
 
     // START SET selectedProduct
     const [selectedProduct, setSelectedProduct] = useState(null);
+    
     const handleRefreshSelectedProduct = () => {
         axiosInstance.get(`/staff/product/refresh/${location?.state?.product?.id}`).then(
             (response) => {

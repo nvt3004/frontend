@@ -214,6 +214,7 @@ const CustomerTable = () => {
       autoClose: 5000,
     });
 
+    setLoading(false);
     setIsModalDeleteOpen(false); // Đóng modal khi nhấn "Save changes"
     setStatus(!isblock);
   };
