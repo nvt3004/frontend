@@ -21,6 +21,7 @@ import { getProfile, updateUser } from "../../services/api/OAuthApi";
 import { format } from "date-fns";
 import moment from "moment";
 import productApi from "../../services/api/ProductApi";
+import AddReviewModal from "../../components/client/Review/AddReviewModal"
 function getNameAddress(nameId) {
   return nameId.substring(nameId.indexOf(" "), nameId.length).trim();
 }
@@ -68,6 +69,13 @@ const Account = () => {
 
   const [status, setStatus] = useState([]); // Trạng thái đơn hàng
 
+
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpenModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
+
+
   const fetchStatus = async () => {
     try {
       const data = await productApi.getOrderStatus();
@@ -84,9 +92,9 @@ const Account = () => {
     try {
       const data = await productApi.getOrder(keyword, statusId, 10, pageNumber); // Gọi API getOrder với page
 
-      setOrders(data.content || []); // Lưu danh sách đơn hàng
-      setTotalPages(data.totalPages || 1); // Lưu tổng số trang
-      setPage(data.number || 0); // Lưu trang hiện tại
+      setOrders(data?.content || []); // Lưu danh sách đơn hàng
+      setTotalPages(data?.totalPages || 1); // Lưu tổng số trang
+      setPage(data?.number || 0); // Lưu trang hiện tại
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -99,7 +107,7 @@ const Account = () => {
     const timer = setTimeout(() => {
       fetchStatus();
       fetchOrders();
-    }, 500);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [keyword, statusId]);
@@ -496,7 +504,7 @@ const Account = () => {
     <div
       className="container mt-5 pt-5 d-flex justify-content-center"
       style={styles.container}
-    >
+    >    <AddReviewModal show={showModal} onClose={handleCloseModal} />
       <div className="w-full">
         <div className="d-flex align-items-center bg-white shadow-sm rounded p-3 mb-4">
           <div>
@@ -603,44 +611,62 @@ const Account = () => {
                         style={{ cursor: "pointer" }}
                       >
                         <div>
-                          <strong className="text-dark">
-                            Order #{order.orderId}
-                          </strong>
-                          <br />
-                          <small className="text-muted">
-                            {moment(order?.orderDate)
-                              .subtract(7, "hours")
-                              .format("DD/MM/YYYY HH:mm")}
-                          </small>
+                          <div>
+                            <strong className="text-dark">
+                              Order #{order.orderId}
+                            </strong>
+                            <br />
+                            <small className="text-muted">
+                              <i className="zmdi zmdi-calendar-note"></i>{" "}
+                              {moment(order?.orderDate)
+                                .subtract(7, "hours")
+                                .format("DD/MM/YYYY HH:mm")}
+                            </small>
+                            <br />
+                            <small className="text-muted">
+                              <i className="zmdi zmdi-dropbox"></i>{" "}
+                              {order?.products?.length}
+                            </small>
+                          </div>
+                          <div>
+                            <strong className="text-dark">
+                              Total:{" "}
+                              {formatCurrencyVND(order.totalPrice ?? "N/A")}
+                            </strong>
+                          </div>
                         </div>
 
-                        {/* Trạng thái đơn hàng */}
-                        <span
-                          className={`badge bg-${
-                            order.statusName === "Shipped"
-                              ? "success"
-                              : order.statusName === "Processed"
-                              ? "info"
-                              : order.statusName === "Pending"
-                              ? "warning"
-                              : order.statusName === "Delivered"
-                              ? "primary"
-                              : order.statusName === "Cancelled"
-                              ? "danger"
-                              : "secondary"
-                          } text-white`}
-                          style={{ fontSize: "12px", fontWeight: "bold" }}
-                        >
-                          {order.statusName}
-                        </span>
+                        <div className="ms-auto d-flex flex-column align-items-end">
+                          {/* Trạng thái đơn hàng */}
+                          <span
+                            className={`rounded-5 badge bg-${
+                              order.statusName === "Shipped"
+                                ? "success"
+                                : order.statusName === "Processed"
+                                ? "info"
+                                : order.statusName === "Pending"
+                                ? "warning"
+                                : order.statusName === "Delivered"
+                                ? "primary"
+                                : order.statusName === "Cancelled"
+                                ? "danger"
+                                : "secondary"
+                            } text-white`}
+                            style={{ fontSize: "12px", fontWeight: "bold" }}
+                          >
+                            {order.statusName}
+                          </span>
+
+                          {/* View Details */}
+                          <button
+                            type="button"
+                            className="btn btn-secondary mt-4"
+                          >
+                            View Details
+                          </button>
+                        </div>
 
                         {/* Tổng tiền đơn hàng */}
-                        <div>
-                          <strong className="text-dark">
-                            Total:{" "}
-                            {formatCurrencyVND(order.totalPrice ?? "N/A")}
-                          </strong>
-                        </div>
                       </div>
 
                       {/* Chi tiết đơn hàng */}
@@ -648,13 +674,14 @@ const Account = () => {
                         className="collapse"
                         id={`collapseOrder${order.orderId}`}
                       >
-                        <table className="table table-bordered m-0 mt-3">
+                        <table className="table  table-hover m-0 mt-3">
                           <thead className="table-light">
                             <tr>
                               <th>Product</th>
                               <th>Variant</th>
                               <th>Quantity</th>
                               <th>Price</th>
+                              <th>Actions</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -675,10 +702,21 @@ const Account = () => {
                                     {product.productName}
                                   </div>
                                 </td>
-                                <td>{product.variant}</td>
-                                <td>{product.quantity}</td>
-                                <td>
+                                <td className="text-center">
+                                  {product.variant}
+                                </td>
+                                <td className="text-center">
+                                  {product.quantity}
+                                </td>
+                                <td className="text-center">
                                   {formatCurrencyVND(product.price ?? "N/A")}
+                                </td>
+                                <td className="text-center">
+                                  <button className="btn btn-outline-secondary"
+                                  onClick={handleOpenModal}>
+                                    <i className="zmdi zmdi-comment-outline me-2"></i>{" "}
+                                    Bình luận
+                                  </button>
                                 </td>
                               </tr>
                             ))}
@@ -757,27 +795,35 @@ const Account = () => {
                   addresses.map((address, index) => (
                     <li
                       key={index}
-                      className="list-group-item d-flex justify-content-between align-items-center p-3 bg-white shadow-sm rounded"
+                      className="list-group-item d-flex flex-column p-4 mb-3 bg-white shadow-sm rounded-lg border border-light"
                     >
-                      <div>
-                        <p className="mb-1 fw-bold">{address.detailAddress}</p>
-                        <p className="mb-0 text-muted">
-                          {`${getNameAddress(
-                            address.province
-                          )}, ${getNameAddress(
-                            address.district
-                          )}, ${getNameAddress(address.ward)}`}
+                      {/* Địa chỉ chi tiết với icon */}
+                      <div className="d-flex align-items-center mb-3">
+                        <i className="zmdi zmdi-pin zmdi-hc-lg me-2"></i>
+                        <p className="mb-0 fw-bold text-dark">
+                          {address.detailAddress}
                         </p>
                       </div>
 
-                      <div className="d-flex align-items-center">
+                      {/* Thông tin về tỉnh, quận, xã */}
+                      <div className="d-flex flex-column">
+                        <small className="d-flex align-items-center mb-2 text-muted">
+                          {getNameAddress(address.province)}
+                        </small>
+                        <small className="d-flex align-items-center mb-2 text-muted">
+                          {getNameAddress(address.district)}
+                        </small>
+                        <small className="d-flex align-items-center mb-2 text-muted">
+                          {getNameAddress(address.ward)}
+                        </small>
+                      </div>
+
+                      {/* Nút chỉnh sửa và xóa phía dưới */}
+                      <div className="d-flex justify-content-end">
                         <button
-                          className="btn btn-outline-secondary me-2 d-flex align-items-center justify-content-center"
+                          className="btn btn-outline-primary me-3 d-flex align-items-center justify-content-center"
                           style={{
-                            width: "40px",
-                            height: "40px",
-                            borderRadius: "50%",
-                            padding: 0,
+                            transition: "background-color 0.3s ease",
                           }}
                           onClick={() => {
                             setIdEdit(address.addressId);
@@ -785,7 +831,7 @@ const Account = () => {
                               JSON.stringify(
                                 provinces.find(
                                   (p) =>
-                                    p.ProvinceID ==
+                                    p.ProvinceID ===
                                     address.province
                                       .substring(
                                         0,
@@ -800,27 +846,18 @@ const Account = () => {
                           data-bs-toggle="modal"
                           data-bs-target="#exampleModal9"
                         >
-                          <i
-                            className="zmdi zmdi-edit"
-                            style={{ fontSize: "1.2rem", color: "#6c757d" }}
-                          ></i>
+                          <i className="zmdi zmdi-edit"></i>
                         </button>
                         <button
                           className="btn btn-outline-danger d-flex align-items-center justify-content-center"
                           style={{
-                            width: "40px",
-                            height: "40px",
-                            borderRadius: "50%",
-                            padding: 0,
+                            transition: "background-color 0.3s ease",
                           }}
                           onClick={() => {
                             handleDeleteAddress(address.addressId);
                           }}
                         >
-                          <i
-                            className="zmdi zmdi-delete"
-                            style={{ fontSize: "1.2rem" }}
-                          ></i>
+                          <i className="zmdi zmdi-delete"></i>
                         </button>
                       </div>
                     </li>

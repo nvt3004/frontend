@@ -97,5 +97,11 @@
 }
 
 
+.text-ellipsis {
+  white-space: nowrap;       /* Không cho phép xuống dòng */
+  overflow: hidden;          /* Ẩn nội dung tràn */
+  text-overflow: ellipsis;   /* Thêm dấu '...' ở cuối */
+  width: 130px;              /* Đặt chiều rộng tối đa */
+}
 
 
