@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-// import './style/invoice.css';
-// import styles from'./style/_invoice.scss'
 import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
 import { FaClipboardList, FaSearch, FaFileExport } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
@@ -14,8 +12,7 @@ import { FaTrash } from 'react-icons/fa';
 import { HiCheck } from 'react-icons/hi';
 import { ImCancelCircle } from 'react-icons/im';
 import moment from 'moment';
-import InvoicePrint from './Invoice'
-import { useReactToPrint } from 'react-to-print';
+import { useNavigate } from "react-router-dom";
 
 const OrderTable = () => {
     // START GET orders
@@ -24,12 +21,11 @@ const OrderTable = () => {
     const [totalPage, setTotalPage] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const [quantities, setQuantities] = useState({});
-    const [isAdminOrder, setIsAdminOrder] = useState(null);
     const [keyword, setKeyword] = useState(null);
     const [statusId, setStatusId] = useState(null);
     const [statusOptions, setStatusOptions] = useState([]);
     const [pageSize, setPageSize] = useState(5);
-
+    const navigate = useNavigate();
     const handleGetOrderAPI = () => {
         axiosInstance.get(`/staff/orders`, {
             params: {
@@ -44,8 +40,7 @@ const OrderTable = () => {
                     setOrders(response.data.data.content);
                     setTotalPage(response?.data?.data?.totalPages);
                     setTotalElements(response?.data?.data?.totalElements);
-                }
-                else {
+                } else {
                     if (response?.data?.errorCode === 404) {
                         setOrders([]);
                         setTotalPage(0);
@@ -55,15 +50,19 @@ const OrderTable = () => {
                 }
             }
         ).catch(error => {
-            console.error("Error fetching orders:", error);
-            toast.error(error.response?.data?.message || "An error occurred while fetching order list.");
+            if (error.response?.status === 403) {
+                toast.error("Session expired. Redirecting to login...");
+                navigate('/auth/login');
+            } else {
+                console.error("Error fetching orders:", error);
+                toast.error(error.response?.data?.message || "An error occurred while fetching order list.");
+            }
         });
     };
 
-
     useEffect(() => {
         handleGetOrderAPI();
-    }, [currentPage, isAdminOrder, statusId, pageSize]);
+    }, [currentPage, statusId, pageSize]);
 
     const handleSetPage = (page) => {
         if (page !== currentPage) {
@@ -111,47 +110,53 @@ const OrderTable = () => {
     };
 
     const [orderStatus, setOrderStatus] = useState([]);
-    useEffect(
-        () => {
-            axiosInstance.get('/staff/orders/statuses').then(
-                (response) => {
-                    if (response.data?.errorCode === 200) {
-                        let status = response?.data?.data.map(item => {
-                            let color;
-                            // Loại bỏ khoảng trắng và chuyển về chữ thường cho statusName
-                            switch (item.statusName.trim().toLowerCase()) {
-                                case "pending":
-                                    color = "#FFFF33"; // Vàng
-                                    break;
-                                case "processed":
-                                    color = "#FF9933"; // Cam
-                                    break;
-                                case "shipped":
-                                    color = "#3399FF"; // Xanh dương nhạt
-                                    break;
-                                case "delivered":
-                                    color = "#33FF33"; // Xanh lá
-                                    break;
-                                case "cancelled":
-                                    color = "#FF3333"; // Đỏ
-                                    break;
-                                default:
-                                    color = "#E0E0E0"; // Xám cho Temp hoặc trạng thái không xác định
-                            }
-                            return {
-                                value: item.statusId,
-                                label: item.statusName,
-                                color: color
-                            };
-                        });
-                        setOrderStatus(status);
-                    } else {
-                        toast.error('Could not get the statuses. Please try again!');
-                    }
+    useEffect(() => {
+        axiosInstance.get('/staff/orders/statuses')
+            .then((response) => {
+                if (response.data?.errorCode === 200) {
+                    let status = response?.data?.data.map(item => {
+                        let color;
+                        // Loại bỏ khoảng trắng và chuyển về chữ thường cho statusName
+                        switch (item.statusName.trim().toLowerCase()) {
+                            case "pending":
+                                color = "#FFFF33"; // Vàng
+                                break;
+                            case "processed":
+                                color = "#FF9933"; // Cam
+                                break;
+                            case "shipped":
+                                color = "#3399FF"; // Xanh dương nhạt
+                                break;
+                            case "delivered":
+                                color = "#33FF33"; // Xanh lá
+                                break;
+                            case "cancelled":
+                                color = "#FF3333"; // Đỏ
+                                break;
+                            default:
+                                color = "#E0E0E0"; // Xám cho Temp hoặc trạng thái không xác định
+                        }
+                        return {
+                            value: item.statusId,
+                            label: item.statusName,
+                            color: color
+                        };
+                    });
+                    setOrderStatus(status);
+                } else {
+                    toast.error('Could not get the statuses. Please try again!');
                 }
-            )
-        }, []
-    );
+            })
+            .catch(error => {
+                if (error.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    console.error("Error fetching statuses:", error);
+                    toast.error(error.response?.data?.message || "An error occurred while fetching statuses.");
+                }
+            });
+    }, [navigate]);
     // END GET status
 
     // START HANDLE order
@@ -322,10 +327,15 @@ const OrderTable = () => {
                             }
                         })
                         .catch((error) => {
-                            console.error('Error:', error);
-                            toast.error(error.response?.data?.message || error.message || 'Could not update status of the order. Please try again!');
+                            if (error?.response?.status === 403) {
+                                toast.error("Session expired. Redirecting to login...");
+                                navigate('/auth/login');
+                            } else {
+                                toast.error(error.response?.data?.message || error.message || 'Could not update status of the order. Please try again!');
+                            }
                         });
                 }
+
             });
         } else {
             toast.warning(`You cannot set the status to ${option?.label.toLowerCase()}`);
@@ -366,9 +376,15 @@ const OrderTable = () => {
             })
             .catch((error) => {
                 console.error("Error updating order detail:", error);
-                toast.error("An error occurred while updating order detail.");
+                if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error?.response?.data?.message || "An error occurred while updating order detail.");
+                }
             });
     };
+
 
     const handleQuantityChange = (orderDetailId, productID, currentQuantity, change) => {
         const newQuantity = currentQuantity + change;
@@ -392,7 +408,12 @@ const OrderTable = () => {
             })
             .catch((error) => {
                 console.error("Error updating quantity:", error);
-                toast.error(error.response.data?.message || "An error occurred while updating quantity.");
+                if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
+                }
             });
     };
 
@@ -425,9 +446,15 @@ const OrderTable = () => {
             })
             .catch(error => {
                 console.error("Error updating quantity:", error);
-                toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
+                if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
+                }
             });
     };
+
 
     const handleKeyPress = (e, orderDetailId, productID, newQuantity) => {
         if (e.key === 'Enter') {
@@ -438,8 +465,7 @@ const OrderTable = () => {
     useEffect(() => {
         const fetchStatuses = async () => {
             try {
-                const response = await axiosInstance.get('/staff/orders/statuses', {
-                });
+                const response = await axiosInstance.get('/staff/orders/statuses');
 
                 if (response?.data?.errorCode === 200) {
                     const statuses = response.data.data;
@@ -457,11 +483,18 @@ const OrderTable = () => {
                 }
             } catch (error) {
                 console.error("Error fetching statuses:", error);
+                if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error?.response?.data?.message || "An error occurred while fetching statuses.");
+                }
             }
         };
 
         fetchStatuses();
     }, []);
+
 
     const handleChange = (event, type) => {
 
@@ -485,14 +518,12 @@ const OrderTable = () => {
         { value: 15, label: '15' },
         { value: 20, label: '20' }
     ];
-
     const handleExport = async () => {
         try {
             const response = await axiosInstance.get('/staff/orders/export', {
                 params: {
                     page: currentPage,
                     size: pageSize,
-                    isAdminOrder: isAdminOrder !== null ? isAdminOrder : undefined,
                     keyword: keyword || undefined,
                     statusId: statusId || undefined,
                 },
@@ -514,9 +545,18 @@ const OrderTable = () => {
             toast.success('Xuất file thành công');
         } catch (error) {
             console.error('Error exporting orders:', error);
-            toast.error(error.response.data.message || 'There was an error exporting the orders.');
+
+            // Kiểm tra lỗi 403 (Forbidden)
+            if (error?.response?.status === 403) {
+                toast.error("Session expired. Redirecting to login...");
+                // Điều hướng đến trang đăng nhập nếu cần
+                navigate('/auth/login');
+            } else {
+                toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xuất đơn hàng.');
+            }
         }
     };
+
 
     const handleDeleteOrderDetail = async (orderId, orderDetailId) => {
         Swal.fire({
@@ -545,11 +585,19 @@ const OrderTable = () => {
                         toast.error(`Error: ${response.data.message}`);
                     }
                 } catch (error) {
-                    toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+                    console.error("Error deleting order detail:", error);
+
+                    if (error?.response?.status === 403) {
+                        toast.error("Session expired. Redirecting to login...");
+                        navigate('/auth/login');
+                    } else {
+                        toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+                    }
                 }
             }
         });
     };
+
 
     const handleKeywordChange = (e) => {
         setKeyword(e.target.value);
@@ -596,9 +644,8 @@ const OrderTable = () => {
         const left = (window.screen.width - width) / 2;
         const top = (window.screen.height - height) / 2;
 
-        // Mở cửa sổ ở vị trí giữa màn hình
         const printWindow = window.open('', '', `width=${width},height=${height},top=${top},left=${left}`);
-        
+
         printWindow.document.write(`
             <html>
                 <head>
@@ -784,47 +831,16 @@ const OrderTable = () => {
         checkIfAllImagesLoaded(images);
     };
 
+    function formatDiscount(discount) {
+        if (!discount) return '0 VND';
 
-    // Helper function to convert numbers to Vietnamese words
-    const numberToWords = (num) => {
-        const thousands = ["", "nghìn", "triệu", "tỷ"];
-
-        if (num === 0) return "Không đồng";
-
-        let result = '';
-        let groupIndex = 0;
-
-        while (num > 0) {
-            let group = num % 1000;
-            if (group > 0) {
-                result = `${convertGroupToWords(group)} ${thousands[groupIndex]} ${result}`;
-            }
-            num = Math.floor(num / 1000);
-            groupIndex++;
+        if (typeof discount === 'string' && discount.includes('%')) {
+            return discount;
         }
 
-        // Capitalize the first letter of the result and lowercase the rest
-        return result.charAt(0).toUpperCase() + result.slice(1).toLowerCase();
-    };
-
-    const convertGroupToWords = (num) => {
-        const ones = ["", "Một", "Hai", "Ba", "Bốn", "Năm", "Sáu", "Bảy", "Tám", "Chín"];
-        const tens = ["", "Mười", "Hai mươi", "Ba mươi", "Bốn mươi", "Năm mươi", "Sáu mươi", "Bảy mươi", "Tám mươi", "Chín mươi"];
-        const hundreds = ["", "Một trăm", "Hai trăm", "Ba trăm", "Bốn trăm", "Năm trăm", "Sáu trăm", "Bảy trăm", "Tám trăm", "Chín trăm"];
-
-        let result = '';
-        const h = Math.floor(num / 100);
-        const t = Math.floor((num % 100) / 10);
-        const o = num % 10;
-
-        if (h > 0) result += hundreds[h] + ' ';
-        if (t > 1) result += tens[t] + ' ';
-        else if (t === 1) result += "Mười ";
-
-        if (o > 0) result += ones[o];
-
-        return result.trim();
-    };
+        const numericValue = parseFloat(discount.replace(/[^\d.-]/g, ''));
+        return `${numericValue.toLocaleString('vi-VN')} VND`;
+    }
 
     // END HANDLE order
 
@@ -1020,7 +1036,8 @@ const OrderTable = () => {
                                                                                     </React.Fragment>
                                                                                 )}
 
-                                                                                <td className='text-center'>{`${item?.price} VND`}</td>
+                                                                                <td className='text-center'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
+
 
                                                                                 <td className='text-center'>
                                                                                     {order?.statusName === 'Pending' ? (
@@ -1099,9 +1116,7 @@ const OrderTable = () => {
                                                                     <tr className='no-print'>
                                                                         <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
                                                                         <td className='text-end'>
-                                                                            {`${orderDetails?.orderDetail?.reduce((total, orderDetail) =>
-                                                                                total + orderDetail.product.reduce((subTotal, item) =>
-                                                                                    subTotal + item.total, 0), 0).toLocaleString('vi-VN')} VND`}
+                                                                            {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
                                                                     <tr className='no-print'>
@@ -1111,21 +1126,18 @@ const OrderTable = () => {
                                                                         </td>
                                                                     </tr>
                                                                     <tr className='no-print'>
-                                                                        <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Giảm giá:</td>
+                                                                        <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                                                                            Giảm giá: ({formatDiscount(order?.disCount)})
+                                                                        </td>
                                                                         <td className='text-end'>
-                                                                            {`${(order?.disCount || 0).toLocaleString('vi-VN')} VND`}
+                                                                            {`${(order?.discountValue || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
+
                                                                     <tr className='no-print'>
                                                                         <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
                                                                         <td className='text-end'>
-                                                                            {`${(
-                                                                                (orderDetails?.orderDetail?.reduce((total, orderDetail) =>
-                                                                                    total + orderDetail.product.reduce((subTotal, item) =>
-                                                                                        subTotal + item.total, 0), 0) || 0) +
-                                                                                (order?.shippingFee || 0) -
-                                                                                (order?.disCount || 0)
-                                                                            ).toLocaleString('vi-VN')} VND`}
+                                                                            {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
 
@@ -1146,9 +1158,7 @@ const OrderTable = () => {
                                                                         </td>
                                                                         <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
                                                                         <td className='text-right print-width' style={{ width: '600px' }}>
-                                                                            {`${orderDetails?.orderDetail?.reduce((total, orderDetail) =>
-                                                                                total + orderDetail.product.reduce((subTotal, item) =>
-                                                                                    subTotal + item.total, 0), 0).toLocaleString('vi-VN')} VND`}
+                                                                            {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
                                                                     <tr className='print d-none'>
@@ -1158,35 +1168,21 @@ const OrderTable = () => {
                                                                         </td>
                                                                     </tr>
                                                                     <tr className='print d-none'>
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Giảm giá:</td>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Giảm giá: ({formatDiscount(order?.disCount)})</td>
                                                                         <td className='text-right'>
-                                                                            {`${(order?.disCount || 0).toLocaleString('vi-VN')} VND`}
+                                                                            {`${(order?.discountValue || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
                                                                     <tr className='print d-none'>
                                                                         <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Tổng cộng:</td>
                                                                         <td className='text-right'>
-                                                                            {`${(
-                                                                                (orderDetails?.orderDetail?.reduce((total, orderDetail) =>
-                                                                                    total + orderDetail.product.reduce((subTotal, item) =>
-                                                                                        subTotal + item.total, 0), 0) || 0) +
-                                                                                (order?.shippingFee || 0) -
-                                                                                (order?.disCount || 0)
-                                                                            ).toLocaleString('vi-VN')} VND`}
+                                                                            {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
-                                                                    <tr>  
-                                                                        <td className='d-none text-center' colSpan={7} >
-                                                                       
-                                                                        Tổng cộng bằng chữ: {numberToWords((
-                                                                            (orderDetails?.orderDetail?.reduce((total, orderDetail) =>
-                                                                                total + orderDetail.product.reduce((subTotal, item) =>
-                                                                                    subTotal + item.total, 0), 0) || 0) +
-                                                                            (order?.shippingFee || 0) -
-                                                                            (order?.disCount || 0)
-                                                                        ))} VNĐ
+                                                                    <tr>
+                                                                        <td className='d-none text-center' colSpan={7}>
+                                                                            Tổng cộng bằng chữ: {order?.finalTotalInWords || "Không có dữ liệu"}
                                                                         </td>
-                                                          
                                                                     </tr>
 
                                                                     <tr className='no-print'>
