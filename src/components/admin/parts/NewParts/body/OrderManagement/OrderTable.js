@@ -13,6 +13,7 @@ import { HiCheck } from 'react-icons/hi';
 import { ImCancelCircle } from 'react-icons/im';
 import moment from 'moment';
 import { useNavigate } from "react-router-dom";
+// import {logo} from "../../../../../../../public/images/logo.png"
 
 const OrderTable = () => {
     // START GET orders
@@ -437,7 +438,6 @@ const OrderTable = () => {
         }
         if (isNaN(newQuantity) || newQuantity < 1) {
             toast.error("Quantity must be a positive number.");
-            // Reset to initial value on invalid input
             setQuantities(prevQuantities => ({
                 ...prevQuantities,
                 [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
@@ -453,7 +453,6 @@ const OrderTable = () => {
                         ...prevQuantities,
                         [`${orderDetailId}-${productID}`]: newQuantity,
                     }));
-                    // Update the initial quantities
                     initialQuantitiesRef.current[`${orderDetailId}-${productID}`] = newQuantity;
                     handleGetOrderDetail();
                 } else {
@@ -978,23 +977,38 @@ const OrderTable = () => {
                                                     <tr>
                                                         <td colSpan={7} ref={componentRef}>
                                                             <div className='d-none' style={{ padding: '0 20px 20px 20px', borderBottom: '1px solid #ddd', marginBottom: '20px' }}>
-                                                                {/* Thông tin công ty */}
                                                                 <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                                                                    <h3>HÓA ĐƠN BÁN HÀNG</h3>
+                                                                    <h3 style={{ fontSize: '24px', fontWeight: 'bold' }}>HÓA ĐƠN BÁN HÀNG</h3>
+                                                                    <img src="/images/logo.png" alt="Company Logo" style={{ width: '100px', marginBottom: '20px' }} />
+
                                                                     <p><strong>Công ty TNHH Step To The Future</strong></p>
                                                                     <p>Địa chỉ: Đ. Số 22, Thường Thạnh, Cái Răng, Cần Thơ, Việt Nam</p>
                                                                     <p>Số điện thoại: 098 388 11 00</p>
                                                                     <p>Email: caodangfptcantho@gmail.com</p>
                                                                 </div>
 
-                                                                {/* Thông tin khách hàng */}
-                                                                <div style={{ marginBottom: '20px' }}>
-                                                                    <p><strong>Thông tin khách hàng</strong></p>
-                                                                    <p>Tên khách hàng: {order?.fullname || 'N/A'}</p>
-                                                                    <p>Địa chỉ: {order?.address || 'N/A'}</p>
-                                                                    <p>Số điện thoại: {order?.phone || 'N/A'}</p>
+                                                                <div className='d-flex' style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                                                    {/* Thông tin khách hàng */}
+                                                                    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '48%' }}>
+                                                                        <p><strong>Thông tin khách hàng</strong></p>
+                                                                        <p>Tên khách hàng: {order?.fullname || 'N/A'}</p>
+                                                                        <p>Địa chỉ: {order?.address || 'N/A'}</p>
+                                                                        <p>Số điện thoại: {order?.phone || 'N/A'}</p>
+                                                                    </div>
+
+                                                                    {/* Thông tin đơn hàng */}
+                                                                    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '48%' }}>
+                                                                        <p><strong>Thông tin đơn hàng</strong></p>
+                                                                        <p>Ngày đặt hàng: {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
+                                                                        <p>Ngày giao hàng: {moment(order?.deliveryDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
+                                                                        <p>Phương thức thanh toán: {order?.paymentMethod || 'N/A'}</p>
+                                                                        <p>Tổng tiền: {order?.totalPrice?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) || '0 VNĐ'}</p>
+                                                                        <p>Trạng thái: {order?.statusName || 'N/A'}</p>
+                                                                    </div>
                                                                 </div>
                                                             </div>
+
+
                                                             <Table hover striped>
                                                                 <thead>
                                                                     <th className='text-center'>#</th>
