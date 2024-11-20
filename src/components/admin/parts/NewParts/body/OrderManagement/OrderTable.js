@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
 import { FaClipboardList, FaSearch, FaFileExport } from 'react-icons/fa';
@@ -206,7 +206,7 @@ const OrderTable = () => {
             ]
         }
     );
-
+    const initialQuantitiesRef = useRef({});
     const handleGetOrderDetail = () => {
         axiosInstance.get(`/staff/orders/${orderID?.value}`).then(
             (response) => {
@@ -267,6 +267,7 @@ const OrderTable = () => {
                         };
                     });
 
+                    initialQuantitiesRef.current = initialQuantities;
                     setQuantities(initialQuantities);
                     setOrderDetails({
                         orderId: temp?.orderId,
@@ -426,8 +427,21 @@ const OrderTable = () => {
 
     const handleQuantityInputBlur = (orderDetailId, productID, newQuantity) => {
         newQuantity = parseInt(newQuantity, 10);
+        const currentQuantity = initialQuantitiesRef.current[`${orderDetailId}-${productID}`];
+        if (newQuantity === currentQuantity) {
+            setQuantities(prevQuantities => ({
+                ...prevQuantities,
+                [`${orderDetailId}-${productID}`]: currentQuantity,
+            }));
+            return;
+        }
         if (isNaN(newQuantity) || newQuantity < 1) {
             toast.error("Quantity must be a positive number.");
+            // Reset to initial value on invalid input
+            setQuantities(prevQuantities => ({
+                ...prevQuantities,
+                [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
+            }));
             return;
         }
 
@@ -439,12 +453,22 @@ const OrderTable = () => {
                         ...prevQuantities,
                         [`${orderDetailId}-${productID}`]: newQuantity,
                     }));
+                    // Update the initial quantities
+                    initialQuantitiesRef.current[`${orderDetailId}-${productID}`] = newQuantity;
                     handleGetOrderDetail();
                 } else {
+                    setQuantities(prevQuantities => ({
+                        ...prevQuantities,
+                        [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
+                    }));
                     toast.error(response.data?.message || "Could not update quantity. Please try again!");
                 }
             })
             .catch(error => {
+                setQuantities(prevQuantities => ({
+                    ...prevQuantities,
+                    [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
+                }));
                 console.error("Error updating quantity:", error);
                 if (error?.response?.status === 403) {
                     toast.error("Session expired. Redirecting to login...");
@@ -546,10 +570,8 @@ const OrderTable = () => {
         } catch (error) {
             console.error('Error exporting orders:', error);
 
-            // Kiểm tra lỗi 403 (Forbidden)
             if (error?.response?.status === 403) {
                 toast.error("Session expired. Redirecting to login...");
-                // Điều hướng đến trang đăng nhập nếu cần
                 navigate('/auth/login');
             } else {
                 toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xuất đơn hàng.');
