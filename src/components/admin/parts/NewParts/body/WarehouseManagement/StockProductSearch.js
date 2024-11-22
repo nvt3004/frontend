@@ -1,103 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   CaretDoubleLeft,
   CaretDoubleRight,
   MagnifyingGlass,
 } from "phosphor-react"; // Đảm bảo import đúng các icon
+import debounce from "lodash.debounce"; // Import debounce từ lodash
 
-const StockProductSearch = () => {
+const StockProductSearch = ({
+  products,
+  handleNext,
+  handlePrev,
+  handleSearchs,
+  handleClickItem,
+  isNext,
+  isPrev,
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const productsPerPage = 4;
 
-  // Dữ liệu sản phẩm mẫu
-  const products = [
-    {
-      id: 1,
-      name: "Product A",
-      price: "100,000₫",
-      image: "http://localhost:8080/images/1732213977085.jpg",
-    },
-    {
-      id: 2,
-      name: "Product B",
-      price: "200,000₫",
-      image: "http://localhost:8080/images/1732213977085.jpg",
-    },
-    {
-      id: 3,
-      name: "Product C",
-      price: "300,000₫",
-      image: "http://localhost:8080/images/1732213977085.jpg",
-    },
-    {
-      id: 4,
-      name: "Product D",
-      price: "150,000₫",
-      image: "http://localhost:8080/images/1732213977085.jpg",
-    },
-    {
-      id: 5,
-      name: "Product E",
-      price: "250,000₫",
-      image: "http://localhost:8080/images/1732213977085.jpg",
-    },
-    {
-      id: 6,
-      name: "Product F",
-      price: "350,000₫",
-      image: "http://localhost:8080/images/1732213977085.jpg",
-    },
-    {
-      id: 7,
-      name: "Product G",
-      price: "400,000₫",
-      image: "http://localhost:8080/images/1732213977085.jpg",
-    },
-    {
-      id: 8,
-      name: "Product H",
-      price: "450,000₫",
-      image: "http://localhost:8080/images/1732213977085.jpg",
-    },
-  ];
+  const debouncedSearch = useCallback(
+    debounce((value) => {
+      handleSearchs(value);
+    }, 500),
+    []
+  );
 
   // Hàm lọc sản phẩm khi nhập vào ô tìm kiếm
   const handleSearch = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-
-    const filtered = products.filter((product) =>
-      product.name.toLowerCase().includes(query.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-    setCurrentPage(1); // Reset trang khi thay đổi tìm kiếm
+    debouncedSearch(query);
   };
 
   // Hàm xử lý việc thay đổi trang
   const nextPage = () => {
-    if (currentPage < Math.ceil(filteredProducts.length / productsPerPage)) {
-      setCurrentPage(currentPage + 1);
-    }
+    handleNext();
   };
 
   const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
+    handlePrev();
   };
-
-  // Lấy các sản phẩm hiển thị theo trang
-  const startIndex = (currentPage - 1) * productsPerPage;
-  const currentProducts = filteredProducts.slice(
-    startIndex,
-    startIndex + productsPerPage
-  );
 
   return (
     <>
-      <label>Tìm kiếm sản phẩm</label>
+      {/* <label>Tìm kiếm sản phẩm</label> */}
       <div className="input-group input-group-merge">
         <span className="input-group-text" id="basic-addon-search31">
           <MagnifyingGlass />
@@ -121,18 +66,21 @@ const StockProductSearch = () => {
         >
           <button
             className="btn btn-dark p-0 bg-dark"
-            style={{ width: "50px", height: '50px', borderRadius: '50%' }}
+            style={{ width: "50px", height: "50px", borderRadius: "50%" }}
             onClick={prevPage}
-            disabled={currentPage === 1}
+            disabled={isPrev}
           >
             <CaretDoubleLeft />
           </button>
 
           {/* Hiển thị các sản phẩm */}
           <div className="row row-cols-1 row-cols-md-4 g-4" style={{ flex: 1 }}>
-            {currentProducts.length > 0 ? (
-              currentProducts.map((product) => (
+            {products ? (
+              products.map((product) => (
                 <div
+                  onClick={() => {
+                    handleClickItem(product);
+                  }}
                   className="col"
                   key={product.id}
                   style={{ cursor: "pointer" }}
@@ -141,16 +89,17 @@ const StockProductSearch = () => {
                     <img
                       className="card-img-top"
                       src={product.image}
-                      alt={product.name}
+                      alt={product.productName}
                       style={{ height: "200px", objectFit: "cover" }}
                     />
                     <div className="card-body">
-                      <h5 className="card-title">{product.name}</h5>
+                      <h6 className="card-title">{product.productName}</h6>
                       <p className="">
-                        Trong kho: 250
+                        Trong kho:{" "}
+                        {product.totalStock < 0 ? 0 : product.totalStock}
                       </p>
                       <p className="">
-                        35 phiên bản
+                        Số lượng phiên bản: {product.versions.length}
                       </p>
                     </div>
                   </div>
@@ -171,13 +120,9 @@ const StockProductSearch = () => {
 
           <button
             className="btn btn-dark p-0"
-            style={{ width: "50px", height: '50px', borderRadius: '50%' }}
+            style={{ width: "50px", height: "50px", borderRadius: "50%" }}
             onClick={nextPage}
-            disabled={
-              currentPage ===
-              Math.ceil(filteredProducts.length / productsPerPage)
-            }
-            
+            disabled={isNext}
           >
             <CaretDoubleRight />
           </button>
