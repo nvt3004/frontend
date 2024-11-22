@@ -2,6 +2,9 @@ import React, { useState, useCallback } from "react";
 import debounce from "lodash.debounce";
 import { MagnifyingGlass, CaretDoubleRight, CaretDoubleDown } from "phosphor-react";
 
+function formatCurrencyVND(amount) {
+  return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+}
 
 const TableProductStf = ({
   dataSource,
@@ -107,18 +110,20 @@ const TableProductStf = ({
                             <tr>
                               <th className="text-start">Version Name</th>
                               <th>Retail Price</th>
+                              <th>Import Price</th>
                               <th>Quantity</th>
                               <th>Image</th>
                               <th>Attributes</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {item?.versions.map((version, versionIndex) => (
+                            {item?.versions.filter(i=> i.active).map((version, versionIndex) => (
                               <tr key={version.id}>
                                 <td className="text-start">
                                   {version.versionName}
                                 </td>
-                                <td>{version.retailPrice}</td>
+                                <td>{formatCurrencyVND(version.retailPrice)}</td>
+                                <td>{formatCurrencyVND(version.importPrice)}</td>
                                 <td>{version.quantity}</td>
                                 <td>
                                   <img

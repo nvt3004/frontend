@@ -28,6 +28,7 @@ const NewProduct = () => {
   const [attributes, setAttributes] = useState([]);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [dataSource, setDataSource] = useState([]);
+  const [allPrice, setAllPrice] = useState("");
 
   //Các hàm xử lý logic
   const handleDelete = (record) => {
@@ -68,7 +69,7 @@ const NewProduct = () => {
         versionName,
         image: "",
         retalPrice: "",
-        wholesalePrice: 100000,
+        importPrice: "",
         attributes,
       };
     });
@@ -261,7 +262,7 @@ const NewProduct = () => {
       },
     },
     {
-      title: "Price",
+      title: "Retail Price",
       dataIndex: "retalPrice",
       key: "retalPrice",
       render: (value, record) => {
@@ -279,21 +280,37 @@ const NewProduct = () => {
               const numericValue = inputValue.replace(/\D/g, "");
               const newPrice = numericValue;
 
-              const firstData = dataSource.length > 0 ? dataSource[0] : null;
-              const isFirst = (firstData?.id || -1) === record.id;
+              const updatedDataSource = dataSource.map((d) => {
+                return record.id === d.id ? { ...d, retalPrice: newPrice } : d;
+              });
+
+              setDataSource(updatedDataSource);
+            }}
+          />
+        );
+      },
+    },
+    {
+      title: "Import Price",
+      dataIndex: "importPrice",
+      key: "importPrice",
+      render: (value, record) => {
+        return (
+          <input
+            type="text"
+            className="form-control w-50"
+            id="basic-default-fullname"
+            placeholder="Enter price"
+            value={value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+
+              // Chỉ giữ lại các ký tự là số
+              const numericValue = inputValue.replace(/\D/g, "");
+              const newPrice = numericValue;
 
               const updatedDataSource = dataSource.map((d) => {
-                // Nếu là hàng đầu tiên, cập nhật giá cho tất cả các hàng
-                if (isFirst) {
-                  return { ...d, retalPrice: newPrice };
-                }
-
-                // Nếu không phải hàng đầu tiên, chỉ cập nhật giá cho hàng hiện tại
-                if (d.id === record.id) {
-                  return { ...d, retalPrice: newPrice };
-                }
-
-                return d;
+                return record.id === d.id ? { ...d, importPrice: newPrice } : d;
               });
 
               setDataSource(updatedDataSource);
@@ -337,7 +354,7 @@ const NewProduct = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/admin/attribute/all`,
+        url: `api/staff/attribute/all`,
       });
 
       if (data) {
@@ -433,7 +450,23 @@ const NewProduct = () => {
                   id="basic-default-fullname"
                   placeholder="Enter product name"
                   value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
+                  onChange={(e) => {
+                    dataSource.length > 0 &&
+                      setDataSource(
+                        dataSource.map((i) => {
+                          const name =
+                            e.target.value +
+                            i.versionName.substring(
+                              i.versionName.indexOf(" -"),
+                              i.versionName.length
+                            );
+
+                          return { ...i, versionName: name };
+                        })
+                      );
+
+                    setProductName(e.target.value);
+                  }}
                 />
               </div>
             </div>
@@ -528,6 +561,40 @@ const NewProduct = () => {
                 </div>
               );
             })}
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-4">
+            <label className="form-label" htmlFor="basic-default-fullname">
+              Enter price for all version
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="basic-default-fullname"
+              placeholder="Enter price"
+              value={
+                allPrice
+                  ? Number(allPrice.replace(/,/g, "")).toLocaleString("en-US")
+                  : ""
+              }
+              onChange={(e) => {
+                const rawValue = e.target.value.replace(/,/g, ""); // Loại bỏ dấu phẩy
+                const newValue = rawValue.replace(/\D/g, ""); // Loại bỏ ký tự không phải số
+                setAllPrice(newValue); // Cập nhật giá trị
+
+                setDataSource(
+                  dataSource.map((i) => {
+                    return {
+                      ...i,
+                      retalPrice: newValue,
+                      importPrice: newValue,
+                    };
+                  })
+                );
+              }}
+            />
+          </div>
         </div>
 
         <div className="row">

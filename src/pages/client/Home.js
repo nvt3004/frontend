@@ -13,9 +13,12 @@ import { useDispatch } from "react-redux";
 import banner1 from "../../assets/images/banner-01.jpg";
 import banner2 from "../../assets/images/banner-02.jpg";
 import banner3 from "../../assets/images/banner-03.jpg";
+import CouponCard from "./CouponCard";
 
 import { incrementCart } from "../../store/actions/cartActions";
 import SizeGuide from "../../components/client/Modal/SizeGuideModal";
+import { toast } from "react-toastify";
+import moment from "moment";
 
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
@@ -35,6 +38,50 @@ function getRowCelCick(attributes = [], item) {
     return [0, 0];
   }
 }
+
+function formatCurrencyVND(amount) {
+  return amount.toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  });
+}
+
+const getEndDate = (end) => {
+  const now = moment(); // Lấy thời gian hiện tại
+  const endDate = moment(end, "DD/MM/YYYY HH:mm"); // Chuyển đổi chuỗi thành moment
+  
+  if (!endDate.isValid()) {
+    return "Ngày giờ không hợp lệ"; // Kiểm tra nếu thời gian không hợp lệ
+  }
+
+  const diffInMilliseconds = endDate.diff(now); // Tính chênh lệch
+  console.log("Ty@", diffInMilliseconds, end);
+
+  if (diffInMilliseconds <= 0) {
+    return "Đã hết hạn";
+  }
+
+  const duration = moment.duration(diffInMilliseconds);
+
+  const years = duration.years();
+  const months = duration.months();
+  const days = duration.days();
+  const hours = duration.hours();
+  const minutes = duration.minutes();
+
+  if (years > 0) {
+    return `${years} năm`;
+  } else if (months > 0) {
+    return `${months} tháng`;
+  } else if (days > 0) {
+    return `${days} ngày`;
+  } else if (hours > 0) {
+    return `${hours} giờ`;
+  } else {
+    return `${minutes} phút`;
+  }
+};
+
 const Home = () => {
   const dispatch = useDispatch();
 
@@ -61,6 +108,7 @@ const Home = () => {
 
   const [priceMin, setPriceMin] = useState();
   const [priceMax, setPriceMax] = useState();
+  const [discounts, setDiscounts] = useState([]);
 
   //Xử lý thay đổi phiên bản sản phẩm trong giỏ hàng
   const findAllValueInAttributes = useCallback(
@@ -180,7 +228,7 @@ const Home = () => {
     });
 
     setAttriTest(tem);
-    console.log(53453453534534534534,tem);
+    console.log(53453453534534534534, tem);
     setProduct(partitionProduct(pd, tem, [row, cel], key));
 
     console.log("test ", partitionProduct(pd, tem, [row, cel], key));
@@ -397,12 +445,7 @@ const Home = () => {
       console.error("Error removing from Wishlist:", error.message);
     }
   };
-  function formatCurrencyVND(amount) {
-    return amount.toLocaleString("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    });
-  }
+
   const findIndexByKeyValue = (attributes, key, value) => {
     const attribute = attributes.find((attr) => attr.key === key);
     console.log(
@@ -410,11 +453,72 @@ const Home = () => {
     );
     return attribute && attribute.values ? attribute.values.indexOf(value) : -1;
   };
+
+  //Đổ danh sách coupon cho user lấy
+  useEffect(() => {
+    const fetchCoupon = async () => {
+      const [error, data] = await stfExecAPI({
+        method: "get",
+        url: "api/user/get-all-coupon-home",
+      });
+
+      if (data) {
+        setDiscounts(data.data);
+      }
+    };
+
+    fetchCoupon();
+  }, []);
+
+  const fetchCoupon = async () => {
+    const [error, data] = await stfExecAPI({
+      method: "get",
+      url: "api/user/get-all-coupon-home",
+    });
+
+    if (data) {
+      setDiscounts(data.data);
+    }
+  };
+
+
+  const saveCoupon = async ({ couponId, code }) => {
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: "api/user/get-coupon/add",
+      data: { couponId: couponId, code: code },
+    });
+
+    if (error) {
+      const err =
+        error.status === 403
+          ? "Account does not have permission to perform this function"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      fetchCoupon();
+      return;
+    }
+
+    fetchCoupon();
+
+    toast.success(`Lưu thành công mã giảm giá`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+  };
+
   return (
     <div>
       <Slider />
       <SizeGuide isOpen={isOffcanvasOpen} onClose={toggleOffcanvas} />
       {/* <!-- Banner --> */}
+
       <div className="sec-banner bg0 p-t-80">
         <div className="container">
           <div className="row">
@@ -503,6 +607,31 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      <div className="container mt-5 px-5">
+        <div className="row row-cols-md-3 row-cols-1">
+          {discounts &&
+            discounts.map((item) => {
+              return (
+                <div key={item.code} className="col">
+                  <CouponCard
+                    code={item.code}
+                    discount={
+                      item.disPercent
+                        ? item.disPercent + " %"
+                        : formatCurrencyVND(item.disPrice)
+                    }
+                    name={getEndDate(item.endDate)}
+                    onSave={() => {
+                      saveCoupon({ couponId: item.id, code: item.code });
+                    }}
+                  />
+                </div>
+              );
+            })}
+        </div>
+      </div>
+
       <div className="container mt-5">
         <div className="p-b-10 w-100 ">
           <h3 className="ltext-103 cl5">Product Overview</h3>

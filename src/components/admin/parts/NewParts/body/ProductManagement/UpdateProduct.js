@@ -1,853 +1,816 @@
-import React, { useEffect, useState } from 'react';
-import { RiAddBoxFill, RiRefreshFill } from "react-icons/ri";
-import CustomButton from '../../component/CustomButton';
-import { Button, Form, InputGroup, Modal, Table } from 'react-bootstrap';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Controller, useForm } from 'react-hook-form';
-import ImagesDropzone from './ImagesDropzone';
-import { useDropzone } from 'react-dropzone';
-import { FaTrash } from "react-icons/fa";
-import { motion } from 'framer-motion';
-import Select from 'react-select';
-import axiosInstance from '../../../../../../services/axiosConfig';
-import { toast, ToastContainer } from 'react-toastify';
-import { FileToBase64 } from '../../../../../../services/fileToBase64';
-import Swal from 'sweetalert2';
-import { MdModeEdit } from "react-icons/md";
-import { HiCheck } from "react-icons/hi";
-import { ImCancelCircle } from "react-icons/im";
+import React, { useEffect, useRef, useState, version } from "react";
+import AvatarUpload from "../../../../AvatarUpload ";
+import { stfExecAPI } from "../../../../../../stf/common";
+import { toast } from "react-toastify";
+import FullScreenSpinner from "../../../FullScreenSpinner";
+import DataTableSft from "../../../../DataTableSft";
+import { Trash, ImageSquare, Plus } from "phosphor-react";
+import makeAnimated from "react-select/animated";
+import { useLocation } from "react-router-dom";
+import ModalSft from "../../../../ModalSft";
+import Select from "react-select";
+
+const animatedComponents = makeAnimated();
+
+const convertToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
 
 const UpdateProduct = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
+  const [file, setFile] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [productName, setProductName] = useState("");
+  const [discription, setDiscription] = useState("");
+  const [cate, setCate] = useState([]);
+  const [catId, setCatId] = useState(-1);
+  const [loading, setLoading] = useState(false);
+  const [dataSource, setDataSource] = useState([]);
+  const [versionDelete, setVersionDelete] = useState([]);
+  const [attributes, setAttributes] = useState([]);
+  const [selectedOptions, setSelectedOptions] = useState({});
+  const [retailPrice, setRetailPrice] = useState("");
+  const [importPrice, setImportPrice] = useState("");
+  const [product, setProduct] = useState({});
+  const location = useLocation();
 
-    // START SET selectedProduct
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    
-    const handleRefreshSelectedProduct = () => {
-        axiosInstance.get(`/staff/product/refresh/${location?.state?.product?.id}`).then(
-            (response) => {
-                if (response?.data?.code === 200) {
-                    setSelectedProduct(response?.data?.data);
-                } else {
-                    toast.error(`Couldn't refresh product infomations. Please try again !`);
-                }
-            }
-        );
+  //Các hàm xử lý logic
+  const handleDelete = (record) => {
+    if (record.update) {
+      setVersionDelete([...versionDelete, record]);
     }
-    useEffect(
-        () => {
-            if (location?.state?.product) {
-                // setSelectedProduct(location?.state?.product);
-                handleRefreshSelectedProduct();
-            }
-        }, [location?.state]
-    );
-    useEffect(
-        () => {
-            console.log('selected product: ', selectedProduct);
 
-        }, [selectedProduct]
-    );
-    // END SET selectedProduct
+    setDataSource(dataSource.filter((i) => i.id !== record.id));
+  };
 
-    // START CONFIG ADD NEW VERSION MODAL
-    const [openNewVersion, setOpenNewVersion] = useState(false);
-    // END CONFIG ADD NEW VERSION MODAL
-
-    // START useForm()
-    const { register, formState: { errors }, control, reset, setValue, getValues, setError, trigger } = useForm();
-    // END useForm()
-
-    // START SET categories
-    const [categories, setCategories] = useState([]);
-    useEffect(
-        () => {
-            axiosInstance.get('/home/category/dashboard/get-all').then(
-                (response) => {
-                    if (response?.data?.code === 200) {
-                        let list = response?.data?.data?.map(item => ({
-                            value: item?.categoryId,
-                            label: item?.categoryName,
-                        })).sort((a, b) => a.value - b.value);
-
-                        setCategories(list);
-                    } else {
-                        toast.error(`Couldn't get the category list. Please try again !`);
-                    }
-                }
-            );
-        }, []
-    );
-    useEffect(
-        () => {
-            console.log('categories: ', categories);
-
-        }, [categories]
-    )
-    // END SET categories
-
-    // START CONFIG react-dropzone
-    const [imagePreview, setImagePreview] = useState(null);
-    const [imageVersionPreview, setImageVersionPreview] = useState(null);
-    const onDropMainImage = (file) => {
-        const preview = file?.map(file => Object.assign(file, {
-            preview: URL.createObjectURL(file),
-        }));
-        setImagePreview(preview[0]);
-    }
-    const onDropVersionImage = (file) => {
-        const preview = file?.map(file => Object.assign(file, {
-            preview: URL.createObjectURL(file),
-        }));
-        setImageVersionPreview(preview[0]);
-    }
-    const { getRootProps, getInputProps } = useDropzone({
-        onDrop: (acceptedFiles) => {
-            if (openNewVersion || versionID) {
-                onDropVersionImage(acceptedFiles)
-            } else {
-                onDropMainImage(acceptedFiles);
-            }
-        },
-        accept: { 'image/*': [] },
-        ...({ maxFiles: 1, multiple: false }),
+  const generateProductVersions = (options) => {
+    const attriubuteNames = options.map((o) => o.label).join(" - ");
+    const attributesTemp = options.map((i) => {
+      return { id: i.value, key: "", value: i.label };
     });
-    // END CONFIG react-dropzone
 
-    // START SET changeMainInfo
-    const [changeMainInfo, setChangeMainInfo] = useState(false);
-    const handleCancelChangeMainInfo = () => {
-        setChangeMainInfo(false);
-        setImagePreview(null);
-        reset(['name', 'categories'])
-    }
-    const handleSubmitChangeMainInfo = async () => {
-        if (imagePreview) {
-            setValue('image', await FileToBase64(imagePreview));
-        }
-        const mainInfoData = {
-            id: selectedProduct?.id,
-            name: getValues('name') || selectedProduct?.productName,
-            image: getValues('image') || '',
-            categories: getValues('categories')?.length > 0
-                ? getValues('categories')
-                : selectedProduct?.categories
-        };
-
-        console.log('value: ', mainInfoData);
-        axiosInstance.put('/staff/product/update', mainInfoData).then(
-            (response) => {
-                if (response?.data?.code === 200) {
-                    toast.success('Updated product main infomations successfully !');
-                    setChangeMainInfo(false);
-                    setImagePreview(null);
-                    handleRefreshSelectedProduct();
-                } else {
-                    toast.error(`Couldn't update the this product main infomations. Please try again !`);
-                };
-            }
-        );
-    }
-    // END SET changeMainInfo
-
-    // START SET attributes
-    const [attributes, setAttributes] = useState({ sizes: [], colors: [] });
-    useEffect(() => {
-        axiosInstance.get('/admin/attribute/all').then(
-            (response) => {
-                if (response?.data?.code === 200) {
-                    const fetchData = response?.data?.data;
-                    let fetchSizes = [];
-                    let fetchColors = [];
-
-                    fetchData.forEach(item => {
-                        if (item.attributeName === 'Color') {
-                            fetchColors = item?.options?.map(i => ({
-                                value: i?.id,
-                                label: i?.value
-                            }));
-                        }
-                        if (item.attributeName === 'Size') {
-                            fetchSizes = item?.options?.map(i => ({
-                                value: i?.id,
-                                label: i?.value
-                            }));
-                        }
-                    });
-                    setAttributes(
-                        {
-                            colors: fetchColors,
-                            sizes: fetchSizes
-                        }
-                    );
-
-                } else {
-                    toast.error(`Couldn't get the attribute list. Please try again !`);
-                }
-            }
-        );
-    }, []);
-    // END SET attributes
-
-    // START SET changeVersionInfo
-    const [changeVersionInfo, setChangeVersionInfo] = useState(false);
-    const [versionID, setVersionID] = useState(null);
-    // END SET changeVersionInfo
-
-
-
-    // START HANDLE changeVersionInfo
-    const getDate = () => {
-        const now = new Date();
-        const dd = String(now.getDate()).padStart(2, '0');
-        const MM = String(now.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0 nên phải cộng thêm 1
-        const yy = String(now.getFullYear()).slice(-2); // Lấy 2 số cuối của năm
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-
-        return `${dd}${MM}${yy}-${hh}${mm}${ss}`;
+    const test = {
+      id: dataSource ? dataSource[dataSource.length - 1].id + 1 : 1,
+      idProduct: 0,
+      versionName: `${productName} - ${attriubuteNames}`,
+      retailPrice: retailPrice,
+      importPrice: importPrice,
+      active: true,
+      quantity: 0,
+      image: "",
+      attributes: attributesTemp,
     };
 
-    const handleRemoveVersion = (version) => {
-        Swal.fire(
-            {
-                title: 'Are you sure ?',
-                text: 'You might not recover this product version !',
-                icon: 'question',
-                showConfirmButton: true,
-                confirmButtonText: 'OK',
-                showCancelButton: true,
-                cancelButtonText: 'Cancel'
-            }
-        ).then(
-            (confirm) => {
-                if (confirm.isConfirmed) {
-                    axiosInstance.delete(`/staff/version/remove/${version?.id}`).then(
-                        (response) => {
-                            if (response?.data?.code === 200) {
-                                toast.success('Deleted product version successfully !');
-                                handleRefreshSelectedProduct();
-                            } else {
-                                toast.error(`Couldn't delete the this product version. Please try again !`);
-                            }
-                        }
-                    );
-                }
-            }
-        )
-    }
-    const handleAddNewVersion = async () => {
-        let isValid = await trigger(['addNewSize', 'addNewColor', 'addNewRetailPrice', 'addNewWholesalePrice']);
+    setDataSource([...dataSource, test]);
+  };
 
-        if (!imageVersionPreview) {
-            setError('imageVersion', { type: 'manual', message: 'Version image is required!' });
-            isValid = false;
-        } else {
-            setValue('imageVersion', await FileToBase64(imageVersionPreview));
-        }
-
-        if (!isValid) {
-            toast.error("Please fill all required fields correctly.");
-            return;
-        }
-
-        const data = getValues();
-
-        const formattedData = {
-            idProduct: selectedProduct?.id,
-            versionName: `${selectedProduct?.productName}-ver-${getDate()}`,
-            retailPrice: parseFloat(data.addNewRetailPrice),
-            wholesalePrice: parseFloat(data.addNewWholesalePrice),
-            image: {
-                name: data?.imageVersion,
-            },
-            attributes: [
-                {
-                    id: data.addNewSize?.id,
-                    key: "size",
-                    value: data.addNewSize?.name
-                },
-                {
-                    id: data.addNewColor?.id,
-                    key: "color",
-                    value: data.addNewColor?.name
-                }
-            ]
-        };
-
-        console.log("Data to be sent:", formattedData); // Log dữ liệu gửi lên API
-
-        axiosInstance.post('/staff/version/add', formattedData).then(
-            (response) => {
-                if (response?.data?.code === 200) {
-                    toast.success('Added product version successfully');
-                    setOpenNewVersion(false);
-                    reset(['addNewSize', 'addNewColor', 'addNewRetailPrice', 'addNewWholesalePrice']);
-                    setImageVersionPreview(null);
-                    handleRefreshSelectedProduct();
-                } else {
-                    console.error("API Error:", response.data);
-                    toast.error(response.data?.message || `Couldn't add this product version. Please try again!`);
-                }
-            }
-        ).catch((error) => {
-            console.error("API Error:", error);
-            toast.error("An error occurred while adding the product version.");
-        });
-    }
-
-    const handleUpdateVersion = async () => {
-        const version = selectedProduct?.versions.find(item => item?.id === versionID);
-        console.log('found version: ', version);
-
-        if (imageVersionPreview) {
-            setValue('imageVersion', await FileToBase64(imageVersionPreview));
-        } else {
-            setValue('imageVersion', '');
-        }
-
-        const dataVersion = {
-            id: version?.id,
-            versionName: version?.versionName,
-            retailPrice: getValues('retailPrice') || version?.retailPrice,
-            wholesalePrice: getValues('wholesalePrice') || version?.wholesalePrice,
-            image: {
-                name: getValues('imageVersion') || ''
-            }
-
-        }
-
-        console.log('version update data: ', dataVersion);
-        axiosInstance.put('/staff/version/update', dataVersion).then(
-            (response) => {
-                if (response?.data?.code === 200) {
-                    toast.success('Updated version successfully');
-                    setVersionID(null);
-                    setImageVersionPreview(null);
-                    handleRefreshSelectedProduct()
-                } else {
-                    toast.error(`Couldn't update the this product version. Please try again !`);
-                }
-            }
-        );
-    }
-
-    const [selectedVersions, setSelectedVersions] = useState([]);
-
-    // Hàm xử lý toggle phiên bản trong danh sách chọn
-    const toggleVersionSelection = (id) => {
-        setSelectedVersions((prev) =>
-            prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]
-        );
-    };
-
-    const [isUpdating, setIsUpdating] = useState(false);
-
-    const handleBulkUpdateVersions = async () => {
-        setIsUpdating(true);
-        const data = getValues();
-        const updates = selectedVersions.map((id) => ({
-            id,
-            versionName: `Updated version ${id}`, // Có thể thay đổi theo yêu cầu
-            retailPrice: data.bulkRetailPrice || null,
-            wholesalePrice: data.bulkWholesalePrice || null,
-            image: {
-                name: data.bulkImage || "" // Base64 của ảnh nếu cần cập nhật, truyền "" nếu không
-            },
-        }));
-
-        try {
-            const responses = await Promise.all(
-                updates.map((update) =>
-                    axiosInstance.put('/staff/version/update', update)
-                )
-            );
-
-            responses.forEach((response, index) => {
-                if (response?.data?.code === 200) {
-                    toast.success(`Version ${updates[index].id} updated successfully!`);
-                } else {
-                    toast.error(response?.data?.message || `Couldn't update version ${updates[index].id}!`);
-                }
-            });
-
-            setSelectedVersions([]); // Clear selected versions
-            handleRefreshSelectedProduct(); // Refresh product details
-        } catch (error) {
-            setIsUpdating(false);
-            console.error("Error updating versions:", error);
-            toast.error("An error occurred while updating versions.");
-        }
-    };
-
-
-    // END HANDLE changeVersionInfo
-
-    const ChangeInput = (e, condition) => {
-        if (!condition) {
-            e.preventDefault();
-        }
-    }
-
-    return (
-        <div className='mt-2'>
-            <div className='container'>
-                <div className='mb-4 d-flex justify-content-between align-items-center'>
-                    <div>
-                        <h4 className='fw-bold d-flex align-items-center'><RiRefreshFill />&ensp;{`Update product`}</h4>
-                        <p className='fw-medium'>{`Change product infomation`}</p>
-                    </div>
-                    {/* <div>
-                        <CustomButton btnType={'button'} btnBG={'warning'} btnName={'Save'} textColor={'text-white'} />
-                    </div> */}
-                </div>
-                <div className='d-flex justify-content-between custom-form'>
-                    <div className='col-9 pe-3'>
-                        <div>
-                            <Form>
-                                <Form.Group className='mb-3'>
-                                    <Form.Label className='fs-4 fw-medium'>Product name</Form.Label>
-                                    <Form.Control className='py-2 custome-placeholder-font-12'
-                                        type='text' placeholder='Write product name here'
-                                        defaultValue={selectedProduct?.productName || ''}
-                                        {...register('name', { required: true })}
-                                        onKeyDown={(e) => { ChangeInput(e, changeMainInfo) }} />
-                                    <p className='fs-6 fw-medium text-danger'>{errors?.name && `Product's name is required !`}</p>
-                                </Form.Group>
-                                <Form.Group className='mb-3'>
-                                    <Form.Label className='fs-4 fw-medium'>Product main image</Form.Label>
-                                    <div className='bg-white border rounded-2 py-2 px-1'>
-                                        {changeMainInfo && (
-                                            <div {...getRootProps({ className: 'dropzone' })}>
-                                                <input {...getInputProps()} />
-                                                <p>
-                                                    <div className='d-flex flex-column align-items-center'>
-                                                        <img src={`${process.env.PUBLIC_URL}/images/admin/svg/image.svg`} alt='version'
-                                                            style={{ maxWidth: '120px', height: 'auto' }} />
-                                                        <p className='row'>Choose new image</p>
-                                                    </div>
-                                                    <hr />
-                                                </p>
-                                            </div>
-                                        )}
-                                        <div className='d-flex justify-content-around'>
-                                            {imagePreview ? (
-                                                <div className='position-relative' style={{ width: '100%' }}>
-                                                    <img
-                                                        src={imagePreview?.preview}
-                                                        alt="Main preview"
-                                                        style={{ width: '150px', height: 'auto' }}
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className='position-relative'>
-                                                    <img
-                                                        src={selectedProduct?.image}
-                                                        alt="Main"
-                                                        style={{ width: '150px', height: 'auto' }}
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <p className='fs-6 fw-medium text-danger'>{errors?.image && errors?.image?.message}</p>
-                                </Form.Group>
-                            </Form>
-                            <div className='d-flex justify-content-end'>
-                                {!changeMainInfo && (
-                                    <CustomButton btnBG={'warning'} btnName={'Change main info'} btnType={'button'} textColor={'text-white'} handleClick={() => { setChangeMainInfo(true) }} />
-                                )}
-
-                                {changeMainInfo &&
-                                    (<div className='d-flex justify-content-around' style={{ minWidth: '200px' }}>
-                                        <React.Fragment>
-                                            <CustomButton btnBG={'danger'} btnName={'Cancel'} btnType={'button'} textColor={'text-white'} handleClick={handleCancelChangeMainInfo} />
-                                            <CustomButton btnBG={'success'} btnName={'Save changed'} btnType={'button'} textColor={'text-white'} handleClick={handleSubmitChangeMainInfo} />
-                                        </React.Fragment>
-
-                                    </div>
-                                    )
-                                }
-                            </div>
-                        </div>
-                        <div>
-                            <label className=' fs-4 fw-medium'>Product versions</label>
-                            <div>
-                                {selectedProduct ? (
-                                    <Table hover striped>
-                                        <thead>
-                                            <th></th>
-                                            <th>Version name</th>
-                                            <th colSpan={2} className='text-center'>Attributes</th>
-                                            <th></th>
-                                            <th>Retail</th>
-                                            <th>Wholesale</th>
-                                            <th colSpan={2} className='text-center'>Remove</th>
-                                        </thead>
-                                        <tbody>
-                                            {selectedProduct?.versions.map(
-                                                (version, index) => (
-                                                    version?.active && (
-                                                        <React.Fragment key={index}>
-                                                            <tr className='custom-table'>
-                                                                <td>
-                                                                    <Form.Check
-                                                                        type="checkbox"
-                                                                        checked={selectedVersions.includes(version?.id)}
-                                                                        onChange={() => toggleVersionSelection(version?.id)}
-                                                                    />
-                                                                </td>
-                                                                <td style={{ maxWidth: '250px' }}>{version?.versionName}</td>
-                                                                <td>{version?.attributes[0]?.value}</td>
-                                                                <td>{version?.attributes[1]?.value}</td>
-                                                                <td>{version?.quantity}</td>
-                                                                <td style={{ minWidth: '150px' }}>
-                                                                    {(version?.id === versionID) ?
-                                                                        (
-                                                                            <InputGroup>
-                                                                                <Form.Control type='number'
-                                                                                    placeholder='Retail price. . . (VND)'
-                                                                                    {...register(`retailPrice`)}
-                                                                                    onKeyDown={(e) => { ChangeInput(e, (version?.id === versionID)) }} />
-                                                                                {/* <InputGroup.Text>VND</InputGroup.Text> */}
-                                                                            </InputGroup>
-                                                                        ) :
-                                                                        (
-                                                                            `${version?.retailPrice} VND`
-                                                                        )
-                                                                    }
-                                                                </td>
-                                                                <td style={{ minWidth: '150px' }}>
-                                                                    {(version?.id === versionID) ?
-                                                                        (
-                                                                            <InputGroup>
-                                                                                <Form.Control type='number'
-                                                                                    placeholder='Wholesale price. . . (VND)'
-                                                                                    {...register(`wholesalePrice`)}
-                                                                                    onKeyDown={(e) => { ChangeInput(e, (version?.id === versionID)) }} />
-                                                                                {/* <InputGroup.Text>VND</InputGroup.Text> */}
-                                                                            </InputGroup>
-                                                                        ) :
-                                                                        (
-                                                                            `${version?.retailPrice} VND`
-                                                                        )
-                                                                    }
-                                                                </td>
-                                                                <td>
-
-                                                                </td>
-                                                                <td>
-                                                                    <div style={{ minWidth: '120px' }}>
-                                                                        {!(versionID === version?.id) ?
-                                                                            (
-                                                                                <div className='d-flex justify-content-around'>
-                                                                                    <CustomButton btnType={'button'}
-                                                                                        btnBG={'danger'} btnName={<FaTrash />}
-                                                                                        handleClick={() => { handleRemoveVersion(version) }} />
-                                                                                    <CustomButton btnType={'button'}
-                                                                                        btnBG={'warning'} btnName={<MdModeEdit />} textColor={'text-white'}
-                                                                                        handleClick={() => {
-                                                                                            if (versionID) {
-                                                                                                Swal.fire(
-                                                                                                    {
-                                                                                                        title: 'WARNING !!',
-                                                                                                        text: 'You are on a another version update. Please cancel it if you want to move to this !',
-                                                                                                        showConfirmButton: true,
-                                                                                                        confirmButtonText: 'OK'
-                                                                                                    }
-                                                                                                )
-                                                                                            } else {
-                                                                                                setVersionID(version?.id);
-                                                                                            }
-
-
-                                                                                        }} />
-                                                                                </div>
-                                                                            ) :
-                                                                            (
-                                                                                <div className='d-flex justify-content-between'>
-                                                                                    <CustomButton btnType={'button'}
-                                                                                        btnBG={'success'} btnName={<HiCheck />} textColor={'text-white'}
-                                                                                        handleClick={() => { handleUpdateVersion() }} />
-                                                                                    <CustomButton btnType={'button'}
-                                                                                        btnBG={'danger'} btnName={<ImCancelCircle />} textColor={'text-white'}
-                                                                                        handleClick={() => { setVersionID(null); setImageVersionPreview(null); }} />
-                                                                                </div>
-                                                                            )}
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td colSpan={9}>
-                                                                    {(versionID === version?.id) && (
-                                                                        <div {...getRootProps({ className: 'dropzone' })}>
-                                                                            <input {...getInputProps()} />
-                                                                            <p>
-                                                                                <div className='d-flex flex-column align-items-center'>
-                                                                                    <img src={`${process.env.PUBLIC_URL}/images/admin/svg/image.svg`} alt='version'
-                                                                                        style={{ maxWidth: '120px', height: 'auto' }} />
-                                                                                    <p className='row'>Choose new image</p>
-                                                                                    <hr />
-                                                                                </div>
-                                                                            </p>
-                                                                        </div>
-                                                                    )}
-                                                                    {
-                                                                        imageVersionPreview && versionID === version?.id ?
-                                                                            (
-                                                                                <img src={imageVersionPreview?.preview} alt={version?.versionName} style={{ width: '150px', height: 'auto' }} />
-                                                                            ) :
-                                                                            (
-                                                                                <img src={version?.image?.name} alt={version?.versionName} style={{ width: '150px', height: 'auto' }} />
-                                                                            )
-                                                                    }
-                                                                </td>
-                                                            </tr>
-                                                        </React.Fragment>
-                                                    )
-                                                )
-                                            )}
-                                            <tr>
-                                                <td colSpan={8}>
-                                                    <div className='d-flex justify-content-center'>
-                                                        <div className='d-flex justify-content-around' style={{ minWidth: '350px' }}>
-                                                            <CustomButton btnBG={'warning'} btnName={'Add new version'} btnType={'button'} textColor={'text-white'}
-                                                                handleClick={() => { setOpenNewVersion(true); setVersionID(null); setImageVersionPreview(null); }} />
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </Table>
-                                ) : ''}
-                            </div>
-                            {selectedVersions.length > 0 && (
-                                <div className="bulk-edit-container">
-                                    <h5>Bulk Edit Versions</h5>
-                                    <Form.Group>
-                                        <Form.Label>Retail Price</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            placeholder="Enter new retail price"
-                                            {...register("bulkRetailPrice")}
-                                        />
-                                    </Form.Group>
-                                    <Form.Group>
-                                        <Form.Label>Wholesale Price</Form.Label>
-                                        <Form.Control
-                                            type="number"
-                                            placeholder="Enter new wholesale price"
-                                            {...register("bulkWholesalePrice")}
-                                        />
-                                    </Form.Group>
-                                    {isUpdating && <p>Updating versions, please wait...</p>}
-                                    <CustomButton
-                                        btnType="button"
-                                        btnBG="success"
-                                        btnName={isUpdating ? "Updating..." : "Update Versions"}
-                                        handleClick={handleBulkUpdateVersions}
-                                        disabled={isUpdating}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div className='col-3'>
-                        <div className='bg-white rounded-2 border py-2 px-4'>
-                            <h5 className='mb-3 fs-4'>Category</h5>
-                            <Form>
-                                <Form.Group className="mb-3">
-                                    <div className="d-flex align-items-center mb-1">
-                                        <Form.Label className="fs-6 fw-medium mb-0">Category</Form.Label>
-                                        <motion.label
-                                            className="ms-3 mb-0 font-12 fw-medium text-primary"
-                                            whileHover={{ opacity: 0.8, scale: 1.08 }}
-                                        >
-                                            New category
-                                        </motion.label>
-                                    </div>
-                                    <Controller
-                                        name="addNewCategories"
-                                        control={control}
-                                        rules={{ required: true }}
-                                        defaultValue={
-                                            selectedProduct?.categories && selectedProduct.categories.length > 0
-                                                ? [{ value: selectedProduct.categories[0].id, label: selectedProduct.categories[0].name }]
-                                                : []
-                                        }
-
-                                        render={({ field }) => (
-                                            <Select
-                                                {...field}
-                                                options={categories}
-                                                placeholder="Select category..."
-                                                value={
-                                                    field.value && field.value.length > 0 && field.value[0]
-                                                        ? { value: field.value[0].id, label: field.value[0].name }
-                                                        : selectedProduct?.categories && selectedProduct.categories.length > 0
-                                                            ? [{ value: selectedProduct.categories[0].id, label: selectedProduct.categories[0].name }]
-                                                            : []
-                                                }
-                                                onChange={(selectedOption) => {
-                                                    field.onChange(
-                                                        selectedOption ? [{ id: selectedOption.value, name: selectedOption.label }] : []
-                                                    );
-                                                }}
-                                            />
-                                        )}
-                                    />
-                                    <p className="fs-6 fw-medium text-danger">
-                                        {errors?.categories && `Product's category is required!`}
-                                    </p>
-                                </Form.Group>
-                            </Form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <Form>
-                    <Modal show={openNewVersion} size='lg'>
-                        <Modal.Body>
-                            <div>
-                                <h5 className='mb-3 fs-4'>Attributes</h5>
-
-                                <div className='d-flex justify-content-between'>
-                                    <Form.Group className="mb-3" style={{ minWidth: '350px' }}>
-                                        <div className="d-flex align-items-center mb-1">
-                                            <Form.Label className="fs-6 fw-medium mb-0">Sizes</Form.Label>
-                                            <motion.label
-                                                className="ms-3 mb-0 font-12 fw-medium text-primary"
-                                                whileHover={{ opacity: 0.8, scale: 1.08 }}
-                                            >
-                                                New size
-                                            </motion.label>
-                                        </div>
-                                        <Controller
-                                            name="addNewSize"
-                                            control={control}
-                                            rules={{ required: true }}
-                                            render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    options={attributes?.sizes}
-                                                    placeholder="Select size..."
-                                                    isClearable
-                                                    value={attributes?.colors.find(option => option.value === field.value?.id)} // Sửa dòng này
-                                                    onChange={(selectedOption) => {
-                                                        field.onChange(selectedOption ? { id: selectedOption.value, name: selectedOption.label } : null);
-                                                    }}
-                                                />
-                                            )}
-                                        />
-                                        <p className="fs-6 fw-medium text-danger">
-                                            {errors.addNewSize && `Size is required!`}
-                                        </p>
-                                    </Form.Group>
-
-                                    <Form.Group className="mb-3" style={{ minWidth: '350px' }}>
-                                        <div className="d-flex align-items-center mb-1">
-                                            <Form.Label className="fs-6 fw-medium mb-0">Colors</Form.Label>
-                                            <motion.label
-                                                className="ms-3 mb-0 font-12 fw-medium text-primary"
-                                                whileHover={{ opacity: 0.8, scale: 1.08 }}
-                                            >
-                                                New color
-                                            </motion.label>
-                                        </div>
-                                        <Controller
-                                            name="addNewColor"
-                                            control={control}
-                                            rules={{ required: true }}
-                                            render={({ field }) => (
-                                                <Select
-                                                    {...field}
-                                                    options={attributes?.colors}
-                                                    placeholder="Select color..."
-                                                    isClearable
-                                                    value={attributes?.colors.find(option => option.value === field.value?.id)} // Sửa dòng này
-                                                    onChange={(selectedOption) => {
-                                                        field.onChange(selectedOption ? { id: selectedOption.value, name: selectedOption.label } : null);
-                                                    }}
-                                                />
-                                            )}
-                                        />
-                                        <p className="fs-6 fw-medium text-danger">
-                                            {errors.addNewColor && `Color is required!`}
-                                        </p>
-                                    </Form.Group>
-                                </div>
-                                <div className='d-flex justify-content-between mb-3'>
-                                    <Form.Group style={{ minWidth: '350px' }}>
-                                        <Form.Label>Retail price</Form.Label>
-                                        <Form.Control
-                                            placeholder='Retail price...'
-                                            {...register("addNewRetailPrice", { required: true })}
-                                        />
-                                        <p className='fs-6 text-danger fw-medium'>{errors.addNewRetailPrice && `Retail price is required!`}</p>
-                                    </Form.Group>
-                                    <Form.Group style={{ minWidth: '350px' }}>
-                                        <Form.Label>Wholesale price</Form.Label>
-                                        <Form.Control
-                                            placeholder='Whole price...'
-                                            {...register("addNewWholesalePrice", { required: true })}
-                                        />
-                                        <p className='fs-6 text-danger fw-medium'>{errors.addNewWholesalePrice && `Wholesale price is required!`}</p>
-                                    </Form.Group>
-                                </div>
-                                <div>
-                                    <Form.Group>
-                                        <Form.Label>Version image</Form.Label>
-                                        <div {...getRootProps({ className: 'dropzone' })}>
-                                            <input {...getInputProps()} />
-                                            <p>
-                                                <div className='d-flex flex-column align-items-center'>
-                                                    <img src={`${process.env.PUBLIC_URL}/images/admin/svg/image.svg`} alt='version'
-                                                        style={{ maxWidth: '120px', height: 'auto' }} />
-                                                    <p className='row'>Choose new image</p>
-                                                    <hr />
-                                                </div>
-                                            </p>
-                                        </div>
-                                        {imageVersionPreview && (
-                                            <div className='position-relative' style={{ width: '100%' }}>
-                                                <img
-                                                    src={imageVersionPreview?.preview}
-                                                    alt="Main preview"
-                                                    style={{ width: '150px', height: 'auto' }}
-                                                />
-                                            </div>
-                                        )}
-                                        <p className='fs-6 text-danger fw-medium'>{errors.imageVersion && `Version image is required!`}</p>
-                                    </Form.Group>
-                                </div>
-                            </div>
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <div className=''>
-                                <div className='d-flex justify-content-around' style={{ minWidth: '130px' }}>
-                                    <CustomButton btnType={'button'} btnBG={'success'} btnName={'Add'} handleClick={() => { handleAddNewVersion() }} />
-                                    <CustomButton btnBG={'danger'} btnName={'Cancel'}
-                                        handleClick={
-                                            () => {
-                                                setOpenNewVersion(false);
-                                                reset(['addNewSize', 'addNewColor', 'addNewRetailPrice', 'addNewWholesalePrice']);
-                                                setImageVersionPreview(null)
-                                            }
-                                        } />
-                                </div>
-                            </div>
-                        </Modal.Footer>
-                    </Modal>
-                </Form>
-            </div>
-            <div>
-                <ToastContainer />
-            </div>
-        </div>
+  const cartesianProduct = (arrays) => {
+    return arrays.reduce(
+      (acc, array) =>
+        acc.flatMap((accItem) => array.map((item) => [...accItem, item])),
+      [[]]
     );
-}
+  };
+
+  //Thêm sản phẩm
+  const handleClickAdd = async () => {
+    if (productName.trim().length === 0) {
+      toast.error(`Product name cannot be blank`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    if (catId === -1) {
+      toast.error(`Please select a category`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    if (!file && product.image.trim().length === 0) {
+      toast.error(`Please select image product`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    if (dataSource.length === 0) {
+      toast.error(`Please select version`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    // if (dataSource.find((i) => i.image.trim().length === 0)) {
+    //   toast.error(`Please select full image for all versions`, {
+    //     className: "toast-message",
+    //     position: "top-right",
+    //     autoClose: 5000,
+    //   });
+    //   return;
+    // }
+
+    const pd = {
+      id: product.id,
+      name: productName,
+      price: 0,
+      image: file === null ? "" : file.split(",")[1],
+      description: discription,
+      categories: [
+        {
+          id: Number(catId),
+          name: "",
+        },
+      ],
+    };
+
+    let countCheck = 0;
+
+    const updateProductParent = async () => {
+      const [error, data] = await stfExecAPI({
+        method: "put",
+        url: "api/staff/product/update",
+        data: pd,
+      });
+
+      if (error) {
+        countCheck += 1;
+        const err =
+          error.status === 403
+            ? "Account does not have permission to perform this function"
+            : error?.response?.data?.message;
+
+        toast.error(`${err}`, {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
+        });
+        return;
+      }
+    };
+
+    const saveVersion = async () => {
+      for (let i = 0; i < dataSource.length; i++) {
+        const version = dataSource[i];
+
+        //Nếu đã có rồi thì update
+        if (version.update) {
+          const vs = {
+            id: version.id,
+            versionName: version.versionName,
+            retailPrice: version.retailPrice,
+            importPrice: version.importPrice,
+            image: {
+              name: version.image.endsWith(".jpg")
+                ? ""
+                : version.image.split(",")[1], // Nếu cập nhật ảnh mới thì truyền ảnh base 64 lên, còn không cập nhật mà giữ ảnh cũ thì truyền chuỗi rỗng ""
+            },
+          };
+          const [error, data] = await stfExecAPI({
+            method: "put",
+            url: "api/staff/version/update",
+            data: vs,
+          });
+
+          if (error) {
+            countCheck += 1;
+            const err =
+              error.status === 403
+                ? "Account does not have permission to perform this function"
+                : error?.response?.data?.message;
+
+            toast.error(`${err}`, {
+              className: "toast-message",
+              position: "top-right",
+              autoClose: 5000,
+            });
+            return;
+          }
+        } else {
+          // Nếu chưa có thì them csdl
+          const vs = {
+            idProduct: product.id,
+            versionName: version.versionName,
+            retailPrice: version.retailPrice,
+            importPrice: version.importPrice,
+            image: {
+              name: version.image,
+            },
+            attributes: version.attributes,
+          };
+
+          const [error, data] = await stfExecAPI({
+            method: "post",
+            url: "api/staff/version/add",
+            data: vs,
+          });
+
+          if (error) {
+            countCheck += 1;
+            const err =
+              error.status === 403
+                ? "Account does not have permission to perform this function"
+                : error?.response?.data?.message;
+
+            toast.error(`${err}`, {
+              className: "toast-message",
+              position: "top-right",
+              autoClose: 5000,
+            });
+            return;
+          }
+        }
+      }
+    };
+
+    const deleteVersionApi = async () => {
+      console.log(4343, versionDelete);
+
+      for (let i = 0; i < versionDelete.length; i++) {
+        const version = versionDelete[i];
+
+        const [error, data] = await stfExecAPI({
+          method: "delete",
+          url: `api/staff/version/remove/${version.id}`,
+        });
+
+        if (error) {
+          countCheck += 1;
+          const err =
+            error.status === 403
+              ? "Account does not have permission to perform this function"
+              : error?.response?.data?.message;
+
+          toast.error(`${err}`, {
+            className: "toast-message",
+            position: "top-right",
+            autoClose: 5000,
+          });
+          return;
+        }
+      }
+    };
+
+    await deleteVersionApi();
+    if (countCheck !== 0) {
+      return;
+    }
+    await updateProductParent();
+    if (countCheck !== 0) {
+      return;
+    }
+    await saveVersion();
+    if (countCheck !== 0) {
+      return;
+    }
+
+    toast.success(`Success`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+  };
+
+  //Cấu hình table
+  const columns = [
+    {
+      title: "Image",
+      dataIndex: "image",
+      key: "image",
+      render: (text, record) => {
+        return (
+          <div style={{ position: "relative" }}>
+            {!text ? (
+              <div
+                onClick={() =>
+                  document.getElementById(`file-input-${record.id}`).click()
+                }
+              >
+                <ImageSquare
+                  style={{ color: "#8592a3", cursor: "pointer" }}
+                  size={35}
+                  weight="light"
+                />
+              </div>
+            ) : (
+              // Nếu có ảnh, hiển thị ảnh và cho phép click để thay đổi
+              <img
+                src={text}
+                alt="Product"
+                style={{ width: 50, height: 50, cursor: "pointer" }}
+                onClick={() =>
+                  document.getElementById(`file-input-${record.id}`).click()
+                }
+              />
+            )}
+
+            {/* Input file ẩn khi click vào biểu tượng ImageSquare hoặc ảnh */}
+            <input
+              type="file"
+              id={`file-input-${record.id}`}
+              hidden
+              accept="image/png, image/jpeg"
+              onChange={async (e) => {
+                const imgBase64 = await convertToBase64(e.target.files[0]);
+                const updatedDataSource = dataSource.map((d) => {
+                  if (d.id === record.id) {
+                    return { ...d, image: imgBase64 };
+                  }
+                  return d;
+                });
+                setDataSource(updatedDataSource);
+              }}
+            />
+          </div>
+        );
+      },
+    },
+    {
+      title: "Version Name",
+      dataIndex: "versionName",
+      key: "versionName",
+      render: (value, record) => {
+        return (
+          <input
+            type="text"
+            className="form-control"
+            id="basic-default-fullname"
+            placeholder="Enter name"
+            value={value}
+            onChange={(e) => {
+              const versions = dataSource.map((d) => {
+                if (d.id === record.id) {
+                  return { ...d, versionName: e.target.value };
+                }
+
+                return d;
+              });
+
+              setDataSource(versions);
+            }}
+          />
+        );
+      },
+    },
+    {
+      title: "Retail Price",
+      dataIndex: "retailPrice",
+      key: "retailPrice",
+      render: (value, record) => {
+        return (
+          <input
+            type="text"
+            className="form-control w-50"
+            id="basic-default-fullname"
+            placeholder="Enter price"
+            value={value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              // Chỉ giữ lại các ký tự là số
+              const numericValue = inputValue.replace(/\D/g, "");
+              const newPrice = numericValue;
+
+              const updatedDataSource = dataSource.map((d) => {
+                return record.id === d.id ? { ...d, retailPrice: newPrice } : d;
+              });
+
+              setDataSource(updatedDataSource);
+            }}
+          />
+        );
+      },
+    },
+    {
+      title: "Import Price",
+      dataIndex: "importPrice",
+      key: "importPrice",
+      render: (value, record) => {
+        return (
+          <input
+            type="text"
+            className="form-control w-50"
+            id="basic-default-fullname"
+            placeholder="Enter price"
+            value={value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+              // Chỉ giữ lại các ký tự là số
+              const numericValue = inputValue.replace(/\D/g, "");
+              const newPrice = numericValue;
+
+              const updatedDataSource = dataSource.map((d) => {
+                return record.id === d.id ? { ...d, importPrice: newPrice } : d;
+              });
+
+              setDataSource(updatedDataSource);
+            }}
+          />
+        );
+      },
+    },
+    {
+      title: "Attributes",
+      dataIndex: "attributes",
+      key: "attributes",
+      render: (value, record) => {
+        return record.attributes
+          .map((i) => {
+            return i.value;
+          })
+          .join(" - ");
+      },
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (text, record) => {
+        return (
+          <div>
+            <button
+              type="button"
+              className="btn btn-danger btn-sm"
+              onClick={() => handleDelete(record)}
+            >
+              <Trash weight="fill" />
+            </button>
+          </div>
+        );
+      },
+    },
+  ];
+
+  //Đổ danh sách danh mục sản phẩm
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/product/refresh/${location?.state?.product?.id}`,
+      });
+
+      if (data) {
+        setProduct(data.data);
+        setProductName(data.data.productName);
+        setCatId(data.data.categories[0].id);
+        setDiscription(data.data.discription);
+        setDataSource(
+          data.data.versions
+            .filter((i) => i.active)
+            .map((i) => {
+              return { ...i, image: i.image.name, update: true };
+            })
+        );
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Account does not have permission to perform this function"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchProducts();
+  }, []);
+
+  //Đổ danh sách thuộc tính sản phẩm
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/home/category/dashboard/get-all`,
+      });
+
+      if (data) {
+        setCate(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Account does not have permission to perform this function"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchProducts();
+  }, []);
+
+  //Đổ danh sách danh mục sản phẩm
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/attribute/all`,
+      });
+
+      if (data) {
+        setAttributes(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Account does not have permission to perform this function"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Hàm nhận file từ component con
+  const handleFileSelect = async (selectedFile) => {
+    if (!selectedFile) {
+      setFile(null);
+      return;
+    }
+
+    try {
+      const base64String = await convertToBase64(selectedFile);
+      setFile(base64String); // Lưu chuỗi Base64 vào state
+    } catch (error) {
+      console.error("Lỗi chuyển đổi file:", error);
+    }
+  };
+
+  // Modal thêm mới
+  const handleOk = async () => {
+    generateProductVersions(Object.values(selectedOptions));
+    setIsModalOpen(false);
+  };
+
+  //Đóng modal
+  const handleCancel = () => {
+    setIsModalOpen(false); // Đóng modal khi nhấn "Close"
+  };
+
+  console.log(dataSource);
+  console.log(selectedOptions);
+  console.log(versionDelete);
+
+  return (
+    <>
+      <FullScreenSpinner isLoading={loading} />
+
+      <form className="card p-4">
+        <div className="row">
+          <label>Product</label>
+        </div>
+
+        <div className="row">
+          <div className="col-md-5">
+            <AvatarUpload
+              marginRight="200px"
+              pathImage={product?.image || ""}
+              onFileSelect={handleFileSelect}
+            />
+          </div>
+
+          <div className="col-md-7">
+            <div className="row mb-4">
+              <div className="col-md-12">
+                <label className="form-label" htmlFor="basic-default-fullname">
+                  Product name <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="basic-default-fullname"
+                  placeholder="Enter product name"
+                  value={productName}
+                  onChange={(e) => {
+                    setProductName(e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="row  mb-4">
+              <div className="col-md-12">
+                <label
+                  htmlFor="exampleFormControlSelect1"
+                  className="form-label"
+                >
+                  Category <span className="text-danger">*</span>
+                </label>
+                <select
+                  className="form-select"
+                  id="exampleFormControlSelect1"
+                  value={catId}
+                  onChange={(e) => {
+                    setCatId(e.target.value);
+                  }}
+                >
+                  <option value="-1">Select category</option>
+                  {cate &&
+                    cate.map((c, index) => {
+                      return (
+                        <option key={c.categoryName} value={c.categoryId}>
+                          {c.categoryName}
+                        </option>
+                      );
+                    })}
+                </select>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-12">
+                <label for="exampleFormControlTextarea1" class="form-label">
+                  Discription
+                </label>
+                <textarea
+                  class="form-control"
+                  id="exampleFormControlTextarea1"
+                  rows="3"
+                  value={discription}
+                  onInput={(e) => setDiscription(e.target.value)}
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <form className="card p-4 mt-3">
+        <div className="">
+          <button
+            type="button"
+            className="btn btn-dark me-3"
+            onClick={() => {
+              setSelectedOptions({});
+              setIsModalOpen(true);
+              setRetailPrice("");
+              setImportPrice("")
+            }}
+          >
+            Add version <Plus weight="fill" />
+          </button>
+        </div>
+
+        <div className="row">
+          <DataTableSft dataSource={dataSource} columns={columns} title={""} />
+        </div>
+
+        <div className="d-flex justify-content-end mt-3">
+          <button
+            type="button"
+            className="btn btn-outline-secondary me-3"
+            onClick={() => {
+              setDataSource(dataSource.filter((i) => i.update));
+              setVersionDelete([]);
+            }}
+          >
+            Reset
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-dark me-3"
+            onClick={handleClickAdd}
+          >
+            Save
+          </button>
+        </div>
+      </form>
+
+      <ModalSft
+        title="Add version"
+        titleOk={"Add"}
+        open={isModalOpen}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        size="modal-lg"
+      >
+        <form className="card p-4 mt-3">
+          <div className="row mb-3">
+            <label>Attributes</label>
+          </div>
+
+          <div
+            className={`row row-cols-sm-${
+              attributes.length % 2 === 0 ? "3" : "2"
+            }`}
+          >
+            {attributes &&
+              attributes.map((a) => {
+                return (
+                  <div className="col mb-3" key={a.id}>
+                    <label
+                      htmlFor="exampleFormControlSelect1"
+                      className="form-label"
+                    >
+                      {a.attributeName}
+                    </label>
+
+                    <Select
+                      closeMenuOnSelect={false}
+                      components={animatedComponents}
+                      options={a.options.map((i) => {
+                        return { key: a.id, value: i.id, label: i.value };
+                      })}
+                      value={selectedOptions[a.id] || []} // Lấy các lựa chọn cho Select hiện tại, nếu không có thì mặc định là mảng rỗng
+                      onChange={(selected) => {
+                        // Cập nhật selectedOptions cho attribute tương ứng
+                        setSelectedOptions((prevSelectedOptions) => {
+                          const updatedOptions = {
+                            ...prevSelectedOptions,
+                            [a.id]: selected, // Lưu lựa chọn cho attribute có id là a.id
+                          };
+
+                          return updatedOptions;
+                        });
+                      }}
+                    />
+                  </div>
+                );
+              })}
+
+            <div className="col mb-3">
+              <label className="form-label" htmlFor="basic-default-fullname">
+                Retail Price
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="basic-default-fullname"
+                placeholder="Enter price"
+                value={
+                  retailPrice
+                    ? Number(retailPrice.replace(/,/g, "")).toLocaleString("en-US")
+                    : ""
+                }
+                onChange={(e) => {
+                  const rawValue = e.target.value.replace(/,/g, ""); // Loại bỏ dấu phẩy
+                  const newValue = rawValue.replace(/\D/g, ""); // Loại bỏ ký tự không phải số
+                  setRetailPrice(newValue); // Cập nhật giá trị
+
+                  setDataSource(
+                    dataSource.map((i) => {
+                      return { ...i, retalPrice: newValue };
+                    })
+                  );
+                }}
+              />
+            </div>
+
+            <div className="col mb-3">
+              <label className="form-label" htmlFor="basic-default-fullname">
+                Import Price
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="basic-default-fullname"
+                placeholder="Enter price"
+                value={
+                  importPrice
+                    ? Number(importPrice.replace(/,/g, "")).toLocaleString("en-US")
+                    : ""
+                }
+                onChange={(e) => {
+                  const rawValue = e.target.value.replace(/,/g, ""); // Loại bỏ dấu phẩy
+                  const newValue = rawValue.replace(/\D/g, ""); // Loại bỏ ký tự không phải số
+                  setImportPrice(newValue); // Cập nhật giá trị
+
+                  setDataSource(
+                    dataSource.map((i) => {
+                      return { ...i, importPrice: newValue };
+                    })
+                  );
+                }}
+              />
+            </div>
+          </div>
+        </form>
+      </ModalSft>
+    </>
+  );
+};
 
 export default UpdateProduct;

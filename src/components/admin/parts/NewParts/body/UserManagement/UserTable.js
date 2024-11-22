@@ -393,7 +393,6 @@ const UserTable = () => {
       },
     });
 
-    setLoading(false);
     if (error) {
       const err =
         error.status === 403
@@ -405,6 +404,8 @@ const UserTable = () => {
         position: "top-right",
         autoClose: 5000,
       });
+
+      setLoading(false);
       return;
     }
 
@@ -414,6 +415,7 @@ const UserTable = () => {
       autoClose: 5000,
     });
 
+    setLoading(false);
     setIsModalQuyenOpen(false); // Đóng modal khi nhấn "Save changes"
   };
 
