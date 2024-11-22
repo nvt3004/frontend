@@ -98,8 +98,8 @@ const ProductCategories = () => {
             <div className='container'>
                 <div className='mb-4 d-flex justify-content-between align-items-center'>
                     <div>
-                        <h4 className='fw-bold d-flex align-items-center'><MdCategory />&ensp;Product's categories</h4>
-                        <p className='fw-medium'>Manage categories of products</p>
+                        <h4 className='fw-bold d-flex align-items-center'><MdCategory />&ensp;Phân loại của sản phẩm</h4>
+                        <p className='fw-medium'>Quản lý những phân loại của sản phẩm</p>
                     </div>
                 </div>
                 <div className='d-flex'>
@@ -162,11 +162,13 @@ const ProductCategories = () => {
                                                 <CustomButton
                                                     btnBG={'warning'}
                                                     btnName={'Change'}
+                                                    className={'rounded-end-0'}
                                                     textColor={'text-white'}
                                                     handleClick={() => { setEdit(true) }}
                                                 />
                                                 <CustomButton
                                                     btnBG={'success'}
+                                                    className={'rounded-0'}
                                                     btnName={'Clear'}
                                                     textColor={'text-white'}
                                                     handleClick={() => { setSelectedCategory(null) }}
@@ -174,6 +176,7 @@ const ProductCategories = () => {
                                                 <CustomButton
                                                     btnBG={'danger'}
                                                     btnName={'Remove'}
+                                                    className={'rounded-start-0'}
                                                     textColor={'text-white'}
                                                     handleClick={handleRemove}
                                                 />

@@ -161,7 +161,7 @@ const NewProduct = () => {
     if (error) {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -169,6 +169,7 @@ const NewProduct = () => {
         position: "top-right",
         autoClose: 5000,
       });
+      console.log(error);
       return;
     }
 
@@ -337,7 +338,7 @@ const NewProduct = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/admin/attribute/all`,
+        url: `api/staff/attribute/all`,
       });
 
       if (data) {
@@ -347,7 +348,7 @@ const NewProduct = () => {
 
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -374,7 +375,7 @@ const NewProduct = () => {
 
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
