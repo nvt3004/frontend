@@ -23,8 +23,8 @@ import './assets/vendor/perfect-scrollbar/perfect-scrollbar.css';
 import './assets/css/util.css';
 import './assets/css/main.css';
 
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
