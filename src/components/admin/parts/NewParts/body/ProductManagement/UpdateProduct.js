@@ -75,7 +75,7 @@ const UpdateProduct = () => {
       [[]]
     );
   };
-
+console.log(version);
   //Thêm sản phẩm
   const handleClickAdd = async () => {
     if (productName.trim().length === 0) {
