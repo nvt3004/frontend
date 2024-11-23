@@ -32,7 +32,7 @@ const ProductTable = () => {
       setLoading(false);
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -60,7 +60,7 @@ const ProductTable = () => {
 
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -98,7 +98,7 @@ const ProductTable = () => {
       setLoading(false);
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -128,7 +128,7 @@ const ProductTable = () => {
   //Cấu hình table
   const columns = [
     {
-      title: "Image",
+      title: "Hình ảnh",
       dataIndex: "image",
       key: "image",
       render: (text, record) => {
@@ -136,7 +136,7 @@ const ProductTable = () => {
       },
     },
     {
-      title: "Product Name",
+      title: "Tên sản phẩm",
       dataIndex: "productName",
       key: "productName",
       render: (text, record) => {
@@ -159,20 +159,20 @@ const ProductTable = () => {
       },
     },
     {
-      title: "Stock",
+      title: "Tồn kho",
       dataIndex: "totalStock",
       key: "totalStock",
       render: (text, record) => {
         if (text <= 0) {
           return (
             <span class="badge bg-label-danger me-1" style={{ width: "110px" }}>
-              Sold out
+              Hết hàng
             </span>
           );
         } else {
           return (
             <span class="badge bg-label-success me-1" style={{ width: "110px" }}>
-              {`Available: ${text}`}
+              {`Còn hàng: ${text}`}
             </span>
           );
         }
@@ -185,7 +185,7 @@ const ProductTable = () => {
     return (
       <div className="d-flex">
         <button className="btn btn-dark me-3" onClick={handleClickAdd}>
-          Add new <Plus weight="fill" />
+          Thêm mới <Plus weight="fill" />
         </button>
 
         <select
@@ -229,10 +229,10 @@ const ProductTable = () => {
     } else {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
-      toast.error(`${err}`, {
+      toast.error(`Không thể thực thi công việc. Vui lòng thử lại`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -247,7 +247,7 @@ const ProductTable = () => {
       <TableProductStf
         dataSource={products?.content || []}
         columns={columns}
-        title="Product List"
+        title="Danh sách sản phẩm"
         isSearch={true}
         onChangeSearch={(value) => handleChangeInputSearchOnTable(value, catId)}
         buttonTable={btnTable()}

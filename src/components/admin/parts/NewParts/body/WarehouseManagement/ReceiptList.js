@@ -28,7 +28,7 @@ const ReceiptList = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       const [error, data] = await stfExecAPI({
-        url: `staff/receipt?page=${currentPage}&size=${pageSize}`,
+        url: `api/staff/receipt?page=${currentPage}&size=${pageSize}`,
       });
 
       if (data) {
