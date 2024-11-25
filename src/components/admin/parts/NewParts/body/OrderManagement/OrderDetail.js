@@ -38,8 +38,7 @@ const OrderDetail = () => {
     // Lấy product name, sửa cái total
     // Thêm ảnh khách hàng nếu được
     return (
-        <div className="container w-100 h-100" style={{ fontFamily: 'Arial, sans-serif !important' }}
->
+        <div className="container w-100 h-100" style={{ fontFamily: 'Arial, sans-serif !important' }} >
             <div className="container mt-4 pt-4 border">
                 <div className="border-bottom pb-4 mb-4">
                     <div className="text-center mb-4">

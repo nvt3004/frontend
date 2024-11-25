@@ -1021,10 +1021,9 @@ const OrderTable = () => {
                                                         textColor={'white'}
                                                         handleClick={() => toggleOrderDetails(order)}
                                                     />
-
                                                 </td>
                                             </tr>
-                                            {(orderID?.value === order?.orderId && orderID.isOpen && orderDetails) &&
+                                            {(orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail) &&
                                                 (
                                                     <tr>
                                                         <td colSpan={7} ref={componentRef}>
