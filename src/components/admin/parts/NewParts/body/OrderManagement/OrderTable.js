@@ -13,7 +13,8 @@ import { HiCheck } from 'react-icons/hi';
 import { ImCancelCircle } from 'react-icons/im';
 import moment from 'moment';
 import { useNavigate } from "react-router-dom";
-// import {logo} from "../../../../../../../public/images/logo.png"
+import { QRCodeSVG } from 'qrcode.react';
+import html2canvas from 'html2canvas';
 
 const OrderTable = () => {
     // START GET orders
@@ -223,7 +224,7 @@ const OrderTable = () => {
                             product: [
                                 {
                                     productID: item.productId,
-                                    productName: item?.productVersionName,
+                                    productName: item?.productName,
                                     productVersionID: item.productVersionId,
 
                                     productAttributes: {
@@ -631,7 +632,7 @@ const OrderTable = () => {
         return () => clearTimeout(timer);
     }, [keyword]);
 
-    const handleSelectChange = (orderDetail, item, attribute, selectedOption) => {
+    const handleSelectChange = async (orderDetail, item, attribute, selectedOption) => {
         // Cập nhật giá trị mới vào state
         setOrderDetails((prevOrderDetails) => {
             const updatedOrderDetails = { ...prevOrderDetails };
@@ -654,10 +655,8 @@ const OrderTable = () => {
     };
 
     const componentRef = React.useRef();
-
     const handlePrint = () => {
         const printContents = componentRef.current.innerHTML;
-
         const width = 900;
         const height = 650;
 
@@ -682,7 +681,6 @@ const OrderTable = () => {
                         body {
                             font-size: 12px;
                             color: #333;
-                            font-family: Arial, sans-serif;
                             margin: 0;
                             padding: 0;
                           /*  transform: scale(1); */
@@ -808,9 +806,16 @@ const OrderTable = () => {
                     .print-width {
                         width: 600px !important;
                     }
-                    .deo-print{
-                        width: 20px !important;
-                    }
+                    .qr-code {
+                    position: absolute;
+                    top: 0px;  
+                    left: 0px; 
+                    text-align: left;
+                    padding: 10px;
+                    border: 1px solid pink;
+                    border-radius: 5px;
+                }
+           
 
                     </style>
                 </head>
@@ -820,10 +825,10 @@ const OrderTable = () => {
             </html>
         `);
 
-        const checkIfAllImagesLoaded = (images) => {
+        const checkIfAllImagesLoaded = async (images) => {
             let loadedImagesCount = 0;
 
-            const imageLoadHandler = () => {
+            const imageLoadHandler = async  () => {
                 loadedImagesCount++;
                 if (loadedImagesCount === images.length) {
                     printWindow.document.close();
@@ -852,6 +857,52 @@ const OrderTable = () => {
         checkIfAllImagesLoaded(images);
     };
 
+    // const handlePrint = async () => {
+    //     try {
+    //         if (componentRef.current) {
+    //             console.log('Component content:', componentRef.current.innerHTML);
+
+    //             const elements = document.querySelectorAll('.d-none'); elements.forEach(element => element.classList.remove('d-none')); const canvas = await html2canvas(componentRef.current); const imgData = canvas.toDataURL('image/png'); const width = 900; const height = 650; elements.forEach(element => element.classList.add('d-none'));
+    //             // Tính toán vị trí để cửa sổ xuất hiện ở giữa
+    //             const left = (window.screen.width - width) / 2;
+    //             const top = (window.screen.height - height) / 2;
+
+    //             const printWindow = window.open('', '', `width=${width},height=${height},top=${top},left=${left}`);
+    //             printWindow.document.write(`
+    //                 <html>
+    //                     <head>
+    //                         <title>Invoice</title>
+    //                         <style>
+    //                             body {
+    //                                 font-size: 12px;
+    //                                 color: #333;
+    //                                 margin: 0;
+    //                                 padding: 0;
+    //                             }
+    //                             img {
+    //                                 width: 100%;
+    //                                 height: auto;
+    //                             }
+    //                         </style>
+    //                     </head>
+    //                     <body>
+    //                         <img src="${imgData}" />
+    //                     </body>
+    //                 </html>
+    //             `);
+
+    //             printWindow.document.close();
+    //             printWindow.focus();
+    //             printWindow.print();
+    //             printWindow.close();
+    //         } else {
+    //             console.log('Component ref is undefined');
+    //         }
+    //     } catch (error) {
+    //         console.log('Error generating canvas:', error);
+    //     }
+    // };
+
     function formatDiscount(discount) {
         if (!discount) return '0 VND';
 
@@ -863,7 +914,8 @@ const OrderTable = () => {
         return `${numericValue.toLocaleString('vi-VN')} VND`;
     }
 
-    // END HANDLE order
+    const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://domain.com';
+    const qrCodeValue = `${baseUrl}`;
 
     return (
         <div>
@@ -976,11 +1028,20 @@ const OrderTable = () => {
                                                 (
                                                     <tr>
                                                         <td colSpan={7} ref={componentRef}>
+                                                            <div className='d-none qr-code'>
+                                                                <h3 style={{ textAlign: 'left', margin: '0 0 10px 0' }}>Mã QR hóa đơn</h3>
+                                                                <QRCodeSVG
+                                                                    value={`${qrCodeValue}/orders/${order.orderId}`}
+                                                                    size={100}
+                                                                    level="H"
+                                                                    style={{ border: '1px solid black' }}
+                                                                />
+                                                                <p style={{ margin: '10px 0 0 0' }}>Quét mã QR để xem hóa đơn trực tuyến</p>
+                                                            </div>
                                                             <div className='d-none' style={{ padding: '0 20px 20px 20px', borderBottom: '1px solid #ddd', marginBottom: '20px' }}>
                                                                 <div style={{ textAlign: 'center', marginBottom: '20px' }}>
                                                                     <h3 style={{ fontSize: '24px', fontWeight: 'bold' }}>HÓA ĐƠN BÁN HÀNG</h3>
                                                                     <img src="/images/logo.png" alt="Company Logo" style={{ width: '100px', marginBottom: '20px' }} />
-
                                                                     <p><strong>Công ty TNHH Step To The Future</strong></p>
                                                                     <p>Địa chỉ: Đ. Số 22, Thường Thạnh, Cái Răng, Cần Thơ, Việt Nam</p>
                                                                     <p>Số điện thoại: 098 388 11 00</p>
@@ -1002,12 +1063,11 @@ const OrderTable = () => {
                                                                         <p>Ngày đặt hàng: {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
                                                                         <p>Ngày giao hàng: {moment(order?.deliveryDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
                                                                         <p>Phương thức thanh toán: {order?.paymentMethod || 'N/A'}</p>
-                                                                        <p>Tổng tiền: {order?.totalPrice?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }) || '0 VNĐ'}</p>
+                                                                        <p>Tổng tiền:  {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}</p>
                                                                         <p>Trạng thái: {order?.statusName || 'N/A'}</p>
                                                                     </div>
                                                                 </div>
                                                             </div>
-
 
                                                             <Table hover striped>
                                                                 <thead>
@@ -1036,7 +1096,7 @@ const OrderTable = () => {
 
                                                                                 <td className='d-flex justify-content-center text-center'>
                                                                                     <img
-                                                                                        src={item?.imageUrl}
+                                                                                        src={item?.imageUrl || '/images/default-image.png'}
                                                                                         alt={item?.productName}
                                                                                         style={{
                                                                                             maxWidth: '120px',
@@ -1181,13 +1241,16 @@ const OrderTable = () => {
 
 
                                                                     <tr className='print d-none'>
-                                                                        <td rowSpan={4} colSpan={3} className='text-center' style={{ fontWeight: 'bold', width: '200px' }}>
+                                                                        <td rowSpan={4} colSpan={3} className='text-center'>
                                                                             <div class="row mt-5 pt-5 border-top">
                                                                                 <div class="col-12 text-center" style={{ color: '#71bdd8' }}>
-                                                                                    <h1 class="display-4 font-weight-bold text-primary">Thank
-                                                                                        You!</h1>
-                                                                                    <p class="lead">Thank you for your order! We look
-                                                                                        forward to serving you again soon.</p>
+                                                                                    <h1 class="display-4 font-weight-bold text-primary">
+                                                                                        Cảm ơn {order?.gender === 1 ? 'Anh' : order?.gender === 2 ? 'Chị' : 'Quý khách'} {order?.fullname}!
+                                                                                    </h1>
+                                                                                    <p class="lead">
+                                                                                        Chúng tôi rất cảm kích vì {order?.gender === 1 ? 'Anh' : order?.gender === 2 ? 'Chị' : 'Quý khách'} đã đặt hàng.
+                                                                                        Chúng tôi hy vọng được tiếp tục phục vụ {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} trong những lần mua sắm tiếp theo.
+                                                                                    </p>
                                                                                 </div>
                                                                             </div>
 
