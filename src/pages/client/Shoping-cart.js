@@ -1352,7 +1352,7 @@ const ShopingCart = () => {
 
                   <div className="size-209 p-t-1 text-end pe-3">
                     <span className="mtext-110 cl2">
-                      {formatCurrencyVND(total)}
+                      {formatCurrencyVND(total<0 ?0: total)}
                     </span>
                   </div>
                 </div>
@@ -1477,3 +1477,5 @@ const ShopingCart = () => {
   );
 };
 export default ShopingCart;
+
+//Thêm bảng có id của quyền add product, 
