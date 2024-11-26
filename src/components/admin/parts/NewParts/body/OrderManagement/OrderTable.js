@@ -49,20 +49,19 @@ const OrderTable = () => {
             setTotalElements(0);
           }
           toast.error(
-            response?.data?.message ||
-              "Could not get order list. Please try again!"
+            "Không thể lấy được danh sách đơn hàng. Vui lòng thử lại !"
           );
         }
       })
       .catch((error) => {
         if (error.response?.status === 403) {
-          toast.error("Session expired. Redirecting to login...");
+          toast.error("Phiên đăng nhập hết hạn. Đang quay trở về trang đăng nhập...");
           navigate("/auth/login");
         } else {
           console.error("Error fetching orders:", error);
           toast.error(
             error.response?.data?.message ||
-              "An error occurred while fetching order list."
+            "Đã có lỗi xảy ra trong quá trình lấy danh sách đơn hàng."
           );
         }
       });
@@ -105,8 +104,8 @@ const OrderTable = () => {
       backgroundColor: isSelected
         ? data.color || "#E0E0E0"
         : isFocused
-        ? `${data.color || "#E0E0E0"}99`
-        : "#fff",
+          ? `${data.color || "#E0E0E0"}99`
+          : "#fff",
       color: "#000",
       cursor: "pointer",
     }),
@@ -156,18 +155,18 @@ const OrderTable = () => {
           });
           setOrderStatus(status);
         } else {
-          toast.error("Could not get the statuses. Please try again!");
+          toast.error("Không thể lấy được các trạng thái của đơn hàng. Vui lòng thử lại!");
         }
       })
       .catch((error) => {
         if (error.response?.status === 403) {
-          toast.error("Session expired. Redirecting to login...");
+          toast.error("Phiên đăng nhập hết hạn. Đang quay trở về trang đăng nhập...");
           navigate("/auth/login");
         } else {
-          console.error("Error fetching statuses:", error);
+          console.error("Error fetching orders:", error);
           toast.error(
             error.response?.data?.message ||
-              "An error occurred while fetching statuses."
+            "Đã có lỗi xảy ra trong quá trình lấy danh sách đơn hàng."
           );
         }
       });
@@ -242,39 +241,39 @@ const OrderTable = () => {
                   productAttributes: {
                     colors: item.attributeProducts?.[0]?.colors
                       ? Array.from(
-                          new Set(
-                            item.attributeProducts[0].colors.map(
-                              (color) => color.colorId
-                            )
+                        new Set(
+                          item.attributeProducts[0].colors.map(
+                            (color) => color.colorId
                           )
                         )
-                          .map((uniqueColorId) => {
-                            return item.attributeProducts[0].colors.find(
-                              (color) => color.colorId === uniqueColorId
-                            );
-                          })
-                          .map((color) => ({
-                            value: color.colorId,
-                            label: color.color,
-                          }))
+                      )
+                        .map((uniqueColorId) => {
+                          return item.attributeProducts[0].colors.find(
+                            (color) => color.colorId === uniqueColorId
+                          );
+                        })
+                        .map((color) => ({
+                          value: color.colorId,
+                          label: color.color,
+                        }))
                       : [],
                     sizes: item.attributeProducts?.[0]?.sizes
                       ? Array.from(
-                          new Set(
-                            item.attributeProducts[0].sizes.map(
-                              (size) => size.sizeId
-                            )
+                        new Set(
+                          item.attributeProducts[0].sizes.map(
+                            (size) => size.sizeId
                           )
                         )
-                          .map((uniqueSizeId) => {
-                            return item.attributeProducts[0].sizes.find(
-                              (size) => size.sizeId === uniqueSizeId
-                            );
-                          })
-                          .map((size) => ({
-                            value: size.sizeId,
-                            label: size.size,
-                          }))
+                      )
+                        .map((uniqueSizeId) => {
+                          return item.attributeProducts[0].sizes.find(
+                            (size) => size.sizeId === uniqueSizeId
+                          );
+                        })
+                        .map((size) => ({
+                          value: size.sizeId,
+                          label: size.size,
+                        }))
                       : [],
                   },
                   orderVersionAttribute: {
@@ -311,13 +310,11 @@ const OrderTable = () => {
           setOrderDetails(null);
           setOrderID((prev) => ({ ...prev, isOpen: false }));
           toast.error(
-            response.data?.message ||
-              "Could not get details of order. Please try again!"
+            "Không thể lấy chi tiết của đơn hàng. Vui lòng thử lại !"
           );
         } else {
           toast.error(
-            response.data?.message ||
-              "Could not get details of order. Please try again!"
+            "Không thể lấy chi tiết của đơn hàng. Vui lòng thử lại !"
           );
         }
       })
@@ -329,13 +326,11 @@ const OrderTable = () => {
           setOrderID({ value: orderID.value, isOpen: false });
 
           toast.error(
-            error?.response.data?.message ||
-              "Could not get details of order. Please try again!"
+            "Không thể lấy chi tiết của đơn hàng. Vui lòng thử lại !"
           );
         } else {
           toast.error(
-            error?.response?.data?.message ||
-              "An error occurred while fetching order details."
+            "Không thể lấy chi tiết của đơn hàng. Vui lòng thử lại !"
           );
         }
       });
@@ -356,8 +351,8 @@ const OrderTable = () => {
   const handleChangeStatus = (option, orderID) => {
     if (option?.value < 4 || option?.value === 5) {
       Swal.fire({
-        title: "Confirm to change status",
-        text: "Do you want to change the status of this order?",
+        title: "Xác nhận thay đổi trạng thái.",
+        text: "Bạn có muốn thay đổi trạng thái của đơn hàng ?",
         icon: "question",
         showConfirmButton: true,
         showCancelButton: true,
@@ -371,12 +366,11 @@ const OrderTable = () => {
             )
             .then((response) => {
               if (response.data?.errorCode === 200) {
-                toast.success("Updated order status successfully!");
+                toast.success("Cập nhật thành công !");
                 handleGetOrderAPI();
               } else {
                 toast.error(
-                  response.data?.message ||
-                    "Could not update status of the order. Please try again!"
+                  "Không thể cập nhật trạng thái của đơn hàng. Vui lòng thử lại !"
                 );
               }
             })
@@ -387,8 +381,8 @@ const OrderTable = () => {
               } else {
                 toast.error(
                   error.response?.data?.message ||
-                    error.message ||
-                    "Could not update status of the order. Please try again!"
+                  error.message ||
+                  "Could not update status of the order. Please try again!"
                 );
               }
             });
@@ -436,7 +430,7 @@ const OrderTable = () => {
           console.log("Error Response:", response.data);
           toast.error(
             response.data?.errorMessage ||
-              "Could not update order detail. Please try again!"
+            "Could not update order detail. Please try again!"
           );
         }
       })
@@ -448,7 +442,7 @@ const OrderTable = () => {
         } else {
           toast.error(
             error?.response?.data?.message ||
-              "An error occurred while updating order detail."
+            "An error occurred while updating order detail."
           );
         }
       });
@@ -481,7 +475,7 @@ const OrderTable = () => {
         } else {
           toast.error(
             response.data?.message ||
-              "Could not update quantity. Please try again!"
+            "Could not update quantity. Please try again!"
           );
         }
       })
@@ -493,7 +487,7 @@ const OrderTable = () => {
         } else {
           toast.error(
             error.response?.data?.message ||
-              "An error occurred while updating quantity."
+            "An error occurred while updating quantity."
           );
         }
       });
@@ -549,7 +543,7 @@ const OrderTable = () => {
           }));
           toast.error(
             response.data?.message ||
-              "Could not update quantity. Please try again!"
+            "Could not update quantity. Please try again!"
           );
         }
       })
@@ -566,7 +560,7 @@ const OrderTable = () => {
         } else {
           toast.error(
             error.response?.data?.message ||
-              "An error occurred while updating quantity."
+            "An error occurred while updating quantity."
           );
         }
       });
@@ -605,7 +599,7 @@ const OrderTable = () => {
         } else {
           toast.error(
             error?.response?.data?.message ||
-              "An error occurred while fetching statuses."
+            "An error occurred while fetching statuses."
           );
         }
       }
@@ -680,7 +674,7 @@ const OrderTable = () => {
 
   const handleDeleteOrderDetail = async (orderId, orderDetailId) => {
     Swal.fire({
-      title: "Confirm Delete",
+      title: "Xác nhận xóa",
       text: "Are you sure you want to delete this order detail?",
       icon: "warning",
       showConfirmButton: true,
@@ -715,8 +709,7 @@ const OrderTable = () => {
             navigate("/auth/login");
           } else {
             toast.error(
-              `An error occurred: ${
-                error.response?.data?.message || error.message
+              `An error occurred: ${error.response?.data?.message || error.message
               }`
             );
           }
@@ -1296,7 +1289,7 @@ const OrderTable = () => {
                                       </td>
 
                                       {isEditVersion.isEdit &&
-                                      isEditVersion.orderDetailsID ===
+                                        isEditVersion.orderDetailsID ===
                                         orderDetail.orderDetailId ? (
                                         <React.Fragment>
                                           <td className="no-print text-center">
@@ -1385,8 +1378,8 @@ const OrderTable = () => {
                                                   `${orderDetail.orderDetailId}-${item.productID}`
                                                 ] !== undefined
                                                   ? quantities[
-                                                      `${orderDetail.orderDetailId}-${item.productID}`
-                                                    ]
+                                                  `${orderDetail.orderDetailId}-${item.productID}`
+                                                  ]
                                                   : item.quantity
                                               }
                                               onChange={(e) =>
@@ -1443,7 +1436,7 @@ const OrderTable = () => {
 
                                       {order?.statusName === "Pending" &&
                                         (isEditVersion.isEdit &&
-                                        isEditVersion.orderDetailsID ===
+                                          isEditVersion.orderDetailsID ===
                                           orderDetail.orderDetailId ? (
                                           <React.Fragment>
                                             <td className="no-print">
@@ -1722,11 +1715,10 @@ const OrderTable = () => {
           </Table>
           <div className="bg-body-tertiary d-flex justify-content-between align-items-center container pt-2">
             <p className="font-13">
-              {`${
-                (currentPage + 1) * 5 <= totalElements
+              {`${(currentPage + 1) * 5 <= totalElements
                   ? (currentPage + 1) * 5
                   : totalElements
-              } of ${totalElements} `}
+                } of ${totalElements} `}
               <span>
                 <a
                   href="#"
