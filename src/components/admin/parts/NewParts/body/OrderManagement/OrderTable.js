@@ -63,7 +63,7 @@ const OrderTable = () => {
             }
         });
     };
-    
+
 
     useEffect(() => {
         handleGetOrderAPI();
@@ -164,7 +164,7 @@ const OrderTable = () => {
                 }
             });
     }, [navigate]);
-    
+
     // END GET status
 
     // START HANDLE order
@@ -221,10 +221,10 @@ const OrderTable = () => {
                 if (response?.data?.errorCode === 200) {
                     const temp = response?.data?.data?.orderDetail[0];
                     const initialQuantities = {};
-    
+
                     const orderDetail = temp?.productDetails.map((item) => {
                         initialQuantities[`${item.orderDetailId}-${item.productId}`] = item.quantity;
-    
+
                         return {
                             orderDetailId: item.orderDetailId,
                             product: [
@@ -232,7 +232,7 @@ const OrderTable = () => {
                                     productID: item.productId,
                                     productName: item?.productName,
                                     productVersionID: item.productVersionId,
-    
+
                                     productAttributes: {
                                         colors: item.attributeProducts?.[0]?.colors
                                             ? Array.from(new Set(item.attributeProducts[0].colors.map(color => color.colorId)))
@@ -274,7 +274,7 @@ const OrderTable = () => {
                             ]
                         };
                     });
-    
+
                     initialQuantitiesRef.current = initialQuantities;
                     setQuantities(initialQuantities);
                     setOrderDetails({
@@ -282,7 +282,7 @@ const OrderTable = () => {
                         orderDetail
                     });
                     console.log(orderID.isOpen + " orderID.isOpen");
-    
+
                     setOrderID(prev => ({ ...prev, isOpen: true }));
                 } else if (response?.data?.errorCode === 404) {
                     console.log(orderID.isOpen + " orderID.isOpen");
@@ -301,7 +301,7 @@ const OrderTable = () => {
                     setOrderDetails(null);
                     console.log(orderID.isOpen + " orderID.isOpen");
                     setOrderID({ value: orderID.value, isOpen: false });
-    
+
                     toast.error(error?.response.data?.message || 'Could not get details of order. Please try again!');
                 } else if (error?.response?.status === 403) {
                     toast.error("Session expired. Redirecting to login...");
@@ -311,7 +311,7 @@ const OrderTable = () => {
                 }
             });
     };
-    
+
     useEffect(() => {
         if (orderID.value) {
             handleGetOrderDetail();
@@ -357,7 +357,7 @@ const OrderTable = () => {
             toast.warning(`You cannot set the status to ${option?.label.toLowerCase()}`);
         }
     };
-    
+
     useEffect(
         () => {
             if (orderDetails) {
@@ -368,78 +368,78 @@ const OrderTable = () => {
 
     const [isEditVersion, setEditVersion] = useState({ isEdit: '', orderDetailsID: '' });
 
-  const handleSaveVersionChanges = (orderDetail) => {
-    const { orderDetailId, product } = orderDetail;
-    const { productID, orderVersionAttribute } = product[0];
-    const colorId = orderVersionAttribute.color?.value;
-    const sizeId = orderVersionAttribute.size?.value;
+    const handleSaveVersionChanges = (orderDetail) => {
+        const { orderDetailId, product } = orderDetail;
+        const { productID, orderVersionAttribute } = product[0];
+        const colorId = orderVersionAttribute.color?.value;
+        const sizeId = orderVersionAttribute.size?.value;
 
-    if (!colorId || !sizeId) {
-        toast.error("Please select both color and size.");
-        return;
-    }
+        if (!colorId || !sizeId) {
+            toast.error("Please select both color and size.");
+            return;
+        }
 
-    axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`)
-        .then((response) => {
-            console.log("API Response:", response);
-            if (response.data?.errorCode === 200) {
-                toast.success("Updated order detail successfully!");
-                handleGetOrderDetail();
-                setEditVersion({ isEdit: false, orderDetailsID: null });
-            } else if (response.data?.errorCode === 998) {
-                console.log("Permission Denied:", response.data);
-                toast.error(response.data?.message || "Bạn không có quyền thực hiện hành động này.");
-            } else {
-                console.log("Error Response:", response.data);
-                toast.error(response.data?.message || "Could not update order detail. Please try again!");
-            }
-        })
-        .catch((error) => {
-            console.error("Error updating order detail:", error);
-            if (error?.response?.status === 403) {
-                toast.error("Session expired. Redirecting to login...");
-                navigate('/auth/login');
-            } else {
-                toast.error(error?.response?.data?.message || "An error occurred while updating order detail.");
-            }
-        });
-};
+        axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`)
+            .then((response) => {
+                console.log("API Response:", response);
+                if (response.data?.errorCode === 200) {
+                    toast.success("Updated order detail successfully!");
+                    handleGetOrderDetail();
+                    setEditVersion({ isEdit: false, orderDetailsID: null });
+                } else if (response.data?.errorCode === 998) {
+                    console.log("Permission Denied:", response.data);
+                    toast.error(response.data?.message || "Bạn không có quyền thực hiện hành động này.");
+                } else {
+                    console.log("Error Response:", response.data);
+                    toast.error(response.data?.message || "Could not update order detail. Please try again!");
+                }
+            })
+            .catch((error) => {
+                console.error("Error updating order detail:", error);
+                if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error?.response?.data?.message || "An error occurred while updating order detail.");
+                }
+            });
+    };
 
 
 
-const handleQuantityChange = (orderDetailId, productID, currentQuantity, change) => {
-    const newQuantity = currentQuantity + change;
+    const handleQuantityChange = (orderDetailId, productID, currentQuantity, change) => {
+        const newQuantity = currentQuantity + change;
 
-    if (newQuantity < 1) {
-        toast.error("Quantity cannot be less than 1.");
-        return;
-    }
+        if (newQuantity < 1) {
+            toast.error("Quantity cannot be less than 1.");
+            return;
+        }
 
-    axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&quantity=${newQuantity}`)
-        .then((response) => {
-            if (response.data?.errorCode === 200) {
-                toast.success("Updated quantity successfully!");
-                handleGetOrderDetail();
-                setQuantities(prevQuantities => ({
-                    ...prevQuantities,
-                    [`${orderDetailId}-${productID}`]: newQuantity,
-                }));
-            } else if (response.data?.errorCode === 998) {
-                toast.error(response.data?.message || "You do not have permission to update the quantity.");
-            } else {
-                toast.error(response.data?.message || "Could not update quantity. Please try again!");
-            }
-        })
-        .catch((error) => {
-            console.error("Error updating quantity:", error);
-            if (error?.response?.status === 403) {
-                toast.error("Session expired. Redirecting to login...");
-                navigate('/auth/login');
-            } else {
-                toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
-            }
-        });
-};
+        axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&quantity=${newQuantity}`)
+            .then((response) => {
+                if (response.data?.errorCode === 200) {
+                    toast.success("Updated quantity successfully!");
+                    handleGetOrderDetail();
+                    setQuantities(prevQuantities => ({
+                        ...prevQuantities,
+                        [`${orderDetailId}-${productID}`]: newQuantity,
+                    }));
+                } else if (response.data?.errorCode === 998) {
+                    toast.error(response.data?.message || "You do not have permission to update the quantity.");
+                } else {
+                    toast.error(response.data?.message || "Could not update quantity. Please try again!");
+                }
+            })
+            .catch((error) => {
+                console.error("Error updating quantity:", error);
+                if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
+                }
+            });
+    };
 
 
     const handleQuantityInputChange = (orderDetailId, productID, newQuantity) => {
@@ -467,7 +467,7 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
             }));
             return;
         }
-    
+
         axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${newQuantity}`)
             .then(response => {
                 if (response.data?.errorCode === 200) {
@@ -506,7 +506,7 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                 }
             });
     };
-    
+
 
 
     const handleKeyPress = (e, orderDetailId, productID, newQuantity) => {
@@ -519,10 +519,10 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
         const fetchStatuses = async () => {
             try {
                 const response = await axiosInstance.get('/staff/orders/statuses');
-    
+
                 if (response?.data?.errorCode === 200) {
                     const statuses = response.data.data;
-    
+
                     const formattedOptions = statuses.map(status => ({
                         value: status.statusId,
                         label: status.statusName
@@ -531,17 +531,17 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                         value: null,
                         label: 'All Statuses'
                     });
-    
+
                     setStatusOptions(formattedOptions);
                 } else if (response?.data?.errorCode === 998) {
                     toast.error(response?.data?.message || "Bạn không có quyền thực hiện hành động này.");
                 }
             } catch (error) {
                 console.error("Error fetching statuses:", error);
-    
+
                 const errorCode = error?.response?.status || error.response?.data?.code;
                 const errorMessage = error?.response?.data?.message || error.message;
-    
+
                 if (errorCode === 403) {
                     toast.error("Session expired. Redirecting to login...");
                     navigate('/auth/login');
@@ -550,10 +550,10 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                 }
             }
         };
-    
+
         fetchStatuses();
     }, []);
-    
+
 
 
     const handleChange = (event, type) => {
@@ -589,26 +589,26 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                 },
                 responseType: 'blob', // Nhận dữ liệu dưới dạng file
             });
-    
+
             // Tạo URL cho file Excel
             const fileURL = window.URL.createObjectURL(new Blob([response.data]));
-    
+
             // Tạo một link tạm thời để tải file
             const link = document.createElement('a');
             link.href = fileURL;
             link.setAttribute('download', 'orders.xlsx'); // Tên file tải xuống
             document.body.appendChild(link);
             link.click();
-    
+
             // Xóa link sau khi tải
             document.body.removeChild(link);
             toast.success('Xuất file thành công');
         } catch (error) {
             console.error('Error exporting orders:', error);
-    
+
             const errorCode = error?.response?.status || error.response?.data?.code;
             const errorMessage = error?.response?.data?.message || error.message;
-    
+
             if (errorCode === 998) {
                 toast.error(errorMessage || "Bạn không có quyền thực hiện hành động này.");
             } else if (errorCode === 403) {
@@ -619,7 +619,7 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
             }
         }
     };
-    
+
 
 
     const handleDeleteOrderDetail = async (orderId, orderDetailId) => {
@@ -640,7 +640,7 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                             orderDetailId
                         }
                     });
-    
+
                     if (response.status === 200) {
                         toast.success("Order detail deleted successfully!");
                         handleGetOrderAPI();
@@ -650,10 +650,10 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                     }
                 } catch (error) {
                     console.error("Error deleting order detail:", error);
-    
+
                     const errorCode = error?.response?.status || error.response?.data?.code;
                     const errorMessage = error?.response?.data?.message || error.message;
-    
+
                     if (errorCode === 998) {
                         toast.error(errorMessage || "You do not have permission to perform this action.");
                     } else if (errorCode === 403) {
@@ -666,7 +666,7 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
             }
         });
     };
-    
+
 
 
     const handleKeywordChange = (e) => {
@@ -876,7 +876,7 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
         const checkIfAllImagesLoaded = async (images) => {
             let loadedImagesCount = 0;
 
-            const imageLoadHandler = async  () => {
+            const imageLoadHandler = async () => {
                 loadedImagesCount++;
                 if (loadedImagesCount === images.length) {
                     printWindow.document.close();
@@ -1119,13 +1119,13 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                                                             <Table hover striped>
                                                                 <thead>
                                                                     <th className='text-center'>#</th>
-                                                                    <th style={{ width: '100px' }} className='text-center'>Product</th>
+                                                                    <th style={{ width: '270px' }} className='text-center'>Product</th>
                                                                     <th style={{ width: '150px' }} className='text-center'></th>
                                                                     <th colSpan={2} className='text-center no-print'>Attributes</th>
                                                                     <th className='text-center'>Unit price</th>
                                                                     <th className='text-center'>Quantity</th>
                                                                     <th className='text-center'>Total</th>
-                                                                    <th colSpan={2} className='no-print'></th>
+                                                                    <th colSpan={2} className='no-print' ></th>
                                                                 </thead>
                                                                 <tbody>
                                                                     {orderDetails?.orderDetail?.map((orderDetail) => (
@@ -1137,11 +1137,11 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                                                                                     overflow: 'hidden',
                                                                                     textOverflow: 'ellipsis',
                                                                                     whiteSpace: 'nowrap'
-                                                                                }} className="print-text-wrap">
+                                                                                }} className="print-text-wrap p-1">
                                                                                     {item?.productName} <span> - [{item?.orderVersionAttribute?.color?.label} - {item?.orderVersionAttribute?.size?.label}]</span>
                                                                                 </td>
 
-                                                                                <td className='d-flex justify-content-center text-center'>
+                                                                                <td className='d-flex justify-content-center text-center p-1'>
                                                                                     <img
                                                                                         src={item?.imageUrl || '/images/default-image.png'}
                                                                                         alt={item?.productName}
@@ -1157,14 +1157,15 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
 
                                                                                 {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
                                                                                     <React.Fragment>
-                                                                                        <td className='no-print text-center'>
+                                                                                        <td className="no-print text-center p-1">
                                                                                             <Select
                                                                                                 options={item?.productAttributes?.colors}
                                                                                                 value={item?.orderVersionAttribute?.color}
                                                                                                 onChange={selectedOption => handleSelectChange(orderDetail, item, 'color', selectedOption)}
                                                                                             />
                                                                                         </td>
-                                                                                        <td className='no-print text-center'>
+
+                                                                                        <td className='no-print text-center p-1'>
                                                                                             <Select
                                                                                                 options={item?.productAttributes?.sizes}
                                                                                                 value={item?.orderVersionAttribute?.size}
@@ -1174,15 +1175,15 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                                                                                     </React.Fragment>
                                                                                 ) : (
                                                                                     <React.Fragment>
-                                                                                        <td className='no-print text-center'>{item?.orderVersionAttribute?.color?.label}</td>
-                                                                                        <td className='no-print text-center'>{item?.orderVersionAttribute?.size?.label}</td>
+                                                                                        <td className='no-print text-center p-1'>{item?.orderVersionAttribute?.color?.label}</td>
+                                                                                        <td className='no-print text-center p-1'>{item?.orderVersionAttribute?.size?.label}</td>
                                                                                     </React.Fragment>
                                                                                 )}
 
-                                                                                <td className='text-center'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
+                                                                                <td className='text-center p-1'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
 
 
-                                                                                <td className='text-center'>
+                                                                                <td className='text-center p-1'>
                                                                                     {order?.statusName === 'Pending' ? (
                                                                                         <div className='d-flex justify-content-center'>
                                                                                             <Button className='no-print' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}>
@@ -1210,8 +1211,8 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
 
                                                                                 {order?.statusName === 'Pending' &&
                                                                                     (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
-                                                                                        <React.Fragment>
-                                                                                            <td className='no-print'>
+                                                                                        <React.Fragment style={{ width: '50px !important' }}>
+                                                                                            <td className='no-print p-1 text-center'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'success'}
                                                                                                     btnType={'button'}
@@ -1220,7 +1221,7 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                                                                                                     handleClick={() => handleSaveVersionChanges(orderDetail)}
                                                                                                 />
                                                                                             </td>
-                                                                                            <td className='no-print'>
+                                                                                            <td className='no-print p-1 text-center'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'danger'}
                                                                                                     btnType={'button'}
@@ -1231,8 +1232,8 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                                                                                             </td>
                                                                                         </React.Fragment>
                                                                                     ) : (
-                                                                                        <React.Fragment>
-                                                                                            <td className='no-print'>
+                                                                                        <React.Fragment style={{ width: '50px !important' }}>
+                                                                                            <td className='no-print p-1 text-center'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'danger'}
                                                                                                     btnType={'button'}
@@ -1242,7 +1243,7 @@ const handleQuantityChange = (orderDetailId, productID, currentQuantity, change)
                                                                                                 />
                                                                                             </td>
 
-                                                                                            <td className='no-print'>
+                                                                                            <td className='no-print p-1 text-center'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'warning'}
                                                                                                     btnType={'button'}
