@@ -49,6 +49,7 @@ import UpdateProduct from "../components/admin/parts/NewParts/body/ProductManage
 import ReceiptList from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptList";
 import OrderTable from "../components/admin/parts/NewParts/body/OrderManagement/OrderTable";
 import CouponTable from "../components/admin/parts/NewParts/body/CouponManagement/CouponTable";
+import OrderDetail from "../components/admin/parts/NewParts/body/OrderManagement/OrderDetail";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -58,7 +59,6 @@ const router = createBrowserRouter([
       { path: "/home", element: <Home /> },
       { path: "/product", element: <Product /> },
       { path: "/product-detail/:id", element: <ProductDetail /> },
-
       { path: "/product-detail", element: <ProductDetail /> },
       {
         path: "/shoping-cart",
@@ -224,6 +224,7 @@ const router = createBrowserRouter([
   },
   { path: "/pm-success", element: <PaymentSuccess /> },
   { path: "/pm-cancel", element: <PaymentCancel /> },
+  { path: "/orders/:orderId", element: <OrderDetail /> },
 ]);
 
 function AppRoutes() {
