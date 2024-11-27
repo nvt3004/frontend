@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useParams, useLocation } from "react-router-dom";
 import "../../assets/style/custom-scroll.css";
 import QuickViewProdDetail from "../../components/client/Modal/QuickViewProdDetail";
-
+import moment from "moment";
 import { stfExecAPI, ghnExecAPI } from "../../stf/common";
 import ava from "../../assets/images/avatar-01.jpg";
 import productApi from "../../services/api/ProductApi";
@@ -466,11 +466,6 @@ const ProductDetail = () => {
     });
   };
 
-
-
-
-
-  
   const handleRating = (index) => {
     setRating(index); // Cập nhật trạng thái khi người dùng chọn sao
   };
@@ -708,18 +703,20 @@ const ProductDetail = () => {
                     <div className="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
                       <ul className="p-lr-28 p-lr-15-sm">
                         {ProductDetail?.attributes?.length > 0 &&
-                          ProductDetail.attributes.map((attribute, index) => (
+                          ProductDetail?.attributes?.map((attribute, index) => (
                             <li className="flex-w flex-t p-b-7" key={index}>
                               <span className="stext-102 cl3 size-205">
-                                {attribute.key}
+                                {attribute?.key}
                               </span>
                               <div className="stext-102 cl6 size-206">
-                                {attribute.values.length > 0 &&
-                                  attribute.values.map((value, valueIndex) => (
-                                    <span className="me-2" key={valueIndex}>
-                                      {value}
-                                    </span>
-                                  ))}
+                                {attribute?.values?.length > 0 &&
+                                  attribute?.values?.map(
+                                    (value, valueIndex) => (
+                                      <span className="me-2" key={valueIndex}>
+                                        {value}
+                                      </span>
+                                    )
+                                  )}
                               </div>
                             </li>
                           ))}
@@ -743,9 +740,16 @@ const ProductDetail = () => {
                             <div className="size-207">
                               <div className="flex-w flex-sb-m p-b-17">
                                 {/* User Name */}
-                                <span className="mtext-107 cl2 p-r-20">
-                                  {fb?.user?.fullName}
-                                </span>
+                                <div className="d-flex align-items-center">
+                                  <span className="mtext-107 cl2 p-r-20">
+                                    {fb?.user?.fullName}
+                                  </span>
+                                  <p className="stext-104 cl6">
+                                    {moment(fb?.feedbackDate)
+                                      .subtract(8, "hours")
+                                      .format("DD/MM/YYYY HH:mm")}
+                                  </p>
+                                </div>
                                 <span className="fs-18 cl11">
                                   {Array.from({ length: 5 }, (_, i) => (
                                     <i
@@ -759,30 +763,45 @@ const ProductDetail = () => {
                               </div>
 
                               <p className="stext-102 cl6">{fb.comment}</p>
-                              {/* Reply Section */}
-                              {fb.reply && (
-                                <div className="flex-w flex-t reply-section">
-                                  <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                                    <img
-                                      src={fb?.reply?.userReply?.image}
-                                      alt="Reply Avatar"
-                                    />
+                              {fb?.images?.map((img, index) => (
+                                <img
+                                  key={index}
+                                  className="w-25 me-2 mb-3"
+                                  src={img}
+                                  alt={`Img ${index}`}
+                                />
+                              ))}
+                   
+                   {fb?.reply && (
+                              <div className="bg-body-secondary p-3">
+                                <p className="stext-102 cl6">
+                                  Phản hồi của người bán:
+                                </p>
+                                {/* Reply Section */}
+                                {fb?.reply && (
+                                  <div className="flex-w flex-t reply-section">
+                                    <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                      <img
+                                        src={fb?.reply?.userReply?.image}
+                                        alt="Reply Avatar"
+                                      />
+                                    </div>
+                                    <div>
+                                      <span className="mtext-107 cl2">
+                                        {fb?.reply?.userReply?.fullName}
+                                      </span>
+                                      <p className="stext-102 cl6">
+                                        {fb?.reply?.content}
+                                      </p>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <span className="mtext-107 cl2">
-                                      {fb?.reply?.userReply?.fullName}
-                                    </span>
-                                    <p className="stext-102 cl6">
-                                      {fb?.reply?.content}
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
+                                )}
+                              </div>       )}
                             </div>
                           </div>
                         ))}
                         {feedBack?.totalElements > 0 && (
-                          <div>
+                          <div className="w-100 d-flex justify-content-end">
                             <div className="pagination">
                               <button
                                 className="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5"
@@ -809,8 +828,6 @@ const ProductDetail = () => {
                             </div>
                           </div>
                         )}
-
-                 
                       </div>
                     </div>
                   </div>
@@ -835,41 +852,40 @@ const ProductDetail = () => {
           </div>
 
           <section className="sec-relate-product bg0 p-t-45 p-b-64">
-          <div className="p-3 pt-0 pb-0">
-            {/* <!-- Slide2 --> */}
-            <div className="wrap-slick2">
-              <div className="row isotope-grid">
-                {!Products || Products?.length ? (
-                  Products?.map((product, index) => (
-                    <div
-                      key={index}
-                      className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
-                    >
-                      <div className="block2">
-                        <div className="block2-pic hov-img0">
-                          <img src={product?.imgName} alt="IMG-PRODUCT" />
-                          {/* Quick View */}
-                          <Link
-                                to={`/product-detail/${product?.id}`}
-                            type="button"
-                            className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none "
-                           
-                          >
-                      View
-                          </Link>
-                        </div>
-
-                        <div className="block2-txt flex-w flex-t p-t-14">
-                          <div className="block2-txt-child1 flex-col-l">
+            <div className="p-3 pt-0 pb-0">
+              {/* <!-- Slide2 --> */}
+              <div className="wrap-slick2">
+                <div className="row isotope-grid">
+                  {!Products || Products?.length ? (
+                    Products?.map((product, index) => (
+                      <div
+                        key={index}
+                        className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
+                      >
+                        <div className="block2">
+                          <div className="block2-pic hov-img0">
+                            <img src={product?.imgName} alt="IMG-PRODUCT" />
+                            {/* Quick View */}
                             <Link
                               to={`/product-detail/${product?.id}`}
-                              className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
+                              type="button"
+                              className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none "
                             >
-                              {product?.name}
+                              View
                             </Link>
+                          </div>
 
-                            <span className="stext-105 cl3">
-                              {`
+                          <div className="block2-txt flex-w flex-t p-t-14">
+                            <div className="block2-txt-child1 flex-col-l">
+                              <Link
+                                to={`/product-detail/${product?.id}`}
+                                className="text-decoration-none stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"
+                              >
+                                {product?.name}
+                              </Link>
+
+                              <span className="stext-105 cl3">
+                                {`
   ${
     product?.minPrice !== product?.maxPrice
       ? `${formatCurrencyVND(product?.minPrice ?? "N/A")} ~ `
@@ -877,43 +893,43 @@ const ProductDetail = () => {
   }
   ${formatCurrencyVND(product?.maxPrice ?? "N/A")}
 `}
-                            </span>
-                          </div>
+                              </span>
+                            </div>
 
-                          <div className="block2-txt-child2 flex-r p-t-3">
-                            <Wish
-                              prodID={product?.id}
-                              isWish={product?.like}
-                              handleAddWish={() => {
-                                handleAddWishlist(product?.id);
-                              }}
-                              handleRemoveWish={() =>
-                                handleRemoveWishlist(product?.id)
-                              }
-                            />
+                            <div className="block2-txt-child2 flex-r p-t-3">
+                              <Wish
+                                prodID={product?.id}
+                                isWish={product?.like}
+                                handleAddWish={() => {
+                                  handleAddWishlist(product?.id);
+                                }}
+                                handleRemoveWish={() =>
+                                  handleRemoveWishlist(product?.id)
+                                }
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="d-flex justify-content-center mt-5 mb-5">
+                      <div className=" pt-5 pb-5 opacity-50">
+                        <p className="fs-4 text-muted mt-3">{ErrorMessage}</p>
+                      </div>
                     </div>
-                  ))
-                ) : (
-                  <div className="d-flex justify-content-center mt-5 mb-5">
-                    <div className=" pt-5 pb-5 opacity-50">
-                      <p className="fs-4 text-muted mt-3">{ErrorMessage}</p>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
           {/* <!-- Load more --> */}
           <div className="flex-c-m flex-w w-full">
             <span
               href="#"
               className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 p-lr-15 trans-04"
             >
-             END
+              END
             </span>
           </div>
         </div>

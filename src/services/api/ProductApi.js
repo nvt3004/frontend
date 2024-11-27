@@ -430,6 +430,66 @@ const getFeedback = async ({ idProduct, page}) => {
   }
 };
 
+
+const addFeedback = async ({ idProduct, comment, photos, rating }) => {
+  try {
+    const formData = new FormData();
+    formData.append("comment", comment);
+    formData.append("productId", idProduct);
+    if (rating !== undefined) {
+      formData.append("rating", rating);
+    }
+    if (photos && photos.length > 0) {
+      photos.forEach((photo) => formData.append("photos", photo));
+    }
+
+    await axiosInstance.post("api/user/feedback/add", formData);
+
+    SuccessAlert({
+      title: "Deleted!",
+      text: "The wishlist item has been successfully removed.",
+    });
+  } catch (error) {
+    if (error.response) {
+      const { status, data } = error.response;
+
+      switch (status) {
+        case 400:
+          console.log("Bad Request: ", data?.message || "Invalid input or file format.");
+          break;
+        case 401:
+          console.log("Unauthorized: ", data?.message || "User is not authorized or token expired.");
+          break;
+        case 403:
+          console.log("Forbidden: ", data?.message || "User account is locked.");
+          break;
+        case 404:
+          console.log("Not Found: ", data?.message || "Product or user not found.");
+          break;
+        case 422:
+          console.log("Unprocessable Entity: ", data?.message || "Invalid input data.");
+          break;
+        case 500:
+          console.log("Server Error: ", data?.message || "An error occurred on the server.");
+          break;
+        default:
+          console.log("Unknown Error: An unexpected error occurred.");
+          break;
+      }
+    } else {
+      console.log(
+        "Connection Error: Failed to connect to the server. Error message:",
+        error.message
+      );
+    }
+  }
+};
+
+
+
+
+
+
 const productApi = {
   getProds: search,
   getFilterAttribute,
@@ -442,6 +502,7 @@ const productApi = {
   getOrder,
   getFeedback,
   getRecommendedProducts,
-  getOrderStatus
+  getOrderStatus,
+  addFeedback
 };
 export default productApi;

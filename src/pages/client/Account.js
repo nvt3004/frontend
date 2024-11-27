@@ -21,7 +21,7 @@ import { getProfile, updateUser } from "../../services/api/OAuthApi";
 import { format } from "date-fns";
 import moment from "moment";
 import productApi from "../../services/api/ProductApi";
-import AddReviewModal from "../../components/client/Review/AddReviewModal"
+import AddReviewModal from "../../components/client/Review/AddReviewModal";
 function getNameAddress(nameId) {
   return nameId.substring(nameId.indexOf(" "), nameId.length).trim();
 }
@@ -69,12 +69,42 @@ const Account = () => {
 
   const [status, setStatus] = useState([]); // Trạng thái đơn hàng
 
-
   const [showModal, setShowModal] = useState(false);
+
+  const [comment, setComment] = useState("");
+  const [photos, setPhotos] = useState([]);
+  const [rating, setRating] = useState(0);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [idProd, setIdProd] = useState("");
+
+  const handleFeedback = async (event) => {
+    event.preventDefault();
+
+    // Validate form inputs
+    if (!rating) {
+      setError("Rating is required!");
+      return;
+    }
+    if (!comment) {
+      setError("Comment is required!");
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+
+    try {
+      await productApi.addFeedback({ idProd, comment, photos, rating });
+
+      //setShowModal(false);
+    } catch (error) {
+      setError("Failed to submit the review. Please try again.");
+    }
+  };
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
-
 
   const fetchStatus = async () => {
     try {
@@ -504,7 +534,20 @@ const Account = () => {
     <div
       className="container mt-5 pt-5 d-flex justify-content-center"
       style={styles.container}
-    >    <AddReviewModal show={showModal} onClose={handleCloseModal} />
+    >
+      <AddReviewModal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        comment={comment}
+        setComment={setComment}
+        photos={photos}
+        setPhotos={setPhotos}
+        rating={rating}
+        setRating={setRating}
+        handleSubmit={handleFeedback}
+        error={error}
+        success={success}
+      />
       <div className="w-full">
         <div className="d-flex align-items-center bg-white shadow-sm rounded p-3 mb-4">
           <div>
@@ -712,11 +755,18 @@ const Account = () => {
                                   {formatCurrencyVND(product.price ?? "N/A")}
                                 </td>
                                 <td className="text-center">
-                                  <button className="btn btn-outline-secondary"
-                                  onClick={handleOpenModal}>
-                                    <i className="zmdi zmdi-comment-outline me-2"></i>{" "}
-                                    Bình luận
-                                  </button>
+                                  {product?.isFeedback && (
+                                    <button
+                                      className="btn btn-outline-secondary"
+                                      onClick={() => {
+                                        handleOpenModal();
+                                        setIdProd(product?.productId);
+                                      }}
+                                    >
+                                      <i className="zmdi zmdi-comment-outline me-2"></i>{" "}
+                                      Bình luận
+                                    </button>
+                                  )}
                                 </td>
                               </tr>
                             ))}

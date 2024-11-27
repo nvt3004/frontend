@@ -1,65 +1,24 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React from "react";
 
-const AddReviewModal = ({ show, onClose }) => {
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
-  const [photos, setPhotos] = useState([]);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
+const AddReviewModal = ({
+  show,
+  onClose,
+  comment,
+  setComment,
+  photos,
+  setPhotos,
+  rating,
+  setRating,
+  handleSubmit,
+  error,
+  success,
+}) => {
   const handleRating = (value) => {
     setRating(value);
   };
 
   const handlePhotoUpload = (event) => {
     setPhotos([...event.target.files]);
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    // Validate form inputs
-    if (!rating) {
-      setError("Rating is required!");
-      return;
-    }
-    if (!comment) {
-      setError("Comment is required!");
-      return;
-    }
-
-    setError("");
-    setSuccess("");
-
-    const formData = new FormData();
-    formData.append("comment", comment);
-    photos.forEach((photo) => formData.append("photos", photo));
-    formData.append("productId", 123); // Replace with actual product ID
-    formData.append("rating", rating);
-
-    try {
-      const token = localStorage.getItem("token"); // Assuming auth token is stored in localStorage
-      const response = await axios.post(
-        "/api/feedback",
-        formData,
-        {
-          headers: {
-            "Authorization": token ? `Bearer ${token}` : "",
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      if (response.status === 200) {
-        setSuccess("Review submitted successfully!");
-        onClose(); // Close modal after successful submission
-      }
-    } catch (error) {
-      setError("Failed to submit the review. Please try again.");
-    }
   };
 
   return (
@@ -134,34 +93,6 @@ const AddReviewModal = ({ show, onClose }) => {
                     multiple
                     onChange={handlePhotoUpload}
                     className="form-control"
-                  />
-                </div>
-
-                <div className="col-sm-6 p-b-5">
-                  <label className="stext-102 cl3" htmlFor="name">
-                    Name
-                  </label>
-                  <input
-                    className="size-111 bor8 stext-102 cl2 p-lr-20"
-                    id="name"
-                    type="text"
-                    name="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-
-                <div className="col-sm-6 p-b-5">
-                  <label className="stext-102 cl3" htmlFor="email">
-                    Email
-                  </label>
-                  <input
-                    className="size-111 bor8 stext-102 cl2 p-lr-20"
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
               </div>
