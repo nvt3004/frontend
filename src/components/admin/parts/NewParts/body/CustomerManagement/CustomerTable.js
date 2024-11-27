@@ -109,7 +109,7 @@ const CustomerTable = () => {
           </div>
         );
       },
-    },
+    }
   ];
 
   const btnTable = () => {

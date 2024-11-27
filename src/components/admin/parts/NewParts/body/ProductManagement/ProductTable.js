@@ -20,7 +20,7 @@ const ProductTable = () => {
     const fetchUsers = async () => {
       setLoading(true);
       const [error, data] = await stfExecAPI({
-        url: `api/staff/product?page=1`,
+       url: `api/staff/product?page=1`, 
       });
 
       if (data) {
@@ -34,12 +34,14 @@ const ProductTable = () => {
         error.status === 403
           ? "Bạn không có đủ phân quyền để thực thi công việc này !"
           : error?.response?.data?.message;
-
+      
       toast.error(`${err}`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
       });
+      console.log(err);
+      
     };
 
     fetchUsers();
@@ -68,6 +70,7 @@ const ProductTable = () => {
         position: "top-right",
         autoClose: 5000,
       });
+      console.log(err);
     };
 
     fetchProducts();
@@ -106,6 +109,7 @@ const ProductTable = () => {
         position: "top-right",
         autoClose: 5000,
       });
+      console.log(err);
     };
 
     fetchUsers();
@@ -232,11 +236,12 @@ const ProductTable = () => {
           ? "Bạn không có đủ phân quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
-      toast.error(`Không thể thực thi công việc. Vui lòng thử lại`, {
+      toast.error(`${err}`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
       });
+      console.log(err);
       setProducts({});
     }
   };

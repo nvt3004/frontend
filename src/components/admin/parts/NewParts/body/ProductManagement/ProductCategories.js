@@ -48,22 +48,30 @@ const ProductCategories = () => {
         if (!isNew) {
             await axiosInstance.put("/home/category/update", data).then((response) => {
                 if (response?.status === 200) {
-                    toast.success('Category updated successfully!');
+                    toast.success('Cập nhật thành công!');
                     handleGetCategoriesAPI();
                     handleClear();
                 }
-            });
+            }).catch(
+                (error) => {
+                    if (error.status === 403) {
+                        toast.error('Bạn không có quyền thực thi công việc này !!');
+                    }
+                }
+            );
         } else {
             await axiosInstance.post("/home/category/add", data).then((response) => {
                 if (response?.status === 200) {
-                    toast.success('Added new category successfully!');
+                    toast.success('Thêm thành công!');
                     handleGetCategoriesAPI();
                     handleClear();
                 }
             }).catch(
                 (error) => {
                     if (error.response?.data?.message === 'Category name already exists') {
-                        toast.error(error.response?.data?.message || 'Category name already exists');
+                        toast.error(error.response?.data?.message || 'Tên phân loại đã tồn tại !');
+                    } else if (error.status === 403) {
+                        toast.error('Bạn không có quyền thực thi công việc này !!');
                     }
                 }
             );
@@ -75,14 +83,16 @@ const ProductCategories = () => {
             await axiosInstance.delete(`/home/category/remove/${selectedCategory?.categoryId}`).then(
                 (response) => {
                     if (response?.status === 200) {
-                        toast.success('Removed successfully!');
+                        toast.success('Xóa thành công!');
                         handleGetCategoriesAPI();
                         handleClear();
                     }
                 }
             );
         } catch (error) {
-            toast.error('Failed to update category. Try again !!');
+            if (error.status === 403) {
+                toast.error('Bạn không có quyền thực thi công việc này !!');
+            }
             console.log(error);
         }
     }

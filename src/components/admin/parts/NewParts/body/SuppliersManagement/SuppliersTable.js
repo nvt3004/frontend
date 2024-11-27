@@ -59,7 +59,7 @@ const SuppliersTable = () => {
     const [size, setSize] = useState(10);
 
     const handleGetSuppliersAPI = () => {
-        axiosInstance.get(`/staff/suppliers?size=${size}&page=${currentPage}&status=true`).then(
+        axiosInstance.get(`/staff/suppliers?size=${size}&page=${currentPage}&status=true&keyword=${keyword}`).then(
             (response) => {
                 const sortedSuppliers = response?.data?.data?.content;
                 setSuppliers(sortedSuppliers);
@@ -85,7 +85,7 @@ const SuppliersTable = () => {
     useEffect(
         () => {
             handleGetSuppliersAPI();
-        }, [currentPage, isEdit, isNew]
+        }, [currentPage, isEdit, isNew, keyword]
     );
     useEffect(
         () => {
@@ -213,7 +213,7 @@ const SuppliersTable = () => {
                     <div className='col-10 d-flex justify-content-around'>
                         <InputGroup className='w-30' style={{maxWidth: '450px'}}>
                             <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
-                            <Form.Control className='custom-radius' placeholder='Tìm kiếm nhà cung cấp . . .' />
+                            <Form.Control className='custom-radius' placeholder='Tìm kiếm nhà cung cấp . . .' onChange={(e) => {setKeyword(e.currentTarget.value)}}/>
                         </InputGroup>
                         <Button variant='secondary' className='font-14 custom-radius custom-hover mx-2'><FaFileExport /> {` Xuất`}</Button>
                         <Button className='font-14 custom-radius custom-hover mx-2' onClick={() => handleShowModal()}><FaPlus />{` Thêm mới`}</Button>

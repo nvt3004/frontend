@@ -504,7 +504,7 @@ const NewProduct = () => {
             <div className="row">
               <div className="col-md-12">
                 <label for="exampleFormControlTextarea1" class="form-label">
-                  Discription
+                  Description
                 </label>
                 <textarea
                   class="form-control"

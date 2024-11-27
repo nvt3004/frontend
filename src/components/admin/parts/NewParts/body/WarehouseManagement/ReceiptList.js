@@ -40,7 +40,7 @@ const ReceiptList = () => {
 
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -97,38 +97,38 @@ const ReceiptList = () => {
           style={{ height: "50px" }}
         >
           <div className="container d-flex justify-content-between align-items-center">
-            <h4 className="m-0 col-2 d-flex align-items-center">
+            <h4 className="m-0 col-2 d-flex align-items-center" style={{ minWidth: '250px' }}>
               <RiFileList2Fill />
-              &ensp;Receipt list
+              &ensp;Đơn nhập hàng
             </h4>
             <div className="col-10 d-flex justify-content-around">
-              <InputGroup className="w-30">
+              <InputGroup className="w-30" style={{ maxWidth: '450px' }}>
                 <InputGroup.Text className="custom-radius">
                   <FaSearch />
                 </InputGroup.Text>
                 <Form.Control
                   className="custom-radius"
-                  placeholder="Search users . . ."
+                  placeholder="Tìm kiếm đơn nhập hàng . . ."
                 />
               </InputGroup>
               <Button
                 variant="secondary"
                 className="font-14 custom-radius custom-hover"
               >
-                <FaFileExport /> {` Export`}
+                <FaFileExport /> {` Xuất`}
               </Button>
             </div>
           </div>
         </div>
         <div className="d-flex mt-3">
           <div className="col-9 pe-5">
-            <div style={{ minHeight: "500px" }}>
+            <div>
               <Table striped hover>
                 <thead>
                   <th>#</th>
-                  <th>Supplier</th>
-                  <th>Created date</th>
-                  <th>Created by</th>
+                  <th>Nhà cung cấp</th>
+                  <th>Ngày tạo</th>
+                  <th>Tạo bởi</th>
                 </thead>
                 <tbody>
                   {receipts?.map((item, index) => (
@@ -149,30 +149,37 @@ const ReceiptList = () => {
             </div>
             <div className="bg-body-tertiary d-flex justify-content-between align-items-center container pt-2">
               <p className="font-13">
-                {`${
-                  currentPage * 5 + 5 <= totalElements
-                    ? currentPage * 5 + 5
-                    : totalElements
-                } of ${totalElements} `}
-                <span>
-                  <motion.a
-                    initial={{ color: "#29B6F6" }}
-                    className="text-decoration-none fw-medium"
-                    onClick={() => {
-                      setPageSize(totalElements);
-                    }}
-                  >{`View all >`}</motion.a>
-                </span>
+                {`${currentPage * 5 + 5 <= totalElements
+                  ? currentPage * 5 + 5
+                  : totalElements
+                  } / ${totalElements} `}
+                {
+                  totalPage > 1 && (
+                    <span>
+                      <motion.a
+                        initial={{ color: "#29B6F6" }}
+                        className="text-decoration-none fw-medium"
+                        onClick={() => {
+                          setPageSize(totalElements);
+                        }}
+                      >{`View all >`}</motion.a>
+                    </span>
+                  )
+                }
               </p>
-              <Pagination className="border-0">
-                <Pagination.First
-                  onClick={() => handleSetPage(0)}
-                >{`<`}</Pagination.First>
-                {paginationItems}
-                <Pagination.Last
-                  onClick={() => handleSetPage(totalPage - 1)}
-                >{`>`}</Pagination.Last>
-              </Pagination>
+              {totalPage > 1 &&
+                (
+                  <Pagination className="border-0">
+                    <Pagination.First
+                      onClick={() => handleSetPage(0)}
+                    >{`<`}</Pagination.First>
+                    {paginationItems}
+                    <Pagination.Last
+                      onClick={() => handleSetPage(totalPage - 1)}
+                    >{`>`}</Pagination.Last>
+                  </Pagination>
+                )
+              }
             </div>
           </div>
           <div className="col-3">
@@ -202,7 +209,7 @@ const ReceiptList = () => {
                   </Form>
                 ) : (
                   <NotSelectYet
-                    text={`You haven't select a receipt yet. Please, select !!`}
+                    text={`Chưa có đơn nhập hàng nào được chọn để xem chi tiết !!`}
                   />
                 )}
               </div>
