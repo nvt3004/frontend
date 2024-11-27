@@ -1060,7 +1060,7 @@ const OrderTable = () => {
                                                                     <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '48%' }}>
                                                                         <p><strong>Thông tin đơn hàng</strong></p>
                                                                         <p>Ngày đặt hàng: {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
-                                                                        <p>Ngày giao hàng: {moment(order?.deliveryDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
+                                                                        <p>Ngày giao hàng dự kiến: {moment(order?.deliveryDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
                                                                         <p>Phương thức thanh toán: {order?.paymentMethod || 'N/A'}</p>
                                                                         <p>Tổng tiền:  {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}</p>
                                                                         <p>Trạng thái: {order?.statusName || 'N/A'}</p>
@@ -1237,7 +1237,6 @@ const OrderTable = () => {
                                                                     </tr>
 
                                                                     {/* Đoạn để hiển thị print đơn hàng */}
-
 
                                                                     <tr className='print d-none'>
                                                                         <td rowSpan={4} colSpan={3} className='text-center'>

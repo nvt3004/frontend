@@ -66,7 +66,7 @@ const OrderDetail = () => {
                             <div className="border p-3 rounded">
                                 <p className="fw-bold">Thông tin đơn hàng</p>
                                 <p>Ngày đặt hàng: {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
-                                <p>Ngày giao hàng: {moment(order?.deliveryDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
+                                <p>Ngày giao hàng dự kiến: {moment(order?.deliveryDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
                                 <p>Phương thức thanh toán: {order?.paymentMethod || 'N/A'}</p>
                                 <p>Tổng tiền: {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}</p>
                                 <p>Trạng thái: {order?.statusName || 'N/A'}</p>
