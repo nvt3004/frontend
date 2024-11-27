@@ -116,10 +116,10 @@ const OrderDetail = () => {
                                 <div class="row">
                                     <div class="col-12 text-center" style={{ color: '#71bdd8' }}>
                                         <h1 class="display-4 font-weight-bold text-primary">
-                                            Cảm ơn {order?.gender === 1 ? 'Anh' : order?.gender === 2 ? 'Chị' : 'Quý khách'} {order?.fullname}!
+                                            Cảm ơn {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} {order?.fullname}!
                                         </h1>
                                         <p class="lead">
-                                            Chúng tôi rất cảm kích vì {order?.gender === 1 ? 'Anh' : order?.gender === 2 ? 'Chị' : 'Quý khách'} đã đặt hàng.
+                                            Chúng tôi rất cảm kích vì {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} đã đặt hàng.
                                             Chúng tôi hy vọng được tiếp tục phục vụ {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} trong những lần mua sắm tiếp theo.
                                         </p>
                                     </div>

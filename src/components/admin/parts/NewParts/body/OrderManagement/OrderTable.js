@@ -42,12 +42,14 @@ const OrderTable = () => {
                     setOrders(response.data.data.content);
                     setTotalPage(response?.data?.data?.totalPages);
                     setTotalElements(response?.data?.data?.totalElements);
+                } else if (response?.data?.errorCode === 404) {
+                    setOrders([]);
+                    setTotalPage(0);
+                    setTotalElements(0);
+                    toast.error(response?.data?.message || 'No orders found.');
+                } else if (response?.data?.errorCode === 998) {
+                    toast.error(response?.data?.message || 'You do not have permission to access the order list.');
                 } else {
-                    if (response?.data?.errorCode === 404) {
-                        setOrders([]);
-                        setTotalPage(0);
-                        setTotalElements(0);
-                    }
                     toast.error(response?.data?.message || 'Could not get order list. Please try again!');
                 }
             }
@@ -61,6 +63,7 @@ const OrderTable = () => {
             }
         });
     };
+    
 
     useEffect(() => {
         handleGetOrderAPI();
@@ -145,6 +148,8 @@ const OrderTable = () => {
                         };
                     });
                     setOrderStatus(status);
+                } else if (response.data?.errorCode === 998) {
+                    toast.error(response.data?.message || 'You do not have permission to access statuses.');
                 } else {
                     toast.error('Could not get the statuses. Please try again!');
                 }
@@ -159,6 +164,7 @@ const OrderTable = () => {
                 }
             });
     }, [navigate]);
+    
     // END GET status
 
     // START HANDLE order
@@ -210,15 +216,15 @@ const OrderTable = () => {
     );
     const initialQuantitiesRef = useRef({});
     const handleGetOrderDetail = () => {
-        axiosInstance.get(`/staff/orders/${orderID?.value}`).then(
-            (response) => {
+        axiosInstance.get(`/staff/orders/${orderID?.value}`)
+            .then((response) => {
                 if (response?.data?.errorCode === 200) {
                     const temp = response?.data?.data?.orderDetail[0];
                     const initialQuantities = {};
-
+    
                     const orderDetail = temp?.productDetails.map((item) => {
                         initialQuantities[`${item.orderDetailId}-${item.productId}`] = item.quantity;
-
+    
                         return {
                             orderDetailId: item.orderDetailId,
                             product: [
@@ -226,7 +232,7 @@ const OrderTable = () => {
                                     productID: item.productId,
                                     productName: item?.productName,
                                     productVersionID: item.productVersionId,
-
+    
                                     productAttributes: {
                                         colors: item.attributeProducts?.[0]?.colors
                                             ? Array.from(new Set(item.attributeProducts[0].colors.map(color => color.colorId)))
@@ -268,7 +274,7 @@ const OrderTable = () => {
                             ]
                         };
                     });
-
+    
                     initialQuantitiesRef.current = initialQuantities;
                     setQuantities(initialQuantities);
                     setOrderDetails({
@@ -276,30 +282,36 @@ const OrderTable = () => {
                         orderDetail
                     });
                     console.log(orderID.isOpen + " orderID.isOpen");
-
+    
                     setOrderID(prev => ({ ...prev, isOpen: true }));
                 } else if (response?.data?.errorCode === 404) {
                     console.log(orderID.isOpen + " orderID.isOpen");
                     setOrderDetails(null);
                     setOrderID(prev => ({ ...prev, isOpen: false }));
                     toast.error(response.data?.message || 'Could not get details of order. Please try again!');
+                } else if (response?.data?.errorCode === 998) {
+                    toast.error(response.data?.message || 'You do not have permission to view this order.');
                 } else {
                     toast.error(response.data?.message || 'Could not get details of order. Please try again!');
                 }
-            }
-        ).catch(error => {
-            console.error("Error fetching order details:", error);
-            if (error?.response?.status === 404) {
-                setOrderDetails(null);
-                console.log(orderID.isOpen + " orderID.isOpen");
-                setOrderID({ value: orderID.value, isOpen: false });
-
-                toast.error(error?.response.data?.message || 'Could not get details of order. Please try again!');
-            } else {
-                toast.error(error?.response?.data?.message || "An error occurred while fetching order details.");
-            }
-        });
+            })
+            .catch(error => {
+                console.error("Error fetching order details:", error);
+                if (error?.response?.status === 404) {
+                    setOrderDetails(null);
+                    console.log(orderID.isOpen + " orderID.isOpen");
+                    setOrderID({ value: orderID.value, isOpen: false });
+    
+                    toast.error(error?.response.data?.message || 'Could not get details of order. Please try again!');
+                } else if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error?.response?.data?.message || "An error occurred while fetching order details.");
+                }
+            });
     };
+    
     useEffect(() => {
         if (orderID.value) {
             handleGetOrderDetail();
@@ -325,6 +337,8 @@ const OrderTable = () => {
                             if (response.data?.errorCode === 200) {
                                 toast.success('Updated order status successfully!');
                                 handleGetOrderAPI();
+                            } else if (response.data?.errorCode === 998) {
+                                toast.error(response.data?.message || "Bạn không có quyền thay đổi trạng thái đơn hàng này.");
                             } else {
                                 toast.error(response.data?.message || 'Could not update status of the order. Please try again!');
                             }
@@ -338,13 +352,12 @@ const OrderTable = () => {
                             }
                         });
                 }
-
             });
         } else {
             toast.warning(`You cannot set the status to ${option?.label.toLowerCase()}`);
         }
     };
-
+    
     useEffect(
         () => {
             if (orderDetails) {
@@ -354,71 +367,80 @@ const OrderTable = () => {
     );
 
     const [isEditVersion, setEditVersion] = useState({ isEdit: '', orderDetailsID: '' });
-    const handleSaveVersionChanges = (orderDetail) => {
-        const { orderDetailId, product } = orderDetail;
-        const { productID, orderVersionAttribute } = product[0];
-        const colorId = orderVersionAttribute.color?.value;
-        const sizeId = orderVersionAttribute.size?.value;
 
-        if (!colorId || !sizeId) {
-            toast.error("Please select both color and size.");
-            return;
-        }
+  const handleSaveVersionChanges = (orderDetail) => {
+    const { orderDetailId, product } = orderDetail;
+    const { productID, orderVersionAttribute } = product[0];
+    const colorId = orderVersionAttribute.color?.value;
+    const sizeId = orderVersionAttribute.size?.value;
 
-        axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`)
-            .then((response) => {
-                console.log("API Response:", response);
-                if (response.data?.errorCode === 200) {
-                    toast.success("Updated order detail successfully!");
-                    handleGetOrderDetail();
-                    setEditVersion({ isEdit: false, orderDetailsID: null });
-                } else {
-                    console.log("Error Response:", response.data);
-                    toast.error(response.data?.errorMessage || "Could not update order detail. Please try again!");
-                }
-            })
-            .catch((error) => {
-                console.error("Error updating order detail:", error);
-                if (error?.response?.status === 403) {
-                    toast.error("Session expired. Redirecting to login...");
-                    navigate('/auth/login');
-                } else {
-                    toast.error(error?.response?.data?.message || "An error occurred while updating order detail.");
-                }
-            });
-    };
+    if (!colorId || !sizeId) {
+        toast.error("Please select both color and size.");
+        return;
+    }
+
+    axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`)
+        .then((response) => {
+            console.log("API Response:", response);
+            if (response.data?.errorCode === 200) {
+                toast.success("Updated order detail successfully!");
+                handleGetOrderDetail();
+                setEditVersion({ isEdit: false, orderDetailsID: null });
+            } else if (response.data?.errorCode === 998) {
+                console.log("Permission Denied:", response.data);
+                toast.error(response.data?.message || "Bạn không có quyền thực hiện hành động này.");
+            } else {
+                console.log("Error Response:", response.data);
+                toast.error(response.data?.message || "Could not update order detail. Please try again!");
+            }
+        })
+        .catch((error) => {
+            console.error("Error updating order detail:", error);
+            if (error?.response?.status === 403) {
+                toast.error("Session expired. Redirecting to login...");
+                navigate('/auth/login');
+            } else {
+                toast.error(error?.response?.data?.message || "An error occurred while updating order detail.");
+            }
+        });
+};
 
 
-    const handleQuantityChange = (orderDetailId, productID, currentQuantity, change) => {
-        const newQuantity = currentQuantity + change;
-        if (newQuantity < 1) {
-            toast.error("Quantity cannot be less than 1.");
-            return;
-        }
 
-        axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&quantity=${newQuantity}`)
-            .then((response) => {
-                if (response.data?.errorCode === 200) {
-                    toast.success("Updated quantity successfully!");
-                    handleGetOrderDetail();
-                    setQuantities(prevQuantities => ({
-                        ...prevQuantities,
-                        [`${orderDetailId}-${productID}`]: newQuantity,
-                    }));
-                } else {
-                    toast.error(response.data?.message || "Could not update quantity. Please try again!");
-                }
-            })
-            .catch((error) => {
-                console.error("Error updating quantity:", error);
-                if (error?.response?.status === 403) {
-                    toast.error("Session expired. Redirecting to login...");
-                    navigate('/auth/login');
-                } else {
-                    toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
-                }
-            });
-    };
+const handleQuantityChange = (orderDetailId, productID, currentQuantity, change) => {
+    const newQuantity = currentQuantity + change;
+
+    if (newQuantity < 1) {
+        toast.error("Quantity cannot be less than 1.");
+        return;
+    }
+
+    axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&quantity=${newQuantity}`)
+        .then((response) => {
+            if (response.data?.errorCode === 200) {
+                toast.success("Updated quantity successfully!");
+                handleGetOrderDetail();
+                setQuantities(prevQuantities => ({
+                    ...prevQuantities,
+                    [`${orderDetailId}-${productID}`]: newQuantity,
+                }));
+            } else if (response.data?.errorCode === 998) {
+                toast.error(response.data?.message || "You do not have permission to update the quantity.");
+            } else {
+                toast.error(response.data?.message || "Could not update quantity. Please try again!");
+            }
+        })
+        .catch((error) => {
+            console.error("Error updating quantity:", error);
+            if (error?.response?.status === 403) {
+                toast.error("Session expired. Redirecting to login...");
+                navigate('/auth/login');
+            } else {
+                toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
+            }
+        });
+};
+
 
     const handleQuantityInputChange = (orderDetailId, productID, newQuantity) => {
         setQuantities(prevQuantities => ({
@@ -445,7 +467,7 @@ const OrderTable = () => {
             }));
             return;
         }
-
+    
         axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${newQuantity}`)
             .then(response => {
                 if (response.data?.errorCode === 200) {
@@ -456,6 +478,12 @@ const OrderTable = () => {
                     }));
                     initialQuantitiesRef.current[`${orderDetailId}-${productID}`] = newQuantity;
                     handleGetOrderDetail();
+                } else if (response.data?.errorCode === 998) {
+                    toast.error(response.data?.message || "Bạn không có quyền thực hiện hành động này.");
+                    setQuantities(prevQuantities => ({
+                        ...prevQuantities,
+                        [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
+                    }));
                 } else {
                     setQuantities(prevQuantities => ({
                         ...prevQuantities,
@@ -478,6 +506,7 @@ const OrderTable = () => {
                 }
             });
     };
+    
 
 
     const handleKeyPress = (e, orderDetailId, productID, newQuantity) => {
@@ -490,10 +519,10 @@ const OrderTable = () => {
         const fetchStatuses = async () => {
             try {
                 const response = await axiosInstance.get('/staff/orders/statuses');
-
+    
                 if (response?.data?.errorCode === 200) {
                     const statuses = response.data.data;
-
+    
                     const formattedOptions = statuses.map(status => ({
                         value: status.statusId,
                         label: status.statusName
@@ -502,22 +531,29 @@ const OrderTable = () => {
                         value: null,
                         label: 'All Statuses'
                     });
-
+    
                     setStatusOptions(formattedOptions);
+                } else if (response?.data?.errorCode === 998) {
+                    toast.error(response?.data?.message || "Bạn không có quyền thực hiện hành động này.");
                 }
             } catch (error) {
                 console.error("Error fetching statuses:", error);
-                if (error?.response?.status === 403) {
+    
+                const errorCode = error?.response?.status || error.response?.data?.code;
+                const errorMessage = error?.response?.data?.message || error.message;
+    
+                if (errorCode === 403) {
                     toast.error("Session expired. Redirecting to login...");
                     navigate('/auth/login');
                 } else {
-                    toast.error(error?.response?.data?.message || "An error occurred while fetching statuses.");
+                    toast.error(errorMessage || "An error occurred while fetching statuses.");
                 }
             }
         };
-
+    
         fetchStatuses();
     }, []);
+    
 
 
     const handleChange = (event, type) => {
@@ -551,33 +587,39 @@ const OrderTable = () => {
                     keyword: keyword || undefined,
                     statusId: statusId || undefined,
                 },
-                responseType: 'blob',  // Nhận dữ liệu dưới dạng file
+                responseType: 'blob', // Nhận dữ liệu dưới dạng file
             });
-
+    
             // Tạo URL cho file Excel
             const fileURL = window.URL.createObjectURL(new Blob([response.data]));
-
+    
             // Tạo một link tạm thời để tải file
             const link = document.createElement('a');
             link.href = fileURL;
-            link.setAttribute('download', 'orders.xlsx');  // Tên file tải xuống
+            link.setAttribute('download', 'orders.xlsx'); // Tên file tải xuống
             document.body.appendChild(link);
             link.click();
-
+    
             // Xóa link sau khi tải
             document.body.removeChild(link);
             toast.success('Xuất file thành công');
         } catch (error) {
             console.error('Error exporting orders:', error);
-
-            if (error?.response?.status === 403) {
+    
+            const errorCode = error?.response?.status || error.response?.data?.code;
+            const errorMessage = error?.response?.data?.message || error.message;
+    
+            if (errorCode === 998) {
+                toast.error(errorMessage || "Bạn không có quyền thực hiện hành động này.");
+            } else if (errorCode === 403) {
                 toast.error("Session expired. Redirecting to login...");
                 navigate('/auth/login');
             } else {
-                toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xuất đơn hàng.');
+                toast.error(errorMessage || 'Có lỗi xảy ra khi xuất đơn hàng.');
             }
         }
     };
+    
 
 
     const handleDeleteOrderDetail = async (orderId, orderDetailId) => {
@@ -598,7 +640,7 @@ const OrderTable = () => {
                             orderDetailId
                         }
                     });
-
+    
                     if (response.status === 200) {
                         toast.success("Order detail deleted successfully!");
                         handleGetOrderAPI();
@@ -608,17 +650,23 @@ const OrderTable = () => {
                     }
                 } catch (error) {
                     console.error("Error deleting order detail:", error);
-
-                    if (error?.response?.status === 403) {
+    
+                    const errorCode = error?.response?.status || error.response?.data?.code;
+                    const errorMessage = error?.response?.data?.message || error.message;
+    
+                    if (errorCode === 998) {
+                        toast.error(errorMessage || "You do not have permission to perform this action.");
+                    } else if (errorCode === 403) {
                         toast.error("Session expired. Redirecting to login...");
                         navigate('/auth/login');
                     } else {
-                        toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+                        toast.error(`An error occurred: ${errorMessage}`);
                     }
                 }
             }
         });
     };
+    
 
 
     const handleKeywordChange = (e) => {
@@ -1237,16 +1285,15 @@ const OrderTable = () => {
                                                                     </tr>
 
                                                                     {/* Đoạn để hiển thị print đơn hàng */}
-
                                                                     <tr className='print d-none'>
                                                                         <td rowSpan={4} colSpan={3} className='text-center'>
                                                                             <div class="row mt-5 pt-5 border-top">
                                                                                 <div class="col-12 text-center" style={{ color: '#71bdd8' }}>
                                                                                     <h1 class="display-4 font-weight-bold text-primary">
-                                                                                        Cảm ơn {order?.gender === 1 ? 'Anh' : order?.gender === 2 ? 'Chị' : 'Quý khách'} {order?.fullname}!
+                                                                                        Cảm ơn {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} {order?.fullname}!
                                                                                     </h1>
                                                                                     <p class="lead">
-                                                                                        Chúng tôi rất cảm kích vì {order?.gender === 1 ? 'Anh' : order?.gender === 2 ? 'Chị' : 'Quý khách'} đã đặt hàng.
+                                                                                        Chúng tôi rất cảm kích vì {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} đã đặt hàng.
                                                                                         Chúng tôi hy vọng được tiếp tục phục vụ {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} trong những lần mua sắm tiếp theo.
                                                                                     </p>
                                                                                 </div>
