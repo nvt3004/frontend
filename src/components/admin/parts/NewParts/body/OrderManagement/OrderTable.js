@@ -1038,17 +1038,17 @@ const OrderTable = () => {
             <thead>
               <tr>
                 <th>ID</th>
-                <th className="">Customer</th>
-                <th>Address</th>
-                <th>Phone</th>
-                <th>Order date</th>
-                <th>Status</th>
+                <th className="">Khách hàng</th>
+                <th>Địa chỉ</th>
+                <th>Số điện thoại</th>
+                <th>Ngày đặt hàng</th>
+                <th>Trạng thái</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {orders.length === 0 ? (
-                <p>No orders found.</p>
+                <p>Không tìm thấy bất kỳ đơn hàng nào.</p>
               ) : (
                 orders?.map((order) => (
                   <React.Fragment key={order?.orderId}>
@@ -1058,8 +1058,8 @@ const OrderTable = () => {
                       <td>{order?.address}</td>
                       <td>
                         {order?.phone || (
-                          <p className="px-2 py-1 bg-danger-subtle text-center rounded-3 me-1">
-                            Missing
+                          <p className="px-2 py-1 bg-danger text-center rounded-3 me-1 text-white">
+                            Thiếu
                           </p>
                         )}
                       </td>
@@ -1086,7 +1086,7 @@ const OrderTable = () => {
                       <td>
                         <CustomButton
                           btnBG={"secondary"}
-                          btnName={"Details"}
+                          btnName={"Chi tiết"}
                           textColor={"white"}
                           handleClick={() => toggleOrderDetails(order)}
                         />
@@ -1219,7 +1219,7 @@ const OrderTable = () => {
                                   style={{ width: "100px" }}
                                   className="text-center"
                                 >
-                                  Product
+                                  Sản phẩm
                                 </th>
                                 <th
                                   style={{ width: "150px" }}
@@ -1229,11 +1229,11 @@ const OrderTable = () => {
                                   colSpan={2}
                                   className="text-center no-print"
                                 >
-                                  Attributes
+                                  Thuộc tính
                                 </th>
-                                <th className="text-center">Unit price</th>
-                                <th className="text-center">Quantity</th>
-                                <th className="text-center">Total</th>
+                                <th className="text-center">Đơn giá</th>
+                                <th className="text-center">Số lượng mua</th>
+                                <th className="text-center">Tổng tiền</th>
                                 <th colSpan={2} className="no-print"></th>
                               </thead>
                               <tbody>
@@ -1506,7 +1506,7 @@ const OrderTable = () => {
                                 )}
                                 <tr className="no-print">
                                   <td
-                                    colSpan={7}
+                                    colSpan={9}
                                     className="reduce-colspan"
                                     style={{
                                       textAlign: "right",
@@ -1523,7 +1523,7 @@ const OrderTable = () => {
                                 </tr>
                                 <tr className="no-print">
                                   <td
-                                    colSpan={7}
+                                    colSpan={9}
                                     className="reduce-colspan"
                                     style={{
                                       textAlign: "right",
@@ -1540,7 +1540,7 @@ const OrderTable = () => {
                                 </tr>
                                 <tr className="no-print">
                                   <td
-                                    colSpan={7}
+                                    colSpan={9}
                                     className="reduce-colspan"
                                     style={{
                                       textAlign: "right",
@@ -1559,7 +1559,7 @@ const OrderTable = () => {
 
                                 <tr className="no-print">
                                   <td
-                                    colSpan={7}
+                                    colSpan={9}
                                     className="reduce-colspan"
                                     style={{
                                       textAlign: "right",
@@ -1671,7 +1671,7 @@ const OrderTable = () => {
                                       width: "150px",
                                     }}
                                   >
-                                    Tổng cộng:
+                                    Tổng tiền:
                                   </td>
                                   <td className="text-right">
                                     {`${(order?.finalTotal || 0).toLocaleString(
@@ -1684,7 +1684,7 @@ const OrderTable = () => {
                                     className="d-none text-center"
                                     colSpan={7}
                                   >
-                                    Tổng cộng bằng chữ:{" "}
+                                    Tổng tiền bằng chữ:{" "}
                                     {order?.finalTotalInWords ||
                                       "Không có dữ liệu"}
                                   </td>
@@ -1692,7 +1692,7 @@ const OrderTable = () => {
 
                                 <tr className="no-print">
                                   <td
-                                    colSpan={8}
+                                    colSpan={10}
                                     style={{ textAlign: "right" }}
                                   >
                                     <button
