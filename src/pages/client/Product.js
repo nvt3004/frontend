@@ -69,6 +69,9 @@ const Product = () => {
 
   // Cập nhật filteredAttributes mỗi khi filterAttributes hoặc selectedAttribute thay đổi
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
