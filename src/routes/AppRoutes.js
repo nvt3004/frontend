@@ -26,6 +26,7 @@ import PermissionManagement from "../components/admin/parts/PermissionManagement
 import NewPermission from "../components/admin/parts/NewPermission";
 import FeedbackManagement from "../components/admin/parts/FeedbackManagement";
 import CustomerTable from "../components/admin/parts/NewParts/body/CustomerManagement/CustomerTable";
+import ReceiptDetail from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptDetail";
 
 // Auth Pages
 import AuthLayout from "../layouts/AuthLayout";
@@ -183,6 +184,7 @@ const router = createBrowserRouter([
         children: [
           { path: "manage", element: <ReceiptList /> },
           { path: "stockin", element: <StockIn /> },
+          { path: "detail", element: <ReceiptDetail /> },
         ],
       },
       {
