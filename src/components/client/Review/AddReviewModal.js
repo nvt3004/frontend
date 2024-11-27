@@ -10,8 +10,7 @@ const AddReviewModal = ({
   rating,
   setRating,
   handleSubmit,
-  error,
-  success,
+  error
 }) => {
   const handleRating = (value) => {
     setRating(value);
@@ -51,7 +50,6 @@ const AddReviewModal = ({
               </p>
 
               {error && <p className="text-danger">{error}</p>}
-              {success && <p className="text-success">{success}</p>}
 
               <div className="flex-w flex-m p-t-50 p-b-23">
                 <span className="stext-102 cl3 m-r-16">Your Rating</span>
@@ -65,7 +63,11 @@ const AddReviewModal = ({
                       onClick={() => handleRating(index + 1)}
                     ></i>
                   ))}
+                  <trong className="fs-5">
+                    ({rating})
+                  </trong>
                 </span>
+
               </div>
 
               <div className="row p-b-25">

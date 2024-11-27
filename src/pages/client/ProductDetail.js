@@ -19,7 +19,7 @@ import heart1 from "../../assets/images/icons/icon-heart-01.png";
 import heart2 from "../../assets/images/icons/icon-heart-02.png";
 import prod12 from "../../assets/images/product-01.jpg";
 import SizeGuide from "../../components/client/Modal/SizeGuideModal";
-
+import logo from "../../assets/images/icons/logo.png"
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
     const key = attributes[i].key;
@@ -782,13 +782,13 @@ const ProductDetail = () => {
                                   <div className="flex-w flex-t reply-section">
                                     <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
                                       <img
-                                        src={fb?.reply?.userReply?.image}
+                                        src={logo}
                                         alt="Reply Avatar"
                                       />
                                     </div>
                                     <div>
                                       <span className="mtext-107 cl2">
-                                        {fb?.reply?.userReply?.fullName}
+                                     STTF STORE
                                       </span>
                                       <p className="stext-102 cl6">
                                         {fb?.reply?.content}
