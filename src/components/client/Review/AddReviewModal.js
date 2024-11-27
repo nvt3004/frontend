@@ -63,9 +63,9 @@ const AddReviewModal = ({
                       onClick={() => handleRating(index + 1)}
                     ></i>
                   ))}
-                  <trong className="fs-5">
+                  <strong className="fs-5">
                     ({rating})
-                  </trong>
+                  </strong>
                 </span>
 
               </div>

@@ -83,7 +83,7 @@ const Account = () => {
   const handleCancelOrder = async (orderId) => {
     await productApi.cancelOrder(orderId);
   };
-  
+
   const resetForm = () => {
     setComment("");
     setPhotos([]);
@@ -168,14 +168,13 @@ const Account = () => {
         console.error("Error fetching data:", error);
       }
     };
-  
+
     const timer = setTimeout(() => {
       fetchData();
     }, 300);
-  
+
     return () => clearTimeout(timer);
   }, [keyword, statusId]);
-  
 
   // Hàm xử lý khi người dùng chuyển trang
   const handlePageChange = (newPage) => {
@@ -651,12 +650,13 @@ const Account = () => {
               <div className="col-auto">
                 <select
                   className="form-select"
-                  value={statusId || ""}
-                  onChange={(e) =>
+                  defaultValue="" // Giá trị mặc định ban đầu
+                  onChange={(e) => {
+                    const selectedValue = e.target.value;
                     setStatusId(
-                      e.target.value ? parseInt(e.target.value, 10) : null
-                    )
-                  }
+                      selectedValue ? parseInt(selectedValue, 10) : null
+                    );
+                  }}
                 >
                   <option value="">All Statuses</option>
                   {status?.map((item) => (
@@ -748,8 +748,8 @@ const Account = () => {
                           {order?.statusName === "Pending" && (
                             <button
                               type="button"
-                              className="btn btn-outline-danger"
-                              onClick={()=>(handleCancelOrder(order?.orderId))}
+                              className="btn btn-outline-danger mt-3"
+                              onClick={() => handleCancelOrder(order?.orderId)}
                             >
                               Hủy đơn
                             </button>
