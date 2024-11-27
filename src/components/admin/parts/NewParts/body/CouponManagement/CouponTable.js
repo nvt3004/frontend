@@ -390,54 +390,58 @@ const CouponTable = () => {
                                 <option value="price">Price</option>
                             </Form.Select>
 
-                            <Form.Control
-                                type="number"
-                                step={couponType === "percent" ? 1 : 1000}
-                                {...register("value", {
-                                    required: "Discount value is required.",
-                                    validate: (value) => {
-                                        if (couponType === "percent") {
-                                            if (value < 5 || value > 50) {
-                                                return "Discount percentage must be between 5% and 50%.";
-                                            }
-                                        } else if (couponType === "price") {
-                                            if (value < 5000 || value > 100000) {
-                                                return "Discount price must be between 5000 and 100,000.";
-                                            }
-                                        }
-                                        return true;
-                                    },
-                                })}
-                                placeholder={`Enter ${couponType === "percent" ? "percentage" : "price"} value`}
-                            />
+              <Form.Control
+                type="number"
+                step={couponType === "percent" ? 1 : 1000}
+                {...register("value", {
+                  required: "Discount value is required.",
+                  validate: (value) => {
+                    if (couponType === "percent") {
+                      if (value < 5 || value > 50) {
+                        return "Discount percentage must be between 5% and 50%.";
+                      }
+                    } else if (couponType === "price") {
+                      if (value < 5000 || value > 100000) {
+                        return "Discount price must be between 5000 and 100,000.";
+                      }
+                    }
+                    return true;
+                  },
+                })}
+                placeholder={`Enter ${
+                  couponType === "percent" ? "percentage" : "price"
+                } value`}
+              />
 
-                            <InputGroup.Text>
-                                {couponType === "percent" ? "%" : "VND"}
-                            </InputGroup.Text>
-                        </InputGroup>
-                        {errors.value && <span className="text-danger">{errors.value.message}</span>}
-                    </Form.Group>
-                    <Form.Group className="mb-2">
-                        <Form.Label>Quantity</Form.Label>
-                        <Form.Control
-                            type="number"
-                            {...register("quantity", {
-                                required: "Quantity is required.",
-                                min: { value: 1, message: "Quantity must be at least 1." },
-                            })}
-                            placeholder="Coupon's quantity"
-                        />
-                        {errors.quantity && (
-                            <span className="text-danger">{errors.quantity.message}</span>
-                        )}
-                    </Form.Group>
-                </Form>
-            </ModalSft>
-            <div>
-                <ToastContainer />
-            </div>
-        </div>
-    );
-}
+              <InputGroup.Text>
+                {couponType === "percent" ? "%" : "VND"}
+              </InputGroup.Text>
+            </InputGroup>
+            {errors.value && (
+              <span className="text-danger">{errors.value.message}</span>
+            )}
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>Quantity</Form.Label>
+            <Form.Control
+              type="number"
+              {...register("quantity", {
+                required: "Quantity is required.",
+                min: { value: 1, message: "Quantity must be at least 1." },
+              })}
+              placeholder="Coupon's quantity"
+            />
+            {errors.quantity && (
+              <span className="text-danger">{errors.quantity.message}</span>
+            )}
+          </Form.Group>
+        </Form>
+      </ModalSft>
+      <div>
+        <ToastContainer />
+      </div>
+    </div>
+  );
+};
 
 export default CouponTable;

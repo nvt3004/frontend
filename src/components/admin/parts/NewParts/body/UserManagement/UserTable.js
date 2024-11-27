@@ -67,11 +67,11 @@ const UserTable = () => {
 
   // ********** Cấu hình table*********
   const columns = [
-    { title: "Email / Số điện thoại", dataIndex: "username", key: "name" },
-    { title: "Họ và tên", dataIndex: "fullname", key: "age" },
-    { title: "Ngày sinh", dataIndex: "birthday", key: "birthday" },
+    { title: "Email / Điện Thoại", dataIndex: "username", key: "name" },
+    { title: "Họ Và Tên", dataIndex: "fullname", key: "age" },
+    { title: "Ngày Sinh", dataIndex: "birthday", key: "birthday" },
     {
-      title: "Giới tính",
+      title: "Giới Tính",
       dataIndex: "gender",
       key: "gender",
       render: (value, record) => {
@@ -79,7 +79,7 @@ const UserTable = () => {
       },
     },
     {
-      title: "Trạng thái",
+      title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
       render: (text, record) => {
@@ -99,7 +99,7 @@ const UserTable = () => {
       },
     },
     {
-      title: "Hành động",
+      title: "Hành Động",
       key: "actions",
       render: (text, record) => {
         return record.status === 0 ? (
