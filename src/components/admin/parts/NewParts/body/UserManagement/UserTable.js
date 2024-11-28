@@ -790,7 +790,7 @@ const UserTable = () => {
         onCancel={handleModalDeleteCancel}
         size="modal-lg"
       >
-        <span>Are you sure you want to delete?</span>
+        <span>Bạn có chắc muốn xóa?</span>
       </ModalSft>
 
       {/* Modal phân quyền */}
