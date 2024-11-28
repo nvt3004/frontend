@@ -38,7 +38,7 @@ const OrderDetail = () => {
     // Lấy product name, sửa cái total
     // Thêm ảnh khách hàng nếu được
     return (
-        <div className="container w-100 h-100" style={{ fontFamily: 'Arial, sans-serif !important' }} >
+        <div className="container w-100 h-100 invoice-container" style={{ fontFamily: 'Times New Roman, serif !important' }} >
             <div className="container mt-4 pt-4 border">
                 <div className="border-bottom pb-4 mb-4">
                     <div className="text-center mb-4">
@@ -79,14 +79,14 @@ const OrderDetail = () => {
                 <table className="table table-hover table-striped border">
                     <thead>
                         <tr>
-                            <th className="text-center">#</th>
-                            <th className="text-center">Sản phẩm</th>
-                            <th className="text-center">Hình ảnh</th>
-                            <th className="text-center">Màu</th>
-                            <th className="text-center">Kích cỡ</th>
-                            <th className="text-center">Đơn giá</th>
-                            <th className="text-center">Số lượng</th>
-                            <th className="text-center">Tổng</th>
+                            <th className="text-center" style={{ width: '5%' }}>#</th>
+                            <th className="text-center" style={{ width: '25%' }}>Sản phẩm</th>
+                            <th className="text-center" style={{ width: '10%' }}>Hình ảnh</th>
+                            <th className="text-center" style={{ width: '10%' }}>Màu</th>
+                            <th className="text-center" style={{ width: '10%' }}>Kích cỡ</th>
+                            <th className="text-center" style={{ width: '10%' }}>Đơn giá</th>
+                            <th className="text-center" style={{ width: '15%' }}>Số lượng</th>
+                            <th className="text-center" style={{ width: '15%' }}>Tổng</th>
                         </tr>
                     </thead>
                     <tbody>
