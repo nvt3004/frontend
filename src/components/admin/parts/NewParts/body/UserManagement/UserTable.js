@@ -67,39 +67,39 @@ const UserTable = () => {
 
   // ********** Cấu hình table*********
   const columns = [
-    { title: "Email / Phone number", dataIndex: "username", key: "name" },
-    { title: "Fullname", dataIndex: "fullname", key: "age" },
-    { title: "Birthday", dataIndex: "birthday", key: "birthday" },
+    { title: "Email / Điện Thoại", dataIndex: "username", key: "name" },
+    { title: "Họ Và Tên", dataIndex: "fullname", key: "age" },
+    { title: "Ngày Sinh", dataIndex: "birthday", key: "birthday" },
     {
-      title: "Gender",
+      title: "Giới Tính",
       dataIndex: "gender",
       key: "gender",
       render: (value, record) => {
-        return value === 0 ? "" : value === 1 ? "Male" : "Female";
+        return value === 0 ? "" : value === 1 ? "Nam" : "Nữ";
       },
     },
     {
-      title: "Status",
+      title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
       render: (text, record) => {
         if (text === 0) {
           return (
             <span class="badge bg-label-danger me-1" style={{ width: "80px" }}>
-              inactive
+              Không hoạt động
             </span>
           );
         } else {
           return (
             <span class="badge bg-label-success me-1" style={{ width: "80px" }}>
-              active
+              Hoạt động
             </span>
           );
         }
       },
     },
     {
-      title: "Actions",
+      title: "Hành Động",
       key: "actions",
       render: (text, record) => {
         return record.status === 0 ? (
@@ -123,7 +123,7 @@ const UserTable = () => {
       },
     },
     {
-      title: "Permissions",
+      title: "Phân quyền",
       key: "permissions",
       render: (text, record) => {
         return record.status === 0 ? (
@@ -147,7 +147,7 @@ const UserTable = () => {
     return (
       <div className="d-flex">
         <button className="btn btn-dark me-3" onClick={handleClickAdd}>
-          Add new <Plus weight="fill" />
+          Thêm mới <Plus weight="fill" />
         </button>
 
         <select
@@ -158,8 +158,8 @@ const UserTable = () => {
             setStatus(e.target.value);
           }}
         >
-          <option value="1">Active</option>
-          <option value="0">Inactive</option>
+          <option value="1">Hoạt động</option>
+          <option value="0">Không hoạt động</option>
         </select>
       </div>
     );
@@ -185,7 +185,7 @@ const UserTable = () => {
       setLoading(false);
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -233,7 +233,7 @@ const UserTable = () => {
       setPermissions([]);
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -263,7 +263,7 @@ const UserTable = () => {
 
     if (!isAdd && showPass && !password.trim()) {
       toast.error(
-        `Password must be at least 8 characters long, contain one uppercase letter, one lowercase letter, one number, and one special character`,
+        `Mật khẩu phải ít nhất 8 ký tự, bao gồm: chữ in hoa, chữ in thường, chữ số và ký tự đặc biệt !`,
         {
           className: "toast-message",
           position: "top-right",
@@ -295,7 +295,7 @@ const UserTable = () => {
     if (error) {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -318,7 +318,7 @@ const UserTable = () => {
 
     fetchUsers();
 
-    toast.success(`${isAdd ? "Add" : "Update"} user success!`, {
+    toast.success(`${isAdd ? "Thêm mới" : "Cập nhật"} người dùng thành công!`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
@@ -344,7 +344,7 @@ const UserTable = () => {
     if (error) {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -367,7 +367,7 @@ const UserTable = () => {
 
     fetchUsers();
 
-    toast.success(`Delete user success!`, {
+    toast.success(`Xóa thành công !`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
@@ -393,11 +393,10 @@ const UserTable = () => {
       },
     });
 
-    setLoading(false);
     if (error) {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -405,15 +404,18 @@ const UserTable = () => {
         position: "top-right",
         autoClose: 5000,
       });
+
+      setLoading(false);
       return;
     }
 
-    toast.success(`Save role success!`, {
+    toast.success(`Chỉnh sửa vai trò thành công !!`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
     });
 
+    setLoading(false);
     setIsModalQuyenOpen(false); // Đóng modal khi nhấn "Save changes"
   };
 
@@ -552,7 +554,7 @@ const UserTable = () => {
 
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -597,7 +599,7 @@ const UserTable = () => {
     } else {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -635,8 +637,8 @@ const UserTable = () => {
       </div>
 
       <ModalSft
-        title="Infomation staff"
-        titleOk={Object.keys(user || {}).length === 0 ? "Add new" : "Update"}
+        title="Thông tin nhân viên"
+        titleOk={Object.keys(user || {}).length === 0 ? "Thêm mới" : "Cập nhật"}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -658,13 +660,13 @@ const UserTable = () => {
                     className="form-label"
                     htmlFor="basic-default-fullname"
                   >
-                    Full Name <span className="text-danger">*</span>
+                    Họ và tên <span className="text-danger">*</span>
                   </label>
                   <input
                     type="text"
                     className="form-control"
                     id="basic-default-fullname"
-                    placeholder="Enter fullname"
+                    placeholder="Nhập họ và tên"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                   />
@@ -673,14 +675,14 @@ const UserTable = () => {
 
               <div className="row mb-4">
                 <label className="form-label" htmlFor="basic-default-email">
-                  Email / Phone number <span className="text-danger">*</span>
+                  Email / Số điện thoại <span className="text-danger">*</span>
                 </label>
                 <div className="input-group input-group-merge">
                   <input
                     type="text"
                     id="basic-default-email"
                     className="form-control"
-                    placeholder="Enter username"
+                    placeholder="Nhập email / số điện thoại"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     disabled={Object.keys(user || {}).length > 0}
@@ -695,8 +697,8 @@ const UserTable = () => {
                     htmlFor="basic-default-password"
                   >
                     {Object.keys(user || {}).length === 0
-                      ? "Password"
-                      : "Change password"}{" "}
+                      ? "Mật khẩu"
+                      : "Thay đổi mật khẩu"}{" "}
                     <span className="text-danger">
                       {Object.keys(user || {}).length === 0 ? "*" : ""}
                     </span>{" "}
@@ -725,7 +727,7 @@ const UserTable = () => {
                       type="password"
                       className="form-control"
                       id="basic-default-password"
-                      placeholder="Enter password"
+                      placeholder="Nhập mật khẩu"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
@@ -734,7 +736,7 @@ const UserTable = () => {
                       type="password"
                       className="form-control"
                       id="basic-default-password"
-                      placeholder="Enter password"
+                      placeholder="Nhập mật khẩu"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
@@ -749,7 +751,7 @@ const UserTable = () => {
           <div className="row">
             <div className="col-md-5 mb-3">
               <label className="form-label" htmlFor="basic-default-birthday">
-                Birthday
+                Ngày sinh
               </label>
               <input
                 type="date"
@@ -762,7 +764,7 @@ const UserTable = () => {
 
             <div className="col-md-7">
               <label htmlFor="exampleFormControlSelect1" className="form-label">
-                Gender
+                Giới tính
               </label>
               <select
                 className="form-select"
@@ -770,9 +772,9 @@ const UserTable = () => {
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
               >
-                <option value="0">Chose gender</option>
-                <option value="1">Male</option>
-                <option value="2">Female</option>
+                <option value="0">Chọn giới tính</option>
+                <option value="1">Nam</option>
+                <option value="2">Nữ</option>
               </select>
             </div>
           </div>

@@ -38,62 +38,62 @@ const menus = [
       },
       {
         id: "100",
-        label: "Users",
+        label: "Người dùng",
         icon: <User />,
         subItems: [
-          { id: "101", label: "Staff", link: "/admin/users/manage" },
-          { id: "102", label: "Customer", link: "/admin/customers/manage" },
+          { id: "101", label: "Nhân viên", link: "/admin/users/manage" },
+          { id: "102", label: "Khách hàng", link: "/admin/customers/manage" },
         ],
       },
       {
         id: "2",
-        label: "Product",
+        label: "Sản phẩm",
         icon: <Archive />,
         subItems: [
-          { id: "3", label: "Category", link: "/admin/products/categories" },
-          { id: "4", label: "New product", link: "/admin/products/new" },
-          { id: "5", label: "Manage product", link: "/admin/products/manage" },
+          { id: "3", label: "Phân loại", link: "/admin/products/categories" },
+          { id: "4", label: "Sản phẩm mới", link: "/admin/products/new" },
+          { id: "5", label: "Quản lý sản phẩm", link: "/admin/products/manage" },
         ],
       },
       {
         id: "feedback",
-        label: "Feedback",
+        label: "Phản hồi",
         icon: <CalendarBlank />,
         link: "/admin/feedback/manage",
       },
       {
         id: "6",
-        label: "Orders",
+        label: "Đơn hàng",
         icon: <FileText />,
         link: "/admin/orders/manage",
         subItems: null,
       },
       {
         id: "7",
-        label: "Suppliers",
+        label: "Nhà cung cấp",
         icon: <Storefront />,
         link: "/admin/suppliers/manage",
         subItems: null,
       },
       {
         id: "8",
-        label: "Warehouse",
+        label: "Kho hàng",
         icon: <Package />,
         // link: "/admin/warehouse/stock-in",
         subItems: [
-          {id: '12', label: 'Stock-in', link: "/admin/warehouse/stockin"},
-          {id: '13', label: 'Receipt list', link: "/admin/warehouse/manage"}
+          {id: '12', label: 'Nhập hàng', link: "/admin/warehouse/stockin"},
+          {id: '13', label: 'Danh sách phiếu nhập', link: "/admin/warehouse/manage"}
         ],
       },
       {
         id: "9",
-        label: "Coupon",
+        label: "Phiếu giảm giá",
         icon: <Ticket  />,
         link: "/admin/coupon/manage",
       },
       {
         id: "14",
-        label: "Advertisement",
+        label: "Quảng cáo",
         icon: <FaAdversal  />,
         // link: "/admin/advertisement/manage",
         subItems: [

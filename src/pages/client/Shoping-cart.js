@@ -9,34 +9,41 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import moment from "moment";
 
 const getEndDate = (end) => {
-  const now = new Date();
-  const endDate = new Date(end);
+  const now = moment(); // Lấy thời gian hiện tại
+  const endDate = moment(end, "DD/MM/YYYY HH:mm"); // Chuyển đổi chuỗi thành moment
+  
+  if (!endDate.isValid()) {
+    return "Ngày giờ không hợp lệ"; // Kiểm tra nếu thời gian không hợp lệ
+  }
 
-  const diffInMilliseconds = endDate - now;
+  const diffInMilliseconds = endDate.diff(now); // Tính chênh lệch
+  console.log("Ty@", diffInMilliseconds, end);
 
   if (diffInMilliseconds <= 0) {
     return "Đã hết hạn";
   }
 
-  const diffInSeconds = Math.floor(diffInMilliseconds / 1000);
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  const diffInDays = Math.floor(diffInHours / 24);
-  const diffInMonths = Math.floor(diffInDays / 30);
-  const diffInYears = Math.floor(diffInMonths / 12);
+  const duration = moment.duration(diffInMilliseconds);
 
-  if (diffInYears > 0) {
-    return `${diffInYears} năm`;
-  } else if (diffInMonths > 0) {
-    return `${diffInMonths} tháng`;
-  } else if (diffInDays > 0) {
-    return `${diffInDays} ngày`;
-  } else if (diffInHours > 0) {
-    return `${diffInHours} giờ`;
+  const years = duration.years();
+  const months = duration.months();
+  const days = duration.days();
+  const hours = duration.hours();
+  const minutes = duration.minutes();
+
+  if (years > 0) {
+    return `${years} năm`;
+  } else if (months > 0) {
+    return `${months} tháng`;
+  } else if (days > 0) {
+    return `${days} ngày`;
+  } else if (hours > 0) {
+    return `${hours} giờ`;
   } else {
-    return `${diffInMinutes} phút`;
+    return `${minutes} phút`;
   }
 };
 
@@ -990,7 +997,6 @@ const ShopingCart = () => {
                                   );
                                   setAttriTest(product.attributes);
                                 }}
-                                
                               >
                                 {product.productDetail.versions.find(
                                   (o) => o.id == product.versionId
@@ -1175,7 +1181,7 @@ const ShopingCart = () => {
                           coupons.map((c) => {
                             return (
                               <option value={c.id}>{`${c.couponCode} - Giảm ${
-                                c.percent ? c.percent + " %" : c.price + " đ"
+                                c.percent ? c.percent + " %" : formatCurrencyVND(c.price)
                               } - Còn ${getEndDate(c.endDate)}`}</option>
                             );
                           })}
@@ -1241,7 +1247,6 @@ const ShopingCart = () => {
                                 <option
                                   selected={item?.addressId === Number(address)}
                                   value={item?.addressId}
-                          
                                 >
                                   {`${getNameAddress(
                                     item?.province
@@ -1347,7 +1352,7 @@ const ShopingCart = () => {
 
                   <div className="size-209 p-t-1 text-end pe-3">
                     <span className="mtext-110 cl2">
-                      {formatCurrencyVND(total)}
+                      {formatCurrencyVND(total<0 ?0: total)}
                     </span>
                   </div>
                 </div>
@@ -1472,3 +1477,5 @@ const ShopingCart = () => {
   );
 };
 export default ShopingCart;
+
+//Thêm bảng có id của quyền add product, 

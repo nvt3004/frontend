@@ -3,7 +3,8 @@ import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import WarningAlert from "../../components/client/sweetalert/WarningAlert";
 import InfoAlert from "../../components/client/sweetalert/InfoAlert";
-import { Navigate } from 'react-router-dom';
+import ConfirmAlert from "../../components/client/sweetalert/ConfirmAlert";
+import { Navigate } from "react-router-dom";
 import { stfExecAPI } from "../../stf/common";
 import {
   incrementWishlist,
@@ -11,22 +12,22 @@ import {
 } from "../../store/actions/wishlistActions";
 const search = async ({
   query,
-  categoryID, 
+  categoryID,
   minPrice,
   maxPrice,
   attributes, // Danh sách attribute IDs
-  sortMaxPrice, 
+  sortMaxPrice,
   page,
   pageSize,
 } = {}) => {
   try {
     // Chuyển attributes thành chuỗi ID phân tách bởi dấu phẩy
-    const attribute = attributes ? attributes.join(',') : null;
+    const attribute = attributes ? attributes.join(",") : null;
 
     const { data } = await axiosInstance.get("product/search", {
       params: {
         query,
-        categoryID, 
+        categoryID,
         minPrice,
         maxPrice,
         attribute, // Sử dụng chuỗi attribute ID đã được định dạng
@@ -69,8 +70,6 @@ const search = async ({
   }
 };
 
-
-
 const getFilterAttribute = async () => {
   try {
     const response = await axiosInstance.get("/product/FilterAttribute");
@@ -99,7 +98,7 @@ const getTopProducts = async () => {
   }
 };
 
-const getRecommendedProducts  = async () => {
+const getRecommendedProducts = async () => {
   try {
     const response = await axiosInstance.get("/product/getRecommendedProducts");
     return response;
@@ -145,8 +144,8 @@ const addWishlist = async (productId, dispatch) => {
         title: "Product Added!",
         text: "The product has been successfully added to your wishlist.",
       });
-    }else{
-      window.location.href = '/auth/login';
+    } else {
+      window.location.href = "/auth/login";
     }
 
     return data;
@@ -203,8 +202,8 @@ const removeWishlist = async (productId, dispatch) => {
         title: "Deleted!",
         text: "The wishlist item has been successfully removed.",
       });
-    }else{
-      window.location.href = '/auth/login';
+    } else {
+      window.location.href = "/auth/login";
     }
 
     return data;
@@ -304,8 +303,8 @@ const getOrder = async (keyword, statusId, size, page) => {
   try {
     const { data } = await axiosInstance.get("user/orders/username", {
       params: {
-        keyword:keyword,
-        statusId:statusId,
+        keyword: keyword,
+        statusId: statusId,
         size: size,
         page: page,
       },
@@ -337,9 +336,12 @@ const getOrder = async (keyword, statusId, size, page) => {
         case 204:
           console.log("No Content: No orders found for the user.");
           break;
-          case 500:
-            console.log("Error: ", data?.message || "An error occurred during fetching feedback.");
-            break;
+        case 500:
+          console.log(
+            "Error: ",
+            data?.message || "An error occurred during fetching feedback."
+          );
+          break;
         default:
           console.log("Unknown Error: An unexpected error occurred.");
           break;
@@ -379,9 +381,12 @@ const getOrderStatus = async (size, page) => {
         case 204:
           console.log("No Content: No orders found for the user.");
           break;
-          case 500:
-            console.log("Error: ", data?.message || "An error occurred during fetching feedback.");
-            break;
+        case 500:
+          console.log(
+            "Error: ",
+            data?.message || "An error occurred during fetching feedback."
+          );
+          break;
         default:
           console.log("Unknown Error: An unexpected error occurred.");
           break;
@@ -391,7 +396,7 @@ const getOrderStatus = async (size, page) => {
     }
   }
 };
-const getFeedback = async ({ idProduct, page}) => {
+const getFeedback = async ({ idProduct, page }) => {
   try {
     const { data } = await axiosInstance.get("user/feedback", {
       params: {
@@ -415,7 +420,10 @@ const getFeedback = async ({ idProduct, page}) => {
           console.log("No Content: No feedback found for this product.");
           break;
         case 500:
-          console.log("Error: ", data?.message || "An error occurred during fetching feedback.");
+          console.log(
+            "Error: ",
+            data?.message || "An error occurred during fetching feedback."
+          );
           break;
         default:
           console.log("Unknown Error: An unexpected error occurred.");
@@ -430,6 +438,173 @@ const getFeedback = async ({ idProduct, page}) => {
   }
 };
 
+
+const addFeedback = async ({ idProd, idOrderDetail, comment, photos, rating }) => {
+  try {
+    // Kiểm tra tham số trước khi gửi
+    if (!idProd || !idOrderDetail || !comment) {
+      throw new Error("Missing required fields. Please provide all the necessary data.");
+    }
+
+    const formData = new FormData();
+    formData.append("comment", comment);
+    formData.append("idOrderDetail", idOrderDetail);
+    formData.append("productId", idProd);
+    if (rating !== undefined) {
+      formData.append("rating", rating);
+    }
+    if (photos && photos.length > 0) {
+      photos.forEach((photo) => formData.append("photos", photo));
+    }
+
+    // Gửi request
+    await axiosInstance.post("user/feedback/add", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    // Thông báo thành công
+    SuccessAlert({
+      title: "Success!",
+      text: "Your feedback has been successfully submitted.",
+    });
+  } catch (error) {
+    if (error.response) {
+      const { status, data } = error.response;
+      // Xử lý các lỗi dựa trên mã trạng thái và thông báo API trả về
+      switch (status) {
+        case 400:
+          DangerAlert({
+            title: "Invalid Input",
+            text: data?.message || "Invalid input or file format. Please check your data.",
+          });
+          break;
+        case 401:
+          DangerAlert({
+            title: "Unauthorized",
+            text: data?.message || "You need to log in to submit feedback.",
+          });
+          break;
+        case 403:
+          DangerAlert({
+            title: "Forbidden",
+            text: data?.message || "Your account is restricted or action is forbidden.",
+          });
+          break;
+        case 404:
+          DangerAlert({
+            title: "Not Found",
+            text: data?.message || "Product or order not found.",
+          });
+          break;
+        case 422:
+          DangerAlert({
+            title: "Invalid Data",
+            text: data?.message || "Unable to process your feedback due to invalid data.",
+          });
+          break;
+        case 500:
+          DangerAlert({
+            title: "Server Error",
+            text: data?.message || "An unexpected server error occurred. Please try again later.",
+          });
+          break;
+        default:
+          DangerAlert({
+            title: "Error",
+            text: data?.message || "An unknown error occurred. Please contact support.",
+          });
+          break;
+      }
+    } else {
+      // Lỗi kết nối hoặc lỗi không có phản hồi từ server
+      DangerAlert({
+        title: "Connection Error",
+        text: `Failed to connect to the server. Error: ${error.message}`,
+      });
+    }
+  }
+};
+
+
+
+const cancelOrder = async (idOrder) => {
+  try {
+    // Hiển thị xác nhận từ người dùng
+    const check = await ConfirmAlert({
+      title: "Xác nhận hủy đơn hàng",
+      text: "Bạn có chắc chắn muốn hủy đơn hàng này không?",
+      confirmText: "Xác nhận",
+      cancelText: "Hủy bỏ",
+    });
+
+    if (check) {
+      // Gửi yêu cầu hủy đơn hàng
+      await axiosInstance.put(`/user/orders/cancel-order`, null, {
+        params: { orderId: idOrder },
+      });
+
+      // Thông báo thành công
+      SuccessAlert({
+        title: "Thành công!",
+        text: "Đơn hàng của bạn đã được hủy.",
+      });
+    };
+  } catch (error) {
+    if (error.response) {
+      const { status, data } = error.response;
+      // Xử lý các lỗi dựa trên mã trạng thái và thông báo API trả về
+      switch (status) {
+        case 400:
+          DangerAlert({
+            title: "Lỗi dữ liệu",
+            text: data?.message || "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.",
+          });
+          break;
+        case 401:
+          DangerAlert({
+            title: "Chưa xác thực",
+            text: data?.message || "Bạn cần đăng nhập để thực hiện thao tác này.",
+          });
+          break;
+        case 403:
+          DangerAlert({
+            title: "Không có quyền",
+            text: data?.message || "Bạn không có quyền hủy đơn hàng này.",
+          });
+          break;
+        case 404:
+          DangerAlert({
+            title: "Không tìm thấy",
+            text: data?.message || "Đơn hàng không tồn tại hoặc đã bị xóa.",
+          });
+          break;
+        case 500:
+          DangerAlert({
+            title: "Lỗi hệ thống",
+            text: data?.message || "Có lỗi xảy ra trên hệ thống. Vui lòng thử lại sau.",
+          });
+          break;
+        default:
+          DangerAlert({
+            title: "Lỗi",
+            text: data?.message || "Đã xảy ra lỗi không xác định. Vui lòng liên hệ hỗ trợ.",
+          });
+          break;
+      }
+    } else {
+      // Lỗi kết nối hoặc lỗi không có phản hồi từ server
+      DangerAlert({
+        title: "Lỗi kết nối",
+        text: `Không thể kết nối đến máy chủ. Chi tiết lỗi: ${error.message}`,
+      });
+    }
+  }
+};
+
+
+
 const productApi = {
   getProds: search,
   getFilterAttribute,
@@ -442,6 +617,8 @@ const productApi = {
   getOrder,
   getFeedback,
   getRecommendedProducts,
-  getOrderStatus
+  getOrderStatus,
+  addFeedback,
+  cancelOrder
 };
 export default productApi;

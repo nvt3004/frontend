@@ -21,7 +21,8 @@ import { getProfile, updateUser } from "../../services/api/OAuthApi";
 import { format } from "date-fns";
 import moment from "moment";
 import productApi from "../../services/api/ProductApi";
-import AddReviewModal from "../../components/client/Review/AddReviewModal"
+import AddReviewModal from "../../components/client/Review/AddReviewModal";
+import { Await } from "react-router-dom";
 function getNameAddress(nameId) {
   return nameId.substring(nameId.indexOf(" "), nameId.length).trim();
 }
@@ -69,12 +70,66 @@ const Account = () => {
 
   const [status, setStatus] = useState([]); // Trạng thái đơn hàng
 
-
   const [showModal, setShowModal] = useState(false);
+
+  const [comment, setComment] = useState("");
+  const [photos, setPhotos] = useState([]);
+  const [rating, setRating] = useState(5);
+  const [error, setError] = useState("");
+
+  const [idProd, setIdProd] = useState(null);
+  const [idOrderDetail, setIdOrderDetail] = useState(null);
+
+  const handleCancelOrder = async (orderId) => {
+    await productApi.cancelOrder(orderId);
+  };
+
+  const resetForm = () => {
+    setComment("");
+    setPhotos([]);
+    setRating(5); // Giá trị mặc định của rating (5 sao).
+    setError("");
+  };
+
+  const handleFeedback = async (event) => {
+    event?.preventDefault();
+
+    // Validate form inputs
+    if (!rating) {
+      setError("Rating is required!");
+      return;
+    }
+    if (!comment) {
+      setError("Comment is required!");
+      return;
+    }
+    if (!idProd) {
+      setError("Invalid product ID!");
+      return;
+    }
+    if (!idOrderDetail) {
+      setError("Invalid order detail ID!");
+      return;
+    }
+
+    setError("");
+    try {
+      await productApi.addFeedback({
+        idProd,
+        idOrderDetail,
+        comment,
+        photos,
+        rating,
+      });
+      fetchOrders();
+      setShowModal(false);
+    } catch (error) {
+      setError("Failed to submit the review. Please try again.");
+    }
+  };
 
   const handleOpenModal = () => setShowModal(true);
   const handleCloseModal = () => setShowModal(false);
-
 
   const fetchStatus = async () => {
     try {
@@ -94,7 +149,7 @@ const Account = () => {
 
       setOrders(data?.content || []); // Lưu danh sách đơn hàng
       setTotalPages(data?.totalPages || 1); // Lưu tổng số trang
-      setPage(data?.number || 0); // Lưu trang hiện tại
+      setPage(data?.number || 0);
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -104,9 +159,18 @@ const Account = () => {
 
   // Gọi API khi component được render lần đầu tiên hoặc khi keyword/statusId thay đổi
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        fetchStatus();
+        setPage(0);
+        await fetchOrders();
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
     const timer = setTimeout(() => {
-      fetchStatus();
-      fetchOrders();
+      fetchData();
     }, 300);
 
     return () => clearTimeout(timer);
@@ -504,7 +568,19 @@ const Account = () => {
     <div
       className="container mt-5 pt-5 d-flex justify-content-center"
       style={styles.container}
-    >    <AddReviewModal show={showModal} onClose={handleCloseModal} />
+    >
+      <AddReviewModal
+        show={showModal}
+        onClose={() => setShowModal(false)}
+        comment={comment}
+        setComment={setComment}
+        photos={photos}
+        setPhotos={setPhotos}
+        rating={rating}
+        setRating={setRating}
+        handleSubmit={handleFeedback}
+        error={error}
+      />
       <div className="w-full">
         <div className="d-flex align-items-center bg-white shadow-sm rounded p-3 mb-4">
           <div>
@@ -574,12 +650,13 @@ const Account = () => {
               <div className="col-auto">
                 <select
                   className="form-select"
-                  value={statusId || ""}
-                  onChange={(e) =>
+                  defaultValue="" // Giá trị mặc định ban đầu
+                  onChange={(e) => {
+                    const selectedValue = e.target.value;
                     setStatusId(
-                      e.target.value ? parseInt(e.target.value, 10) : null
-                    )
-                  }
+                      selectedValue ? parseInt(selectedValue, 10) : null
+                    );
+                  }}
                 >
                   <option value="">All Statuses</option>
                   {status?.map((item) => (
@@ -629,9 +706,21 @@ const Account = () => {
                             </small>
                           </div>
                           <div>
+                            Tổng tiền hàng:
+                            {formatCurrencyVND(order.subTotal ?? "N/A")}
+                          </div>
+                          <div>
+                            Phí vận chuyển
+                            {formatCurrencyVND(order.shippingFee ?? "N/A")}
+                          </div>
+                          <div>
+                            Giảm giá:
+                            {formatCurrencyVND(order.discountValue ?? "N/A")}
+                          </div>
+                          <div>
                             <strong className="text-dark">
-                              Total:{" "}
-                              {formatCurrencyVND(order.totalPrice ?? "N/A")}
+                              Thành tiền:
+                              {formatCurrencyVND(order.finalTotal ?? "N/A")}
                             </strong>
                           </div>
                         </div>
@@ -656,6 +745,15 @@ const Account = () => {
                           >
                             {order.statusName}
                           </span>
+                          {order?.statusName === "Pending" && (
+                            <button
+                              type="button"
+                              className="btn btn-outline-danger mt-3"
+                              onClick={() => handleCancelOrder(order?.orderId)}
+                            >
+                              Hủy đơn
+                            </button>
+                          )}
 
                           {/* View Details */}
                           <button
@@ -712,11 +810,22 @@ const Account = () => {
                                   {formatCurrencyVND(product.price ?? "N/A")}
                                 </td>
                                 <td className="text-center">
-                                  <button className="btn btn-outline-secondary"
-                                  onClick={handleOpenModal}>
-                                    <i className="zmdi zmdi-comment-outline me-2"></i>{" "}
-                                    Bình luận
-                                  </button>
+                                  {product?.isFeedback && (
+                                    <button
+                                      className="btn btn-outline-secondary"
+                                      onClick={() => {
+                                        handleOpenModal();
+                                        setIdProd(product?.productId || null);
+                                        setIdOrderDetail(
+                                          product?.orderDetailId || null
+                                        );
+                                        resetForm();
+                                      }}
+                                    >
+                                      <i className="zmdi zmdi-comment-outline me-2"></i>{" "}
+                                      Bình luận
+                                    </button>
+                                  )}
                                 </td>
                               </tr>
                             ))}

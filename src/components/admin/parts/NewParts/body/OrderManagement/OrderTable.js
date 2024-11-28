@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+
 import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
 import { FaClipboardList, FaSearch, FaFileExport } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
@@ -11,7 +12,9 @@ import { FaTrash } from 'react-icons/fa';
 import { HiCheck } from 'react-icons/hi';
 import { ImCancelCircle } from 'react-icons/im';
 import moment from 'moment';
-import { motion } from 'framer-motion';
+import { useNavigate } from "react-router-dom";
+import { QRCodeSVG } from 'qrcode.react';
+import html2canvas from 'html2canvas';
 
 const OrderTable = () => {
     // START GET orders
@@ -20,18 +23,16 @@ const OrderTable = () => {
     const [totalPage, setTotalPage] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
     const [quantities, setQuantities] = useState({});
-    const [isAdminOrder, setIsAdminOrder] = useState(null);
     const [keyword, setKeyword] = useState(null);
     const [statusId, setStatusId] = useState(null);
     const [statusOptions, setStatusOptions] = useState([]);
     const [pageSize, setPageSize] = useState(5);
-
+    const navigate = useNavigate();
     const handleGetOrderAPI = () => {
         axiosInstance.get(`/staff/orders`, {
             params: {
                 page: currentPage,
                 size: pageSize,
-                isAdminOrder: isAdminOrder !== null ? isAdminOrder : undefined,
                 keyword: keyword || undefined,
                 statusId: statusId || undefined,
             }
@@ -41,26 +42,32 @@ const OrderTable = () => {
                     setOrders(response.data.data.content);
                     setTotalPage(response?.data?.data?.totalPages);
                     setTotalElements(response?.data?.data?.totalElements);
-                }
-                else {
-                    if (response?.data?.errorCode === 404) {
-                        setOrders([]);
-                        setTotalPage(0);
-                        setTotalElements(0);
-                    }
+                } else if (response?.data?.errorCode === 404) {
+                    setOrders([]);
+                    setTotalPage(0);
+                    setTotalElements(0);
+                    toast.error(response?.data?.message || 'No orders found.');
+                } else if (response?.data?.errorCode === 998) {
+                    toast.error(response?.data?.message || 'You do not have permission to access the order list.');
+                } else {
                     toast.error(response?.data?.message || 'Could not get order list. Please try again!');
                 }
             }
         ).catch(error => {
-            console.error("Error fetching orders:", error);
-            toast.error(error.response?.data?.message || "An error occurred while fetching order list.");
+            if (error.response?.status === 403) {
+                toast.error("Session expired. Redirecting to login...");
+                navigate('/auth/login');
+            } else {
+                console.error("Error fetching orders:", error);
+                toast.error(error.response?.data?.message || "An error occurred while fetching order list.");
+            }
         });
     };
 
 
     useEffect(() => {
         handleGetOrderAPI();
-    }, [currentPage, isAdminOrder, statusId, pageSize]);
+    }, [currentPage, statusId, pageSize]);
 
     const handleSetPage = (page) => {
         if (page !== currentPage) {
@@ -108,47 +115,56 @@ const OrderTable = () => {
     };
 
     const [orderStatus, setOrderStatus] = useState([]);
-    useEffect(
-        () => {
-            axiosInstance.get('/staff/orders/statuses').then(
-                (response) => {
-                    if (response.data?.errorCode === 200) {
-                        let status = response?.data?.data.map(item => {
-                            let color;
-                            // Loại bỏ khoảng trắng và chuyển về chữ thường cho statusName
-                            switch (item.statusName.trim().toLowerCase()) {
-                                case "pending":
-                                    color = "#FFFF33"; // Vàng
-                                    break;
-                                case "processed":
-                                    color = "#FF9933"; // Cam
-                                    break;
-                                case "shipped":
-                                    color = "#3399FF"; // Xanh dương nhạt
-                                    break;
-                                case "delivered":
-                                    color = "#33FF33"; // Xanh lá
-                                    break;
-                                case "cancelled":
-                                    color = "#FF3333"; // Đỏ
-                                    break;
-                                default:
-                                    color = "#E0E0E0"; // Xám cho Temp hoặc trạng thái không xác định
-                            }
-                            return {
-                                value: item.statusId,
-                                label: item.statusName,
-                                color: color
-                            };
-                        });
-                        setOrderStatus(status);
-                    } else {
-                        toast.error('Could not get the statuses. Please try again!');
-                    }
+    useEffect(() => {
+        axiosInstance.get('/staff/orders/statuses')
+            .then((response) => {
+                if (response.data?.errorCode === 200) {
+                    let status = response?.data?.data.map(item => {
+                        let color;
+                        // Loại bỏ khoảng trắng và chuyển về chữ thường cho statusName
+                        switch (item.statusName.trim().toLowerCase()) {
+                            case "pending":
+                                color = "#FFFF33"; // Vàng
+                                break;
+                            case "processed":
+                                color = "#FF9933"; // Cam
+                                break;
+                            case "shipped":
+                                color = "#3399FF"; // Xanh dương nhạt
+                                break;
+                            case "delivered":
+                                color = "#33FF33"; // Xanh lá
+                                break;
+                            case "cancelled":
+                                color = "#FF3333"; // Đỏ
+                                break;
+                            default:
+                                color = "#E0E0E0"; // Xám cho Temp hoặc trạng thái không xác định
+                        }
+                        return {
+                            value: item.statusId,
+                            label: item.statusName,
+                            color: color
+                        };
+                    });
+                    setOrderStatus(status);
+                } else if (response.data?.errorCode === 998) {
+                    toast.error(response.data?.message || 'You do not have permission to access statuses.');
+                } else {
+                    toast.error('Could not get the statuses. Please try again!');
                 }
-            )
-        }, []
-    );
+            })
+            .catch(error => {
+                if (error.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    console.error("Error fetching statuses:", error);
+                    toast.error(error.response?.data?.message || "An error occurred while fetching statuses.");
+                }
+            });
+    }, [navigate]);
+
     // END GET status
 
     // START HANDLE order
@@ -198,9 +214,10 @@ const OrderTable = () => {
             ]
         }
     );
+    const initialQuantitiesRef = useRef({});
     const handleGetOrderDetail = () => {
-        axiosInstance.get(`/staff/orders/${orderID?.value}`).then(
-            (response) => {
+        axiosInstance.get(`/staff/orders/${orderID?.value}`)
+            .then((response) => {
                 if (response?.data?.errorCode === 200) {
                     const temp = response?.data?.data?.orderDetail[0];
                     const initialQuantities = {};
@@ -213,7 +230,7 @@ const OrderTable = () => {
                             product: [
                                 {
                                     productID: item.productId,
-                                    productName: item?.productVersionName,
+                                    productName: item?.productName,
                                     productVersionID: item.productVersionId,
 
                                     productAttributes: {
@@ -258,6 +275,7 @@ const OrderTable = () => {
                         };
                     });
 
+                    initialQuantitiesRef.current = initialQuantities;
                     setQuantities(initialQuantities);
                     setOrderDetails({
                         orderId: temp?.orderId,
@@ -271,23 +289,29 @@ const OrderTable = () => {
                     setOrderDetails(null);
                     setOrderID(prev => ({ ...prev, isOpen: false }));
                     toast.error(response.data?.message || 'Could not get details of order. Please try again!');
+                } else if (response?.data?.errorCode === 998) {
+                    toast.error(response.data?.message || 'You do not have permission to view this order.');
                 } else {
                     toast.error(response.data?.message || 'Could not get details of order. Please try again!');
                 }
-            }
-        ).catch(error => {
-            console.error("Error fetching order details:", error);
-            if (error?.response?.status === 404) {
-                setOrderDetails(null);
-                console.log(orderID.isOpen + " orderID.isOpen");
-                setOrderID({ value: orderID.value, isOpen: false });
+            })
+            .catch(error => {
+                console.error("Error fetching order details:", error);
+                if (error?.response?.status === 404) {
+                    setOrderDetails(null);
+                    console.log(orderID.isOpen + " orderID.isOpen");
+                    setOrderID({ value: orderID.value, isOpen: false });
 
-                toast.error(error?.response.data?.message || 'Could not get details of order. Please try again!');
-            } else {
-                toast.error(error?.response?.data?.message || "An error occurred while fetching order details.");
-            }
-        });
+                    toast.error(error?.response.data?.message || 'Could not get details of order. Please try again!');
+                } else if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error?.response?.data?.message || "An error occurred while fetching order details.");
+                }
+            });
     };
+
     useEffect(() => {
         if (orderID.value) {
             handleGetOrderDetail();
@@ -313,13 +337,19 @@ const OrderTable = () => {
                             if (response.data?.errorCode === 200) {
                                 toast.success('Updated order status successfully!');
                                 handleGetOrderAPI();
+                            } else if (response.data?.errorCode === 998) {
+                                toast.error(response.data?.message || "Bạn không có quyền thay đổi trạng thái đơn hàng này.");
                             } else {
                                 toast.error(response.data?.message || 'Could not update status of the order. Please try again!');
                             }
                         })
                         .catch((error) => {
-                            console.error('Error:', error);
-                            toast.error(error.response?.data?.message || error.message || 'Could not update status of the order. Please try again!');
+                            if (error?.response?.status === 403) {
+                                toast.error("Session expired. Redirecting to login...");
+                                navigate('/auth/login');
+                            } else {
+                                toast.error(error.response?.data?.message || error.message || 'Could not update status of the order. Please try again!');
+                            }
                         });
                 }
             });
@@ -337,6 +367,7 @@ const OrderTable = () => {
     );
 
     const [isEditVersion, setEditVersion] = useState({ isEdit: '', orderDetailsID: '' });
+
     const handleSaveVersionChanges = (orderDetail) => {
         const { orderDetailId, product } = orderDetail;
         const { productID, orderVersionAttribute } = product[0];
@@ -355,19 +386,30 @@ const OrderTable = () => {
                     toast.success("Updated order detail successfully!");
                     handleGetOrderDetail();
                     setEditVersion({ isEdit: false, orderDetailsID: null });
+                } else if (response.data?.errorCode === 998) {
+                    console.log("Permission Denied:", response.data);
+                    toast.error(response.data?.message || "Bạn không có quyền thực hiện hành động này.");
                 } else {
                     console.log("Error Response:", response.data);
-                    toast.error(response.data?.errorMessage || "Could not update order detail. Please try again!");
+                    toast.error(response.data?.message || "Could not update order detail. Please try again!");
                 }
             })
             .catch((error) => {
                 console.error("Error updating order detail:", error);
-                toast.error("An error occurred while updating order detail.");
+                if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error?.response?.data?.message || "An error occurred while updating order detail.");
+                }
             });
     };
 
+
+
     const handleQuantityChange = (orderDetailId, productID, currentQuantity, change) => {
         const newQuantity = currentQuantity + change;
+
         if (newQuantity < 1) {
             toast.error("Quantity cannot be less than 1.");
             return;
@@ -382,15 +424,23 @@ const OrderTable = () => {
                         ...prevQuantities,
                         [`${orderDetailId}-${productID}`]: newQuantity,
                     }));
+                } else if (response.data?.errorCode === 998) {
+                    toast.error(response.data?.message || "You do not have permission to update the quantity.");
                 } else {
                     toast.error(response.data?.message || "Could not update quantity. Please try again!");
                 }
             })
             .catch((error) => {
                 console.error("Error updating quantity:", error);
-                toast.error(error.response.data?.message || "An error occurred while updating quantity.");
+                if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
+                }
             });
     };
+
 
     const handleQuantityInputChange = (orderDetailId, productID, newQuantity) => {
         setQuantities(prevQuantities => ({
@@ -401,8 +451,20 @@ const OrderTable = () => {
 
     const handleQuantityInputBlur = (orderDetailId, productID, newQuantity) => {
         newQuantity = parseInt(newQuantity, 10);
+        const currentQuantity = initialQuantitiesRef.current[`${orderDetailId}-${productID}`];
+        if (newQuantity === currentQuantity) {
+            setQuantities(prevQuantities => ({
+                ...prevQuantities,
+                [`${orderDetailId}-${productID}`]: currentQuantity,
+            }));
+            return;
+        }
         if (isNaN(newQuantity) || newQuantity < 1) {
             toast.error("Quantity must be a positive number.");
+            setQuantities(prevQuantities => ({
+                ...prevQuantities,
+                [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
+            }));
             return;
         }
 
@@ -414,15 +476,38 @@ const OrderTable = () => {
                         ...prevQuantities,
                         [`${orderDetailId}-${productID}`]: newQuantity,
                     }));
+                    initialQuantitiesRef.current[`${orderDetailId}-${productID}`] = newQuantity;
+                    handleGetOrderDetail();
+                } else if (response.data?.errorCode === 998) {
+                    toast.error(response.data?.message || "Bạn không có quyền thực hiện hành động này.");
+                    setQuantities(prevQuantities => ({
+                        ...prevQuantities,
+                        [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
+                    }));
                 } else {
+                    setQuantities(prevQuantities => ({
+                        ...prevQuantities,
+                        [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
+                    }));
                     toast.error(response.data?.message || "Could not update quantity. Please try again!");
                 }
             })
             .catch(error => {
+                setQuantities(prevQuantities => ({
+                    ...prevQuantities,
+                    [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
+                }));
                 console.error("Error updating quantity:", error);
-                toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
+                if (error?.response?.status === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
+                }
             });
     };
+
+
 
     const handleKeyPress = (e, orderDetailId, productID, newQuantity) => {
         if (e.key === 'Enter') {
@@ -430,17 +515,10 @@ const OrderTable = () => {
         }
     };
 
-    const isAdminOrderOptions = [
-        { value: true, label: 'Admin Orders' },
-        { value: false, label: 'User Orders' },
-        { value: null, label: 'All Orders' }
-    ];
-
     useEffect(() => {
         const fetchStatuses = async () => {
             try {
-                const response = await axiosInstance.get('/staff/orders/statuses', {
-                });
+                const response = await axiosInstance.get('/staff/orders/statuses');
 
                 if (response?.data?.errorCode === 200) {
                     const statuses = response.data.data;
@@ -455,24 +533,34 @@ const OrderTable = () => {
                     });
 
                     setStatusOptions(formattedOptions);
+                } else if (response?.data?.errorCode === 998) {
+                    toast.error(response?.data?.message || "Bạn không có quyền thực hiện hành động này.");
                 }
             } catch (error) {
                 console.error("Error fetching statuses:", error);
+
+                const errorCode = error?.response?.status || error.response?.data?.code;
+                const errorMessage = error?.response?.data?.message || error.message;
+
+                if (errorCode === 403) {
+                    toast.error("Session expired. Redirecting to login...");
+                    navigate('/auth/login');
+                } else {
+                    toast.error(errorMessage || "An error occurred while fetching statuses.");
+                }
             }
         };
 
         fetchStatuses();
     }, []);
 
+
+
     const handleChange = (event, type) => {
 
         const value = event ? event.target ? event.target.value : event.value : null;
         setCurrentPage(0);
-
         switch (type) {
-            case 'adminOrder':
-                setIsAdminOrder(value);
-                break;
             case 'status':
                 setStatusId(value);
                 break;
@@ -490,18 +578,16 @@ const OrderTable = () => {
         { value: 15, label: '15' },
         { value: 20, label: '20' }
     ];
-
     const handleExport = async () => {
         try {
             const response = await axiosInstance.get('/staff/orders/export', {
                 params: {
                     page: currentPage,
                     size: pageSize,
-                    isAdminOrder: isAdminOrder !== null ? isAdminOrder : undefined,
                     keyword: keyword || undefined,
                     statusId: statusId || undefined,
                 },
-                responseType: 'blob',  // Nhận dữ liệu dưới dạng file
+                responseType: 'blob', // Nhận dữ liệu dưới dạng file
             });
 
             // Tạo URL cho file Excel
@@ -510,19 +596,31 @@ const OrderTable = () => {
             // Tạo một link tạm thời để tải file
             const link = document.createElement('a');
             link.href = fileURL;
-            link.setAttribute('download', 'orders.xlsx');  // Tên file tải xuống
+            link.setAttribute('download', 'orders.xlsx'); // Tên file tải xuống
             document.body.appendChild(link);
             link.click();
 
             // Xóa link sau khi tải
             document.body.removeChild(link);
-            handleGetOrderDetail();
             toast.success('Xuất file thành công');
         } catch (error) {
             console.error('Error exporting orders:', error);
-            toast.error('There was an error exporting the orders.');
+
+            const errorCode = error?.response?.status || error.response?.data?.code;
+            const errorMessage = error?.response?.data?.message || error.message;
+
+            if (errorCode === 998) {
+                toast.error(errorMessage || "Bạn không có quyền thực hiện hành động này.");
+            } else if (errorCode === 403) {
+                toast.error("Session expired. Redirecting to login...");
+                navigate('/auth/login');
+            } else {
+                toast.error(errorMessage || 'Có lỗi xảy ra khi xuất đơn hàng.');
+            }
         }
     };
+
+
 
     const handleDeleteOrderDetail = async (orderId, orderDetailId) => {
         Swal.fire({
@@ -551,11 +649,25 @@ const OrderTable = () => {
                         toast.error(`Error: ${response.data.message}`);
                     }
                 } catch (error) {
-                    toast.error(`An error occurred: ${error.response?.data?.message || error.message}`);
+                    console.error("Error deleting order detail:", error);
+
+                    const errorCode = error?.response?.status || error.response?.data?.code;
+                    const errorMessage = error?.response?.data?.message || error.message;
+
+                    if (errorCode === 998) {
+                        toast.error(errorMessage || "You do not have permission to perform this action.");
+                    } else if (errorCode === 403) {
+                        toast.error("Session expired. Redirecting to login...");
+                        navigate('/auth/login');
+                    } else {
+                        toast.error(`An error occurred: ${errorMessage}`);
+                    }
                 }
             }
         });
     };
+
+
 
     const handleKeywordChange = (e) => {
         setKeyword(e.target.value);
@@ -568,7 +680,7 @@ const OrderTable = () => {
         return () => clearTimeout(timer);
     }, [keyword]);
 
-    const handleSelectChange = (orderDetail, item, attribute, selectedOption) => {
+    const handleSelectChange = async (orderDetail, item, attribute, selectedOption) => {
         // Cập nhật giá trị mới vào state
         setOrderDetails((prevOrderDetails) => {
             const updatedOrderDetails = { ...prevOrderDetails };
@@ -590,7 +702,268 @@ const OrderTable = () => {
         });
     };
 
-    // END HANDLE order
+    const componentRef = React.useRef();
+    const handlePrint = () => {
+        const printContents = componentRef.current.innerHTML;
+        const width = 900;
+        const height = 650;
+
+        // Tính toán vị trí để cửa sổ xuất hiện ở giữa
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
+
+        const printWindow = window.open('', '', `width=${width},height=${height},top=${top},left=${left}`);
+
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Invoice</title>
+                    <style>
+
+                        /*@page {
+                            size: 8.5in 11in; /* Kích thước tương đương Letter */
+                            margin: 1in; /* Lề trên, dưới, trái, phải đều 1 inch */
+                        }*/
+
+                      
+                        body {
+                            font-size: 12px;
+                            color: #333;
+                            margin: 0;
+                            padding: 0;
+                          /*  transform: scale(1); */
+                          /* Giảm kích thước nội dung */
+                        }
+
+                        h3 {
+                            text-align: center;
+                            color: #444;
+                            margin-bottom: 20px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 20px;
+                        }
+
+                        .no-print {
+                            display: none !important;
+                        }
+                        .product-name {
+                            max-width: 150px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                        .order-table-img {
+                            max-width: 120px;
+                            max-height: 80px;
+                            width: auto;
+                            height: auto;
+                            object-fit: contain;
+                        }
+                        .custom-button {
+                            display: none;
+                        }
+                        .order-summary td {
+                            font-weight: bold;
+                        }
+                        .order-summary {
+                            margin-top: 20px;
+                        }
+                    
+                       .print-text-wrap {
+                                white-space: normal !important;
+                                word-wrap: break-word !important;
+                                overflow: visible !important;
+                       }
+                        
+                       table {
+                        width: 100%;
+                        border-collapse: collapse;  /* Hợp nhất các đường viền */
+                    }
+
+                    th, td {
+                        border: 1px solid #000; 
+                        padding: 8px; 
+                        text-align: left; 
+                        word-wrap: break-word;
+                    }                      
+
+                  
+                    th:nth-child(2),
+                    td:nth-child(2) {
+                        width: auto !important; 
+                    }
+
+                    th:nth-child(3),
+                    td:nth-child(3) {
+                        width: 80px !important; 
+                    }
+                    
+                    
+                    th:nth-child(5),
+                    td:nth-child(5) {
+                        width: 100px !important; 
+                    }
+
+
+                    /*Cột quantity*/
+                    th:nth-child(7),
+                    td:nth-child(7) {
+                         width: 10px !important; 
+                    }
+
+                    /*Cột tiền*/
+                    th:nth-child(8),
+                    td:nth-child(8) {
+                         width: 150px !important; 
+                    }
+                            
+                    .print {
+                        display: table-row !important;
+                    }
+                    .no-print {
+                        display: none !important;
+                    }
+
+                    .text-center {
+                        text-align: center;
+                    }
+
+                     .text-right {
+                        text-align: right;
+                    }
+
+                    th {
+                        background-color: #f8f8f8;
+                        font-weight: bold;
+                    }
+
+                    tr {
+                        page-break-inside: avoid;  /* Tránh chia cắt các dòng khi in */
+                    }
+                    .quantity-custom{
+                        background: none !important;
+                        box-shadow: none !important; 
+                        border: none !important; 
+                        text-align: center !important; 
+                        padding: 0;
+                    }
+                      
+                    .print-width {
+                        width: 600px !important;
+                    }
+                    .qr-code {
+                    position: absolute;
+                    top: 0px;  
+                    left: 0px; 
+                    text-align: left;
+                    padding: 10px;
+                    border: 1px solid pink;
+                    border-radius: 5px;
+                }
+           
+
+                    </style>
+                </head>
+                <body>
+                ${printContents}
+                </body>
+            </html>
+        `);
+
+        const checkIfAllImagesLoaded = async (images) => {
+            let loadedImagesCount = 0;
+
+            const imageLoadHandler = async () => {
+                loadedImagesCount++;
+                if (loadedImagesCount === images.length) {
+                    printWindow.document.close();
+                    printWindow.print();
+                    printWindow.close();
+                }
+            };
+
+            if (images.length > 0) {
+                for (let img of images) {
+                    if (img.complete) {
+                        imageLoadHandler();
+                    } else {
+                        img.onload = imageLoadHandler;
+                        img.onerror = imageLoadHandler;
+                    }
+                }
+            } else {
+                printWindow.document.close();
+                printWindow.print();
+                printWindow.close();
+            }
+        };
+
+        const images = printWindow.document.images;
+        checkIfAllImagesLoaded(images);
+    };
+
+    // const handlePrint = async () => {
+    //     try {
+    //         if (componentRef.current) {
+    //             console.log('Component content:', componentRef.current.innerHTML);
+
+    //             const elements = document.querySelectorAll('.d-none'); elements.forEach(element => element.classList.remove('d-none')); const canvas = await html2canvas(componentRef.current); const imgData = canvas.toDataURL('image/png'); const width = 900; const height = 650; elements.forEach(element => element.classList.add('d-none'));
+    //             // Tính toán vị trí để cửa sổ xuất hiện ở giữa
+    //             const left = (window.screen.width - width) / 2;
+    //             const top = (window.screen.height - height) / 2;
+
+    //             const printWindow = window.open('', '', `width=${width},height=${height},top=${top},left=${left}`);
+    //             printWindow.document.write(`
+    //                 <html>
+    //                     <head>
+    //                         <title>Invoice</title>
+    //                         <style>
+    //                             body {
+    //                                 font-size: 12px;
+    //                                 color: #333;
+    //                                 margin: 0;
+    //                                 padding: 0;
+    //                             }
+    //                             img {
+    //                                 width: 100%;
+    //                                 height: auto;
+    //                             }
+    //                         </style>
+    //                     </head>
+    //                     <body>
+    //                         <img src="${imgData}" />
+    //                     </body>
+    //                 </html>
+    //             `);
+
+    //             printWindow.document.close();
+    //             printWindow.focus();
+    //             printWindow.print();
+    //             printWindow.close();
+    //         } else {
+    //             console.log('Component ref is undefined');
+    //         }
+    //     } catch (error) {
+    //         console.log('Error generating canvas:', error);
+    //     }
+    // };
+
+    function formatDiscount(discount) {
+        if (!discount) return '0 VND';
+
+        if (typeof discount === 'string' && discount.includes('%')) {
+            return discount;
+        }
+
+        const numericValue = parseFloat(discount.replace(/[^\d.-]/g, ''));
+        return `${numericValue.toLocaleString('vi-VN')} VND`;
+    }
+
+    const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://domain.com';
+    const qrCodeValue = `${baseUrl}`;
 
     return (
         <div>
@@ -612,15 +985,7 @@ const OrderTable = () => {
                             </InputGroup>
                         </div>
 
-                        <div className='d-flex justify-content-between align-items-center' style={{ width: "55%" }}>
-                            <Select
-                                className="w-20 mx-3"
-                                options={isAdminOrderOptions}
-                                placeholder="Admin Order"
-                                onChange={(selectedOption) => handleChange(selectedOption, 'adminOrder')}
-                                isClearable
-                            />
-
+                        <div className='d-flex justify-content-between align-items-center' style={{ width: "40%" }}>
                             <Select
                                 className="w-20 mx-3"
                                 options={statusOptions}
@@ -645,8 +1010,6 @@ const OrderTable = () => {
                             </Button>
                         </div>
                     </div>
-
-
 
                 </div>
                 <div>
@@ -706,41 +1069,81 @@ const OrderTable = () => {
                                                         textColor={'white'}
                                                         handleClick={() => toggleOrderDetails(order)}
                                                     />
-
                                                 </td>
                                             </tr>
-                                            {(orderID?.value === order?.orderId && orderID.isOpen && orderDetails) &&
+                                            {(orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail) &&
                                                 (
                                                     <tr>
-                                                        <td colSpan={7}>
+                                                        <td colSpan={7} ref={componentRef}>
+                                                            <div className='d-none qr-code'>
+                                                                <h3 style={{ textAlign: 'left', margin: '0 0 10px 0' }}>Mã QR hóa đơn</h3>
+                                                                <QRCodeSVG
+                                                                    value={`${qrCodeValue}/orders/${order.orderId}`}
+                                                                    size={100}
+                                                                    level="H"
+                                                                    style={{ border: '1px solid black' }}
+                                                                />
+                                                                <p style={{ margin: '10px 0 0 0' }}>Quét mã QR để xem hóa đơn trực tuyến</p>
+                                                            </div>
+                                                            <div className='d-none' style={{ padding: '0 20px 20px 20px', borderBottom: '1px solid #ddd', marginBottom: '20px' }}>
+                                                                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                                                    <h3 style={{ fontSize: '24px', fontWeight: 'bold' }}>HÓA ĐƠN BÁN HÀNG</h3>
+                                                                    <img src="/images/logo.png" alt="Company Logo" style={{ width: '100px', marginBottom: '20px' }} />
+                                                                    <p><strong>Công ty TNHH Step To The Future</strong></p>
+                                                                    <p>Địa chỉ: Đ. Số 22, Thường Thạnh, Cái Răng, Cần Thơ, Việt Nam</p>
+                                                                    <p>Số điện thoại: 098 388 11 00</p>
+                                                                    <p>Email: caodangfptcantho@gmail.com</p>
+                                                                </div>
+
+                                                                <div className='d-flex' style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                                                    {/* Thông tin khách hàng */}
+                                                                    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '48%' }}>
+                                                                        <p><strong>Thông tin khách hàng</strong></p>
+                                                                        <p>Tên khách hàng: {order?.fullname || 'N/A'}</p>
+                                                                        <p>Địa chỉ: {order?.address || 'N/A'}</p>
+                                                                        <p>Số điện thoại: {order?.phone || 'N/A'}</p>
+                                                                    </div>
+
+                                                                    {/* Thông tin đơn hàng */}
+                                                                    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '48%' }}>
+                                                                        <p><strong>Thông tin đơn hàng</strong></p>
+                                                                        <p>Ngày đặt hàng: {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
+                                                                        <p>Ngày giao hàng dự kiến: {moment(order?.deliveryDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
+                                                                        <p>Phương thức thanh toán: {order?.paymentMethod || 'N/A'}</p>
+                                                                        <p>Tổng tiền:  {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}</p>
+                                                                        <p>Trạng thái: {order?.statusName || 'N/A'}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
                                                             <Table hover striped>
                                                                 <thead>
-                                                                    <th>#</th>
-                                                                    <th style={{ width: '100px' }}>Product</th>
-                                                                    <th style={{ width: '150px' }}></th>
-                                                                    <th colSpan={2} className='text-center'>Attributes</th>
-                                                                    <th>Unit price</th>
-                                                                    <th>Quantity</th>
-                                                                    <th>Total</th>
-                                                                    <th colSpan={2}></th>
+                                                                    <th className='text-center'>#</th>
+                                                                    <th style={{ width: '270px' }} className='text-center'>Product</th>
+                                                                    <th style={{ width: '150px' }} className='text-center'></th>
+                                                                    <th colSpan={2} className='text-center no-print'>Attributes</th>
+                                                                    <th className='text-center'>Unit price</th>
+                                                                    <th className='text-center'>Quantity</th>
+                                                                    <th className='text-center'>Total</th>
+                                                                    <th colSpan={2} className='no-print' ></th>
                                                                 </thead>
                                                                 <tbody>
-                                                                    {orderDetails?.orderDetail?.map((orderDetailItem) => (
-                                                                        orderDetailItem?.product.map((item) => (
+                                                                    {orderDetails?.orderDetail?.map((orderDetail) => (
+                                                                        orderDetail?.product.map((item) => (
                                                                             <tr key={item.productID} className='custom-table'>
-                                                                                <td>{orderDetails?.orderDetail.indexOf(orderDetailItem) + 1}</td>
+                                                                                <td >{orderDetails?.orderDetail.indexOf(orderDetail) + 1}</td>
                                                                                 <td style={{
                                                                                     maxWidth: '150px',
                                                                                     overflow: 'hidden',
                                                                                     textOverflow: 'ellipsis',
                                                                                     whiteSpace: 'nowrap'
-                                                                                }}>
-                                                                                    {item?.productName}
+                                                                                }} className="print-text-wrap p-1">
+                                                                                    {item?.productName} <span> - [{item?.orderVersionAttribute?.color?.label} - {item?.orderVersionAttribute?.size?.label}]</span>
                                                                                 </td>
 
-                                                                                <td className='d-flex justify-content-center'>
+                                                                                <td className='d-flex justify-content-center text-center p-1'>
                                                                                     <img
-                                                                                        src={item?.imageUrl}
+                                                                                        src={item?.imageUrl || '/images/default-image.png'}
                                                                                         alt={item?.productName}
                                                                                         style={{
                                                                                             maxWidth: '120px',
@@ -752,48 +1155,50 @@ const OrderTable = () => {
                                                                                     />
                                                                                 </td>
 
-                                                                                {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetailItem.orderDetailId ? (
+                                                                                {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
                                                                                     <React.Fragment>
-                                                                                        <td>
+                                                                                        <td className="no-print text-center p-1">
                                                                                             <Select
                                                                                                 options={item?.productAttributes?.colors}
                                                                                                 value={item?.orderVersionAttribute?.color}
-                                                                                                onChange={selectedOption => handleSelectChange(orderDetailItem, item, 'color', selectedOption)}
+                                                                                                onChange={selectedOption => handleSelectChange(orderDetail, item, 'color', selectedOption)}
                                                                                             />
                                                                                         </td>
-                                                                                        <td>
+
+                                                                                        <td className='no-print text-center p-1'>
                                                                                             <Select
                                                                                                 options={item?.productAttributes?.sizes}
                                                                                                 value={item?.orderVersionAttribute?.size}
-                                                                                                onChange={selectedOption => handleSelectChange(orderDetailItem, item, 'size', selectedOption)}
+                                                                                                onChange={selectedOption => handleSelectChange(orderDetail, item, 'size', selectedOption)}
                                                                                             />
                                                                                         </td>
                                                                                     </React.Fragment>
                                                                                 ) : (
                                                                                     <React.Fragment>
-                                                                                        <td>{item?.orderVersionAttribute?.color?.label}</td>
-                                                                                        <td>{item?.orderVersionAttribute?.size?.label}</td>
+                                                                                        <td className='no-print text-center p-1'>{item?.orderVersionAttribute?.color?.label}</td>
+                                                                                        <td className='no-print text-center p-1'>{item?.orderVersionAttribute?.size?.label}</td>
                                                                                     </React.Fragment>
                                                                                 )}
 
-                                                                                <td>{`${item?.price} VND`}</td>
+                                                                                <td className='text-center p-1'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
 
-                                                                                <td>
+
+                                                                                <td className='text-center p-1'>
                                                                                     {order?.statusName === 'Pending' ? (
-                                                                                        <div className='d-flex align-items-center'>
-                                                                                            <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetailItem.orderDetailId, item.productID, item.quantity, -1)}>
+                                                                                        <div className='d-flex justify-content-center'>
+                                                                                            <Button className='no-print' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}>
                                                                                                 -
                                                                                             </Button>
                                                                                             <input
                                                                                                 type="text"
-                                                                                                className="mx-2"
-                                                                                                value={quantities[`${orderDetailItem.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetailItem.orderDetailId}-${item.productID}`] : item.quantity}
-                                                                                                onChange={(e) => handleQuantityInputChange(orderDetailItem.orderDetailId, item.productID, e.target.value)}
-                                                                                                onBlur={(e) => handleQuantityInputBlur(orderDetailItem.orderDetailId, item.productID, e.target.value)}
-                                                                                                onKeyDown={(e) => handleKeyPress(e, orderDetailItem.orderDetailId, item.productID, e.target.value)}
+                                                                                                className="mx-2 text-center quantity-custom"
+                                                                                                value={quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetail.orderDetailId}-${item.productID}`] : item.quantity}
+                                                                                                onChange={(e) => handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)}
+                                                                                                onBlur={(e) => handleQuantityInputBlur(orderDetail.orderDetailId, item.productID, e.target.value)}
+                                                                                                onKeyDown={(e) => handleKeyPress(e, orderDetail.orderDetailId, item.productID, e.target.value)}
                                                                                                 style={{ width: '50px', textAlign: 'center' }}
                                                                                             />
-                                                                                            <Button variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetailItem.orderDetailId, item.productID, item.quantity, 1)}>
+                                                                                            <Button className='no-print' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}>
                                                                                                 +
                                                                                             </Button>
                                                                                         </div>
@@ -802,21 +1207,21 @@ const OrderTable = () => {
                                                                                     )}
                                                                                 </td>
 
-                                                                                <td>{`${item?.total} VND`}</td>
+                                                                                <td className='text-end text-right'>{`${(item?.total || 0).toLocaleString('vi-VN')} VND`}</td>
 
                                                                                 {order?.statusName === 'Pending' &&
-                                                                                    (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetailItem.orderDetailId ? (
-                                                                                        <React.Fragment>
-                                                                                            <td>
+                                                                                    (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                        <React.Fragment style={{ width: '50px !important' }}>
+                                                                                            <td className='no-print p-1 text-center'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'success'}
                                                                                                     btnType={'button'}
                                                                                                     textColor={'text-white'}
                                                                                                     btnName={<HiCheck />}
-                                                                                                    handleClick={() => handleSaveVersionChanges(orderDetailItem)}
+                                                                                                    handleClick={() => handleSaveVersionChanges(orderDetail)}
                                                                                                 />
                                                                                             </td>
-                                                                                            <td>
+                                                                                            <td className='no-print p-1 text-center'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'danger'}
                                                                                                     btnType={'button'}
@@ -827,28 +1232,24 @@ const OrderTable = () => {
                                                                                             </td>
                                                                                         </React.Fragment>
                                                                                     ) : (
-                                                                                        <React.Fragment>
-                                                                                            {
-                                                                                                orderDetails?.orderDetail?.length > 1 && (
-                                                                                                    <td>
-                                                                                                        <CustomButton
-                                                                                                            btnBG={'danger'}
-                                                                                                            btnType={'button'}
-                                                                                                            textColor={'text-white'}
-                                                                                                            btnName={<FaTrash />}
-                                                                                                            handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetailItem?.orderDetailId)}
-                                                                                                        />
-                                                                                                    </td>
-                                                                                                )
-                                                                                            }
+                                                                                        <React.Fragment style={{ width: '50px !important' }}>
+                                                                                            <td className='no-print p-1 text-center'>
+                                                                                                <CustomButton
+                                                                                                    btnBG={'danger'}
+                                                                                                    btnType={'button'}
+                                                                                                    textColor={'text-white'}
+                                                                                                    btnName={<FaTrash />}
+                                                                                                    handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
+                                                                                                />
+                                                                                            </td>
 
-                                                                                            <td>
+                                                                                            <td className='no-print p-1 text-center'>
                                                                                                 <CustomButton
                                                                                                     btnBG={'warning'}
                                                                                                     btnType={'button'}
                                                                                                     textColor={'text-white'}
                                                                                                     btnName={<MdModeEdit />}
-                                                                                                    handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetailItem.orderDetailId })}
+                                                                                                    handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
                                                                                                 />
                                                                                             </td>
                                                                                         </React.Fragment>
@@ -856,37 +1257,88 @@ const OrderTable = () => {
                                                                             </tr>
                                                                         ))
                                                                     ))}
-                                                                    <tr>
-                                                                        <td colSpan={8} style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
-                                                                        <td>{`${orderDetails?.orderDetail?.reduce((total, orderDetail) => total + orderDetail.product.reduce((subTotal, item) => subTotal + item.total, 0), 0)} VND`}</td>
+                                                                    <tr className='no-print'>
+                                                                        <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
+                                                                        <td className='text-end'>
+                                                                            {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
                                                                     </tr>
-                                                                    <tr>
-                                                                        <td colSpan={8} style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
-                                                                        <td>{`${order?.shippingFee ? order?.shippingFee : 0} VND`}</td>
+                                                                    <tr className='no-print'>
+                                                                        <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
+                                                                        <td className='text-end'>
+                                                                            {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
                                                                     </tr>
-                                                                    <tr>
-                                                                        <td colSpan={8} style={{ textAlign: 'right', fontWeight: 'bold' }}>Giảm giá:</td>
-                                                                        <td>{`${order?.disCount || 0} VND`}</td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td colSpan={8} style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
-                                                                        <td>{`${(
-                                                                            (orderDetails?.orderDetail?.reduce((total, orderDetail) => total + orderDetail.product.reduce((subTotal, item) => subTotal + item.total, 0), 0) || 0) +
-                                                                            (order?.shippingFee || 0) -
-                                                                            (order?.disCount || 0)
-                                                                        ).toLocaleString()} VND`}</td>
+                                                                    <tr className='no-print'>
+                                                                        <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                                                                            Giảm giá: ({formatDiscount(order?.disCount)})
+                                                                        </td>
+                                                                        <td className='text-end'>
+                                                                            {`${(order?.discountValue || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
                                                                     </tr>
 
+                                                                    <tr className='no-print'>
+                                                                        <td colSpan={7} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
+                                                                        <td className='text-end'>
+                                                                            {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
+                                                                    </tr>
+
+                                                                    {/* Đoạn để hiển thị print đơn hàng */}
+                                                                    <tr className='print d-none'>
+                                                                        <td rowSpan={4} colSpan={3} className='text-center'>
+                                                                            <div class="row mt-5 pt-5 border-top">
+                                                                                <div class="col-12 text-center" style={{ color: '#71bdd8' }}>
+                                                                                    <h1 class="display-4 font-weight-bold text-primary">
+                                                                                        Cảm ơn {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} {order?.fullname}!
+                                                                                    </h1>
+                                                                                    <p class="lead">
+                                                                                        Chúng tôi rất cảm kích vì {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} đã đặt hàng.
+                                                                                        Chúng tôi hy vọng được tiếp tục phục vụ {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} trong những lần mua sắm tiếp theo.
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
+
+                                                                        </td>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
+                                                                        <td className='text-right print-width' style={{ width: '600px' }}>
+                                                                            {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr className='print d-none'>
+                                                                        <td colSpan={2} className='reduce-colspan deo-print' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Phí vận chuyển:</td>
+                                                                        <td className='text-right print-width' style={{ width: '200px' }}>
+                                                                            {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr className='print d-none'>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Giảm giá: ({formatDiscount(order?.disCount)})</td>
+                                                                        <td className='text-right'>
+                                                                            {`${(order?.discountValue || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr className='print d-none'>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Tổng cộng:</td>
+                                                                        <td className='text-right'>
+                                                                            {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
+                                                                        </td>
+                                                                    </tr>
                                                                     <tr>
-                                                                        <td colSpan={9} style={{ textAlign: 'right' }}>
-                                                                            <button className="btn btn-primary">
+                                                                        <td className='d-none text-center' colSpan={7}>
+                                                                            Tổng cộng bằng chữ: {order?.finalTotalInWords || "Không có dữ liệu"}
+                                                                        </td>
+                                                                    </tr>
+
+                                                                    <tr className='no-print'>
+                                                                        <td colSpan={8} style={{ textAlign: 'right' }}>
+
+                                                                            <button className="btn btn-primary" onClick={handlePrint}>
                                                                                 Xuất hóa đơn
                                                                             </button>
                                                                         </td>
                                                                     </tr>
-
                                                                 </tbody>
-
                                                             </Table>
                                                         </td>
                                                     </tr>
@@ -901,10 +1353,7 @@ const OrderTable = () => {
                     </Table>
                     <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
                         <p className='font-13'>{`${(currentPage + 1) * 5 <= totalElements ? (currentPage + 1) * 5 : totalElements} of ${totalElements} `}
-                            <span>
-                                <motion.a initial={{ color: '#29B6F6' }} className='text-decoration-none fw-medium' 
-                                    onClick={() => { setPageSize(totalElements) }}>{`View all >`}</motion.a>
-                            </span>
+                            <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span>
                         </p>
                         <Pagination className='border-0'>
                             <Pagination.First>{`<`}</Pagination.First>

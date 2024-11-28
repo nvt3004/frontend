@@ -26,6 +26,7 @@ import PermissionManagement from "../components/admin/parts/PermissionManagement
 import NewPermission from "../components/admin/parts/NewPermission";
 import FeedbackManagement from "../components/admin/parts/FeedbackManagement";
 import CustomerTable from "../components/admin/parts/NewParts/body/CustomerManagement/CustomerTable";
+import ReceiptDetail from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptDetail";
 
 // Auth Pages
 import AuthLayout from "../layouts/AuthLayout";
@@ -50,6 +51,7 @@ import OrderTable from "../components/admin/parts/NewParts/body/OrderManagement/
 import CouponTable from "../components/admin/parts/NewParts/body/CouponManagement/CouponTable";
 import AdvertisementTable from "../components/admin/parts/NewParts/body/AdvertisementManagement/AdvertisementTable";
 import NewAdvertisement from "../components/admin/parts/NewParts/body/AdvertisementManagement/NewAdvertisement";
+import OrderDetail from "../components/admin/parts/NewParts/body/OrderManagement/OrderDetail";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -59,7 +61,6 @@ const router = createBrowserRouter([
       { path: "/home", element: <Home /> },
       { path: "/product", element: <Product /> },
       { path: "/product-detail/:id", element: <ProductDetail /> },
-
       { path: "/product-detail", element: <ProductDetail /> },
       {
         path: "/shoping-cart",
@@ -185,6 +186,7 @@ const router = createBrowserRouter([
         children: [
           { path: "manage", element: <ReceiptList /> },
           { path: "stockin", element: <StockIn /> },
+          { path: "detail", element: <ReceiptDetail /> },
         ],
       },
       {
@@ -231,6 +233,7 @@ const router = createBrowserRouter([
   },
   { path: "/pm-success", element: <PaymentSuccess /> },
   { path: "/pm-cancel", element: <PaymentCancel /> },
+  { path: "/orders/:orderId", element: <OrderDetail /> },
 ]);
 
 function AppRoutes() {
