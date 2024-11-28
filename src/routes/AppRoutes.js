@@ -48,6 +48,8 @@ import UpdateProduct from "../components/admin/parts/NewParts/body/ProductManage
 import ReceiptList from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptList";
 import OrderTable from "../components/admin/parts/NewParts/body/OrderManagement/OrderTable";
 import CouponTable from "../components/admin/parts/NewParts/body/CouponManagement/CouponTable";
+import AdvertisementTable from "../components/admin/parts/NewParts/body/AdvertisementManagement/AdvertisementTable";
+import NewAdvertisement from "../components/admin/parts/NewParts/body/AdvertisementManagement/NewAdvertisement";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -189,6 +191,13 @@ const router = createBrowserRouter([
         path: "coupon",
         children: [
           { path: "manage", element: <CouponTable /> },
+        ],
+      },
+      {
+        path: "advertisement",
+        children: [
+          { path: "new", element: <NewAdvertisement /> },
+          { path: "manage", element: <AdvertisementTable /> },
         ],
       },
       {

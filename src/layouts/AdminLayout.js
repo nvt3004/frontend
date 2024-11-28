@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Dropdown } from "react-bootstrap";
 import { HiUserCircle } from "react-icons/hi";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, Navigate } from "react-router-dom";
 import { getProfile } from "../services/api/OAuthApi";
 import { FaAdversal } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import {
   CaretDown,
   CaretLeft,
@@ -93,7 +95,11 @@ const menus = [
         id: "14",
         label: "Advertisement",
         icon: <FaAdversal  />,
-        link: "/admin/coupon/manage",
+        // link: "/admin/advertisement/manage",
+        subItems: [
+          {id: '15', label: 'New', link: "/admin/advertisement/new"},
+          {id: '16', label: 'Manage', link: "/admin/advertisement/manage"}
+        ],
       }
     ],
   },
@@ -117,6 +123,7 @@ const AdminLayout = () => {
   const [activeSubMenuId, setActiveSubMenuId] = useState(null);
   const [sidebarActive, setSidebarActive] = useState(false);
   const [profile, setProfile] = useState();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -130,6 +137,13 @@ const AdminLayout = () => {
 
     fetchProfile();
   }, []);
+
+  const handleLogout = () => {
+    Cookies.remove("token"); // Remove the token
+    Cookies.remove("refreshToken");
+    navigate("/auth/login"); // Correct usage of navigation
+    window.location.reload(); // Optional: reload the page
+  };
 
   const handleMenuClick = (id) => {
     if (activeMenuId === id) {
@@ -215,21 +229,10 @@ const AdminLayout = () => {
       <div className="w-100">
         <div className="header-stf">
           <div className="account px-4">
-            <HiUserCircle
-              style={{
-                fontSize: "2.5rem",
-                marginRight: "1px",
-                color: "#000",
-              }}
-            />
-
+            <HiUserCircle style={{ fontSize: "2.5rem", marginRight: "1px", color: "#000" }} />
             <Dropdown>
               <Dropdown.Toggle
-                style={{
-                  border: "none",
-                  color: "#000",
-                  backgroundColor: "#fafafa",
-                }}
+                style={{ border: "none", color: "#000", backgroundColor: "#fafafa" }}
                 id="dropdown-basic"
               >
                 {profile?.fullName}
@@ -237,7 +240,7 @@ const AdminLayout = () => {
 
               <Dropdown.Menu>
                 <Dropdown.Item>Tài khoản</Dropdown.Item>
-                <Dropdown.Item>Đăng xuất</Dropdown.Item>
+                <Dropdown.Item onClick={handleLogout}>Đăng xuất</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           </div>

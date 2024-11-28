@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
-import { Link, useNavigate, useLocation, useNavigation } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+  useNavigation,
+} from "react-router-dom";
 import Cookies from "js-cookie";
 import {
   auth,
@@ -24,13 +29,14 @@ const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const {} = useNavigation ()
+  const {} = useNavigation();
 
-  const [username, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [value, setValue] = useState("");
   const [role, setRole] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [error, setError] = useState(null);
 
   const from = location.state?.from || "/home";
 
@@ -114,45 +120,50 @@ const Login = () => {
 
   const handleEmailLogin = async (event) => {
     event.preventDefault();
+    setError(null); // Reset error before validation
+
+    // Basic validation
+    if (!username || !password) {
+      setError("Vui lòng nhập đầy đủ thông tin.");
+      return;
+    }
 
     try {
       const response = await loginWithEmail(username, password);
-
+    
       if (response.status === 200) {
         const token = Cookies.get("token");
         if (token) {
           const profileData = await getProfile();
           setProfile(profileData);
-
-          if (
-            profileData.listData &&
-            profileData.listData.authorities.length > 0
-          ) {
-            setRole(profileData.listData.authorities[0]);
-            if (profileData.listData.authorities[0].authority === "Admin") {
-              navigate("/admin");
-              window.location.reload();
-            } else if (
-              profileData.listData.authorities[0].authority === "Staff"
-            ) {
-              navigate("/admin/users/manage");
-              window.location.reload();
-            } else {
-              navigate(from, { replace: true });
-              window.location.reload();
-            }
+    
+          const role = profileData?.listData?.authorities[0]?.authority;
+          if (role === "Admin") {
+            navigate("/admin");
+          } else if (role === "Staff") {
+            navigate("/admin/users/manage");
+          } else {
+            navigate(from, { replace: true });
           }
+          window.location.reload();
         }
       }
     } catch (error) {
+      if (error?.response?.data?.statusCode === 401) {
+        setError("Invalid username or password.");
+      } else {
+        console.log("Trạng thái: " + error?.response?.data?.statusCode);
+        setError("An unexpected error occurred. Please try again.");
+      }
       console.error("Error during username login:", error.message);
     }
+    
   };
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     if (storedUsername) {
-      setValue(storedUsername);
+      setUsername(storedUsername);
     }
   }, []);
 
@@ -165,6 +176,7 @@ const Login = () => {
               <div className="card-body p-5">
                 <h3 className="card-title text-center mb-4">Login</h3>
                 <form onSubmit={handleEmailLogin}>
+                  {error && <div className="alert alert-danger">{error}</div>}
                   <div className="mb-3">
                     <label htmlFor="emailInput" className="form-label">
                       Email/Number Phone
@@ -175,7 +187,7 @@ const Login = () => {
                       id="emailInput"
                       placeholder="Enter your username"
                       value={username}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => setUsername(e.target.value)}
                     />
                   </div>
                   <div className="mb-3">

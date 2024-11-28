@@ -29,7 +29,7 @@ const Navbar = () => {
 
   const token = Cookies.get("token");
 
-  const handleLogout = () => {
+  const handleLogout1 = () => {
     Cookies.remove("token");
     navigate("/auth/login");
     window.location.reload(); // Reload trang để cập nhật giao diện
@@ -350,7 +350,7 @@ const Navbar = () => {
                     <li>
                       <button
                         className="dropdown-item stext-111"
-                        onClick={handleLogout}
+                        onClick={handleLogout1}
                       >
                         Logout
                       </button>
