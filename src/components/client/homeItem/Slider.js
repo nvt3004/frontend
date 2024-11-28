@@ -8,9 +8,8 @@ const Slider = () => {
   const [advertisements, setAdvertisements] = useState([]);
 
   useEffect(() => {
-    // Gọi API để lấy dữ liệu quảng cáo
     axios
-      .get("/today") // Thay thế bằng URL chính xác của bạn
+      .get("/today")
       .then((response) => {
         setAdvertisements(response.data);
       })

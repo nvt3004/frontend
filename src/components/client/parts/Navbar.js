@@ -31,6 +31,7 @@ const Navbar = () => {
 
   const handleLogout1 = () => {
     Cookies.remove("token");
+    Cookies.remove("refreshToken");
     navigate("/auth/login");
     window.location.reload(); // Reload trang để cập nhật giao diện
   };
