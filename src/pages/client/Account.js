@@ -585,14 +585,16 @@ const Account = () => {
         <div className="d-flex align-items-center bg-white shadow-sm rounded p-3 mb-4">
           <div>
             <img
-              src={profile?.listData?.image || Avatar}
+              src={`http://localhost:8080/images/${
+                profile?.listData?.image || Avatar
+              }`}
               alt="User Avatar"
-              className="rounded-circle me-3"
-              style={{ width: "80px", height: "80px", objectFit: "cover" }}
+              className="rounded-2 me-3"
+              style={{ width: "180px", height: "180px", objectFit: "cover" }}
             />
           </div>
           <div>
-            <h4 className="fw-bold mb-1">
+            <h4 className="fw-bold mt-auto mb-1">
               {profile?.listData?.fullName || "Your Name"}
             </h4>
             <p className="text-muted mb-0">
@@ -669,66 +671,46 @@ const Account = () => {
             </div>
 
             {/* Danh sách đơn hàng */}
-            <div className="overflow-auto" style={{ maxHeight: "60vh" }}>
+            <div>
               {orders?.length === 0 ? (
                 <div className="text-center py-3 text-muted">
                   No orders found
                 </div>
               ) : (
-                orders?.map((order) => (
+                orders.map((order) => (
                   <div key={order.orderId} className="mb-3">
-                    <div className="card border-0 shadow-lg hover-shadow-lg">
+                    {/* Card container */}
+                    <div className="card border-0 shadow-sm">
+                      {/* Header: Tóm tắt đơn hàng */}
                       <div
                         className="card-header bg-white d-flex justify-content-between align-items-center p-3 rounded-3"
+                        style={{ cursor: "pointer" }}
                         data-bs-toggle="collapse"
                         data-bs-target={`#collapseOrder${order.orderId}`}
                         aria-expanded="false"
                         aria-controls={`collapseOrder${order.orderId}`}
-                        role="button"
-                        style={{ cursor: "pointer" }}
                       >
+                        {/* Thông tin cơ bản */}
                         <div>
-                          <div>
-                            <strong className="text-dark">
-                              Order #{order.orderId}
-                            </strong>
-                            <br />
-                            <small className="text-muted">
-                              <i className="zmdi zmdi-calendar-note"></i>{" "}
-                              {moment(order?.orderDate)
-                                .subtract(7, "hours")
-                                .format("DD/MM/YYYY HH:mm")}
-                            </small>
-                            <br />
-                            <small className="text-muted">
-                              <i className="zmdi zmdi-dropbox"></i>{" "}
-                              {order?.products?.length}
-                            </small>
-                          </div>
-                          <div>
-                            Tổng tiền hàng:
-                            {formatCurrencyVND(order.subTotal ?? "N/A")}
-                          </div>
-                          <div>
-                            Phí vận chuyển
-                            {formatCurrencyVND(order.shippingFee ?? "N/A")}
-                          </div>
-                          <div>
-                            Giảm giá:
-                            {formatCurrencyVND(order.discountValue ?? "N/A")}
-                          </div>
-                          <div>
-                            <strong className="text-dark">
-                              Thành tiền:
-                              {formatCurrencyVND(order.finalTotal ?? "N/A")}
-                            </strong>
-                          </div>
+                          <p className="fw-bold mb-1">
+                            Order ID: #{order.orderId}
+                          </p>
+                          <p className="text-muted small mb-0">
+                            <i className="zmdi zmdi-calendar-note me-2"></i>
+                            {moment(order?.orderDate)
+                              .subtract(7, "hours")
+                              .format("DD/MM/YYYY HH:mm")}
+                          </p>
+                          <p className="text-muted small mb-0">
+                            <i className="zmdi zmdi-dropbox me-2"></i>
+                            {order?.products?.length} sản phẩm
+                          </p>
                         </div>
 
-                        <div className="ms-auto d-flex flex-column align-items-end">
-                          {/* Trạng thái đơn hàng */}
+                        {/* Trạng thái & hành động */}
+                        <div className="text-end">
                           <span
-                            className={`rounded-5 badge bg-${
+                            className={`badge bg-${
                               order.statusName === "Shipped"
                                 ? "success"
                                 : order.statusName === "Processed"
@@ -740,31 +722,12 @@ const Account = () => {
                                 : order.statusName === "Cancelled"
                                 ? "danger"
                                 : "secondary"
-                            } text-white`}
-                            style={{ fontSize: "12px", fontWeight: "bold" }}
+                            } text-white py-2 px-3`}
+                            style={{ fontSize: "0.8rem" }}
                           >
                             {order.statusName}
                           </span>
-                          {order?.statusName === "Pending" && (
-                            <button
-                              type="button"
-                              className="btn btn-outline-danger mt-3"
-                              onClick={() => handleCancelOrder(order?.orderId)}
-                            >
-                              Hủy đơn
-                            </button>
-                          )}
-
-                          {/* View Details */}
-                          <button
-                            type="button"
-                            className="btn btn-secondary mt-4"
-                          >
-                            View Details
-                          </button>
                         </div>
-
-                        {/* Tổng tiền đơn hàng */}
                       </div>
 
                       {/* Chi tiết đơn hàng */}
@@ -772,65 +735,100 @@ const Account = () => {
                         className="collapse"
                         id={`collapseOrder${order.orderId}`}
                       >
-                        <table className="table  table-hover m-0 mt-3">
-                          <thead className="table-light">
-                            <tr>
-                              <th>Product</th>
-                              <th>Variant</th>
-                              <th>Quantity</th>
-                              <th>Price</th>
-                              <th>Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {order.products.map((product, index) => (
-                              <tr key={index}>
-                                <td>
-                                  <div className="d-flex align-items-center">
-                                    <img
-                                      src={product.imageUrl}
-                                      alt={product.productName}
-                                      className="me-2 rounded"
-                                      style={{
-                                        width: "50px",
-                                        height: "50px",
-                                        objectFit: "cover",
-                                      }}
-                                    />
-                                    {product.productName}
-                                  </div>
-                                </td>
-                                <td className="text-center">
-                                  {product.variant}
-                                </td>
-                                <td className="text-center">
-                                  {product.quantity}
-                                </td>
-                                <td className="text-center">
-                                  {formatCurrencyVND(product.price ?? "N/A")}
-                                </td>
-                                <td className="text-center">
-                                  {product?.isFeedback && (
-                                    <button
-                                      className="btn btn-outline-secondary"
-                                      onClick={() => {
-                                        handleOpenModal();
-                                        setIdProd(product?.productId || null);
-                                        setIdOrderDetail(
-                                          product?.orderDetailId || null
-                                        );
-                                        resetForm();
-                                      }}
-                                    >
-                                      <i className="zmdi zmdi-comment-outline me-2"></i>{" "}
-                                      Bình luận
-                                    </button>
-                                  )}
-                                </td>
+                        <div className="p-3">
+                          <h6 className="fw-bold">Chi tiết đơn hàng</h6>
+                          <table className="table table-sm table-hover mt-2">
+                            <thead>
+                              <tr>
+                                <th>Sản phẩm</th>
+                                <th className="text-center">Phân loại</th>
+                                <th className="text-center">Số lượng</th>
+                                <th className="text-center">Giá</th>
+                                <th className="text-center">Hành động</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tbody>
+                              {order.products.map((product, index) => (
+                                <tr key={index}>
+                                  <td>
+                                    <div className="d-flex align-items-center">
+                                      <img
+                                        src={product.imageUrl}
+                                        alt={product.productName}
+                                        className="rounded me-2"
+                                        style={{
+                                          width: "50px",
+                                          height: "50px",
+                                          objectFit: "cover",
+                                        }}
+                                      />
+                                      <span>{product.productName}</span>
+                                    </div>
+                                  </td>
+                                  <td className="text-center">
+                                    {product.variant}
+                                  </td>
+                                  <td className="text-center">
+                                    {product.quantity}
+                                  </td>
+                                  <td className="text-center">
+                                    {formatCurrencyVND(product.price)}
+                                  </td>
+                                  <td className="text-center">
+                                    {product?.isFeedback && (
+                                      <button
+                                        className="btn btn-outline-secondary btn-sm"
+                                        onClick={() => {
+                                          handleOpenModal();
+                                          setIdProd(product?.productId);
+                                          setIdOrderDetail(
+                                            product?.orderDetailId
+                                          );
+                                          resetForm();
+                                        }}
+                                      >
+                                        <i className="zmdi zmdi-comment-outline me-1"></i>
+                                        Bình luận
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+
+                          {/* Tổng hợp giá trị */}
+                          <div className="mt-3 border-top pt-3">
+                            <p className="text-muted mb-1">
+                              Tổng tiền hàng:{" "}
+                              {formatCurrencyVND(order.subTotal)}
+                            </p>
+                            <p className="text-muted mb-1">
+                              Phí vận chuyển:{" "}
+                              {formatCurrencyVND(order.shippingFee)}
+                            </p>
+                            <p className="text-muted mb-1">
+                              Giảm giá: {formatCurrencyVND(order.discountValue)}
+                            </p>
+                            <h6 className="fw-bold text-dark">
+                              Thành tiền: {formatCurrencyVND(order.finalTotal)}
+                            </h6>
+                          </div>
+
+                          {/* Hủy đơn (nếu Pending) */}
+                          {order.statusName === "Pending" && (
+                            <div className="text-end mt-3">
+                              <button
+                                className="btn btn-outline-danger btn-sm"
+                                onClick={() =>
+                                  handleCancelOrder(order?.orderId)
+                                }
+                              >
+                                Hủy đơn
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -862,9 +860,9 @@ const Account = () => {
             )}
           </div>
 
-          <div className="col-md-4">
-            <h4 className="fw-bold">Address</h4>
-            <div className="w-full pb-3 d-flex justify-content-end">
+          <div className="col-md-4 d-flex flex-column ">
+            <div className="w-full pb-3 d-flex align-items-center justify-content-between">
+              <h4 className="fw-bold">Address</h4>
               <button
                 type="button"
                 className="btn btn-dark d-flex align-items-center justify-content-center gap-2 p-3 rounded-pill shadow-sm"
