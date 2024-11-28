@@ -7,14 +7,14 @@ import { Form } from 'react-bootstrap';
 import CustomButton from '../../component/CustomButton';
 import { useForm } from 'react-hook-form';
 import { toast, ToastContainer } from 'react-toastify';
+import axiosInstance from '../../../../../../services/axiosConfig';
 
 const ProductCategories = () => {
     const [categories, setCategories] = useState([]);
     const handleGetCategoriesAPI = () => {
-        DoRequest().get('/home/category/dashboard/get-all').then((response) => {
+        axiosInstance.get('/home/category/dashboard/get-all').then((response) => {
             const sortedCategories = response?.data?.data?.sort((a, b) => a.categoryId - b.categoryId);
             setCategories(sortedCategories);
-
         });
     }
 
@@ -27,10 +27,10 @@ const ProductCategories = () => {
     }, [selectedCategory]);
 
     const [isEdit, setEdit] = useState(false);
-    const [isNew, setNew] = useState(false);
+    const [isNew, setNew] = useState(true);
 
     const handleChange = (e) => {
-        if (isEdit === false && isNew === false) {
+        if (!isEdit && !isNew) {
             e.preventDefault();
         }
     }
@@ -45,34 +45,34 @@ const ProductCategories = () => {
 
     const onSubmit = async (data) => {
         console.log(data);
-        try {
-            if (!isNew) {
-                await DoRequest().put("/home/category/update", data).then((response) => {
-                    if (response?.status === 200) {
-                        toast.success('Category updated successfully!');
-                        handleGetCategoriesAPI();
-                        handleClear();
+        if (!isNew) {
+            await axiosInstance.put("/home/category/update", data).then((response) => {
+                if (response?.status === 200) {
+                    toast.success('Category updated successfully!');
+                    handleGetCategoriesAPI();
+                    handleClear();
+                }
+            });
+        } else {
+            await axiosInstance.post("/home/category/add", data).then((response) => {
+                if (response?.status === 200) {
+                    toast.success('Added new category successfully!');
+                    handleGetCategoriesAPI();
+                    handleClear();
+                }
+            }).catch(
+                (error) => {
+                    if (error.response?.data?.message === 'Category name already exists') {
+                        toast.error(error.response?.data?.message || 'Category name already exists');
                     }
-                });
-            } else {
-                await DoRequest().post("/home/category/add", data).then((response) => {
-                    if (response?.status === 200) {
-                        toast.success('Added new category successfully!');
-                        handleGetCategoriesAPI();
-                        handleClear();
-                    }
-                });
-            }
-
-        } catch (error) {
-            toast.error('Failed to update category. Try again !!');
-            console.log(error);
+                }
+            );
         }
     }
 
     const handleRemove = async () => {
         try {
-            await DoRequest().delete(`/home/category/remove/${selectedCategory?.categoryId}`).then(
+            await axiosInstance.delete(`/home/category/remove/${selectedCategory?.categoryId}`).then(
                 (response) => {
                     if (response?.status === 200) {
                         toast.success('Removed successfully!');
@@ -90,7 +90,6 @@ const ProductCategories = () => {
     const handleClear = () => {
         setSelectedCategory(null);
         setEdit(false);
-        setNew(false);
         reset()
     }
 
@@ -118,7 +117,7 @@ const ProductCategories = () => {
                                                 borderWidth: selectedCategory?.categoryId === item?.categoryId ? '1px' : '1px',
                                                 opacity: selectedCategory?.categoryId === item?.categoryId ? 0.8 : 1
                                             }}>
-                                            <motion.label whileHover={{ color: '#0d6efd' }} 
+                                            <motion.label whileHover={{ color: '#0d6efd' }}
                                                 style={{ color: selectedCategory?.categoryId === item?.categoryId ? '#0d6efd' : 'black' }}>
                                                 <h6 className='mb-0'>{item?.categoryName}</h6>
                                             </motion.label>
@@ -134,9 +133,9 @@ const ProductCategories = () => {
                             <Form onSubmit={handleSubmit(onSubmit)}>
                                 <Form.Group>
                                     <Form.Label>Category name: </Form.Label>
-                                    <Form.Control type='text' defaultValue={selectedCategory && !isEdit ? selectedCategory?.categoryName : ''}
+                                    <Form.Control type='text' defaultValue={selectedCategory ? selectedCategory?.categoryName : ''}
                                         {...register("categoryName", { required: true })}
-                                        placeholder={(selectedCategory && isEdit) && selectedCategory?.categoryName}
+                                        placeholder={`${(!isNew && !isEdit) ? `Click create button to do create new !` : 'Category name'}`}
                                         onKeyDown={handleChange} onPaste={handleChange}
                                         disabled={!selectedCategory && !isNew} />
                                     {errors?.categoryName && (
@@ -181,15 +180,15 @@ const ProductCategories = () => {
                                             </>
                                         ) : isNew ? (
                                             <>
-                                                <button type='submit' className='btn btn-success custom-radius custom-hover text-white'>Save</button>
-                                                <CustomButton
+                                                <button type='submit' className='btn btn-primary custom-radius custom-hover text-white'>Create</button>
+                                                {/* <CustomButton
                                                     btnBG={'danger'}
                                                     btnName={'Cancel'}
                                                     textColor={'text-white'}
                                                     handleClick={() => {
                                                         handleClear()
                                                     }}
-                                                />
+                                                /> */}
                                             </>
                                         ) : (
                                             <CustomButton

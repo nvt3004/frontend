@@ -8,12 +8,12 @@ const style = {
 
 const AddCartItem = ({ pd, onClick, clickSave = () => {}, message }) => {
   
-
+console.log(15,pd)
   const temppd = {...pd};
 
   return (
     <>
-      <div className="modal-body">
+      <div className="modal-body p-0">
         {pd.map((a, index) => {
           return (
             <div className="mb-3">
@@ -65,7 +65,7 @@ const AddCartItem = ({ pd, onClick, clickSave = () => {}, message }) => {
             onClick={() => {
               clickSave(pd);
             }}
-            className="flex-c-m w-75 stext-101 cl0 py-3 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail"
+            className="flex-c-m w-75 stext-101 cl0 py-3 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail rounded-0"
           >
             Add to cart
           </button>

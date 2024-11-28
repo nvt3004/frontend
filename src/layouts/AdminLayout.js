@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Dropdown } from "react-bootstrap";
 import { HiUserCircle } from "react-icons/hi";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, Navigate } from "react-router-dom";
 import { getProfile } from "../services/api/OAuthApi";
+import { FaAdversal } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import {
   CaretDown,
   CaretLeft,
@@ -17,7 +20,8 @@ import {
   Archive,
   Storefront ,
   Package,
-  UserGear 
+  UserGear,
+  Ticket 
 } from "phosphor-react";
 import "./style.css";
 
@@ -33,18 +37,20 @@ const menus = [
         subItems: null,
       },
       {
-        id: "1",
-        label: "User",
+        id: "100",
+        label: "Users",
         icon: <User />,
-        link: "/admin/users/manage",
-        subItems: null,
+        subItems: [
+          { id: "101", label: "Staff", link: "/admin/users/manage" },
+          { id: "102", label: "Customer", link: "/admin/customers/manage" },
+        ],
       },
       {
         id: "2",
         label: "Product",
         icon: <Archive />,
         subItems: [
-          { id: "3", label: "Category", link: "/admin/products/category" },
+          { id: "3", label: "Category", link: "/admin/products/categories" },
           { id: "4", label: "New product", link: "/admin/products/new" },
           { id: "5", label: "Manage product", link: "/admin/products/manage" },
         ],
@@ -57,7 +63,7 @@ const menus = [
       },
       {
         id: "6",
-        label: "Order",
+        label: "Orders",
         icon: <FileText />,
         link: "/admin/orders/manage",
         subItems: null,
@@ -73,16 +79,26 @@ const menus = [
         id: "8",
         label: "Warehouse",
         icon: <Package />,
-        link: "/admin/warehouse/stock-in",
-        subItems: null,
+        // link: "/admin/warehouse/stock-in",
+        subItems: [
+          {id: '12', label: 'Stock-in', link: "/admin/warehouse/stockin"},
+          {id: '13', label: 'Receipt list', link: "/admin/warehouse/manage"}
+        ],
       },
       {
         id: "9",
-        label: "Permissions",
-        icon: <UserGear  />,
+        label: "Coupon",
+        icon: <Ticket  />,
+        link: "/admin/coupon/manage",
+      },
+      {
+        id: "14",
+        label: "Advertisement",
+        icon: <FaAdversal  />,
+        // link: "/admin/advertisement/manage",
         subItems: [
-          { id: "10", label: "New permissions", link: "/admin/permission/new" },
-          { id: "11", label: "Manage permissions", link: "/admin/permission/manage" },
+          {id: '15', label: 'New', link: "/admin/advertisement/new"},
+          {id: '16', label: 'Manage', link: "/admin/advertisement/manage"}
         ],
       }
     ],
@@ -107,6 +123,7 @@ const AdminLayout = () => {
   const [activeSubMenuId, setActiveSubMenuId] = useState(null);
   const [sidebarActive, setSidebarActive] = useState(false);
   const [profile, setProfile] = useState();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -120,6 +137,13 @@ const AdminLayout = () => {
 
     fetchProfile();
   }, []);
+
+  const handleLogout = () => {
+    Cookies.remove("token"); // Remove the token
+    Cookies.remove("refreshToken");
+    navigate("/auth/login"); // Correct usage of navigation
+    window.location.reload(); // Optional: reload the page
+  };
 
   const handleMenuClick = (id) => {
     if (activeMenuId === id) {
@@ -146,7 +170,7 @@ const AdminLayout = () => {
   return (
     <div className={`container-stf`}>
       <div className={`sidebar-stf ${sidebarActive ? "active" : ""}`}>
-        <div className="menu-btn-stf" onClick={toggleSidebar}>
+        <div className="menu-btn-stf bg-secondary text-white" onClick={toggleSidebar}>
           <CaretLeft className={`ph-bold ${sidebarActive ? "active" : ""}`} />
         </div>
         <div className="head-stf">
@@ -205,21 +229,10 @@ const AdminLayout = () => {
       <div className="w-100">
         <div className="header-stf">
           <div className="account px-4">
-            <HiUserCircle
-              style={{
-                fontSize: "2.5rem",
-                marginRight: "1px",
-                color: "#000",
-              }}
-            />
-
+            <HiUserCircle style={{ fontSize: "2.5rem", marginRight: "1px", color: "#000" }} />
             <Dropdown>
               <Dropdown.Toggle
-                style={{
-                  border: "none",
-                  color: "#000",
-                  backgroundColor: "#fafafa",
-                }}
+                style={{ border: "none", color: "#000", backgroundColor: "#fafafa" }}
                 id="dropdown-basic"
               >
                 {profile?.fullName}
@@ -227,7 +240,7 @@ const AdminLayout = () => {
 
               <Dropdown.Menu>
                 <Dropdown.Item>Tài khoản</Dropdown.Item>
-                <Dropdown.Item>Đăng xuất</Dropdown.Item>
+                <Dropdown.Item onClick={handleLogout}>Đăng xuất</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           </div>

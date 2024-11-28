@@ -87,6 +87,9 @@ const AdminNav = () => {
           Warehouse Management
         </button>
         <div className="collapse" id="warehouseManagementCollapse">
+          <StyledLink to="/admin/warehouse/list" className="list-group-item text-center bg-secondary-subtle">
+            Receipt list
+          </StyledLink>
           <StyledLink to="/admin/warehouse/stock-in" className="list-group-item text-center bg-secondary-subtle">
             Stock in
           </StyledLink>

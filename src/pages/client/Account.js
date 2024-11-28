@@ -19,8 +19,9 @@ import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import ConfirmAlert from "../../components/client/sweetalert/ConfirmAlert";
 import { getProfile, updateUser } from "../../services/api/OAuthApi";
 import { format } from "date-fns";
-
+import moment from "moment";
 import productApi from "../../services/api/ProductApi";
+import AddReviewModal from "../../components/client/Review/AddReviewModal"
 function getNameAddress(nameId) {
   return nameId.substring(nameId.indexOf(" "), nameId.length).trim();
 }
@@ -56,24 +57,44 @@ const Account = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    phone: ""
+    phone: "",
   });
 
-  // const formattedBirthday = birthday ? format(new Date(birthday), 'yyyy/MM/dd') : null;
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(0); // Quản lý trang hiện tại
   const [totalPages, setTotalPages] = useState(1); // Tổng số trang
   const [loading, setLoading] = useState(true);
+  const [keyword, setKeyWord] = useState(""); // Từ khóa tìm kiếm
+  const [statusId, setStatusId] = useState(null); // Trạng thái đơn hàng
+
+  const [status, setStatus] = useState([]); // Trạng thái đơn hàng
+
+
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpenModal = () => setShowModal(true);
+  const handleCloseModal = () => setShowModal(false);
+
+
+  const fetchStatus = async () => {
+    try {
+      const data = await productApi.getOrderStatus();
+      setStatus(data.data);
+    } catch (error) {
+      console.error("Error fetching order status:", error);
+    }
+  };
 
   // Hàm gọi API getOrder
   const fetchOrders = async (pageNumber = 0) => {
+    if (pageNumber < 0) return; // Bảo vệ pageNumber
     setLoading(true);
     try {
-      const data = await productApi.getOrder(10, pageNumber); // Gọi API getOrder với page
+      const data = await productApi.getOrder(keyword, statusId, 10, pageNumber); // Gọi API getOrder với page
 
-      setOrders(data.content); // Lưu danh sách đơn hàng
-      setTotalPages(data.totalPages); // Lưu tổng số trang
-      setPage(data.number); // Lưu trang hiện tại
+      setOrders(data?.content || []); // Lưu danh sách đơn hàng
+      setTotalPages(data?.totalPages || 1); // Lưu tổng số trang
+      setPage(data?.number || 0); // Lưu trang hiện tại
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -81,14 +102,21 @@ const Account = () => {
     }
   };
 
-  // Gọi API khi component được render lần đầu tiên
+  // Gọi API khi component được render lần đầu tiên hoặc khi keyword/statusId thay đổi
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    const timer = setTimeout(() => {
+      fetchStatus();
+      fetchOrders();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [keyword, statusId]);
 
   // Hàm xử lý khi người dùng chuyển trang
   const handlePageChange = (newPage) => {
-    fetchOrders(newPage); // Gọi API với trang mới
+    if (newPage >= 0 && newPage < totalPages) {
+      fetchOrders(newPage); // Gọi API với trang mới
+    }
   };
 
   useEffect(() => {
@@ -104,10 +132,10 @@ const Account = () => {
           : profile.listData.gender === 0
           ? "Female"
           : "Other"
-      ); 
+      );
       setBirthday(
         profile.listData.birthday ? profile.listData.birthday.split("T")[0] : ""
-      ); 
+      );
     }
   }, [profile]);
 
@@ -117,18 +145,18 @@ const Account = () => {
       fullName: formData.fullName,
       email: formData.email,
       phone: formData.phone,
-      gender: gender === "Male" ? 1 : gender === "Female" ? 0 : 2, 
-      birthday: birthday ? new Date(birthday).toISOString().split("T")[0] : null,
-      image: selectedImage || profile?.listData?.image, 
+      gender: gender === "Male" ? 1 : gender === "Female" ? 0 : 2,
+      birthday: birthday
+        ? new Date(birthday).toISOString().split("T")[0]
+        : null,
+      image: selectedImage || profile?.listData?.image,
     };
 
     try {
       const response = await updateUser(profile.listData.userId, updatedUser);
       console.log("Update successful:", response);
-
     } catch (error) {
       console.error("Error updating profile:", error.message);
-
     }
   };
 
@@ -170,20 +198,19 @@ const Account = () => {
   }, [profile]); // Chạy effect khi profile thay đổi
 
   const handleBirthdayChange = (event) => {
-    console.log('ngay sinh'+event.target.value); 
-    setBirthday(event.target.value); 
+    console.log("ngay sinh" + event.target.value);
+    setBirthday(event.target.value);
   };
-  
 
   useEffect(() => {
     if (profile && profile.listData && profile.listData.gender !== undefined) {
-      const genderValue = profile.listData.gender; 
+      const genderValue = profile.listData.gender;
       if (genderValue === 1) {
         setGender("Male");
       } else if (genderValue === 0) {
         setGender("Female");
       } else {
-        setGender("Other"); 
+        setGender("Other");
       }
     }
   }, [profile]);
@@ -467,265 +494,376 @@ const Account = () => {
       padding: "5px",
     },
   };
-
+  function formatCurrencyVND(amount) {
+    return amount.toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+  }
   return (
     <div
       className="container mt-5 pt-5 d-flex justify-content-center"
       style={styles.container}
-    >
+    >    <AddReviewModal show={showModal} onClose={handleCloseModal} />
       <div className="w-full">
-        <div className="d-flex align-items-center border-bottom border-2 mb-4">
+        <div className="d-flex align-items-center bg-white shadow-sm rounded p-3 mb-4">
           <div>
             <img
               src={profile?.listData?.image || Avatar}
-              alt="User IMG"
-              style={styles.accountImg1}
-              className="account-img me-4"
+              alt="User Avatar"
+              className="rounded-circle me-3"
+              style={{ width: "80px", height: "80px", objectFit: "cover" }}
             />
           </div>
           <div>
-            <h3>
-              {profile && profile.listData && profile.listData.fullName
-                ? profile.listData.fullName
-                : "Your Name"}
-            </h3>
-            <h5 className="mb-2 stext-110">
+            <h4 className="fw-bold mb-1">
+              {profile?.listData?.fullName || "Your Name"}
+            </h4>
+            <p className="text-muted mb-0">
               {profile?.listData?.provider === "Guest"
                 ? profile.listData.username
                 : "Social"}
-            </h5>
+            </p>
           </div>
-          <div className="d-flex ms-auto flex-column flex-md-row">
-            {/* <!-- Button trigger modal --> */}
+          <div className="ms-auto d-flex flex-column flex-md-row align-items-center">
             <button
               type="button"
-              className="rounded-0 flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 mb-2 mb-md-0 me-md-4"
+              className="btn btn-outline-secondary d-flex align-items-center justify-content-center me-md-3 mb-2 mb-md-0"
+              style={{ height: "40px", padding: "0 15px" }}
               data-bs-toggle="modal"
               data-bs-target="#exampleModal"
             >
-              <i className="zmdi zmdi-edit"></i>
+              <i className="zmdi zmdi-edit me-2"></i>
               Edit
             </button>
 
+            {/* Uncomment if Address button is needed */}
             {/* <button
-              type="button"
-              className="rounded-0 flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04"
-              data-bs-toggle="modal"
-              data-bs-target="#exampleModal9"
-            >
-              <i className="zmdi zmdi-pin"></i>
-              Address
-            </button> */}
+      type="button"
+      className="btn btn-outline-primary d-flex align-items-center justify-content-center"
+      style={{ height: "40px", padding: "0 15px" }}
+      data-bs-toggle="modal"
+      data-bs-target="#exampleModal9"
+    >
+      <i className="zmdi zmdi-pin me-2"></i>
+      Address
+    </button> */}
           </div>
         </div>
+
         <div className="row mb-5">
           <div className="col-md-8">
-            <h4 className="stext-301">Orders</h4>
-            <div className="overflow-y-auto" style={{ height: "60vh" }}>
+            {/* Header */}
+            <div className="row align-items-center mb-3">
+              <div className="col-auto">
+                <h4 className="fw-bold">Orders</h4>
+              </div>
+
+              {/* Input tìm kiếm */}
+              <div className="col">
+                <input
+                  type="search"
+                  className="form-control"
+                  placeholder="Search orders..."
+                  value={keyword}
+                  onChange={(e) => setKeyWord(e.target.value)}
+                />
+              </div>
+
+              {/* Dropdown trạng thái */}
+              <div className="col-auto">
+                <select
+                  className="form-select"
+                  value={statusId || ""}
+                  onChange={(e) =>
+                    setStatusId(
+                      e.target.value ? parseInt(e.target.value, 10) : null
+                    )
+                  }
+                >
+                  <option value="">All Statuses</option>
+                  {status?.map((item) => (
+                    <option key={item.statusId} value={item.statusId}>
+                      {item.statusName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Danh sách đơn hàng */}
+            <div className="overflow-auto" style={{ maxHeight: "60vh" }}>
               {orders?.length === 0 ? (
-                <div>Không có đơn hàng nào</div>
+                <div className="text-center py-3 text-muted">
+                  No orders found
+                </div>
               ) : (
                 orders?.map((order) => (
-                  <div key={order.orderId} className="mb-2">
-                    <div className="card rounded-0 bor4 p-2">
+                  <div key={order.orderId} className="mb-3">
+                    <div className="card border-0 shadow-lg hover-shadow-lg">
                       <div
-                        className="card-header d-flex justify-content-between align-items-center bg-white pointer"
+                        className="card-header bg-white d-flex justify-content-between align-items-center p-3 rounded-3"
                         data-bs-toggle="collapse"
                         data-bs-target={`#collapseOrder${order.orderId}`}
                         aria-expanded="false"
                         aria-controls={`collapseOrder${order.orderId}`}
+                        role="button"
+                        style={{ cursor: "pointer" }}
                       >
                         <div>
-                          <strong className="stext-103">
-                            Order #{order.orderId}
-                          </strong>{" "}
-                          <br />
-                          <small className=" stext-113">
-                            {new Date(order.orderDate).toLocaleString()}
-                          </small>
+                          <div>
+                            <strong className="text-dark">
+                              Order #{order.orderId}
+                            </strong>
+                            <br />
+                            <small className="text-muted">
+                              <i className="zmdi zmdi-calendar-note"></i>{" "}
+                              {moment(order?.orderDate)
+                                .subtract(7, "hours")
+                                .format("DD/MM/YYYY HH:mm")}
+                            </small>
+                            <br />
+                            <small className="text-muted">
+                              <i className="zmdi zmdi-dropbox"></i>{" "}
+                              {order?.products?.length}
+                            </small>
+                          </div>
+                          <div>
+                            <strong className="text-dark">
+                              Total:{" "}
+                              {formatCurrencyVND(order.totalPrice ?? "N/A")}
+                            </strong>
+                          </div>
                         </div>
-                        <span
-                          className={`badge text-bg-${
-                            order.statusName === "Shipped"
-                              ? "success"
-                              : order.statusName === "Processed"
-                              ? "info"
-                              : order.statusName === "Pending"
-                              ? "warning"
-                              : order.statusName === "Delivered"
-                              ? "primary"
-                              : order.statusName === "Cancelled"
-                              ? "danger"
-                              : "secondary"
-                          }`}
-                        >
-                          {order.statusName}
-                        </span>
 
-                        <div>
-                          <strong className="stext-103">
-                            Total: {order.totalPrice.toFixed(2)} VND
-                          </strong>
+                        <div className="ms-auto d-flex flex-column align-items-end">
+                          {/* Trạng thái đơn hàng */}
+                          <span
+                            className={`rounded-5 badge bg-${
+                              order.statusName === "Shipped"
+                                ? "success"
+                                : order.statusName === "Processed"
+                                ? "info"
+                                : order.statusName === "Pending"
+                                ? "warning"
+                                : order.statusName === "Delivered"
+                                ? "primary"
+                                : order.statusName === "Cancelled"
+                                ? "danger"
+                                : "secondary"
+                            } text-white`}
+                            style={{ fontSize: "12px", fontWeight: "bold" }}
+                          >
+                            {order.statusName}
+                          </span>
+
+                          {/* View Details */}
+                          <button
+                            type="button"
+                            className="btn btn-secondary mt-4"
+                          >
+                            View Details
+                          </button>
                         </div>
+
+                        {/* Tổng tiền đơn hàng */}
                       </div>
 
-                      {/* Dropdown for Order Details */}
-                      <div>
-                        <div
-                          className="collapse"
-                          id={`collapseOrder${order.orderId}`}
-                        >
-                          <table className="table table-bordered m-0 mt-4">
-                            <thead>
-                              <tr>
-                                <th className="stext-102">Product</th>
-                                <th className="stext-102">Variant</th>
-                                <th className="stext-102">Quantity</th>
-                                <th className="stext-102">Price</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {order.products.map((product, index) => (
-                                <tr key={index}>
-                                  <td className="stext-103">
+                      {/* Chi tiết đơn hàng */}
+                      <div
+                        className="collapse"
+                        id={`collapseOrder${order.orderId}`}
+                      >
+                        <table className="table  table-hover m-0 mt-3">
+                          <thead className="table-light">
+                            <tr>
+                              <th>Product</th>
+                              <th>Variant</th>
+                              <th>Quantity</th>
+                              <th>Price</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {order.products.map((product, index) => (
+                              <tr key={index}>
+                                <td>
+                                  <div className="d-flex align-items-center">
                                     <img
                                       src={product.imageUrl}
                                       alt={product.productName}
+                                      className="me-2 rounded"
                                       style={{
                                         width: "50px",
-                                        marginRight: "10px",
+                                        height: "50px",
+                                        objectFit: "cover",
                                       }}
                                     />
                                     {product.productName}
-                                  </td>
-                                  <td className="txt-middle stext-103">
-                                    {product.variant}
-                                  </td>
-                                  <td className="txt-middle stext-103">
-                                    {product.quantity}
-                                  </td>
-                                  <td className="txt-middle stext-103">
-                                    ${product.price.toFixed(2)}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                                  </div>
+                                </td>
+                                <td className="text-center">
+                                  {product.variant}
+                                </td>
+                                <td className="text-center">
+                                  {product.quantity}
+                                </td>
+                                <td className="text-center">
+                                  {formatCurrencyVND(product.price ?? "N/A")}
+                                </td>
+                                <td className="text-center">
+                                  <button className="btn btn-outline-secondary"
+                                  onClick={handleOpenModal}>
+                                    <i className="zmdi zmdi-comment-outline me-2"></i>{" "}
+                                    Bình luận
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   </div>
                 ))
               )}
             </div>
-            {/* Pagination */}
-            <div className="pagination my-3 ">
-              <button
-                className="rounded-0 flex-c-m  cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4"
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 0}
-              >
-                Previous
-              </button>
-              <span className="mx-3 pt-1 mt-2 stext-103">
-                Page {page + 1} of {totalPages}
-              </span>
-              <button
-                className="rounded-0 flex-c-m  cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4"
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages - 1}
-              >
-                Next
-              </button>
-            </div>
+
+            {/* Phân trang */}
+            {orders?.length > 0 && (
+              <nav className="d-flex justify-content-between align-items-center mt-4">
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page === 0}
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {page + 1} of {totalPages}
+                </span>
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page === totalPages - 1}
+                >
+                  Next
+                </button>
+              </nav>
+            )}
           </div>
 
           <div className="col-md-4">
-            <h4 className="stext-301">Address</h4>
-
+            <h4 className="fw-bold">Address</h4>
             <div className="w-full pb-3 d-flex justify-content-end">
               <button
                 type="button"
-                className="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10 rounded-0"
+                className="btn btn-dark d-flex align-items-center justify-content-center gap-2 p-3 rounded-pill shadow-sm"
                 data-bs-toggle="modal"
                 data-bs-target="#exampleModal9"
                 onClick={() => {
                   setIdEdit(-1);
-
                   setProvinceId("");
-
                   setDistrictId("");
                   setAddressDetal("");
                   setDistricts([]);
                   setWardId("");
                   setWards([]);
                 }}
+                style={{
+                  backgroundColor: "#000", // Màu đen
+                  borderColor: "#000",
+                  color: "#fff", // Chữ trắng để nổi bật
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  transition: "all 0.3s ease-in-out",
+                }}
               >
-                <i className="zmdi zmdi-plus me-1"></i>
-                <span>{"Add address"}</span>
+                <i
+                  className="zmdi zmdi-plus"
+                  style={{
+                    fontSize: "20px",
+                  }}
+                ></i>
+                <span>Add Address</span>
               </button>
             </div>
 
             <div className="w-full">
-              <ul className="list-unstyled">
+              <ul className="list-group">
                 {addresses &&
-                  addresses.map((code, index) => (
+                  addresses.map((address, index) => (
                     <li
                       key={index}
-                      className="address-item rounded-0 rounded bor4 mb-3 p-3"
+                      className="list-group-item d-flex flex-column p-4 mb-3 bg-white shadow-sm rounded-lg border border-light"
                     >
-                      <div className="row">
-                        <div className="col-10">
-                          <p className="address-detail stext-110">
-                            {code.detailAddress}
-                          </p>
-                          <p className="address-location text-muted stext-103">
-                            {`${getNameAddress(
-                              code.province
-                            )}, ${getNameAddress(
-                              code.district
-                            )}, ${getNameAddress(code.ward)}`}
-                          </p>
-                        </div>
+                      {/* Địa chỉ chi tiết với icon */}
+                      <div className="d-flex align-items-center mb-3">
+                        <i className="zmdi zmdi-pin zmdi-hc-lg me-2"></i>
+                        <p className="mb-0 fw-bold text-dark">
+                          {address.detailAddress}
+                        </p>
+                      </div>
 
-                        <div className="col-2 text-end">
-                          <i
-                            onClick={() => {
-                              setIdEdit(code.addressId);
-                              setProvinceId(
-                                JSON.stringify(
-                                  provinces.find(
-                                    (p) =>
-                                      p.ProvinceID ==
-                                      code.province
-                                        .substring(
-                                          0,
-                                          code.province.indexOf(" ")
-                                        )
-                                        .trim()
-                                  )
+                      {/* Thông tin về tỉnh, quận, xã */}
+                      <div className="d-flex flex-column">
+                        <small className="d-flex align-items-center mb-2 text-muted">
+                          {getNameAddress(address.province)}
+                        </small>
+                        <small className="d-flex align-items-center mb-2 text-muted">
+                          {getNameAddress(address.district)}
+                        </small>
+                        <small className="d-flex align-items-center mb-2 text-muted">
+                          {getNameAddress(address.ward)}
+                        </small>
+                      </div>
+
+                      {/* Nút chỉnh sửa và xóa phía dưới */}
+                      <div className="d-flex justify-content-end">
+                        <button
+                          className="btn btn-outline-primary me-3 d-flex align-items-center justify-content-center"
+                          style={{
+                            transition: "background-color 0.3s ease",
+                          }}
+                          onClick={() => {
+                            setIdEdit(address.addressId);
+                            setProvinceId(
+                              JSON.stringify(
+                                provinces.find(
+                                  (p) =>
+                                    p.ProvinceID ===
+                                    address.province
+                                      .substring(
+                                        0,
+                                        address.province.indexOf(" ")
+                                      )
+                                      .trim()
                                 )
-                              );
-                              setAddressDetal(code.detailAddress);
-                            }}
-                            className="zmdi zmdi-edit rounded-0 flex-c-m  cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4"
-                            style={{ fontSize: "1.2rem", cursor: "pointer" }}
-                            data-bs-toggle="modal"
-                            data-bs-target="#exampleModal9"
-                          ></i>
-
-                          <i
-                            onClick={() => {
-                              handleDeleteAddress(code.addressId);
-                            }}
-                            className="zmdi zmdi-delete text-danger rounded-0 flex-c-m  cl6 px-4 py-2 bor4 pointer hov2 trans-04 mb-2 mb-md-0 me-md-4 mt-2"
-                            style={{ fontSize: "1.2rem", cursor: "pointer" }}
-                          ></i>
-                        </div>
+                              )
+                            );
+                            setAddressDetal(address.detailAddress);
+                          }}
+                          data-bs-toggle="modal"
+                          data-bs-target="#exampleModal9"
+                        >
+                          <i className="zmdi zmdi-edit"></i>
+                        </button>
+                        <button
+                          className="btn btn-outline-danger d-flex align-items-center justify-content-center"
+                          style={{
+                            transition: "background-color 0.3s ease",
+                          }}
+                          onClick={() => {
+                            handleDeleteAddress(address.addressId);
+                          }}
+                        >
+                          <i className="zmdi zmdi-delete"></i>
+                        </button>
                       </div>
                     </li>
                   ))}
               </ul>
+
               {showToast && (
                 <div
                   className="toast show position-fixed bottom-0 end-0 p-3"
@@ -936,7 +1074,6 @@ const Account = () => {
             </div>
           </div>
         </div>
-        {/* <!-- Modal --> */}
         <div
           className="modal fade"
           id="exampleModal"
@@ -944,15 +1081,16 @@ const Account = () => {
           aria-labelledby="exampleModalLabel"
           aria-hidden="true"
         >
-          <div className="modal-dialog modal-xl ">
-            <div className="modal-content rounded-0 ">
-              <div className="modal-header pb-1 pt-2">
-                <h1
-                  className="modal-title  stext-101 cl5 size-103 d-flex align-items-center"
+          <div className="modal-dialog modal-xl">
+            <div className="modal-content rounded">
+              {/* Modal Header */}
+              <div className="modal-header border-0 bg-light">
+                <h2
+                  className="modal-title fw-bold text-dark"
                   id="exampleModalLabel"
                 >
                   Edit Profile
-                </h1>
+                </h2>
                 <button
                   type="button"
                   className="btn-close"
@@ -960,20 +1098,28 @@ const Account = () => {
                   aria-label="Close"
                 ></button>
               </div>
+
+              {/* Modal Body */}
               <div className="modal-body">
-                <form className="w-100 p-2" onSubmit={handleSubmit}>
+                <form className="w-100" onSubmit={handleSubmit}>
                   <div className="row">
-                    <div className="col-md-5 text-center">
-                      {/* Image */}
-                      <img
-                        src={
-                          selectedImage || profile?.listData?.image || Avatar
-                        }
-                        alt="User IMG"
-                        style={styles.accountImg}
-                        className="account-img mb-3"
-                      />
-                      <div className="mb-4">
+                    {/* User Image Section */}
+                    <div className="col-md-5 text-center border-end">
+                      <div className="d-flex justify-content-center">
+                        <img
+                          src={
+                            selectedImage || profile?.listData?.image || Avatar
+                          }
+                          alt="User Avatar"
+                          className="img-thumbnail rounded-circle mb-3"
+                          style={{
+                            width: "150px",
+                            height: "150px",
+                            objectFit: "cover",
+                          }}
+                        />
+                      </div>
+                      <div className="mb-3">
                         <input
                           type="file"
                           id="fileInput"
@@ -982,20 +1128,22 @@ const Account = () => {
                         />
                         <label
                           htmlFor="fileInput"
-                          className="btn btn-outline-primary rounded-0 stext-110"
+                          className="btn btn-outline-primary px-4 py-2"
                           style={{ cursor: "pointer" }}
                         >
                           Choose Image
                         </label>
                       </div>
-                      {/* Read-only fields */}
-                      <div className="mb-4">
-                        <h5 className="mb-2 stext-110">
-                          {profile?.listData?.provider === "Guest"
-                            ? profile.listData.username
-                            : "Social"}
-                        </h5>
-                        <p className="stext-111">
+                      <div className="text-muted">
+                        <p className="mb-1">
+                          Provider:{" "}
+                          <strong>
+                            {profile?.listData?.provider === "Guest"
+                              ? profile.listData.username
+                              : "Social"}
+                          </strong>
+                        </p>
+                        <p className="mb-0">
                           Create Date:{" "}
                           {profile?.listData?.createDate
                             ? format(
@@ -1006,179 +1154,108 @@ const Account = () => {
                         </p>
                       </div>
                     </div>
+
+                    {/* Editable Fields Section */}
                     <div className="col-md-7">
-                      <div className="">
-                        {/* Editable fields */}
-                        <div className="mb-3">
-                          <label className="stext-110 mb-2" htmlFor="full_name">
-                            Full Name
-                          </label>
-                          <div style={{ ...styles.bor8, ...styles.mB12 }}>
-                            <input
-                              id="full_name"
-                              className="form-control rounded-0"
-                              style={{
-                                ...styles.stext111,
-                                ...styles.size111,
-                                ...styles.pLr15,
-                              }}
-                              type="text"
-                              name="full_name"
-                              placeholder="Full Name"
-                              value={formData.fullName}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  fullName: e.target.value,
-                                })
-                              } // Cập nhật khi thay đổi
-                            />
-                          </div>
-                        </div>
-                        <div className="mb-3">
-                          <label className="stext-110  mb-2" htmlFor="email">
-                            Email
-                          </label>
-                          <div style={{ ...styles.bor8, ...styles.mB12 }}>
-                            <input
-                              id="email"
-                              className="form-control rounded-0"
-                              style={{
-                                ...styles.stext111,
-                                ...styles.size111,
-                                ...styles.pLr15,
-                              }}
-                              type="email"
-                              name="email"
-                              placeholder="Email"
-                              value={formData.email}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  email: e.target.value,
-                                })
-                              } // Cập nhật khi thay đổi
-                            />
-                          </div>
-                        </div>
-                        <div className="mb-3">
-                          <label className="stext-110  mb-2" htmlFor="phone">
-                            Phone
-                          </label>
-                          <div style={{ ...styles.bor8, ...styles.mB12 }}>
-                            <input
-                              id="phone"
-                              className="form-control rounded-0"
-                              style={{
-                                ...styles.stext111,
-                                ...styles.size111,
-                                ...styles.pLr15,
-                              }}
-                              type="text"
-                              name="phone"
-                              placeholder="Phone"
-                              value={formData.phone}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  phone: e.target.value,
-                                })
-                              } // Cập nhật khi thay đổi
-                            />
-                          </div>
-                        </div>
-                        <div className="mb-3">
-                          <label className="stext-110" htmlFor="gender">
-                            Gender
-                          </label>
-                          <div className="d-flex flex-row pl-2 p-2">
-                            <div
-                              className="form-check"
-                              style={{ marginRight: "20px" }}
-                            >
+                      <div className="mb-3">
+                        <label
+                          htmlFor="full_name"
+                          className="form-label fw-bold"
+                        >
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          id="full_name"
+                          className="form-control"
+                          placeholder="Full Name"
+                          value={formData.fullName}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              fullName: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="email" className="form-label fw-bold">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          className="form-control"
+                          placeholder="Email"
+                          value={formData.email}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="phone" className="form-label fw-bold">
+                          Phone
+                        </label>
+                        <input
+                          type="text"
+                          id="phone"
+                          className="form-control"
+                          placeholder="Phone"
+                          value={formData.phone}
+                          onChange={(e) =>
+                            setFormData({ ...formData, phone: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="mb-3">
+                        <label htmlFor="gender" className="form-label fw-bold">
+                          Gender
+                        </label>
+                        <div className="d-flex">
+                          {["Male", "Female", "Other"].map((value) => (
+                            <div className="form-check me-3" key={value}>
                               <input
-                                id="gender-male"
-                                className="form-check-input m-0 mt-1"
+                                className="form-check-input"
                                 type="radio"
+                                id={`gender-${value}`}
                                 name="gender"
-                                value="Male"
-                                checked={gender === "Male"}
+                                value={value}
+                                checked={gender === value}
                                 onChange={(e) => setGender(e.target.value)}
                               />
                               <label
-                                htmlFor="gender-male"
                                 className="form-check-label"
+                                htmlFor={`gender-${value}`}
                               >
-                                Male
+                                {value}
                               </label>
                             </div>
-                            <div
-                              className="form-check me-3"
-                              style={{ marginRight: "20px" }}
-                            >
-                              <input
-                                id="gender-female"
-                                className="form-check-input m-0 mt-1"
-                                type="radio"
-                                name="gender"
-                                value="Female"
-                                checked={gender === "Female"}
-                                onChange={(e) => setGender(e.target.value)}
-                              />
-                              <label
-                                htmlFor="gender-female"
-                                className="form-check-label"
-                              >
-                                Female
-                              </label>
-                            </div>
-                            <div className="form-check">
-                              <input
-                                id="gender-other"
-                                className="form-check-input m-0 mt-1"
-                                type="radio"
-                                name="gender"
-                                value="Other"
-                                checked={gender === "Other"}
-                                onChange={(e) => setGender(e.target.value)}
-                              />
-                              <label
-                                htmlFor="gender-other"
-                                className="form-check-label"
-                              >
-                                Other
-                              </label>
-                            </div>
-                          </div>
+                          ))}
                         </div>
-                        <div className="mb-5">
-                          <label className="stext-110  mb-2" htmlFor="birthday">
-                            Birthday
-                          </label>
-                          <div style={{ ...styles.bor8, ...styles.mB12 }}>
-                            <input
-                              id="birthday"
-                              className="form-control rounded-0"
-                              style={{
-                                ...styles.stext111,
-                                ...styles.size111,
-                                ...styles.pLr15,
-                              }}
-                              type="date"
-                              name="birthday"
-                              value={birthday}
-                              onChange={handleBirthdayChange}
-                            />
-                          </div>
-                        </div>
-                        <div className="flex-w">
-                          <button
-                            type="submit"
-                            className="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer"
-                          >
-                            Update Profile
-                          </button>
-                        </div>
+                      </div>
+                      <div className="mb-3">
+                        <label
+                          htmlFor="birthday"
+                          className="form-label fw-bold"
+                        >
+                          Birthday
+                        </label>
+                        <input
+                          type="date"
+                          id="birthday"
+                          className="form-control"
+                          value={birthday}
+                          onChange={handleBirthdayChange}
+                        />
+                      </div>
+                      <div className="text-end">
+                        <button
+                          type="submit"
+                          className="btn btn-success px-4 py-2 rounded-pill"
+                        >
+                          Update Profile
+                        </button>
                       </div>
                     </div>
                   </div>

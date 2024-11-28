@@ -8,6 +8,9 @@ const ConfirmAlert = async ({ title, text, confirmText, cancelText }) => {
     showCancelButton: true,
     confirmButtonText: confirmText || "Yes, do it!",
     cancelButtonText: cancelText || "Cancel",
+    customClass: {
+      container: 'swal2-container-custom',
+    }
   });
 
   return result.isConfirmed; // Trả về true nếu nhấn xác nhận, false nếu hủy

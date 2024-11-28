@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { registerUser } from "../../services/api/OAuthApi";
+import { registerUser, verifyOtp } from "../../services/api/OAuthApi";
+
 const Register = () => {
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isOtpStage, setIsOtpStage] = useState(false);
 
   const handleRegister = async (event) => {
     event.preventDefault();
@@ -20,8 +23,8 @@ const Register = () => {
     try {
       const response = await registerUser({ fullName, username, password });
       if (response.statusCode === 200) {
-        setSuccess("Registration successful");
-        // Redirect or show success message
+        setSuccess("Registration successful. Please enter the OTP sent to your email/phone.");
+        setIsOtpStage(true);
       } else {
         setError(response.error || "Registration failed");
       }
@@ -30,17 +33,35 @@ const Register = () => {
     }
   };
 
+  const handleVerifyOtp = async (event) => {
+    event.preventDefault();
+  
+    try {
+      const response = await verifyOtp({ username, otp });
+      if (response.statusCode === 200) {
+        setSuccess("OTP verified successfully. You can now login.");
+        setError("");
+      } else {
+        setError(response.error || "OTP verification failed");
+      }
+    } catch (error) {
+      setError("An error occurred during OTP verification");
+    }
+  };
+
+
   return (
-      <div className="container mt-5">
-        <div className="row justify-content-center">
-          <div className="col-md-4">
-            <div className="card shadow-sm">
-              <div className="card-body">
-                <h3 className="card-title text-center mb-4">Register</h3>
-                {error && <div className="alert alert-danger">{error}</div>}
-                {success && (
-                  <div className="alert alert-success">{success}</div>
-                )}
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-md-4">
+          <div className="card shadow-sm">
+            <div className="card-body">
+              <h3 className="card-title text-center mb-4">
+                {isOtpStage ? "Verify OTP" : "Register"}
+              </h3>
+              {error && <div className="alert alert-danger">{error}</div>}
+              {success && <div className="alert alert-success">{success}</div>}
+              {!isOtpStage ? (
                 <form onSubmit={handleRegister}>
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">
@@ -98,20 +119,40 @@ const Register = () => {
                     Register
                   </button>
                 </form>
-                <div className="d-flex justify-content-between mt-3">
-                  <Link
-                    to="/auth/login"
-                    className="btn btn-link"
-                    style={{ textDecoration: "none" }}
-                  >
-                    Already have an account? Login
-                  </Link>
-                </div>
+              ) : (
+                <form onSubmit={handleVerifyOtp}>
+                  <div className="mb-3">
+                    <label htmlFor="otp" className="form-label">
+                      Enter OTP
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="otp"
+                      placeholder="Enter the OTP"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary w-100">
+                    Verify OTP
+                  </button>
+                </form>
+              )}
+              <div className="d-flex justify-content-between mt-3">
+                <Link
+                  to="/auth/login"
+                  className="btn btn-link"
+                  style={{ textDecoration: "none" }}
+                >
+                  Already have an account? Login
+                </Link>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
   );
 };
 

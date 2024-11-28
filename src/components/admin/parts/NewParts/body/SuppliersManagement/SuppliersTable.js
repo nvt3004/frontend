@@ -10,6 +10,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import CustomButton from '../../component/CustomButton';
 import { FaTrashAlt } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import axiosInstance from '../../../../../../services/axiosConfig';
 
 const SuppliersTable = () => {
 
@@ -56,9 +57,10 @@ const SuppliersTable = () => {
     const [totalElements, setTotalElements] = useState(0);
 
     const handleGetSuppliersAPI = () => {
-        DoRequest().get(`/staff/suppliers?size=10&page=${currentPage}`).then(
+        axiosInstance.get(`/staff/suppliers?size=10&page=${currentPage}`).then(
             (response) => {
-                setSuppliers(response?.data?.data?.content);
+                const sortedSuppliers = response?.data?.data?.content;
+                setSuppliers(sortedSuppliers);
                 setTotalPage(response?.data?.data?.totalPages);
                 setTotalElements(response?.data?.data?.totalElements);
             }
@@ -81,10 +83,14 @@ const SuppliersTable = () => {
     useEffect(
         () => {
             handleGetSuppliersAPI();
-            console.log('is edit: ' + isEdit);
-            console.log('is new: ' + isNew);
         }, [currentPage, isEdit, isNew]
     );
+    useEffect(
+        () => {
+            console.log('supplier list: ', suppliers);
+
+        }, [suppliers]
+    )
 
     const { register, formState: { errors }, setValue, reset, getValues, trigger } = useForm();
 
@@ -105,11 +111,12 @@ const SuppliersTable = () => {
         ]);
 
         console.log('is valid: ' + isValid);
+        setValue('isActive', true);
         const supplier = getValues();
         if (!isValid) {
             toast.error('Form is not valid !!');
         } else {
-            DoRequest().put(`/staff/suppliers?id=${supplier?.supplierId}`, supplier).then(
+            axiosInstance.put(`/staff/suppliers?id=${supplier?.id}`, supplier).then(
                 (response) => {
                     if (response?.data?.errorCode === 200) {
                         toast.success(`Supplier updated successfully !!`);
@@ -139,11 +146,12 @@ const SuppliersTable = () => {
         ]);
 
         console.log('is valid: ' + isValid);
+        setValue('isActive', true);
         const supplier = getValues();
         if (!isValid) {
             toast.error('Form is not valid !!');
         } else {
-            DoRequest().post(`/staff/suppliers`, supplier).then(
+            axiosInstance.post(`/staff/suppliers`, supplier).then(
                 (response) => {
                     console.log(response);
 
@@ -172,7 +180,7 @@ const SuppliersTable = () => {
         ).then(
             (result) => {
                 if (result?.isConfirmed) {
-                    DoRequest().delete(`/staff/suppliers?id=${id}`).then(
+                    axiosInstance.delete(`/staff/suppliers?id=${id}`).then(
                         (response) => {
                             if (response?.data?.errorCode === 200 || response?.data?.errorCode === 201) {
                                 toast.success(`Supplier removed successfully !!`);
@@ -190,7 +198,7 @@ const SuppliersTable = () => {
     useEffect(
         () => {
             if (selectedSupplier) {
-                setValue("supplierId", selectedSupplier?.supplierId);
+                setValue("id", selectedSupplier?.supplierId);
             }
         }, [selectedSupplier]
     );
@@ -247,11 +255,13 @@ const SuppliersTable = () => {
                     <p className='font-13'>{`${(currentPage + 1) * 10 <= totalElements ? (currentPage + 1) * 10 : totalElements} of ${totalElements} `}
                         <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span>
                     </p>
-                    <Pagination className='border-0'>
-                        <Pagination.First>{`<`}</Pagination.First>
-                        {paginationItems}
-                        <Pagination.Last>{`>`}</Pagination.Last>
-                    </Pagination>
+                    {totalPage > 1 && (
+                        <Pagination className='border-0'>
+                            <Pagination.First>{`<`}</Pagination.First>
+                            {paginationItems}
+                            <Pagination.Last>{`>`}</Pagination.Last>
+                        </Pagination>
+                    )}
                 </div>
             </div>
             <div>

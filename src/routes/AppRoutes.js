@@ -25,6 +25,7 @@ import AddNewSupplier from "../components/admin/parts/AddNewSupplier";
 import PermissionManagement from "../components/admin/parts/PermissionManagement";
 import NewPermission from "../components/admin/parts/NewPermission";
 import FeedbackManagement from "../components/admin/parts/FeedbackManagement";
+import CustomerTable from "../components/admin/parts/NewParts/body/CustomerManagement/CustomerTable";
 
 // Auth Pages
 import AuthLayout from "../layouts/AuthLayout";
@@ -43,6 +44,12 @@ import StockIn from "../components/admin/parts/NewParts/body/WarehouseManagement
 import ProductCategories from "../components/admin/parts/NewParts/body/ProductManagement/ProductCategories";
 
 import ProtectedRoute from "./ProtectedRoute";
+import UpdateProduct from "../components/admin/parts/NewParts/body/ProductManagement/UpdateProduct";
+import ReceiptList from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptList";
+import OrderTable from "../components/admin/parts/NewParts/body/OrderManagement/OrderTable";
+import CouponTable from "../components/admin/parts/NewParts/body/CouponManagement/CouponTable";
+import AdvertisementTable from "../components/admin/parts/NewParts/body/AdvertisementManagement/AdvertisementTable";
+import NewAdvertisement from "../components/admin/parts/NewParts/body/AdvertisementManagement/NewAdvertisement";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -57,7 +64,7 @@ const router = createBrowserRouter([
       {
         path: "/shoping-cart",
         element: (
-          <ProtectedRoute element={<ShopingCart />} requiredRole="User,Admin" />
+          <ProtectedRoute element={<ShopingCart />} requiredRole="User,Staff,Admin" />
         ),
       },
       { path: "/blog", element: <Blog /> },
@@ -67,13 +74,19 @@ const router = createBrowserRouter([
       {
         path: "/account",
         element: (
-          <ProtectedRoute element={<Account />} requiredRole="User,Admin" />
+          <ProtectedRoute
+            element={<Account />}
+            requiredRole="User, Staff,Admin"
+          />
         ),
       },
       {
         path: "/wishlist",
         element: (
-          <ProtectedRoute element={<WishList />} requiredRole="User,Admin" />
+          <ProtectedRoute
+            element={<WishList />}
+            requiredRole="User,Staff,Admin"
+          />
         ),
       },
     ],
@@ -82,6 +95,15 @@ const router = createBrowserRouter([
     path: "/admin",
     element: <AdminLayout />,
     children: [
+      {
+        path: "customers/manage",
+        element: (
+          <ProtectedRoute
+            element={<CustomerTable />}
+            requiredRole="Admin,Staff"
+          />
+        ),
+      },
       {
         index: true,
         element: (
@@ -128,7 +150,7 @@ const router = createBrowserRouter([
             path: "manage",
             element: (
               <ProtectedRoute
-                element={<OrderManagement />}
+                element={<OrderTable />}
                 requiredRole="Admin,Staff"
               />
             ),
@@ -161,22 +183,21 @@ const router = createBrowserRouter([
       {
         path: "warehouse",
         children: [
-          { path: "manage", element: <SuppliersTable /> },
-          { path: "add", element: <AddNewSupplier /> },
+          { path: "manage", element: <ReceiptList /> },
+          { path: "stockin", element: <StockIn /> },
         ],
       },
-      // {
-      //   path: "permission",
-      //   children: [
-      //     // { path: 'manage', element: <WarehouseManagement/>},
-      //     { path: "stock-in", element: <StockIn /> },
-      //   ],
-      // },
       {
-        path: 'permission',
+        path: "coupon",
         children: [
-          { path: 'manage', element: <PermissionManagement /> },
-          { path: 'new', element: <NewPermission /> },
+          { path: "manage", element: <CouponTable /> },
+        ],
+      },
+      {
+        path: "advertisement",
+        children: [
+          { path: "new", element: <NewAdvertisement /> },
+          { path: "manage", element: <AdvertisementTable /> },
         ],
       },
       {
@@ -189,6 +210,7 @@ const router = createBrowserRouter([
           { path: "manage", element: <ProductTable /> },
           { path: "new", element: <NewProduct /> },
           { path: "categories", element: <ProductCategories /> },
+          { path: "update", element: <UpdateProduct /> },
         ],
       },
     ],

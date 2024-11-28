@@ -3,12 +3,11 @@ import React, { useState, useEffect } from "react";
 const SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
-const SpeechToText = ({ speechText }) => {
+const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [recognition, setRecognition] = useState(null);
   const [isWebSpeechSupported, setIsWebSpeechSupported] = useState(false);
-  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     if (SpeechRecognition) {
@@ -72,31 +71,20 @@ const SpeechToText = ({ speechText }) => {
     }
   };
 
-  // Hàm mở modal
-  const handleOpenModal = () => {
-    setShowModal(true);
-  };
-
-  // Hàm đóng modal
   const handleCloseModal = () => {
     if (isRecording) {
       handleRecordButton();
     }
-    setShowModal(false);
+    if (onCloseModal) {
+      onCloseModal();
+    }
     setTranscript("");
   };
 
   return (
     <div>
-      <button
-        className="size-113 flex-c-m fs-23 cl2 hov-cl1 trans-04 me-2"
-        onClick={handleOpenModal}
-      >
-        <i className="zmdi zmdi-mic"></i>
-      </button>
-
       {/* Modal ghi âm */}
-      {showModal && (
+      {isModalOpen && (
         <div
           className="modal fade show"
           tabIndex="-1"
@@ -105,7 +93,7 @@ const SpeechToText = ({ speechText }) => {
         >
           <div className="modal-dialog modal-dialog-centered" role="document">
             <div className="modal-content rounded-0">
-              <div className="w-100 text-end ">
+              <div className="w-100 text-end">
                 <button
                   type="button"
                   className="btn-close mt-3 me-3"
@@ -127,16 +115,15 @@ const SpeechToText = ({ speechText }) => {
                   style={{ height: "100px" }}
                 >
                   <div className="mt-6 waveform-container d-flex justify-content-center">
-                    {[...Array(20)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="waveform-bar"
-                        style={
-                          isRecording ? { animationDelay: `${i * 0.1}s` } : {}
-                        }
-                      ></div>
-                    ))}
-                  </div>
+  {[...Array(20)].map((_, i) => (
+    <div
+      key={i}
+      className={`waveform-bar ${isRecording ? "animate-waveform" : ""}`}
+      style={isRecording ? { animationDelay: `${i * 0.1}s` } : {}}
+    ></div>
+  ))}
+</div>
+
                 </div>
 
                 {/* Kết quả nhận dạng */}
@@ -169,67 +156,31 @@ const SpeechToText = ({ speechText }) => {
           </div>
         </div>
       )}
+    <style>{`
+  @keyframes waveform {
+    0%, 100% {
+      height: 4px;
+    }
+    50% {
+      height: 30px;
+    }
+  }
+  .waveform-container {
+    display: flex;
+    gap: 5px;
+  }
+  .waveform-bar {
+    width: 4px;
+    background-color: #717fe0; /* Màu tím */
+    border-radius: 4px;
+    height: 4px; /* Mặc định chiều cao */
+    /* Không có animation khi chưa record */
+  }
+  .waveform-bar.animate-waveform {
+    animation: waveform 1s ease-in-out infinite; /* Chỉ chạy khi có lớp này */
+  }
+`}</style>
 
-      <style>{`
-        @keyframes pulse {
-          0%,
-          100% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.5;
-          }
-        }
-        @keyframes wave {
-          0% {
-            transform: scale(0.9);
-          }
-          50% {
-            transform: scale(1.1);
-          }
-          100% {
-            transform: scale(0.9);
-          }
-        }
-        .animate-pulse {
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        .animate-wave {
-          animation: wave 1.5s infinite;
-        }
-        .dialog-content {
-          animation: slideUp 0.3s ease-out;
-        }
-        @keyframes slideUp {
-          from {
-            transform: translateY(10%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        @keyframes waveform {
-          0%,
-          100% {
-            height: 4px;
-          }
-          50% {
-            height: 30px;
-          }
-        }
-        .waveform-container {
-          display: flex;
-          gap: 5px;
-        }
-        .waveform-bar {
-          width: 4px;
-          background-color: #717fe0; /* Màu tím */
-          border-radius: 4px;
-          animation: waveform 1s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 };

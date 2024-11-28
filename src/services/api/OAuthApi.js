@@ -52,14 +52,10 @@ export const loginSocial = async (userData) => {
 export const loginWithEmail = async (username, password) => {
   try {
     const response = await axiosInstance.post("/login", { username, password });
-    if (response.status === 200) {
+    if (response.data.statusCode === 200) {
       console.log("User login successfully:", response.data);
 
-      // const decodedToken = jwtDecode(response.data.token);
-      // const expTimeInSeconds = decodedToken.exp - Math.floor(Date.now() / 1000);
-      // const expTimeInDays = expTimeInSeconds / (24 * 60 * 60);
-
-      const thirtyMinutesInDays = 30 / (24 * 60);
+      const thirtyMinutesInDays = (5 * 60) / (24 * 60);
 
       const decodedRefreshToken = jwtDecode(response.data.refreshToken);
       const expTimeInSecondRefreshToken =
@@ -78,16 +74,21 @@ export const loginWithEmail = async (username, password) => {
     } else {
       console.error(
         "Login failed with status:",
-        response.status,
+        response.data.statusCode,
         response.data
       );
-      throw new Error(response.data.error || "Login failed");
+
+      // Attach the response to the error object
+      const error = new Error(response.data.error || "Login failed");
+      error.response = response; // Attach response
+      throw error;
     }
   } catch (error) {
     console.error("User login failed:", error);
-    throw error;
+    throw error; // Retain original error with response attached
   }
 };
+
 
 export const registerUser = async (userData) => {
   try {
@@ -224,3 +225,16 @@ export const sendResetPasswordSMS = async (phoneNumber) => {
     throw new Error(error.message);
   }
 };
+
+export const verifyOtp = async ({ username, otp }) => {
+  const response = await fetch('/api/verify-otp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ username, otp }),
+  });
+  return response.json();
+};
+
+

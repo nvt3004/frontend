@@ -31,7 +31,7 @@ const SupplierModal = ({ supplier, show, isNew, isEdit, handleChange, handelEdit
                             <Form.Label>Supplier</Form.Label>
                             <Form.Control type='text' defaultValue={(supplier && !isEdit) ? supplier?.supplierName : ''}
                                 {...register("supplierName", { required: true })}
-                                placeholder={(supplier && isEdit) && supplier?.supplierName}
+                                placeholder={`Supplier's name`}
                                 onKeyDown={handleChange} onPaste={handleChange}
                                 disabled={!supplier && !isNew} />
                             {errors?.supplierName && (
@@ -42,7 +42,7 @@ const SupplierModal = ({ supplier, show, isNew, isEdit, handleChange, handelEdit
                             <Form.Label>Address</Form.Label>
                             <Form.Control type='text' defaultValue={supplier && !isEdit ? supplier?.address : ''}
                                 {...register("address", { required: true })}
-                                placeholder={(supplier && isEdit) && supplier?.address}
+                                placeholder={'Address'}
                                 onKeyDown={handleChange} onPaste={handleChange}
                                 disabled={!supplier && !isNew} />
                             {errors?.address && (
@@ -59,7 +59,7 @@ const SupplierModal = ({ supplier, show, isNew, isEdit, handleChange, handelEdit
                                         message: "Email does not valid"
                                     }
                                 })}
-                                placeholder={(supplier && isEdit) && supplier?.email}
+                                placeholder={'Email'}
                                 onKeyDown={handleChange} onPaste={handleChange}
                                 disabled={!supplier && !isNew} />
                             {errors?.email && (
@@ -76,7 +76,7 @@ const SupplierModal = ({ supplier, show, isNew, isEdit, handleChange, handelEdit
                                         message: "Phone number does not valid"
                                     }
                                 })}
-                                placeholder={(supplier && isEdit) && supplier?.phone}
+                                placeholder={'Phone number'}
                                 onKeyDown={handleChange} onPaste={handleChange}
                                 disabled={!supplier && !isNew} />
                             {errors?.phone && (

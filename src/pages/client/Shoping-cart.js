@@ -1,17 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  getAllProvince,
-  getAllDistrictByProvince,
-  getAllWardByDistrict,
-} from "../../services/api/ghnApi";
 import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import ConfirmAlert from "../../components/client/sweetalert/ConfirmAlert";
 import InfoAlert from "../../components/client/sweetalert/InfoAlert";
-import { useForm } from "react-hook-form";
 import { stfExecAPI, ghnExecAPI } from "../../stf/common";
 import AttributeItem from "../../components/client/AttributeItem/AttributeItem";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const getEndDate = (end) => {
   const now = new Date();
@@ -69,7 +66,6 @@ function getRowCelCick(attributes = [], item) {
 
       if (key?.toLowerCase() == item?.key?.toLowerCase()) {
         if (val?.toLowerCase() == item?.value?.toLowerCase()) {
-          console.log("Vô for");
           return [i, j];
         }
       }
@@ -80,8 +76,9 @@ function getRowCelCick(attributes = [], item) {
 }
 
 const ShopingCart = () => {
+  const navigate = useNavigate();
   const [carts, setCarts] = useState([]);
-
+  console.log("@carts: ", carts);
   //ví dụ
   const [ProductID, setProductID] = useState(1);
   const [VersionID, setVersionID] = useState([]);
@@ -256,6 +253,7 @@ const ShopingCart = () => {
 
     setAttriTest(tem);
     setProduct(partitionProduct(pd, tem, [row, cel], key));
+    console.log(8666, pd);
   };
 
   //Đổ danh sách cart của user
@@ -301,6 +299,7 @@ const ShopingCart = () => {
 
     return total;
   }, []);
+  console.log("@seletedItem: ", selectedItems);
 
   //Xóa cart item
   const handleDeleteCartItem = async (id) => {
@@ -319,10 +318,10 @@ const ShopingCart = () => {
     });
 
     if (error) {
-      DangerAlert({
-        text:
-          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Server error",
+      toast.error(`${error?.response?.data?.message}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
@@ -334,35 +333,54 @@ const ShopingCart = () => {
 
     setCarts(carts.filter((c) => c.catrItemId !== id));
 
-    SuccessAlert({
-      text: "Delete cart item success!",
+    toast.success("Delete cart item success!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
     });
   };
 
   //Thanh toán
   const handleProceedToCheckout = async () => {
     if (selectedItems.length <= 0) {
-      InfoAlert({
-        text: "Please select product before checkout!",
+      toast.info("Please select product before checkout!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
 
     if (!address) {
-      InfoAlert({
-        text: "Please select address before checkout!",
+      toast.info("Please select address before checkout!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
 
+    //Đổ carts
+    const fetchCarts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: "api/user/cart/all",
+      });
+
+      if (data) {
+        setCarts(data.data);
+      }
+    };
+
     if (couponRead.trim() !== "") {
       const [error, data] = await stfExecAPI({
-        url: `api/user/coupon/${iputEnter}`,
+        url: `api/user/coupon?code=${iputEnter}`,
       });
 
       if (error) {
-        InfoAlert({
-          text: "Coupon not found!",
+        toast.info("Coupon not found!", {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
         });
         return;
       }
@@ -376,6 +394,15 @@ const ShopingCart = () => {
       };
     });
 
+    console.log("@ty", {
+      address: addressTitle,
+      couponCode: iputEnter || null,
+      creatorIsAdmin: false,
+      ["fee"]: feeShip,
+      statusId: 1,
+      paymentMethodId: 2,
+      orderDetails: detail,
+    });
     if (pay) {
       const [error, data] = await stfExecAPI({
         method: "post",
@@ -384,6 +411,7 @@ const ShopingCart = () => {
           address: addressTitle,
           couponCode: iputEnter || null,
           creatorIsAdmin: false,
+          fee,
           statusId: 1,
           paymentMethodId: 2,
           orderDetails: detail,
@@ -391,10 +419,19 @@ const ShopingCart = () => {
       });
 
       if (error) {
-        DangerAlert({
-          text:
-            `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-            "Server error",
+        fetchCarts();
+
+        setSubTotal(0);
+        setTotal(0);
+        setCouponRead("");
+        setIputEnter("");
+        setSelectAll(false);
+        setSelectedItems([]);
+
+        toast.info(`${error?.response?.data?.message}`, {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
         });
         return;
       }
@@ -411,18 +448,6 @@ const ShopingCart = () => {
       };
 
       fetchCoupon();
-
-      //Đổ carts
-      const fetchCarts = async () => {
-        const [error, data] = await stfExecAPI({
-          url: "api/user/cart/all",
-        });
-
-        if (data) {
-          setCarts(data.data);
-        }
-      };
-
       fetchCarts();
 
       setSubTotal(0);
@@ -430,8 +455,10 @@ const ShopingCart = () => {
       setCouponRead("");
       setIputEnter("");
 
-      SuccessAlert({
-        text: "Checkout success!",
+      toast.success("Checkout success!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
     } else {
       const [error, data] = await stfExecAPI({
@@ -441,7 +468,7 @@ const ShopingCart = () => {
           address: addressTitle,
           couponCode: iputEnter || null,
           creatorIsAdmin: false,
-          fee: fee,
+          fee,
           statusId: 1,
           paymentMethodId: 2,
           orderDetails: detail,
@@ -453,10 +480,19 @@ const ShopingCart = () => {
       });
 
       if (error) {
-        DangerAlert({
-          text:
-            `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-            "Server error",
+        fetchCarts();
+
+        setSubTotal(0);
+        setTotal(0);
+        setCouponRead("");
+        setIputEnter("");
+        setSelectAll(false);
+        setSelectedItems([]);
+
+        toast.info(`${error?.response?.data?.message}`, {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
         });
         return;
       }
@@ -464,7 +500,6 @@ const ShopingCart = () => {
       window.location.href = data.data;
     }
   };
-
   //Chọn coupon
   const handleCoupon = (event) => {
     const v = event.target.value.trim();
@@ -494,10 +529,10 @@ const ShopingCart = () => {
     });
 
     if (error) {
-      DangerAlert({
-        text:
-          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Server error",
+      toast.info(`${error?.response?.data?.message}` || "Server error", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
@@ -521,12 +556,17 @@ const ShopingCart = () => {
 
     fetchCarts();
 
-    SuccessAlert({
-      text: "Update cart item success!",
+    toast.success("Update cart item success!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
     });
   };
 
   const handleAddress = async (e) => {
+    if (e.target.value === "") {
+      navigate("/account"); // Điều hướng tới trang Add new address
+    }
     const a = addresses.find((o) => o?.addressId == e.target.value);
 
     const feeS = await feeShip(
@@ -590,37 +630,48 @@ const ShopingCart = () => {
       },
     });
 
+    //Đổ lại giỏ hàng
+    const fetchCarts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: "api/user/cart/all",
+      });
+
+      if (data) {
+        const temp = [...selectedItems].map((s) => {
+          if (s.catrItemId === id) {
+            return { ...s, quantity: quantity };
+          } else {
+            return s;
+          }
+        });
+        setCarts(data.data);
+        setSelectedItems(temp);
+        setSubTotal(totalPrice(temp));
+      }
+    };
+
     if (error) {
-      console.log(error);
-      DangerAlert({
-        text:
-          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Server error",
+      //Nếu là vượt quá số lượng tồn kho thì cập nhật số lượng tồn kho vào giỏ hàng
+      if (error?.response?.data?.code === 999) {
+        fetchCarts();
+
+        setSubTotal(0);
+        setTotal(0);
+        setCouponRead("");
+        setIputEnter("");
+        setSelectAll(false);
+        setSelectedItems([]);
+      }
+
+      toast.info(`${error?.response?.data?.message}` || "Server error", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
 
     if (data) {
-      const fetchCarts = async () => {
-        const [error, data] = await stfExecAPI({
-          url: "api/user/cart/all",
-        });
-
-        if (data) {
-          const temp = [...selectedItems].map((s) => {
-            if (s.catrItemId === id) {
-              return { ...s, quantity: quantity };
-            } else {
-              return s;
-            }
-          });
-          console.log(temp);
-          setCarts(data.data);
-          setSelectedItems(temp);
-          setSubTotal(totalPrice(temp));
-        }
-      };
-
       fetchCarts();
     }
   };
@@ -668,9 +719,12 @@ const ShopingCart = () => {
 
     // Nếu select all được chọn, tất cả sản phẩm sẽ được chọn, ngược lại thì bỏ chọn
     if (newSelectAll) {
-      setSelectedItems([...carts]);
-      setVersionID([...carts]);
-      setSubTotal(totalPrice(carts));
+      const tempCart = carts.filter(
+        (c) => c.statusVersion && c.stockQuantity > 0
+      );
+      setSelectedItems(tempCart);
+      setVersionID(tempCart);
+      setSubTotal(totalPrice(tempCart));
     } else {
       setSelectedItems([]);
       setVersionID([]);
@@ -706,7 +760,7 @@ const ShopingCart = () => {
   useEffect(() => {
     const fetchCouponRead = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/user/coupon/${iputEnter}`,
+        url: `api/user/coupon?code=${iputEnter}`,
       });
 
       if (error) {
@@ -728,14 +782,16 @@ const ShopingCart = () => {
   //Áp dụng coupon
   const handleApplyCoupon = async () => {
     const [error, data] = await stfExecAPI({
-      url: `api/user/coupon/${iputEnter}`,
+      url: `api/user/coupon?code=${iputEnter}`,
     });
 
     if (error) {
       setCouponRead("");
 
-      DangerAlert({
-        text: "Coupon not found!",
+      toast.info("Coupon not found!", {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
       });
       return;
     }
@@ -747,8 +803,10 @@ const ShopingCart = () => {
 
     setCouponRead(`${c.couponCode} - Giảm ${formatCurrencyVND(pri)}`);
 
-    SuccessAlert({
-      text: "Apply coupon success",
+    toast.success("Apply coupon success!", {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
     });
   };
 
@@ -756,7 +814,7 @@ const ShopingCart = () => {
   useEffect(() => {
     const fetchCouponRead = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/user/coupon/${iputEnter}`,
+        url: `api/user/coupon?code=${iputEnter}`,
       });
 
       if (error) {
@@ -790,7 +848,6 @@ const ShopingCart = () => {
       return { key: i.key, value: val || "" };
     });
 
-    console.log("Ty ", data);
     product.forEach((p) => {
       p.values.forEach((vl) => {
         if (vl.active && !vl.disible) {
@@ -862,18 +919,32 @@ const ShopingCart = () => {
                     <tbody>
                       {carts &&
                         carts.map((product, index) => (
-                          <tr className="table_row" key={product.id}>
+                          <tr
+                            className="table_row"
+                            key={product.id}
+                            // style={!product.statusVersion || product.stockQuantity<=0? {
+                            //   backgroundColor: "#fafafa",
+                            //   opacity: 0.5,
+                            //   pointerEvents: "none",
+                            //   cursor: "not-allowed",
+                            // }: {}}
+                          >
                             <td className="p-4 pt-0">
-                              <input
-                                type="checkbox"
-                                className="form-check-input"
-                                checked={
-                                  selectedItems.filter(
-                                    (o) => o.catrItemId === product.catrItemId
-                                  ).length > 0
-                                }
-                                onChange={() => handleSelectItem(product)} // Xử lý khi checkbox con được click
-                              />
+                              {product.statusVersion &&
+                              product.stockQuantity > 0 ? (
+                                <input
+                                  type="checkbox"
+                                  className="form-check-input"
+                                  checked={
+                                    selectedItems.filter(
+                                      (o) => o.catrItemId === product.catrItemId
+                                    ).length > 0
+                                  }
+                                  onChange={() => handleSelectItem(product)} // Xử lý khi checkbox con được click
+                                />
+                              ) : (
+                                ""
+                              )}
                             </td>
                             <td>
                               <div className="how-itemcart1">
@@ -882,39 +953,23 @@ const ShopingCart = () => {
                               </div>
                             </td>
                             <td>
-                              <h6>{product.productName}</h6>
+                              <h6 className="mb-2">{product.productName}</h6>
                               <button
+                                style={
+                                  !product.statusVersion
+                                    ? {
+                                        backgroundColor: "#fafafa",
+                                        opacity: 0.5,
+                                        pointerEvents: "none",
+                                        cursor: "not-allowed",
+                                      }
+                                    : {}
+                                }
                                 type="button"
-                                className="  stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
+                                className="text-ellipsis mb-2 stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
                                 data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop"
                                 onClick={() => {
-                                  console.log(1, product);
-                                  console.log(
-                                    2,
-                                    product.productDetail.attributes
-                                  );
-                                  console.log(3, product.attributes[0]);
-                                  console.log(4, product.attributes[0].key);
-                                  console.log(
-                                    5,
-                                    partitionProduct(
-                                      product,
-                                      product.attributes,
-                                      getRowCelCick(
-                                        product.productDetail.attributes,
-                                        product.attributes[0]
-                                      ),
-                                      product.attributes[0].key
-                                    )
-                                  );
-                                  console.log(
-                                    "Rowcel: ",
-                                    getRowCelCick(
-                                      product.productDetail.attributes,
-                                      product.attributes[0]
-                                    )
-                                  );
                                   setItemCartUpdate({
                                     cartItemId: product.catrItemId,
                                     versions: [
@@ -935,6 +990,7 @@ const ShopingCart = () => {
                                   );
                                   setAttriTest(product.attributes);
                                 }}
+                                
                               >
                                 {product.productDetail.versions.find(
                                   (o) => o.id == product.versionId
@@ -945,11 +1001,34 @@ const ShopingCart = () => {
                                     .join(" - ")}{" "}
                                 (<i className="zmdi zmdi-edit"></i>)
                               </button>
+
+                              <div>
+                                <span className="mx-2 text-danger">
+                                  {!product.statusVersion
+                                    ? "Discontinued"
+                                    : product.stockQuantity <= 0
+                                    ? "Sold out"
+                                    : ""}
+                                </span>
+                              </div>
                             </td>
                             <td>{formatCurrencyVND(product.price)}</td>
                             <td>
                               {/* Giả lập số lượng sản phẩm */}
-                              <div className="wrap-num-product flex-w">
+                              <div
+                                className="wrap-num-product flex-w"
+                                style={
+                                  !product.statusVersion ||
+                                  product.stockQuantity <= 0
+                                    ? {
+                                        backgroundColor: "#fafafa",
+                                        opacity: 0.5,
+                                        pointerEvents: "none",
+                                        cursor: "not-allowed",
+                                      }
+                                    : {}
+                                }
+                              >
                                 <div
                                   onClick={() => {
                                     handleUpdateQuantiy(
@@ -1001,43 +1080,43 @@ const ShopingCart = () => {
                                       parseInt(e.target.value) || 1
                                     ); // Chặn số âm và giá trị 0
 
-                                    if (value === 1) {
-                                      const [error, data] = await stfExecAPI({
-                                        url: "api/user/cart/all",
-                                      });
+                                    // if (value === 1) {
+                                    //   const [error, data] = await stfExecAPI({
+                                    //     url: "api/user/cart/all",
+                                    //   });
 
-                                      value = data.data?.find(
-                                        (o) =>
-                                          o.catrItemId === product.catrItemId
-                                      )?.quantity;
+                                    //   value = data.data?.find(
+                                    //     (o) =>
+                                    //       o.catrItemId === product.catrItemId
+                                    //   )?.quantity;
 
-                                      setCarts(
-                                        carts.map((i) => {
-                                          if (
-                                            i.catrItemId === product.catrItemId
-                                          ) {
-                                            return { ...i, quantity: value };
-                                          } else {
-                                            return i;
-                                          }
-                                        })
-                                      );
+                                    //   setCarts(
+                                    //     carts.map((i) => {
+                                    //       if (
+                                    //         i.catrItemId === product.catrItemId
+                                    //       ) {
+                                    //         return { ...i, quantity: value };
+                                    //       } else {
+                                    //         return i;
+                                    //       }
+                                    //     })
+                                    //   );
 
-                                      const temp = [...selectedItems].map(
-                                        (s) => {
-                                          if (
-                                            s.catrItemId === product.catrItemId
-                                          ) {
-                                            return { ...s, quantity: value };
-                                          } else {
-                                            return s;
-                                          }
-                                        }
-                                      );
-                                      setSelectedItems(temp);
-                                      setSubTotal(totalPrice(temp));
-                                      return;
-                                    }
+                                    //   const temp = [...selectedItems].map(
+                                    //     (s) => {
+                                    //       if (
+                                    //         s.catrItemId === product.catrItemId
+                                    //       ) {
+                                    //         return { ...s, quantity: value };
+                                    //       } else {
+                                    //         return s;
+                                    //       }
+                                    //     }
+                                    //   );
+                                    //   setSelectedItems(temp);
+                                    //   setSubTotal(totalPrice(temp));
+                                    //   return;
+                                    // }
 
                                     handleUpdateQuantiy(
                                       product.catrItemId,
@@ -1143,16 +1222,26 @@ const ShopingCart = () => {
                       <span className="stext-110 cl2">Address*:</span>
                       <div className="mt-2">
                         <select
-                          className="w-100 border border-1 p-2 form-select stext-111"
+                          className="pe-5 text-ellipsis w-100 border border-1 p-2 form-select stext-111"
                           aria-label="Default select example"
                           onChange={handleAddress}
                         >
+                          {" "}
+                          <option value="">
+                            <Link
+                              to="/account"
+                              className="text-decoration-none"
+                            >
+                              Add new address
+                            </Link>
+                          </option>
                           {addresses &&
                             addresses.map((item) => {
                               return (
                                 <option
                                   selected={item?.addressId === Number(address)}
                                   value={item?.addressId}
+                          
                                 >
                                   {`${getNameAddress(
                                     item?.province
