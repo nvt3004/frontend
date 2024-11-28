@@ -115,15 +115,18 @@ const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
                   style={{ height: "100px" }}
                 >
                   <div className="mt-6 waveform-container d-flex justify-content-center">
-  {[...Array(20)].map((_, i) => (
-    <div
-      key={i}
-      className={`waveform-bar ${isRecording ? "animate-waveform" : ""}`}
-      style={isRecording ? { animationDelay: `${i * 0.1}s` } : {}}
-    ></div>
-  ))}
-</div>
-
+                    {[...Array(20)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`waveform-bar ${
+                          isRecording ? "animate-waveform" : ""
+                        }`}
+                        style={
+                          isRecording ? { animationDelay: `${i * 0.1}s` } : {}
+                        }
+                      ></div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Kết quả nhận dạng */}
@@ -156,7 +159,7 @@ const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
           </div>
         </div>
       )}
-    <style>{`
+      <style>{`
   @keyframes waveform {
     0%, 100% {
       height: 4px;
@@ -180,7 +183,6 @@ const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
     animation: waveform 1s ease-in-out infinite; /* Chỉ chạy khi có lớp này */
   }
 `}</style>
-
     </div>
   );
 };
