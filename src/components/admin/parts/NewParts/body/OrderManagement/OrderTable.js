@@ -324,7 +324,7 @@ const OrderTable = () => {
     const toggleOrderDetails = (order) => { setOrderID(prevState => ({ value: prevState.value === order?.orderId ? null : order?.orderId, isOpen: prevState.value !== order?.orderId })); };
 
     const handleChangeStatus = (option, orderID) => {
-        if (option?.value < 4 || option?.value === 5) {
+        // if (option?.value < 4 || option?.value === 5) {
             Swal.fire({
                 title: 'Confirm to change status',
                 text: 'Do you want to change the status of this order?',
@@ -356,9 +356,10 @@ const OrderTable = () => {
                         });
                 }
             });
-        } else {
-            toast.warning(`You cannot set the status to ${option?.label.toLowerCase()}`);
-        }
+        // } 
+        // else {
+        //     toast.warning(`You cannot set the status to ${option?.label.toLowerCase()}`);
+        // }
     };
 
     useEffect(
