@@ -18,6 +18,7 @@ import html2canvas from 'html2canvas';
 import printJS from 'print-js';
 import Modal from 'react-modal';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import qz from 'qz-tray';
 
 const OrderTable = () => {
     // START GET orders
@@ -710,224 +711,290 @@ const OrderTable = () => {
 
     const componentRef = React.useRef();
     const [modalIsOpen, setModalIsOpen] = useState(false);
-    const handlePrint = async () => {
+    // const handlePrint = async () => {
+    //     try {
+    //         const iframe = document.createElement('iframe');
+    //         iframe.style.display = 'none'; // Ẩn iframe
+    //         document.body.appendChild(iframe);
+
+    //         const printContents = componentRef.current.innerHTML;
+
+    //         if (!printContents) {
+    //             console.error("Không có nội dung để in.");
+    //             return;
+    //         }
+    //         const doc = iframe.contentWindow.document;
+    //         doc.open();
+    //         doc.write(`
+    //         <html>
+    //             <head>
+    //                 <title>Invoice</title>
+    //                 <style>
+
+    //                     body {
+    //                         font-size: 12px;
+    //                         color: #333;
+    //                         padding: 0;
+    //                     }
+
+    //                     @page {
+    //                         size: A5;
+    //                         transform: scale(50)!important; 
+    //                         transform-origin: top left; 
+    //                     }
+
+    //                     h3 {
+    //                         text-align: center;
+    //                         color: #444;
+    //                         margin-bottom: 20px;
+    //                     }
+    //                     table {
+    //                         width: 100%;
+    //                         border-collapse: collapse;
+    //                         margin-top: 20px;
+    //                     }
+
+    //                     .no-print {
+    //                         display: none !important;
+    //                     }
+    //                     .product-name {
+    //                         max-width: 150px;
+    //                         overflow: hidden;
+    //                         text-overflow: ellipsis;
+    //                         white-space: nowrap;
+    //                     }
+    //                     .order-table-img {
+    //                         max-width: 120px;
+    //                         max-height: 80px;
+    //                         width: auto;
+    //                         height: auto;
+    //                         object-fit: contain;
+    //                     }
+    //                     .custom-button {
+    //                         display: none;
+    //                     }
+    //                     .order-summary td {
+    //                         font-weight: bold;
+    //                     }
+    //                     .order-summary {
+    //                         margin-top: 20px;
+    //                     }
+
+    //                    .print-text-wrap {
+    //                             white-space: normal !important;
+    //                             word-wrap: break-word !important;
+    //                             overflow: visible !important;
+    //                    }
+
+    //                    table {
+    //                     width: 100%;
+    //                     border-collapse: collapse;  /* Hợp nhất các đường viền */
+    //                 }
+
+    //                 th, td {
+    //                     border: 1px solid #000; 
+    //                     padding: 8px; 
+    //                     text-align: left; 
+    //                     word-wrap: break-word;
+    //                 }                      
+
+
+    //                 th:nth-child(2),
+    //                 td:nth-child(2) {
+    //                     width: auto !important; 
+    //                 }
+
+    //                 th:nth-child(3),
+    //                 td:nth-child(3) {
+    //                     width: 80px !important; 
+    //                 }
+
+
+    //                 th:nth-child(5),
+    //                 td:nth-child(5) {
+    //                     width: 100px !important; 
+    //                 }
+
+
+    //                 /*Cột quantity*/
+    //                 th:nth-child(7),
+    //                 td:nth-child(7) {
+    //                      width: 10px !important; 
+    //                 }
+
+    //                 /*Cột tiền*/
+    //                 th:nth-child(8),
+    //                 td:nth-child(8) {
+    //                      width: 150px !important; 
+    //                 }
+
+    //                 .print {
+    //                     display: table-row !important;
+    //                 }
+    //                 .no-print {
+    //                     display: none !important;
+    //                 }
+
+    //                 .text-center {
+    //                     text-align: center;
+    //                 }
+
+    //                  .text-right {
+    //                     text-align: right;
+    //                 }
+
+    //                 th {
+    //                     background-color: #f8f8f8;
+    //                     font-weight: bold;
+    //                 }
+
+    //                 tr {
+    //                     page-break-inside: avoid;  /* Tránh chia cắt các dòng khi in */
+    //                 }
+    //                 .quantity-custom{
+    //                     background: none !important;
+    //                     box-shadow: none !important; 
+    //                     border: none !important; 
+    //                     text-align: center !important; 
+    //                     padding: 0;
+    //                 }
+
+    //                 .print-width {
+    //                     width: 600px !important;
+    //                 }
+    //                 .qr-code {
+    //                 position: absolute;
+    //                 top: 0px;  
+    //                 left: 0px; 
+    //                 text-align: left;
+    //                 padding: 10px;
+    //                 border: 1px solid pink;
+    //                 border-radius: 5px;
+    //             }
+
+    //                 </style>
+    //             </head>
+    //             <body>
+    //             ${printContents}
+    //             </body>
+    //         </html>
+    //     `);
+
+    //         doc.close();
+
+    //         // Chờ ảnh tải xong 
+    //         await new Promise((resolve, reject) => {
+    //             const images = iframe.contentWindow.document.images;
+    //             if (images.length === 0) {
+    //                 resolve();
+    //                 return;
+    //             }
+    //             Promise.all(Array.from(images).map(img => new Promise((res, rej) => {
+    //                 const handleLoad = () => res();
+    //                 const handleError = () => rej();
+    //                 img.onload = handleLoad;
+    //                 img.onerror = handleError;
+    //                 if (img.complete) handleLoad();
+    //             }))).then(resolve).catch(reject);
+    //         });
+
+    //         if (typeof window.print !== 'function') {
+    //             console.warn('Trình duyệt này có vẻ không hỗ trợ chức năng in.');
+    //             toast.error('Trình duyệt của bạn có thể không hỗ trợ chức năng in. Vui lòng thử trình duyệt khác.');
+    //             return;
+    //         }
+
+    //         // Kiểm tra khả năng in
+    //         if (iframe.contentWindow && iframe.contentWindow.print) {
+    //             iframe.contentWindow.print();
+    //         } else {
+    //             console.error("Print function not supported or blocked by the browser.");
+    //             toast.error("Trình duyệt không hỗ trợ chức năng in hoặc bị chặn. Vui lòng kiểm tra cài đặt trình duyệt.");
+    //         }
+
+    //         document.body.removeChild(iframe);
+    //     } catch (error) {
+    //         console.error("Error during printing:", error);
+    //         let errorMessage = "Đã xảy ra lỗi trong quá trình in. Vui lòng thử lại.";
+    //         if (error instanceof DOMException && error.name === "SecurityError") {
+    //             errorMessage = "Trình duyệt hoặc cài đặt bảo mật đã chặn thao tác in ấn. Vui lòng kiểm tra cài đặt của bạn.";
+    //         } else if (error.message.includes("blocked by a popup blocker")) {
+    //             errorMessage = "Cửa sổ in ấn đã bị trình chặn popup chặn. Vui lòng kiểm tra cài đặt của trình chặn popup.";
+    //         }
+    //         toast.error(errorMessage, {
+    //             position: toast.POSITION.TOP_RIGHT,
+    //             autoClose: 5000,
+    //         });
+    //         setModalIsOpen(true);
+    //         toast.error(errorMessage);
+    //     }
+    // };
+
+    const [pdfData, setPdfData] = useState(null);
+    const printInvoice = async (orderId) => {
         try {
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none'; // Ẩn iframe
-            document.body.appendChild(iframe);
-
-            const printContents = componentRef.current.innerHTML;
-
-            if (!printContents) {
-                console.error("Không có nội dung để in.");
-                return;
+            const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {}, { responseType: 'blob' });
+    
+            if (!response || !response.data) {
+                throw new Error("No image data received from backend.");
             }
-            const doc = iframe.contentWindow.document;
-            doc.open();
-            doc.write(`
-            <html>
-                <head>
-                    <title>Invoice</title>
-                    <style>
-
-                        body {
-                            font-size: 12px;
-                            color: #333;
-                            padding: 0;
-                        }
-
-                        @page {
-                            size: A5;
-                            transform: scale(50)!important; 
-                            transform-origin: top left; 
-                        }
-
-                        h3 {
-                            text-align: center;
-                            color: #444;
-                            margin-bottom: 20px;
-                        }
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-top: 20px;
-                        }
-
-                        .no-print {
-                            display: none !important;
-                        }
-                        .product-name {
-                            max-width: 150px;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                        }
-                        .order-table-img {
-                            max-width: 120px;
-                            max-height: 80px;
-                            width: auto;
-                            height: auto;
-                            object-fit: contain;
-                        }
-                        .custom-button {
-                            display: none;
-                        }
-                        .order-summary td {
-                            font-weight: bold;
-                        }
-                        .order-summary {
-                            margin-top: 20px;
-                        }
-                    
-                       .print-text-wrap {
-                                white-space: normal !important;
-                                word-wrap: break-word !important;
-                                overflow: visible !important;
-                       }
-                        
-                       table {
-                        width: 100%;
-                        border-collapse: collapse;  /* Hợp nhất các đường viền */
-                    }
-
-                    th, td {
-                        border: 1px solid #000; 
-                        padding: 8px; 
-                        text-align: left; 
-                        word-wrap: break-word;
-                    }                      
-
-                  
-                    th:nth-child(2),
-                    td:nth-child(2) {
-                        width: auto !important; 
-                    }
-
-                    th:nth-child(3),
-                    td:nth-child(3) {
-                        width: 80px !important; 
-                    }
-                    
-                    
-                    th:nth-child(5),
-                    td:nth-child(5) {
-                        width: 100px !important; 
-                    }
-
-
-                    /*Cột quantity*/
-                    th:nth-child(7),
-                    td:nth-child(7) {
-                         width: 10px !important; 
-                    }
-
-                    /*Cột tiền*/
-                    th:nth-child(8),
-                    td:nth-child(8) {
-                         width: 150px !important; 
-                    }
-                            
-                    .print {
-                        display: table-row !important;
-                    }
-                    .no-print {
-                        display: none !important;
-                    }
-
-                    .text-center {
-                        text-align: center;
-                    }
-
-                     .text-right {
-                        text-align: right;
-                    }
-
-                    th {
-                        background-color: #f8f8f8;
-                        font-weight: bold;
-                    }
-
-                    tr {
-                        page-break-inside: avoid;  /* Tránh chia cắt các dòng khi in */
-                    }
-                    .quantity-custom{
-                        background: none !important;
-                        box-shadow: none !important; 
-                        border: none !important; 
-                        text-align: center !important; 
-                        padding: 0;
-                    }
-                      
-                    .print-width {
-                        width: 600px !important;
-                    }
-                    .qr-code {
-                    position: absolute;
-                    top: 0px;  
-                    left: 0px; 
-                    text-align: left;
-                    padding: 10px;
-                    border: 1px solid pink;
-                    border-radius: 5px;
-                }
-        
-                    </style>
-                </head>
-                <body>
-                ${printContents}
-                </body>
-            </html>
-        `);
-
-            doc.close();
-
-            // Chờ ảnh tải xong 
-            await new Promise((resolve, reject) => {
-                const images = iframe.contentWindow.document.images;
-                if (images.length === 0) {
-                    resolve();
-                    return;
-                }
-                Promise.all(Array.from(images).map(img => new Promise((res, rej) => {
-                    const handleLoad = () => res();
-                    const handleError = () => rej();
-                    img.onload = handleLoad;
-                    img.onerror = handleError;
-                    if (img.complete) handleLoad();
-                }))).then(resolve).catch(reject);
+    
+            const blob = new Blob([response.data], { type: 'image/png' }); 
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+    
+            const base64Promise = new Promise((resolve, reject) => {
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
             });
-
-            if (typeof window.print !== 'function') {
-                console.warn('Trình duyệt này có vẻ không hỗ trợ chức năng in.');
-                alert('Trình duyệt của bạn có thể không hỗ trợ chức năng in. Vui lòng thử trình duyệt khác.');
-                return;
+    
+            const base64data = (await base64Promise).split(',')[1].replace(/[^A-Za-z0-9+/=]/g, ''); // Loại bỏ các ký tự không mong muốn
+    
+            const options = {
+                host: 'localhost',
+                port: {
+                    secure: [8181, 8282, 8383, 8484],
+                    insecure: [8182, 8283, 8384, 8485]
+                },
+                usingSecure: false,
+                keepAlive: 60,
+                retries: 3,
+                delay: 5
+            };
+    
+            console.log("Connecting to QZ Tray with options:", options);
+    
+            await qz.websocket.connect(options);
+    
+            if (!qz.websocket.isActive()) {
+                throw new Error(`Failed to connect to QZ Tray`);
             }
-
-            // Kiểm tra khả năng in
-            if (iframe.contentWindow && iframe.contentWindow.print) {
-                iframe.contentWindow.print();
-            } else {
-                console.error("Print function not supported or blocked by the browser.");
-                alert("Trình duyệt không hỗ trợ chức năng in hoặc bị chặn. Vui lòng kiểm tra cài đặt trình duyệt.");
-            }
-
-            document.body.removeChild(iframe);
+    
+            console.log("Connected to QZ Tray");
+    
+            const printerName = 'Microsoft XPS Document Writer'; // Thay bằng tên máy in của bạn
+            const printConfig = qz.configs.create(printerName);
+    
+            console.log("Printing with config:", printConfig);
+    
+            // In hình ảnh
+            await qz.print(printConfig, [{ type: 'image', format: 'base64', data: base64data }]);
+    
+            // Lệnh cắt giấy
+            await qz.print(printConfig, [
+                { type: 'raw', format: 'command', data: '\x1B\x69' } // Lệnh ESC/POS để cắt giấy
+            ]);
+    
+            toast.success('Print successful and paper cut!');
         } catch (error) {
-            console.error("Error during printing:", error);
-            let errorMessage = "Đã xảy ra lỗi trong quá trình in. Vui lòng thử lại.";
-            if (error instanceof DOMException && error.name === "SecurityError") {
-                errorMessage = "Trình duyệt hoặc cài đặt bảo mật đã chặn thao tác in ấn. Vui lòng kiểm tra cài đặt của bạn.";
-            } else if (error.message.includes("blocked by a popup blocker")) {
-                errorMessage = "Cửa sổ in ấn đã bị trình chặn popup chặn. Vui lòng kiểm tra cài đặt của trình chặn popup.";
-            }
-            toast.error(errorMessage, {
-                position: toast.POSITION.TOP_RIGHT,
-                autoClose: 5000,
-            });
-            setModalIsOpen(true);
-            toast.error(errorMessage);
+            console.error('Print error:', error);
+            toast.error(`Print error: ${error.message}`);
+        } finally {
+            qz.websocket.disconnect();
         }
     };
+    
+    
 
 
     // const handlePrint = () => {
@@ -1356,7 +1423,8 @@ const OrderTable = () => {
                                                                     </tr>
                                                                     <tr className='no-print'>
                                                                         <td colSpan={2} style={{ textAlign: 'right' }}>
-                                                                            <button className="btn bg-black bg-gradient" style={{ color: 'white' }} onClick={handlePrint} title="Nhấn để xuất hóa đơn">
+                                                                            <button className="btn bg-black bg-gradient" style={{ color: 'white' }} onClick={() => printInvoice(order?.orderId)}
+                                                                                title="Nhấn để xuất hóa đơn">
                                                                                 Xuất hóa đơn
                                                                             </button>
                                                                         </td>
