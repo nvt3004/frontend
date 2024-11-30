@@ -934,22 +934,22 @@ const OrderTable = () => {
     const printInvoice = async (orderId) => {
         try {
             const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {}, { responseType: 'blob' });
-    
+
             if (!response || !response.data) {
                 throw new Error("No image data received from backend.");
             }
-    
-            const blob = new Blob([response.data], { type: 'image/png' }); 
+
+            const blob = new Blob([response.data], { type: 'image/png' });
             const reader = new FileReader();
             reader.readAsDataURL(blob);
-    
+
             const base64Promise = new Promise((resolve, reject) => {
                 reader.onloadend = () => resolve(reader.result);
                 reader.onerror = reject;
             });
-    
+
             const base64data = (await base64Promise).split(',')[1].replace(/[^A-Za-z0-9+/=]/g, ''); // Loại bỏ các ký tự không mong muốn
-    
+
             const options = {
                 host: 'localhost',
                 port: {
@@ -961,30 +961,30 @@ const OrderTable = () => {
                 retries: 3,
                 delay: 5
             };
-    
+
             console.log("Connecting to QZ Tray with options:", options);
-    
+
             await qz.websocket.connect(options);
-    
+
             if (!qz.websocket.isActive()) {
                 throw new Error(`Failed to connect to QZ Tray`);
             }
-    
+
             console.log("Connected to QZ Tray");
-    
+
             const printerName = 'Microsoft XPS Document Writer'; // Thay bằng tên máy in của bạn
             const printConfig = qz.configs.create(printerName);
-    
+
             console.log("Printing with config:", printConfig);
-    
+
             // In hình ảnh
             await qz.print(printConfig, [{ type: 'image', format: 'base64', data: base64data }]);
-    
+
             // Lệnh cắt giấy
             await qz.print(printConfig, [
                 { type: 'raw', format: 'command', data: '\x1B\x69' } // Lệnh ESC/POS để cắt giấy
             ]);
-    
+
             toast.success('Print successful and paper cut!');
         } catch (error) {
             console.error('Print error:', error);
@@ -993,9 +993,6 @@ const OrderTable = () => {
             qz.websocket.disconnect();
         }
     };
-    
-    
-
 
     // const handlePrint = () => {
     //     printJS({
@@ -1205,47 +1202,6 @@ const OrderTable = () => {
                                                 (
                                                     <tr>
                                                         <td colSpan={7} ref={componentRef} id="my-content">
-                                                            <div className='d-none qr-code'>
-                                                                {/* <h3 style={{ textAlign: 'left', margin: '0 0 10px 0' }}>Mã QR hóa đơn</h3> */}
-                                                                <QRCodeSVG
-                                                                    value={`${qrCodeValue}/orders/${order.orderId}`}
-                                                                    size={100}
-                                                                    level="H"
-                                                                    style={{ border: '1px solid black' }}
-                                                                />
-                                                                {/* <p style={{ margin: '10px 0 0 0' }}>Quét mã QR để xem hóa đơn trực tuyến</p> */}
-                                                            </div>
-                                                            <div className='d-none' style={{ padding: '0 20px 20px 20px', borderBottom: '1px solid #ddd', marginBottom: '20px' }}>
-                                                                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                                                                    <h3 style={{ fontSize: '24px', fontWeight: 'bold' }}>HÓA ĐƠN BÁN HÀNG</h3>
-                                                                    <img src="/images/logo.png" alt="Company Logo" style={{ width: '100px', marginBottom: '20px' }} />
-                                                                    <p><strong>Công ty TNHH Step To The Future</strong></p>
-                                                                    <p>Địa chỉ: Đ. Số 22, Thường Thạnh, Cái Răng, Cần Thơ, Việt Nam</p>
-                                                                    <p>Số điện thoại: 098 388 11 00</p>
-                                                                    <p>Email: caodangfptcantho@gmail.com</p>
-                                                                </div>
-
-                                                                <div className='d-flex' style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                                                    {/* Thông tin khách hàng */}
-                                                                    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '48%' }}>
-                                                                        <p><strong>Thông tin khách hàng</strong></p>
-                                                                        <p>Tên khách hàng: {order?.fullname || 'N/A'}</p>
-                                                                        <p>Địa chỉ: {order?.address || 'N/A'}</p>
-                                                                        <p>Số điện thoại: {order?.phone || 'N/A'}</p>
-                                                                    </div>
-
-                                                                    {/* Thông tin đơn hàng */}
-                                                                    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '48%' }}>
-                                                                        <p><strong>Thông tin đơn hàng</strong></p>
-                                                                        <p>Ngày đặt hàng: {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
-                                                                        <p>Ngày giao hàng dự kiến: {moment(order?.deliveryDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
-                                                                        <p>Phương thức thanh toán: {order?.paymentMethod || 'N/A'}</p>
-                                                                        <p>Tổng tiền:  {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}</p>
-                                                                        <p>Trạng thái: {order?.statusName || 'N/A'}</p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
                                                             <Table hover striped>
                                                                 <thead>
                                                                     <th className='text-center'>#</th>
@@ -1389,9 +1345,10 @@ const OrderTable = () => {
                                                                     ))}
 
                                                                     <tr className='no-print'>
-                                                                        <td rowSpan={7} colSpan={6}>
-
-                                                                        </td>
+                                                                        <td rowspan="7" colspan="6" class="text-center font-weight-bold"> 
+                                                                            <span>Last Updated: {moment(order?.lastUpdatedDate).format('DD/MM/YYYY HH:mm:ss')} 
+                                                                            </span> By: {order?.lastUpdatedBy} 
+                                                                            </td>
                                                                     </tr>
                                                                     <tr className='no-print'>
 
@@ -1429,53 +1386,6 @@ const OrderTable = () => {
                                                                             </button>
                                                                         </td>
                                                                     </tr>
-
-                                                                    {/* Đoạn để hiển thị print đơn hàng */}
-                                                                    <tr className='print d-none'>
-                                                                        <td rowSpan={4} colSpan={3} className='text-center'>
-                                                                            <div class="row mt-5 pt-5 border-top">
-                                                                                <div class="col-12 text-center" style={{ color: '#71bdd8' }}>
-                                                                                    <h1 class="display-4 font-weight-bold text-primary">
-                                                                                        Cảm ơn {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} {order?.fullname}!
-                                                                                    </h1>
-                                                                                    <p class="lead">
-                                                                                        Chúng tôi rất cảm kích vì {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} đã đặt hàng.
-                                                                                        Chúng tôi hy vọng được tiếp tục phục vụ {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} trong những lần mua sắm tiếp theo.
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-
-                                                                        </td>
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
-                                                                        <td className='text-right print-width' style={{ width: '600px' }}>
-                                                                            {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr className='print d-none'>
-                                                                        <td colSpan={2} className='reduce-colspan deo-print' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Phí vận chuyển:</td>
-                                                                        <td className='text-right print-width' style={{ width: '200px' }}>
-                                                                            {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr className='print d-none'>
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Giảm giá: ({formatDiscount(order?.disCount)})</td>
-                                                                        <td className='text-right'>
-                                                                            {`${(order?.discountValue || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr className='print d-none'>
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Tổng cộng:</td>
-                                                                        <td className='text-right'>
-                                                                            {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td className='d-none text-center' colSpan={7}>
-                                                                            Tổng cộng bằng chữ: {order?.finalTotalInWords || "Không có dữ liệu"}
-                                                                        </td>
-                                                                    </tr>
-
-
 
                                                                 </tbody>
                                                             </Table>
