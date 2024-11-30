@@ -19,6 +19,10 @@ import printJS from 'print-js';
 import Modal from 'react-modal';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import qz from 'qz-tray';
+import { Link } from 'react-router-dom';
+import JSEncrypt from 'jsencrypt';
+// import fs from 'fs';
+import CryptoJS from 'crypto-js'
 
 const OrderTable = () => {
     // START GET orders
@@ -326,37 +330,37 @@ const OrderTable = () => {
 
     const handleChangeStatus = (option, orderID) => {
         // if (option?.value < 4 || option?.value === 5) {
-            Swal.fire({
-                title: 'Confirm to change status',
-                text: 'Do you want to change the status of this order?',
-                icon: 'question',
-                showConfirmButton: true,
-                showCancelButton: true,
-                confirmButtonText: 'OK!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`)
-                        .then((response) => {
-                            if (response.data?.errorCode === 200) {
-                                toast.success('Updated order status successfully!');
-                                handleGetOrderAPI();
-                            } else if (response.data?.errorCode === 998) {
-                                toast.error(response.data?.message || "Bạn không có quyền thay đổi trạng thái đơn hàng này.");
-                            } else {
-                                toast.error(response.data?.message || 'Could not update status of the order. Please try again!');
-                            }
-                        })
-                        .catch((error) => {
-                            if (error?.response?.status === 403) {
-                                toast.error("Session expired. Redirecting to login...");
-                                navigate('/auth/login');
-                            } else {
-                                toast.error(error.response?.data?.message || error.message || 'Could not update status of the order. Please try again!');
-                            }
-                        });
-                }
-            });
+        Swal.fire({
+            title: 'Confirm to change status',
+            text: 'Do you want to change the status of this order?',
+            icon: 'question',
+            showConfirmButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'OK!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`)
+                    .then((response) => {
+                        if (response.data?.errorCode === 200) {
+                            toast.success('Updated order status successfully!');
+                            handleGetOrderAPI();
+                        } else if (response.data?.errorCode === 998) {
+                            toast.error(response.data?.message || "Bạn không có quyền thay đổi trạng thái đơn hàng này.");
+                        } else {
+                            toast.error(response.data?.message || 'Could not update status of the order. Please try again!');
+                        }
+                    })
+                    .catch((error) => {
+                        if (error?.response?.status === 403) {
+                            toast.error("Session expired. Redirecting to login...");
+                            navigate('/auth/login');
+                        } else {
+                            toast.error(error.response?.data?.message || error.message || 'Could not update status of the order. Please try again!');
+                        }
+                    });
+            }
+        });
         // } 
         // else {
         //     toast.warning(`You cannot set the status to ${option?.label.toLowerCase()}`);
@@ -931,7 +935,9 @@ const OrderTable = () => {
     //     }
     // };
 
-    const [pdfData, setPdfData] = useState(null);
+    const PUBLIC_CERTIFICATE = process.env.REACT_APP_PUBLIC_CERTIFICATE;
+    const PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEY;
+
     const printInvoice = async (orderId) => {
         try {
             const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {}, { responseType: 'blob' });
@@ -952,11 +958,13 @@ const OrderTable = () => {
             const base64data = (await base64Promise).split(',')[1].replace(/[^A-Za-z0-9+/=]/g, ''); // Loại bỏ các ký tự không mong muốn
 
             const options = {
-                host: 'localhost',
+                host: 'localhost', //Sử dụng tên miền chính thức để không phải hiển thị hỏi lại.
                 port: {
                     secure: [8181, 8282, 8383, 8484],
                     insecure: [8182, 8283, 8384, 8485]
                 },
+                // usingSecure: true, // If using HTTPS
+                allowUserInteraction: false, 
                 usingSecure: false,
                 keepAlive: 60,
                 retries: 3,
@@ -972,8 +980,23 @@ const OrderTable = () => {
             }
 
             console.log("Connected to QZ Tray");
+            qz.security.setCertificatePromise(() => {
+                return Promise.resolve(PUBLIC_CERTIFICATE);
+            });
 
-            const printerName = 'Microsoft XPS Document Writer'; // Thay bằng tên máy in của bạn
+            qz.security.setSignaturePromise((toSign) => {
+                return (resolve, reject) => {
+                    try {
+                        const rsa = new JSEncrypt();
+                        rsa.setPrivateKey(PRIVATE_KEY);
+                        resolve(rsa.sign(toSign, CryptoJS.SHA256, "sha256"));
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+            });
+
+            const printerName = 'Microsoft Print to PDF';
             const printConfig = qz.configs.create(printerName);
 
             console.log("Printing with config:", printConfig);
@@ -988,7 +1011,6 @@ const OrderTable = () => {
 
             toast.success('Print successful and paper cut!');
         } catch (error) {
-            console.error('Print error:', error);
             toast.error(`Print error: ${error.message}`);
         } finally {
             qz.websocket.disconnect();
@@ -1064,33 +1086,8 @@ const OrderTable = () => {
         return `${numericValue.toLocaleString('vi-VN')} VND`;
     }
 
-    const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://domain.com';
-    const qrCodeValue = `${baseUrl}`;
-
     return (
         <div>
-            <Modal isOpen={modalIsOpen} onRequestClose={() => setModalIsOpen(false)}>
-                <h2>Lỗi In Ấn</h2>
-                <p>In ấn không thành công. Có thể do trình chặn popup, cài đặt bảo mật, hoặc lỗi trình duyệt. Vui lòng thử các bước sau:</p>
-                <ol>
-                    <li><strong>Tắt trình chặn popup tạm thời:</strong> Nếu bạn đang sử dụng phần mềm chặn popup (như AdBlock, uBlock Origin,...), hãy tạm thời tắt nó đi để kiểm tra.  Sau khi in xong, hãy bật lại để đảm bảo an ninh.</li>
-                    <li><strong>Kiểm tra cài đặt popup của trình duyệt:</strong>
-                        <ul>
-                            <li><strong>Chrome:</strong> <a href="https://support.google.com/chrome/answer/95647?hl=vi" target="_blank" rel="noopener noreferrer">Hướng dẫn Chrome</a> (Tìm kiếm "Popup" trong cài đặt)</li>
-                            <li><strong>Firefox:</strong> <a href="https://support.mozilla.org/vi/kb/cho-phep-hoac-chan-cua-so-popup" target="_blank" rel="noopener noreferrer">Hướng dẫn Firefox</a> (Tìm kiếm "Popup" trong cài đặt)</li>
-                            <li><strong>Edge:</strong> <a href="https://support.microsoft.com/vi-vn/windows/qu%E1%BA%A3n-l%C3%BD-c%C3%A1c-c%E1%BB%A7a-s%E1%BB%91-b%E1%BA%ADt-l%C3%AAn-trong-microsoft-edge-5041c7d4-d15e-4b02-8b9b-6435b663a921" target="_blank" rel="noopener noreferrer">Hướng dẫn Edge</a> (Tìm kiếm "Popup" trong cài đặt)</li>
-                            <li><strong>Safari:</strong>  Trong cài đặt Safari, tìm kiếm "Popup".</li>
-                        </ul>
-                    </li>
-                    <li><strong>Kiểm tra cài đặt quyền riêng tư:</strong>  Một số cài đặt quyền riêng tư nghiêm ngặt có thể chặn việc in ấn. Kiểm tra cài đặt quyền riêng tư trong trình duyệt của bạn để xem có thiết lập nào quá khắt khe không.</li>
-                    <li><strong>Thêm website vào danh sách trắng (nếu có):</strong> Nếu bạn sử dụng trình chặn quảng cáo hoặc popup, hãy thử thêm website này vào danh sách trắng (whitelist) của nó.</li>
-                    <li><strong>Thử trình duyệt khác:</strong>  Thử in từ một trình duyệt khác (Chrome, Firefox, Edge...) để xem có khắc phục được lỗi hay không.</li>
-                    <li><strong>Cập nhật trình duyệt:</strong>  Đảm bảo trình duyệt của bạn đang sử dụng phiên bản mới nhất.</li>
-                    <li><strong>Tắt các tiện ích mở rộng:</strong>  Một số tiện ích mở rộng có thể gây xung đột và cản trở việc in ấn. Hãy thử tắt các tiện ích mở rộng tạm thời để xem có cải thiện không.</li>
-                    <li><strong>Nếu vẫn gặp sự cố:</strong> Vui lòng liên hệ bộ phận hỗ trợ của chúng tôi tại [địa chỉ email hoặc liên hệ khác].</li>
-                </ol>
-                <button onClick={() => setModalIsOpen(false)}>Đóng</button>
-            </Modal>
             <div className='font-14'>
                 <div className='bg-body-tertiary d-flex align-items-center justify-content-between' style={{ height: "50px" }}>
                     <div className='container d-flex justify-content-between px-0'>
@@ -1346,10 +1343,18 @@ const OrderTable = () => {
                                                                     ))}
 
                                                                     <tr className='no-print'>
-                                                                        <td rowspan="7" colspan="6" class="text-center font-weight-bold"> 
-                                                                            <span>Last Updated: {moment(order?.lastUpdatedDate).format('DD/MM/YYYY HH:mm:ss')} 
-                                                                            </span> By: {order?.lastUpdatedBy} 
-                                                                            </td>
+                                                                        <td rowSpan="7" colSpan="6" className="text-center font-weight-bold">
+                                                                            <span>Last Updated: {moment(order?.lastUpdatedDate).format('DD/MM/YYYY HH:mm:ss')} </span>
+
+                                                                            {order?.lastUpdatedBy && (
+                                                                                <>
+                                                                                    By:
+                                                                                    <Link to={`/user-management/${order?.lastUpdatedBy?.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                                                        {order?.lastUpdatedBy}
+                                                                                    </Link>
+                                                                                </>
+                                                                            )}
+                                                                        </td>
                                                                     </tr>
                                                                     <tr className='no-print'>
 
