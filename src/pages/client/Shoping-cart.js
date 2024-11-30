@@ -7,34 +7,43 @@ import { stfExecAPI, ghnExecAPI } from "../../stf/common";
 import AttributeItem from "../../components/client/AttributeItem/AttributeItem";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import moment from "moment";
 
 const getEndDate = (end) => {
-  const now = new Date();
-  const endDate = new Date(end);
+  const now = moment(); // Lấy thời gian hiện tại
+  const endDate = moment(end, "DD/MM/YYYY HH:mm"); // Chuyển đổi chuỗi thành moment
+  
+  if (!endDate.isValid()) {
+    return "Ngày giờ không hợp lệ"; // Kiểm tra nếu thời gian không hợp lệ
+  }
 
-  const diffInMilliseconds = endDate - now;
+  const diffInMilliseconds = endDate.diff(now); // Tính chênh lệch
+  console.log("Ty@", diffInMilliseconds, end);
 
   if (diffInMilliseconds <= 0) {
     return "Đã hết hạn";
   }
 
-  const diffInSeconds = Math.floor(diffInMilliseconds / 1000);
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  const diffInDays = Math.floor(diffInHours / 24);
-  const diffInMonths = Math.floor(diffInDays / 30);
-  const diffInYears = Math.floor(diffInMonths / 12);
+  const duration = moment.duration(diffInMilliseconds);
 
-  if (diffInYears > 0) {
-    return `${diffInYears} năm`;
-  } else if (diffInMonths > 0) {
-    return `${diffInMonths} tháng`;
-  } else if (diffInDays > 0) {
-    return `${diffInDays} ngày`;
-  } else if (diffInHours > 0) {
-    return `${diffInHours} giờ`;
+  const years = duration.years();
+  const months = duration.months();
+  const days = duration.days();
+  const hours = duration.hours();
+  const minutes = duration.minutes();
+
+  if (years > 0) {
+    return `${years} năm`;
+  } else if (months > 0) {
+    return `${months} tháng`;
+  } else if (days > 0) {
+    return `${days} ngày`;
+  } else if (hours > 0) {
+    return `${hours} giờ`;
   } else {
-    return `${diffInMinutes} phút`;
+    return `${minutes} phút`;
   }
 };
 
@@ -74,6 +83,7 @@ function getRowCelCick(attributes = [], item) {
 }
 
 const ShopingCart = () => {
+  const navigate = useNavigate();
   const [carts, setCarts] = useState([]);
   console.log("@carts: ", carts);
   //ví dụ
@@ -250,6 +260,7 @@ const ShopingCart = () => {
 
     setAttriTest(tem);
     setProduct(partitionProduct(pd, tem, [row, cel], key));
+    console.log(8666, pd);
   };
 
   //Đổ danh sách cart của user
@@ -369,7 +380,7 @@ const ShopingCart = () => {
 
     if (couponRead.trim() !== "") {
       const [error, data] = await stfExecAPI({
-        url: `api/user/coupon/${iputEnter}`,
+        url: `api/user/coupon?code=${iputEnter}`,
       });
 
       if (error) {
@@ -390,6 +401,15 @@ const ShopingCart = () => {
       };
     });
 
+    console.log("@ty", {
+      address: addressTitle,
+      couponCode: iputEnter || null,
+      creatorIsAdmin: false,
+      ["fee"]: feeShip,
+      statusId: 1,
+      paymentMethodId: 2,
+      orderDetails: detail,
+    });
     if (pay) {
       const [error, data] = await stfExecAPI({
         method: "post",
@@ -398,6 +418,7 @@ const ShopingCart = () => {
           address: addressTitle,
           couponCode: iputEnter || null,
           creatorIsAdmin: false,
+          fee,
           statusId: 1,
           paymentMethodId: 2,
           orderDetails: detail,
@@ -454,7 +475,7 @@ const ShopingCart = () => {
           address: addressTitle,
           couponCode: iputEnter || null,
           creatorIsAdmin: false,
-          fee: fee,
+          fee,
           statusId: 1,
           paymentMethodId: 2,
           orderDetails: detail,
@@ -486,7 +507,6 @@ const ShopingCart = () => {
       window.location.href = data.data;
     }
   };
-
   //Chọn coupon
   const handleCoupon = (event) => {
     const v = event.target.value.trim();
@@ -551,6 +571,9 @@ const ShopingCart = () => {
   };
 
   const handleAddress = async (e) => {
+    if (e.target.value === "") {
+      navigate("/account"); // Điều hướng tới trang Add new address
+    }
     const a = addresses.find((o) => o?.addressId == e.target.value);
 
     const feeS = await feeShip(
@@ -621,16 +644,16 @@ const ShopingCart = () => {
       });
 
       if (data) {
-        // const temp = [...selectedItems].map((s) => {
-        //   if (s.catrItemId === id) {
-        //     return { ...s, quantity: quantity };
-        //   } else {
-        //     return s;
-        //   }
-        // });
+        const temp = [...selectedItems].map((s) => {
+          if (s.catrItemId === id) {
+            return { ...s, quantity: quantity };
+          } else {
+            return s;
+          }
+        });
         setCarts(data.data);
-        // setSelectedItems(temp);
-        // setSubTotal(totalPrice(temp));
+        setSelectedItems(temp);
+        setSubTotal(totalPrice(temp));
       }
     };
 
@@ -744,7 +767,7 @@ const ShopingCart = () => {
   useEffect(() => {
     const fetchCouponRead = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/user/coupon/${iputEnter}`,
+        url: `api/user/coupon?code=${iputEnter}`,
       });
 
       if (error) {
@@ -766,7 +789,7 @@ const ShopingCart = () => {
   //Áp dụng coupon
   const handleApplyCoupon = async () => {
     const [error, data] = await stfExecAPI({
-      url: `api/user/coupon/${iputEnter}`,
+      url: `api/user/coupon?code=${iputEnter}`,
     });
 
     if (error) {
@@ -798,7 +821,7 @@ const ShopingCart = () => {
   useEffect(() => {
     const fetchCouponRead = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/user/coupon/${iputEnter}`,
+        url: `api/user/coupon?code=${iputEnter}`,
       });
 
       if (error) {
@@ -950,36 +973,10 @@ const ShopingCart = () => {
                                     : {}
                                 }
                                 type="button"
-                                className="mb-2 stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
+                                className="text-ellipsis mb-2 stext-106 cl6 bor4 pointer hov-btn3 trans-04 p-2 rounded-0"
                                 data-bs-toggle="modal"
                                 data-bs-target="#staticBackdrop"
                                 onClick={() => {
-                                  console.log(1, product);
-                                  console.log(
-                                    2,
-                                    product.productDetail.attributes
-                                  );
-                                  console.log(3, product.attributes[0]);
-                                  console.log(4, product.attributes[0].key);
-                                  console.log(
-                                    5,
-                                    partitionProduct(
-                                      product,
-                                      product.attributes,
-                                      getRowCelCick(
-                                        product.productDetail.attributes,
-                                        product.attributes[0]
-                                      ),
-                                      product.attributes[0].key
-                                    )
-                                  );
-                                  console.log(
-                                    "Rowcel: ",
-                                    getRowCelCick(
-                                      product.productDetail.attributes,
-                                      product.attributes[0]
-                                    )
-                                  );
                                   setItemCartUpdate({
                                     cartItemId: product.catrItemId,
                                     versions: [
@@ -1089,43 +1086,43 @@ const ShopingCart = () => {
                                       parseInt(e.target.value) || 1
                                     ); // Chặn số âm và giá trị 0
 
-                                    if (value === 1) {
-                                      const [error, data] = await stfExecAPI({
-                                        url: "api/user/cart/all",
-                                      });
+                                    // if (value === 1) {
+                                    //   const [error, data] = await stfExecAPI({
+                                    //     url: "api/user/cart/all",
+                                    //   });
 
-                                      value = data.data?.find(
-                                        (o) =>
-                                          o.catrItemId === product.catrItemId
-                                      )?.quantity;
+                                    //   value = data.data?.find(
+                                    //     (o) =>
+                                    //       o.catrItemId === product.catrItemId
+                                    //   )?.quantity;
 
-                                      setCarts(
-                                        carts.map((i) => {
-                                          if (
-                                            i.catrItemId === product.catrItemId
-                                          ) {
-                                            return { ...i, quantity: value };
-                                          } else {
-                                            return i;
-                                          }
-                                        })
-                                      );
+                                    //   setCarts(
+                                    //     carts.map((i) => {
+                                    //       if (
+                                    //         i.catrItemId === product.catrItemId
+                                    //       ) {
+                                    //         return { ...i, quantity: value };
+                                    //       } else {
+                                    //         return i;
+                                    //       }
+                                    //     })
+                                    //   );
 
-                                      const temp = [...selectedItems].map(
-                                        (s) => {
-                                          if (
-                                            s.catrItemId === product.catrItemId
-                                          ) {
-                                            return { ...s, quantity: value };
-                                          } else {
-                                            return s;
-                                          }
-                                        }
-                                      );
-                                      setSelectedItems(temp);
-                                      setSubTotal(totalPrice(temp));
-                                      return;
-                                    }
+                                    //   const temp = [...selectedItems].map(
+                                    //     (s) => {
+                                    //       if (
+                                    //         s.catrItemId === product.catrItemId
+                                    //       ) {
+                                    //         return { ...s, quantity: value };
+                                    //       } else {
+                                    //         return s;
+                                    //       }
+                                    //     }
+                                    //   );
+                                    //   setSelectedItems(temp);
+                                    //   setSubTotal(totalPrice(temp));
+                                    //   return;
+                                    // }
 
                                     handleUpdateQuantiy(
                                       product.catrItemId,
@@ -1184,7 +1181,7 @@ const ShopingCart = () => {
                           coupons.map((c) => {
                             return (
                               <option value={c.id}>{`${c.couponCode} - Giảm ${
-                                c.percent ? c.percent + " %" : c.price + " đ"
+                                c.percent ? c.percent + " %" : formatCurrencyVND(c.price)
                               } - Còn ${getEndDate(c.endDate)}`}</option>
                             );
                           })}
@@ -1231,10 +1228,19 @@ const ShopingCart = () => {
                       <span className="stext-110 cl2">Address*:</span>
                       <div className="mt-2">
                         <select
-                          className="w-100 border border-1 p-2 form-select stext-111"
+                          className="pe-5 text-ellipsis w-100 border border-1 p-2 form-select stext-111"
                           aria-label="Default select example"
                           onChange={handleAddress}
                         >
+                          {" "}
+                          <option value="">
+                            <Link
+                              to="/account"
+                              className="text-decoration-none"
+                            >
+                              Add new address
+                            </Link>
+                          </option>
                           {addresses &&
                             addresses.map((item) => {
                               return (
@@ -1346,7 +1352,7 @@ const ShopingCart = () => {
 
                   <div className="size-209 p-t-1 text-end pe-3">
                     <span className="mtext-110 cl2">
-                      {formatCurrencyVND(total)}
+                      {formatCurrencyVND(total<0 ?0: total)}
                     </span>
                   </div>
                 </div>
@@ -1471,3 +1477,5 @@ const ShopingCart = () => {
   );
 };
 export default ShopingCart;
+
+//Thêm bảng có id của quyền add product, 

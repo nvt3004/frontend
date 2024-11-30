@@ -1,146 +1,136 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Collapse, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
-import { FaFileExport, FaPlus, FaSearch } from 'react-icons/fa';
-import { RiFileList2Fill } from "react-icons/ri";
-import axiosInstance from '../../../../../../services/axiosConfig';
-import NotSelectYet from '../../component/errorPages/NotSelectYet';
-import { isElement } from 'react-dom/test-utils';
+import React, { useEffect, useState } from "react";
+import { stfExecAPI } from "../../../../../../stf/common";
+import { toast } from "react-toastify";
+import FullScreenSpinner from "../../../FullScreenSpinner";
+import DataTableSft from "../../../../DataTableSft";
+import PaginationSft from "../../../../PaginationSft";
+import { useNavigate } from "react-router-dom";
+
+function formatCurrencyVND(amount) {
+  return amount.toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  });
+}
 
 const ReceiptList = () => {
-    const [receipts, setReceipt] = useState([]);
-    const [currentPage, setCurrentPage] = useState(0);
-    const [totalPage, setTotalPage] = useState(0);
-    const [totalElements, setTotalElements] = useState(0);
-    useEffect(
-        () => {
-            axiosInstance.get(`/staff/receipt?page=${currentPage}&size=10`).then(
-                (response) => {
-                    if (response?.data?.errorCode === 200) {
-                        setReceipt(response?.data?.data?.content);
-                        setTotalPage(response?.data?.data?.totalPages);
-                        setTotalElements(response?.data?.data?.totalElements);
-                    }
-                }
-            );
-        }, [currentPage]
-    );
+  const [receipts, setReceipt] = useState({});
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-    const handleSetPage = (page) => {
-        if (page !== currentPage) {
-            setCurrentPage(page);
-        }
+  // ********** Cấu hình table*********
+  const columns = [
+    {
+      title: "Mã Phiếu Nhập",
+      dataIndex: "receiptId",
+      key: "receiptId",
+      render: (text, record) => {
+        return (
+          <span
+            style={{
+              color: "#6610f2",
+              cursor: "pointer",
+              textDecoration: "underline",
+            }}
+            onClick={() => {
+              navigate("/admin/warehouse/detail", {
+                state: record,
+              });
+            }}
+          >
+            {text}
+          </span>
+        );
+      },
+    },
+    {
+      title: "Tên Nhà Cung Cấp",
+      dataIndex: "supplierName",
+      key: "supplierName",
+    },
+    { title: "Ngày Nhập", dataIndex: "receiptDate", key: "receiptDate" },
+    { title: "Người Nhập", dataIndex: "fullname", key: "fullname" },
+    {
+      title: "Số lượng Sản Phẩm",
+      dataIndex: "totalQuantity",
+      key: "totalQuantity",
+    },
+    {
+      title: "Tổng Tiền",
+      dataIndex: "totalPrice",
+      key: "totalPrice",
+      render: (value, row) => {
+        return formatCurrencyVND(value);
+      },
+    },
+  ];
+
+  //Đổ danh sách phiếu nhập
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/receipt?page=${0}&size=${8}`,
+      });
+
+      if (data) {
+        setLoading(false);
+        setReceipt(data.data);
+        console.log(data.data.content);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      setLoading(false);
     };
 
-    const paginationItems = [];
-    for (let number = 0; number < totalPage; number++) {
-        paginationItems.push(
-            <Pagination.Item key={number} active={number === currentPage}
-                onClick={() => handleSetPage(number)}>
-                {number + 1}
-            </Pagination.Item>
-        );
+    fetchUsers();
+  }, []);
+
+  const onChangePagination = async (page) => {
+    setLoading(true);
+    const [error, data] = await stfExecAPI({
+      url: `api/staff/receipt?page=${page - 1}&size=${8}`,
+    });
+
+    setLoading(false);
+    if (data) {
+      setReceipt(data.data);
     }
+  };
 
-    const [selectedReceiptID, setSelectedReceiptID] = useState(null);
-    const [selectedReceipt, setSelectedReceipt] = useState(null);
-    useEffect(
-        () => {
-            if (selectedReceiptID) {
-                axiosInstance.get(`/staff/receipt/receipt-detail?id=${selectedReceiptID}`).then(
-                    (response) => {
-                        if (response?.data?.errorCode === 200) {
-                            setSelectedReceipt(response?.data?.data);
-                        }
-                    }
-                );
-            }
-        }, [selectedReceiptID]
-    );
-    useEffect(
-        () => {
-            console.log('selected receipt: ', selectedReceipt);
+  return (
+    <>
+      <FullScreenSpinner isLoading={loading} />
+      <DataTableSft
+        dataSource={receipts?.content || []}
+        columns={columns}
+        title={"Danh sách phiếu nhập"}
+      />
 
-        }, [selectedReceipt]
-    );
-
-    return (
-        <div>
-            <div className='font-14'>
-                <div className='bg-body-tertiary d-flex align-items-center' style={{ height: "50px" }}>
-                    <div className='container d-flex justify-content-between align-items-center'>
-                        <h4 className='m-0 col-2 d-flex align-items-center'><RiFileList2Fill />&ensp;Receipt list</h4>
-                        <div className='col-10 d-flex justify-content-around'>
-                            <InputGroup className='w-30'>
-                                <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
-                                <Form.Control className='custom-radius' placeholder='Search users . . .' />
-                            </InputGroup>
-                            <Button variant='secondary' className='font-14 custom-radius custom-hover'><FaFileExport /> {` Export`}</Button>
-                        </div>
-                    </div>
-                </div>
-                <div className='d-flex mt-3'>
-                    <div className='col-9 pe-5'>
-                        <div style={{ minHeight: '500px' }}>
-                            <Table striped hover>
-                                <thead>
-                                    <th>#</th>
-                                    <th>Supplier</th>
-                                    <th>Created date</th>
-                                    <th>Created by</th>
-                                </thead>
-                                <tbody>
-                                    {receipts?.map(
-                                        (item, index) => (
-                                            <tr key={item?.receiptId} onClick={() => { setSelectedReceiptID(item?.receiptId) }}>
-                                                <td>{index + 1}</td>
-                                                <td>{item?.supplierName}</td>
-                                                <td>{item?.receiptDate}</td>
-                                                <td>{item?.username}</td>
-                                            </tr>
-                                        )
-                                    )}
-                                </tbody>
-                            </Table>
-                        </div>
-                        <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
-                            <p className='font-13'>{`${currentPage * 5 + 5 <= totalElements ? currentPage * 5 + 5 : totalElements} of ${totalElements} `}
-                                <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span>
-                            </p>
-                            <Pagination className='border-0'>
-                                <Pagination.First onClick={() => handleSetPage(0)}>{`<`}</Pagination.First>
-                                {paginationItems}
-                                <Pagination.Last onClick={() => handleSetPage(totalPage - 1)}>{`>`}</Pagination.Last>
-                            </Pagination>
-                        </div>
-                    </div>
-                    <div className='col-3'>
-                        <div className='border bg-white rounded-1'>
-                            <div className='m-1'>
-                                {selectedReceipt ? (
-                                    <Form className='text-black'>
-                                        <Form.Label>{`Receipt ID: ${selectedReceipt?.receiptId}`}</Form.Label>
-                                        <Form.Label>{`Supplier: ${selectedReceipt?.supplierName}`}</Form.Label>
-                                        <Form.Label>{`Created date: ${selectedReceipt?.receiptDate}`}</Form.Label>
-                                        <Form.Label>{`Detail:`}</Form.Label>
-                                        {selectedReceipt?.receiptDetailDTO?.map(
-                                            (item, index) => (
-                                                <div className='ms-3 mb-2' key={index} style={{ maxHeight: '550px', overflowY: 'auto' }}>
-                                                    <Form.Label className='mb-0'>{`Product: ${item.productVersionDTO.productVersionName}`}</Form.Label>
-                                                    <Form.Label>{`Quantity: ${item.quantity}`}</Form.Label>
-                                                </div>
-                                            )
-                                        )}
-                                    </Form>
-                                ) : (
-                                    <NotSelectYet text={`You haven't select a receipt yet. Please, select !!`} />
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
+      <div className="d-flex justify-content-end align-items-center mt-3">
+        {/* <p className="me-3">Total 247 item</p> */}
+        {receipts.totalPages > 1 && (
+          <PaginationSft
+            count={receipts.totalPages}
+            defaultPage={(receipts.number || 0) + 1}
+            siblingCount={1}
+            onPageChange={onChangePagination}
+          />
+        )}
+      </div>
+    </>
+  );
+};
 
 export default ReceiptList;

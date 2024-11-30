@@ -10,7 +10,9 @@ import DangerAlert from "../../components/client/sweetalert/DangerAlert";
 import SuccessAlert from "../../components/client/sweetalert/SuccessAlert";
 import { stfExecAPI, ghnExecAPI } from "../../stf/common";
 import { incrementCart } from "../../store/actions/cartActions";
-import SizeGuideModal from "../../components/client/Modal/SizeGuideModal"
+import SizeGuide from "../../components/client/Modal/SizeGuideModal";
+
+import { Divide } from "phosphor-react";
 
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
@@ -32,7 +34,11 @@ function getRowCelCick(attributes = [], item) {
 }
 const Product = () => {
   const dispatch = useDispatch();
+  const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
 
+  const toggleOffcanvas = () => {
+    setIsOffcanvasOpen((prev) => !prev);
+  };
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -52,13 +58,41 @@ const Product = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedMinPrice, setSelectedMinPrice] = useState(null);
   const [selectedMaxPrice, setSelectedMaxPrice] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedAttribute, setSelectedAttribute] = useState([]);
   const [sortOrder, setSortOrder] = useState("ASC");
 
   const [ProductDetail, setProductDetail] = useState();
   const [filtersChanged, setFiltersChanged] = useState(false);
   // Fetch bộ lọc một lần khi component mount
+
+  const [filteredAttributes, setFilteredAttributes] = useState([]); // State để lưu các thuộc tính cần render
+
+  // Cập nhật filteredAttributes mỗi khi filterAttributes hoặc selectedAttribute thay đổi
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  useEffect(() => {
+    if (filterAttributes?.attribute?.names?.length > 0) {
+      const updatedAttributes = filterAttributes.attribute.names.map(
+        (name, index) => {
+          const attributeId = filterAttributes.attribute.ids[index];
+          const isSelected = selectedAttribute.includes(attributeId);
+          return { name, attributeId, isSelected };
+        }
+      );
+      setFilteredAttributes(updatedAttributes);
+    }
+  }, [filterAttributes, selectedAttribute]);
+
   useEffect(() => {
     const fetchFilterAttributes = async () => {
       try {
@@ -82,37 +116,34 @@ const Product = () => {
     };
   }, [searchTerm]);
 
+  useEffect(() => {
+    // Khi bộ lọc thay đổi, reset sản phẩm và đánh dấu filtersChanged
+    resetProducts();
+    setFiltersChanged(true);
+  }, [
+    selectedCategory,
+    selectedMinPrice,
+    selectedMaxPrice,
+    selectedAttribute,
+    sortOrder,
+    debouncedSearchTerm,
+  ]);
 
+  useEffect(() => {
+    // Khi currentPage thay đổi và nếu filtersChanged là true, fetch products
+    if (currentPage === 0 && filtersChanged) {
+      fetchProducts();
+      setFiltersChanged(false);
+    }
+  }, [currentPage, filtersChanged]);
 
-useEffect(() => {
-  // Khi bộ lọc thay đổi, reset sản phẩm và đánh dấu filtersChanged
-  resetProducts();
-  setFiltersChanged(true);
-}, [
-  selectedCategory,
-  selectedMinPrice,
-  selectedMaxPrice,
-  selectedColor,
-  selectedSize,
-  sortOrder,
-  debouncedSearchTerm
-]);
-
-useEffect(() => {
-  // Khi currentPage thay đổi và nếu filtersChanged là true, fetch products
-  if (currentPage === 0 && filtersChanged) {
-    fetchProducts();
-    setFiltersChanged(false); 
-  }
-}, [currentPage, filtersChanged]);
-
-// Hàm khởi tạo lại các giá trị về trang và sản phẩm khi có tìm kiếm mới
-const resetProducts = () => {
-  setCurrentPage(0); 
-  setProducts([]);  
-  setErrorMessage("No products found");
-  setHasMoreProducts(true);
-};
+  // Hàm khởi tạo lại các giá trị về trang và sản phẩm khi có tìm kiếm mới
+  const resetProducts = () => {
+    setCurrentPage(0);
+    setProducts([]);
+    setErrorMessage("No products found");
+    setHasMoreProducts(true);
+  };
 
   // Hàm fetch sản phẩm từ API
   const fetchProducts = async () => {
@@ -124,8 +155,7 @@ const resetProducts = () => {
         categoryID: selectedCategory,
         minPrice: selectedMinPrice,
         maxPrice: selectedMaxPrice,
-        colorID: selectedColor,
-        sizeID: selectedSize,
+        attributes: selectedAttribute,
         sortMaxPrice: sortOrder,
         page: currentPage,
         pageSize: pageSize,
@@ -136,8 +166,7 @@ const resetProducts = () => {
         categoryID: selectedCategory,
         minPrice: selectedMinPrice,
         maxPrice: selectedMaxPrice,
-        colorID: selectedColor,
-        sizeID: selectedSize,
+        attribute: selectedAttribute,
         sortMaxPrice: sortOrder,
         page: currentPage,
         pageSize: pageSize,
@@ -169,11 +198,17 @@ const resetProducts = () => {
       case "category":
         setSelectedCategory(value);
         break;
-      case "color":
-        setSelectedColor(value);
-        break;
-      case "size":
-        setSelectedSize(value);
+      case "attribute":
+        setSelectedAttribute((prevSelected) => {
+          if (value === null) {
+            // Bỏ chọn tất cả khi nhấn nút "All"
+            return [];
+          }
+          // Toggle chọn/bỏ chọn attributeId
+          return prevSelected.includes(value)
+            ? prevSelected.filter((id) => id !== value)
+            : [...prevSelected, value];
+        });
         break;
       case "minPrice":
         setSelectedMinPrice(value);
@@ -198,8 +233,7 @@ const resetProducts = () => {
     setSelectedCategory(null);
     setSelectedMinPrice(null);
     setSelectedMaxPrice(null);
-    setSelectedColor(null);
-    setSelectedSize(null);
+    setSelectedAttribute([]);
     setSortOrder("ASC");
     setSearchTerm("");
   };
@@ -257,6 +291,9 @@ const resetProducts = () => {
   const [pd, setPd] = useState();
   const [err, setErr] = useState();
   const [price, setPrice] = useState(0);
+  const [verName, setVername] = useState();
+
+  const [verId, setVerId] = useState(null);
 
   //Xử lý thay đổi phiên bản sản phẩm trong giỏ hàng
   const findAllValueInAttributes = useCallback(
@@ -418,6 +455,8 @@ const resetProducts = () => {
 
         if (checkCount == temp) {
           setPrice(vs.price);
+          setVername(vs.versionName);
+          setVerId(vs.id);
           break;
         }
       }
@@ -462,6 +501,7 @@ const resetProducts = () => {
         if (checkCount == temp) {
           //Thêm vào giỏ hàng
           await handleAddVersionToCart({ versionId: vs.id, quantity: 1 });
+
           break;
         }
       }
@@ -482,11 +522,12 @@ const resetProducts = () => {
     });
 
     if (error) {
-      DangerAlert({
-        text:
-          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Server error",
-      });
+      // DangerAlert({
+      //   text:
+      //     `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
+      //     "Server error",
+      // });
+      window.location.href = "/auth/login";
       return;
     } else {
       dispatch(incrementCart());
@@ -533,6 +574,8 @@ const resetProducts = () => {
       )
     );
     setAttriTest(product?.attributes);
+    setVername();
+    setVerId(null);
   };
   function formatCurrencyVND(amount) {
     return amount.toLocaleString("vi-VN", {
@@ -540,6 +583,10 @@ const resetProducts = () => {
       currency: "VND",
     });
   }
+  const findIndexByKeyValue = (attributes, key, value) => {
+    const attribute = attributes.find((attr) => attr.key === key);
+    return attribute && attribute.values ? attribute.values.indexOf(value) : -1;
+  };
   const style = {
     m: { marginTop: "40px" },
     h: { height: "60vh" },
@@ -550,39 +597,16 @@ const resetProducts = () => {
   return (
     <div style={style.m}>
       {/* <!-- Product --> */}
+      <SizeGuide isOpen={isOffcanvasOpen} onClose={toggleOffcanvas} />
+      <SpeechToText
+        speechText={handleSpeechText}
+        isModalOpen={isModalOpen}
+        onCloseModal={handleCloseModal}
+      />
       <section id="productTop" className="bg0 p-t-23 p-b-64">
         <div className="container">
           <div className="flex-w flex-sb-m p-b-52">
-            {/* Bộ lọc Category */}
-            <div className="flex-w flex-l-m filter-tope-group m-tb-10">
-              <button
-                className={`stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 ${
-                  selectedCategory === null || selectedCategory === ""
-                    ? "how-active1"
-                    : ""
-                }`}
-                onClick={() => handleSelectChange("category", null)}
-              >
-                All Products
-              </button>
-              {filterAttributes?.category?.length > 0 &&
-                filterAttributes?.category?.map((category) => (
-                  <button
-                    key={category?.categoryId}
-                    className={`stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5  ${
-                      selectedCategory === category?.categoryId
-                        ? "how-active1"
-                        : ""
-                    }`}
-                    onClick={() =>
-                      handleSelectChange("category", category?.categoryId)
-                    }
-                  >
-                    {category?.categoryName}
-                  </button>
-                ))}
-            </div>
-
+          
             {/* Nút mở bộ lọc và tìm kiếm */}
             <div className="flex-w flex-c-m m-tb-10">
               <div>
@@ -627,267 +651,110 @@ const resetProducts = () => {
                   data-bs-parent="#accordionFlushExample"
                 >
                   <div className="accordion-body p-0">
-                    {/* <!-- Filter --> */}
-                    <div className="panel-filter w-full mb-3">
-                      <div className="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
-                        {/* Price Filter */}
-                        <div className="filter-col2 p-r-15 p-b-27">
-                          <div className="mtext-102 cl2 p-b-15">Price</div>
+         {/* Filter Section */}
+<div className="panel-filter w-full mb-3">
+  <div className="wrap-filter flex-w bg-light w-full p-lr-40 p-t-27 p-lr-15-sm">
 
-                          <ul className="list-unstyled">
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === null &&
-                                  selectedMaxPrice === null
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", null);
-                                  handleSelectChange("maxPrice", null);
-                                }}
-                              >
-                                All
-                              </span>
-                            </li>
+    {/* Bộ lọc Category */}
+    <div className="filter-col p-r-15 p-b-27">
+      <div className="mtext-102 cl2 p-b-15">Category</div>
+      <div className="category-filter">
+        <button
+          className={`filter-btn ${!selectedCategory ? 'active' : ''}`}
+          onClick={() => handleSelectChange("category", null)}
+        >
+          All Products
+        </button>
+        {filterAttributes?.categories?.map((category) => (
+          <button
+            key={category?.categoryId}
+            className={`filter-btn ${selectedCategory === category?.categoryId ? 'active' : ''}`}
+            onClick={() => handleSelectChange("category", category?.categoryId)}
+          >
+            {category?.categoryName}
+          </button>
+        ))}
+      </div>
+    </div>
 
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === 0 &&
-                                  selectedMaxPrice === 200000
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", 0);
-                                  handleSelectChange("maxPrice", 200000);
-                                }}
-                              >
-                                0.000 VND - 200.000 VND
-                              </span>
-                            </li>
+    {/* Bộ lọc Price */}
+    <div className="filter-col p-r-15 p-b-27">
+      <div className="mtext-102 cl2 p-b-15">Price</div>
+      <ul className="list-unstyled">
+        {[
+          { label: "All", min: null, max: null },
+          { label: "0.000 VND - 200.000 VND", min: 0, max: 200000 },
+          { label: "200.000 VND - 400.000 VND", min: 200000, max: 400000 },
+          { label: "400.000 VND - 600.000 VND", min: 400000, max: 600000 },
+          { label: "600.000 VND - 800.000 VND", min: 600000, max: 800000 },
+          { label: "1.000.000 VND +", min: 1000000, max: null },
+        ].map(({ label, min, max }, index) => (
+          <li key={index} className="p-b-6">
+            <button
+              className={`filter-btn ${selectedMinPrice === min && selectedMaxPrice === max ? 'active' : ''}`}
+              onClick={() => {
+                handleSelectChange("minPrice", min);
+                handleSelectChange("maxPrice", max);
+              }}
+            >
+              {label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
 
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === 200000 &&
-                                  selectedMaxPrice === 400000
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", 200000);
-                                  handleSelectChange("maxPrice", 400000);
-                                }}
-                              >
-                                200.000 VND - 400.000 VND
-                              </span>
-                            </li>
+    {/* Bộ lọc Attribute */}
+    <div className="filter-col p-r-15 p-b-27">
+      <div className="mtext-102 cl2 p-b-15">Attribute</div>
+      <div className="attribute-filter">
+        <button
+          onClick={() => handleSelectChange("attribute", null)}
+          className={`filter-btn ${selectedAttribute.length === 0 ? 'active' : ''}`}
+        >
+          All
+        </button>
+        {filteredAttributes.map(({ name, attributeId, isSelected }) => (
+          <button
+            key={attributeId}
+            className={`filter-btn ${isSelected ? 'active' : ''}`}
+            onClick={() => handleSelectChange("attribute", attributeId)}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+    </div>
 
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === 400000 &&
-                                  selectedMaxPrice === 600000
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", 400000);
-                                  handleSelectChange("maxPrice", 600000);
-                                }}
-                              >
-                                400.000 VND - 600.000 VND
-                              </span>
-                            </li>
+    {/* Bộ lọc Sort By */}
+    <div className="filter-col p-r-15 p-b-27">
+      <div className="mtext-102 cl2 p-b-15">Sort By</div>
+      <ul className="list-unstyled">
+        {[
+          { label: "Price: Low to High", order: "ASC" },
+          { label: "Price: High to Low", order: "DESC" },
+        ].map(({ label, order }, index) => (
+          <li key={index} className="p-b-6">
+            <button
+              className={`filter-btn ${sortOrder === order ? 'active' : ''}`}
+              onClick={() => handleSelectChange("sortOrder", order)}
+            >
+              {label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
 
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === 600000 &&
-                                  selectedMaxPrice === 800000
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", 600000);
-                                  handleSelectChange("maxPrice", 800000);
-                                }}
-                              >
-                                600.000 VND - 800.000 VND
-                              </span>
-                            </li>
+    {/* Clear Filters Button */}
+    <div className="clear-filters p-t-10 p-b-15 ms-auto">
+      <button onClick={handleClearFilter} className="btn-clear-filters">
+        Clear All Filters
+      </button>
+    </div>
+  </div>
+</div>
 
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedMinPrice === 1000000 &&
-                                  selectedMaxPrice === null
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("minPrice", 1000000);
-                                  handleSelectChange("maxPrice", null);
-                                }}
-                              >
-                                1.000.000 VND +
-                              </span>
-                            </li>
-                          </ul>
-                        </div>
-
-                        {/* Color Filter */}
-                        <div className="filter-col3 p-r-15 p-b-27">
-                          <div className="mtext-102 cl2 p-b-15">Color</div>
-
-                          <ul className="list-unstyled">
-                            <li className="p-b-6">
-                              <span
-                                className="fs-15 lh-12 m-r-6"
-                                style={{ color: "#222" }}
-                              >
-                                <i className="zmdi zmdi-circle"></i>
-                              </span>
-
-                              <span
-                                onClick={() => {
-                                  handleSelectChange("color", null);
-                                }}
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedColor === null
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                              >
-                                All
-                              </span>
-                            </li>
-                            {filterAttributes?.color?.length > 0 &&
-                              filterAttributes?.color?.map(
-                                (colorItem, index) => (
-                                  <li
-                                    key={colorItem?.id ? colorItem?.id : index}
-                                    className="p-b-6"
-                                  >
-                                    <span
-                                      className="fs-15 lh-12 m-r-6"
-                                      style={{ color: "#222" }}
-                                    >
-                                      <i className="zmdi zmdi-circle"></i>
-                                    </span>
-
-                                    <span
-                                      className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                        selectedColor === colorItem?.id
-                                          ? "filter-link-active"
-                                          : ""
-                                      }`}
-                                      onClick={() => {
-                                        handleSelectChange(
-                                          "color",
-                                          colorItem?.id
-                                        );
-                                      }}
-                                    >
-                                      {colorItem?.attributeValue}
-                                    </span>
-                                  </li>
-                                )
-                              )}
-                          </ul>
-                        </div>
-
-                        {/* Sizes Filter */}
-                        <div className="filter-col4 p-b-27 pe-5">
-                          <div className="mtext-102 cl2 p-b-15">Sizes</div>
-
-                          <ul className="list-unstyled">
-                            <li className="p-b-6">
-                              <span
-                                onClick={() => {
-                                  handleSelectChange("size", null);
-                                }}
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  selectedSize === null
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                              >
-                                All
-                              </span>
-                            </li>
-                            {filterAttributes?.size?.length > 0 &&
-                              filterAttributes?.size?.map((sizeItem, index) => (
-                                <li
-                                  key={sizeItem?.id ? sizeItem?.id : index}
-                                  className="p-b-6"
-                                >
-                                  <span
-                                    className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                      selectedSize === sizeItem?.id
-                                        ? "filter-link-active"
-                                        : ""
-                                    }`}
-                                    onClick={() => {
-                                      handleSelectChange("size", sizeItem?.id);
-                                    }}
-                                  >
-                                    {sizeItem?.attributeValue}
-                                  </span>
-                                </li>
-                              ))}
-                          </ul>
-                        </div>
-                        {/* Sort By */}
-                        <div className="filter-col1 p-r-15 p-b-27">
-                          <div className="mtext-102 cl2 p-b-15">Sort By</div>
-
-                          <ul className="list-unstyled">
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  sortOrder === "ASC"
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("sortOrder", "ASC");
-                                }}
-                              >
-                                Price: Low to High
-                              </span>
-                            </li>
-
-                            <li className="p-b-6">
-                              <span
-                                className={`text-decoration-none filter-link stext-106 trans-04 pointer ${
-                                  sortOrder === "DESC"
-                                    ? "filter-link-active"
-                                    : ""
-                                }`}
-                                onClick={() => {
-                                  handleSelectChange("sortOrder", "DESC");
-                                }}
-                              >
-                                Price: High to Low
-                              </span>
-                            </li>
-                          </ul>
-                        </div>
-                        {/* Nút Bỏ Chọn Bộ Lọc */}
-                        <div className="clear-filters p-t-10 p-b-15 ms-auto">
-                          <button
-                            onClick={handleClearFilter}
-                            className="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 ps-3 pe-3"
-                          >
-                            Clear All Filters
-                          </button>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 </div>
                 {/* Accordion Search */}
@@ -919,7 +786,13 @@ const resetProducts = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search"
                           />
-                          <SpeechToText speechText={handleSpeechText} />
+                        <button
+        className="size-113 flex-c-m fs-23 cl2 hov-cl1 trans-04 me-2"
+        onClick={handleOpenModal}
+      >
+        <i className="zmdi zmdi-mic"></i>
+      </button>
+                          
                           <button className="size-113 flex-c-m fs-23 cl2 hov-cl1 trans-04 me-2">
                             <i className="zmdi zmdi-wallpaper"></i>
                           </button>
@@ -1066,26 +939,45 @@ const resetProducts = () => {
                       <div className="col-md-2 me-2">
                         {/* Thumbnail Images as Indicators */}
                         <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
-                          {ProductDetail &&
-                            ProductDetail?.versions &&
-                            ProductDetail?.versions?.length > 0 &&
+                          {ProductDetail?.versions?.length > 0 &&
                             ProductDetail?.versions?.map((version, index) => (
                               <button
-                                key={index}
+                                key={version.id}
                                 type="button"
                                 data-bs-target="#productCarousel"
                                 data-bs-slide-to={index}
-                                className={index === 0 ? "active" : ""}
+                                className={`${
+                                  (index === 0 &&
+                                    (verId == null || verId == undefined)) ||
+                                  verId === version.id
+                                    ? "active"
+                                    : ""
+                                }`}
                                 aria-label={`Slide ${index + 1}`}
                                 style={style.wh}
+                                onClick={() =>
+                                  version?.attributes.forEach((f, index2) => {
+                                    handleClickItemAttribute({
+                                      key: f?.key,
+                                      value: f?.value,
+                                      rowCel: [
+                                        Number(index2),
+                                        Number(
+                                          findIndexByKeyValue(
+                                            ProductDetail?.attributes,
+                                            f?.key,
+                                            f?.value
+                                          )
+                                        ),
+                                      ],
+                                      pdu: product,
+                                    });
+                                  })
+                                }
                               >
                                 <img
-                                  src={version?.image}
-                                  className={
-                                    index === 0
-                                      ? "d-block w-100 h-full"
-                                      : "d-block w-100"
-                                  }
+                                  src={version.image}
+                                  className="d-block w-100"
                                   alt=""
                                 />
                               </button>
@@ -1096,23 +988,24 @@ const resetProducts = () => {
                       <div className="col-md-10 p-0">
                         {/* Large Image Carousel */}
                         <div className="carousel-inner" style={style.w500}>
-                          {ProductDetail &&
-                            ProductDetail?.versions &&
-                            ProductDetail?.versions?.length > 0 &&
-                            ProductDetail?.versions.map((version, index) => (
-                              <div
-                                className={`carousel-item ${
-                                  index === 0 ? "active" : ""
-                                }`}
-                                key={index}
-                              >
-                                <img
-                                  src={version?.image}
-                                  className="d-block w-100"
-                                  alt={version?.versionName}
-                                />
-                              </div>
-                            ))}
+                          {ProductDetail?.versions?.map((version, index) => (
+                            <div
+                              className={`carousel-item ${
+                                index === 0 && verId == null
+                                  ? "active"
+                                  : verId === version.id
+                                  ? "active"
+                                  : ""
+                              }`}
+                              key={version.id}
+                            >
+                              <img
+                                src={version.image}
+                                className="d-block w-100"
+                                alt={version.versionName}
+                              />
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -1129,24 +1022,31 @@ const resetProducts = () => {
                       {" "}
                       {products?.map((product1, index) =>
                         product1?.id == ProductDetail?.product?.id ? (
-                          <span key={index}>
-                            {`
-  ${
-    product1?.minPrice !== product1?.maxPrice
-      ? `${formatCurrencyVND(product1?.minPrice ?? "N/A")} ~ `
-      : ""
-  }
-  ${formatCurrencyVND(product1?.maxPrice ?? "N/A")}
-`}
+                          <span className="mtext-106 cl2">
+                            {price > 0
+                              ? formatCurrencyVND(price)
+                              : `${formatCurrencyVND(
+                                  ProductDetail?.product?.minPrice ?? "N/A"
+                                )} - ${formatCurrencyVND(
+                                  ProductDetail?.product?.maxPrice ?? "N/A"
+                                )}`}{" "}
+                            {verName && (
+                              <span className="fs-17"> - {verName}</span>
+                            )}
                           </span>
                         ) : null
                       )}
                     </span>
 
-                
                     <div className="stext-102 cl3 p-t-23">
                       Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
-                      sản phẩm phụ hợp với bạn nhất <SizeGuideModal/>
+                      sản phẩm phụ hợp với bạn nhất{" "}
+                      <button
+                        onClick={toggleOffcanvas}
+                        className="text-decoration-underline text-primary"
+                      >
+                        Tại đây
+                      </button>
                     </div>
 
                     {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
@@ -1190,36 +1090,39 @@ const resetProducts = () => {
                     </div>
 
                     {/* <!--  --> */}
-                    <div className="flex-w flex-m p-l-100 p-t-40 respon7">
-                      <div className="flex-m bor9 p-r-10 m-r-11">
+                    <div className="d-flex justify-content-center">
+                      {/* <!--  --> */}
+                      <div className="flex-w flex-m  p-t-40 respon7">
+                        <div className="flex-m bor9 p-r-10 m-r-11">
+                          <Link
+                            className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
+                            data-tooltip="Add to Wishlist"
+                          >
+                            <i className="zmdi zmdi-favorite"></i>
+                          </Link>
+                        </div>
+
                         <Link
-                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
-                          data-tooltip="Add to Wishlist"
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Facebook"
                         >
-                          <i className="zmdi zmdi-favorite"></i>
+                          <i className="fa fa-facebook"></i>
+                        </Link>
+
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Twitter"
+                        >
+                          <i className="fa fa-twitter"></i>
+                        </Link>
+
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Google Plus"
+                        >
+                          <i className="fa fa-google-plus"></i>
                         </Link>
                       </div>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Facebook"
-                      >
-                        <i className="fa fa-facebook"></i>
-                      </Link>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Twitter"
-                      >
-                        <i className="fa fa-twitter"></i>
-                      </Link>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Google Plus"
-                      >
-                        <i className="fa fa-google-plus"></i>
-                      </Link>
                     </div>
                   </div>
                 </div>

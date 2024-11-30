@@ -6,6 +6,9 @@ const WarningAlert = ({ title, text }) => {
     text: text || "Be careful!",
     icon: "warning",
     confirmButtonText: "OK",
+    customClass: {
+      container: 'swal2-container-custom',
+    }
   });
 };
 

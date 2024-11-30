@@ -55,17 +55,19 @@ const SuppliersTable = () => {
     const [totalPage, setTotalPage] = useState(0);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalElements, setTotalElements] = useState(0);
+    const [keyword, setKeyword] = useState('');
+    const [size, setSize] = useState(10);
 
     const handleGetSuppliersAPI = () => {
-        axiosInstance.get(`/staff/suppliers?size=10&page=${currentPage}`).then(
+        axiosInstance.get(`/staff/suppliers?size=${size}&page=${currentPage}&status=true&keyword=${keyword}`).then(
             (response) => {
-                const sortedSuppliers = response?.data?.data?.content.sort((a, b) => b.supplierId + a.supplierId);
+                const sortedSuppliers = response?.data?.data?.content;
                 setSuppliers(sortedSuppliers);
                 setTotalPage(response?.data?.data?.totalPages);
                 setTotalElements(response?.data?.data?.totalElements);
             }
         );
-    }    
+    }
     const handleSetPage = (page) => {
         if (page !== currentPage) {
             setCurrentPage(page);
@@ -83,12 +85,12 @@ const SuppliersTable = () => {
     useEffect(
         () => {
             handleGetSuppliersAPI();
-        }, [currentPage, isEdit, isNew]
+        }, [currentPage, isEdit, isNew, keyword]
     );
     useEffect(
         () => {
             console.log('supplier list: ', suppliers);
-            
+
         }, [suppliers]
     )
 
@@ -114,15 +116,15 @@ const SuppliersTable = () => {
         setValue('isActive', true);
         const supplier = getValues();
         if (!isValid) {
-            toast.error('Form is not valid !!');
+            toast.error('Biểu mẫu không đúng !!');
         } else {
             axiosInstance.put(`/staff/suppliers?id=${supplier?.id}`, supplier).then(
                 (response) => {
                     if (response?.data?.errorCode === 200) {
-                        toast.success(`Supplier updated successfully !!`);
+                        toast.success(`Cập nhật thành công !!`);
                         handleCancel();
                     } else {
-                        toast.error(`Failed to update supplier. Please check for errors and try again !!`);
+                        toast.error(`Không thể thực thi công việc. Vui lòng thử lại !!`);
                     }
                 }
             );
@@ -149,17 +151,17 @@ const SuppliersTable = () => {
         setValue('isActive', true);
         const supplier = getValues();
         if (!isValid) {
-            toast.error('Form is not valid !!');
+            toast.error('Biểu mẫu không đúng !!');
         } else {
             axiosInstance.post(`/staff/suppliers`, supplier).then(
                 (response) => {
                     console.log(response);
 
                     if (response?.data?.errorCode === 200 || response?.data?.errorCode === 201) {
-                        toast.success(`Supplier added successfully !!`);
+                        toast.success(`Thêm mới thành công !!`);
                         handleCancel();
                     } else {
-                        toast.error(`Failed to added supplier. Please check for errors and try again !!`);
+                        toast.error(`Không thể thực thi công việc. Vui lòng thử lại !!`);
                     }
                 }
             );
@@ -169,12 +171,12 @@ const SuppliersTable = () => {
     const handleRemoveSupplier = (id) => {
         Swal.fire(
             {
-                title: 'Are want to remove ?',
-                text: 'You might recover this supplier',
+                title: 'Bạn muốn xóa bỏ nhà cung cấp này ?',
+                text: 'Bạn có thể sẽ không khôi phục lại được',
                 icon: 'question',
                 showCancelButton: true,
                 showConfirmButton: true,
-                cancelButtonText: 'Cancel',
+                cancelButtonText: 'Hủy bỏ',
                 confirmButtonText: `OK`,
             }
         ).then(
@@ -183,10 +185,10 @@ const SuppliersTable = () => {
                     axiosInstance.delete(`/staff/suppliers?id=${id}`).then(
                         (response) => {
                             if (response?.data?.errorCode === 200 || response?.data?.errorCode === 201) {
-                                toast.success(`Supplier removed successfully !!`);
+                                toast.success(`Xóa thành công !!`);
                                 handleGetSuppliersAPI();
                             } else {
-                                toast.error(`Failed to removed supplier. Please check for errors and try again !!`);
+                                toast.error(`Không thể thực thi công việc. Vui lòng thử lại !!`);
                             }
                         }
                     );
@@ -207,14 +209,14 @@ const SuppliersTable = () => {
         <div className='font-14'>
             <div className='bg-body-tertiary d-flex align-items-center' style={{ height: "50px" }}>
                 <div className='container d-flex justify-content-between align-items-center'>
-                    <h4 className='m-0 col-2 d-flex align-items-center'><FaParachuteBox />&ensp;Suppliers</h4>
+                    <h4 className='m-0 col-2 d-flex align-items-center'><FaParachuteBox />&ensp;Nhà cung cấp</h4>
                     <div className='col-10 d-flex justify-content-around'>
-                        <InputGroup className='w-30'>
+                        <InputGroup className='w-30' style={{maxWidth: '450px'}}>
                             <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
-                            <Form.Control className='custom-radius' placeholder='Search users . . .' />
+                            <Form.Control className='custom-radius' placeholder='Tìm kiếm nhà cung cấp . . .' onChange={(e) => {setKeyword(e.currentTarget.value)}}/>
                         </InputGroup>
-                        <Button variant='secondary' className='font-14 custom-radius custom-hover'><FaFileExport /> {` Export`}</Button>
-                        <Button className='font-14 custom-radius custom-hover' onClick={() => handleShowModal()}><FaPlus />{` Add new supplier`}</Button>
+                        <Button variant='secondary' className='font-14 custom-radius custom-hover mx-2'><FaFileExport /> {` Xuất`}</Button>
+                        <Button className='font-14 custom-radius custom-hover mx-2' onClick={() => handleShowModal()}><FaPlus />{` Thêm mới`}</Button>
                     </div>
                 </div>
             </div>
@@ -223,11 +225,11 @@ const SuppliersTable = () => {
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Contacter</th>
-                            <th>Supplier</th>
+                            <th>Người liên hệ</th>
+                            <th>Nhà cung cấp</th>
                             <th>Email</th>
-                            <th>Phone</th>
-                            <th>Adress</th>
+                            <th>Số điện thoại</th>
+                            <th>Địa chỉ</th>
                             <th></th>
                             <th></th>
                         </tr>
@@ -252,16 +254,19 @@ const SuppliersTable = () => {
                     </tbody>
                 </Table>
                 <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
-                    <p className='font-13'>{`${(currentPage + 1) * 10 <= totalElements ? (currentPage + 1) * 10 : totalElements} of ${totalElements} `}
-                        <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span>
+                    <p className='font-13'>{`${(currentPage + 1) * 10 <= totalElements ? (currentPage + 1) * 10 : totalElements} / ${totalElements} `}
+                        <span className='text-decoration-none fw-medium text-primary' onClick={() => {setSize(totalElements)}}>{`Xem tất cả >`}</span>
                     </p>
-                    <Pagination className='border-0'>
-                        <Pagination.First>{`<`}</Pagination.First>
-                        {paginationItems}
-                        <Pagination.Last>{`>`}</Pagination.Last>
-                    </Pagination>
+                    {totalPage > 1 && (
+                        <Pagination className='border-0'>
+                            <Pagination.First>{`<`}</Pagination.First>
+                            {paginationItems}
+                            <Pagination.Last>{`>`}</Pagination.Last>
+                        </Pagination>
+                    )}
                 </div>
             </div>
+
             <div>
                 <SupplierModal supplier={selectedSupplier} show={showModal} handleClose={handleCloseModal} isNew={isNew}
                     isEdit={isEdit} handelEdit={handleEdit} handleCancel={handleCancel} handleChange={handleChange}

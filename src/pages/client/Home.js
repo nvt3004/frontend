@@ -13,10 +13,12 @@ import { useDispatch } from "react-redux";
 import banner1 from "../../assets/images/banner-01.jpg";
 import banner2 from "../../assets/images/banner-02.jpg";
 import banner3 from "../../assets/images/banner-03.jpg";
+import CouponCard from "./CouponCard";
 
 import { incrementCart } from "../../store/actions/cartActions";
-import SizeGuideModal from "../../components/client/Modal/SizeGuideModal"
-
+import SizeGuide from "../../components/client/Modal/SizeGuideModal";
+import { toast } from "react-toastify";
+import moment from "moment";
 
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
@@ -36,25 +38,59 @@ function getRowCelCick(attributes = [], item) {
     return [0, 0];
   }
 }
+
+function formatCurrencyVND(amount) {
+  return amount.toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  });
+}
+
+const getEndDate = (end) => {
+  const now = moment(); // Lấy thời gian hiện tại
+  const endDate = moment(end, "DD/MM/YYYY HH:mm"); // Chuyển đổi chuỗi thành moment
+  
+  if (!endDate.isValid()) {
+    return "Ngày giờ không hợp lệ"; // Kiểm tra nếu thời gian không hợp lệ
+  }
+
+  const diffInMilliseconds = endDate.diff(now); // Tính chênh lệch
+  console.log("Ty@", diffInMilliseconds, end);
+
+  if (diffInMilliseconds <= 0) {
+    return "Đã hết hạn";
+  }
+
+  const duration = moment.duration(diffInMilliseconds);
+
+  const years = duration.years();
+  const months = duration.months();
+  const days = duration.days();
+  const hours = duration.hours();
+  const minutes = duration.minutes();
+
+  if (years > 0) {
+    return `${years} năm`;
+  } else if (months > 0) {
+    return `${months} tháng`;
+  } else if (days > 0) {
+    return `${days} ngày`;
+  } else if (hours > 0) {
+    return `${hours} giờ`;
+  } else {
+    return `${minutes} phút`;
+  }
+};
+
 const Home = () => {
   const dispatch = useDispatch();
-  // SuccessAlert({ title: 'Product Added', text: 'The product was added to your cart!' });
-  // const handleAction = async () => {
-  //   const confirmed = await ConfirmAlert({
-  //     title: "Delete this item?",
-  //     text: "This action cannot be undone.",
-  //     confirmText: "Delete",
-  //     cancelText: "Cancel",
-  //   });
 
-  //   if (confirmed) {
-  //     console.log("Action confirmed!");
-  //     // Thực hiện hành động khi người dùng xác nhận
-  //   } else {
-  //     console.log("Action cancelled!");
-  //     // Thực hiện hành động khi người dùng hủy
-  //   }
-  // };
+  const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
+
+  const toggleOffcanvas = () => {
+    setIsOffcanvasOpen((prev) => !prev);
+  };
+
   const [Products, setProducts] = useState([]);
   const [ProductDetail, setProductDetail] = useState();
   const [ErrorCode] = useState("204");
@@ -66,9 +102,13 @@ const Home = () => {
   const [pd, setPd] = useState();
   const [err, setErr] = useState();
   const [price, setPrice] = useState(0);
+  const [verName, setVername] = useState();
+
+  const [verId, setVerId] = useState(null);
 
   const [priceMin, setPriceMin] = useState();
   const [priceMax, setPriceMax] = useState();
+  const [discounts, setDiscounts] = useState([]);
 
   //Xử lý thay đổi phiên bản sản phẩm trong giỏ hàng
   const findAllValueInAttributes = useCallback(
@@ -188,6 +228,7 @@ const Home = () => {
     });
 
     setAttriTest(tem);
+    console.log(53453453534534534534, tem);
     setProduct(partitionProduct(pd, tem, [row, cel], key));
 
     console.log("test ", partitionProduct(pd, tem, [row, cel], key));
@@ -230,6 +271,8 @@ const Home = () => {
 
         if (checkCount == temp) {
           setPrice(vs.price);
+          setVername(vs.versionName);
+          setVerId(vs.id);
           break;
         }
       }
@@ -294,11 +337,12 @@ const Home = () => {
     });
 
     if (error) {
-      DangerAlert({
-        text:
-          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Server error",
-      });
+      // DangerAlert({
+      //   text:
+      //     `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
+      //     "Server error",
+      // });
+      window.location.href = "/auth/login";
       return;
     } else {
       dispatch(incrementCart());
@@ -360,6 +404,8 @@ const Home = () => {
       )
     );
     setAttriTest(product?.attributes);
+    setVername();
+    setVerId(null);
   };
 
   const style = {
@@ -399,17 +445,80 @@ const Home = () => {
       console.error("Error removing from Wishlist:", error.message);
     }
   };
-  function formatCurrencyVND(amount) {
-    return amount.toLocaleString("vi-VN", {
-      style: "currency",
-      currency: "VND",
+
+  const findIndexByKeyValue = (attributes, key, value) => {
+    const attribute = attributes.find((attr) => attr.key === key);
+    console.log(
+      attribute && attribute.values ? attribute.values.indexOf(value) : -1
+    );
+    return attribute && attribute.values ? attribute.values.indexOf(value) : -1;
+  };
+
+  //Đổ danh sách coupon cho user lấy
+  useEffect(() => {
+    const fetchCoupon = async () => {
+      const [error, data] = await stfExecAPI({
+        method: "get",
+        url: "api/user/get-all-coupon-home",
+      });
+
+      if (data) {
+        setDiscounts(data.data);
+      }
+    };
+
+    fetchCoupon();
+  }, []);
+
+  const fetchCoupon = async () => {
+    const [error, data] = await stfExecAPI({
+      method: "get",
+      url: "api/user/get-all-coupon-home",
     });
-  }
+
+    if (data) {
+      setDiscounts(data.data);
+    }
+  };
+
+
+  const saveCoupon = async ({ couponId, code }) => {
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: "api/user/get-coupon/add",
+      data: { couponId: couponId, code: code },
+    });
+
+    if (error) {
+      const err =
+        error.status === 403
+          ? "Account does not have permission to perform this function"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      fetchCoupon();
+      return;
+    }
+
+    fetchCoupon();
+
+    toast.success(`Lưu thành công mã giảm giá`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+  };
+
   return (
     <div>
       <Slider />
-
+      <SizeGuide isOpen={isOffcanvasOpen} onClose={toggleOffcanvas} />
       {/* <!-- Banner --> */}
+
       <div className="sec-banner bg0 p-t-80">
         <div className="container">
           <div className="row">
@@ -498,6 +607,31 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      <div className="container mt-5 px-5">
+        <div className="row row-cols-md-3 row-cols-1">
+          {discounts &&
+            discounts.map((item) => {
+              return (
+                <div key={item.code} className="col">
+                  <CouponCard
+                    code={item.code}
+                    discount={
+                      item.disPercent
+                        ? item.disPercent + " %"
+                        : formatCurrencyVND(item.disPrice)
+                    }
+                    name={getEndDate(item.endDate)}
+                    onSave={() => {
+                      saveCoupon({ couponId: item.id, code: item.code });
+                    }}
+                  />
+                </div>
+              );
+            })}
+        </div>
+      </div>
+
       <div className="container mt-5">
         <div className="p-b-10 w-100 ">
           <h3 className="ltext-103 cl5">Product Overview</h3>
@@ -624,21 +758,42 @@ const Home = () => {
                           {ProductDetail?.versions?.length > 0 &&
                             ProductDetail?.versions?.map((version, index) => (
                               <button
-                                key={index}
+                                key={version.id}
                                 type="button"
                                 data-bs-target="#productCarousel"
                                 data-bs-slide-to={index}
-                                className={index === 0 ? "active" : ""}
+                                className={`${
+                                  (index === 0 &&
+                                    (verId == null || verId == undefined)) ||
+                                  verId === version.id
+                                    ? "active"
+                                    : ""
+                                }`}
                                 aria-label={`Slide ${index + 1}`}
                                 style={style.wh}
+                                onClick={() =>
+                                  version?.attributes.forEach((f, index2) => {
+                                    handleClickItemAttribute({
+                                      key: f?.key,
+                                      value: f?.value,
+                                      rowCel: [
+                                        Number(index2),
+                                        Number(
+                                          findIndexByKeyValue(
+                                            ProductDetail?.attributes,
+                                            f?.key,
+                                            f?.value
+                                          )
+                                        ),
+                                      ],
+                                      pdu: product,
+                                    });
+                                  })
+                                }
                               >
                                 <img
-                                  src={version?.image}
-                                  className={
-                                    index === 0
-                                      ? "d-block w-100 h-full"
-                                      : "d-block w-100"
-                                  }
+                                  src={version.image}
+                                  className="d-block w-100"
                                   alt=""
                                 />
                               </button>
@@ -649,21 +804,24 @@ const Home = () => {
                       <div className="col-md-10 p-0">
                         {/* Large Image Carousel */}
                         <div className="carousel-inner" style={style.w500}>
-                          {ProductDetail?.versions?.length > 0 &&
-                            ProductDetail?.versions?.map((version, index) => (
-                              <div
-                                className={`carousel-item ${
-                                  index === 0 ? "active" : ""
-                                }`}
-                                key={index}
-                              >
-                                <img
-                                  src={version?.image}
-                                  className="d-block w-100"
-                                  alt={version?.versionName}
-                                />
-                              </div>
-                            ))}
+                          {ProductDetail?.versions?.map((version, index) => (
+                            <div
+                              className={`carousel-item ${
+                                index === 0 && verId == null
+                                  ? "active"
+                                  : verId === version.id
+                                  ? "active"
+                                  : ""
+                              }`}
+                              key={version.id}
+                            >
+                              <img
+                                src={version.image}
+                                className="d-block w-100"
+                                alt={version.versionName}
+                              />
+                            </div>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -680,15 +838,17 @@ const Home = () => {
                       {" "}
                       {Products?.map((product1, index) =>
                         product1?.id == ProductDetail?.product?.id ? (
-                          <span key={index}>
-                            {`
-  ${
-    product1?.minPrice !== product1?.maxPrice
-      ? `${formatCurrencyVND(product1?.minPrice ?? "N/A")} ~ `
-      : ""
-  }
-  ${formatCurrencyVND(product1?.maxPrice ?? "N/A")}
-`}
+                          <span className="mtext-106 cl2">
+                            {price > 0
+                              ? formatCurrencyVND(price)
+                              : `${formatCurrencyVND(
+                                  ProductDetail?.product?.minPrice ?? "N/A"
+                                )} - ${formatCurrencyVND(
+                                  ProductDetail?.product?.maxPrice ?? "N/A"
+                                )}`}{" "}
+                            {verName && (
+                              <span className="fs-17"> - {verName}</span>
+                            )}
                           </span>
                         ) : null
                       )}
@@ -696,7 +856,13 @@ const Home = () => {
 
                     <div className="stext-102 cl3 p-t-23">
                       Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
-                      sản phẩm phụ hợp với bạn nhất <SizeGuideModal/>
+                      sản phẩm phụ hợp với bạn nhất{" "}
+                      <button
+                        onClick={toggleOffcanvas}
+                        className="text-decoration-underline text-primary"
+                      >
+                        Tại đây
+                      </button>
                     </div>
 
                     {/* <!--Làm việc chỗ nàyyyyyyyyyyyyy  --> */}
@@ -740,36 +906,39 @@ const Home = () => {
                     </div>
 
                     {/* <!--  --> */}
-                    <div className="flex-w flex-m p-l-100 p-t-40 respon7">
-                      <div className="flex-m bor9 p-r-10 m-r-11">
+                    <div className="d-flex justify-content-center">
+                      {/* <!--  --> */}
+                      <div className="flex-w flex-m  p-t-40 respon7">
+                        <div className="flex-m bor9 p-r-10 m-r-11">
+                          <Link
+                            className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
+                            data-tooltip="Add to Wishlist"
+                          >
+                            <i className="zmdi zmdi-favorite"></i>
+                          </Link>
+                        </div>
+
                         <Link
-                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 js-addwish-detail tooltip100"
-                          data-tooltip="Add to Wishlist"
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Facebook"
                         >
-                          <i className="zmdi zmdi-favorite"></i>
+                          <i className="fa fa-facebook"></i>
+                        </Link>
+
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Twitter"
+                        >
+                          <i className="fa fa-twitter"></i>
+                        </Link>
+
+                        <Link
+                          className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
+                          data-tooltip="Google Plus"
+                        >
+                          <i className="fa fa-google-plus"></i>
                         </Link>
                       </div>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Facebook"
-                      >
-                        <i className="fa fa-facebook"></i>
-                      </Link>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Twitter"
-                      >
-                        <i className="fa fa-twitter"></i>
-                      </Link>
-
-                      <Link
-                        className="fs-14 cl3 hov-cl1 trans-04 lh-10 p-lr-5 p-tb-2 m-r-8 tooltip100"
-                        data-tooltip="Google Plus"
-                      >
-                        <i className="fa fa-google-plus"></i>
-                      </Link>
                     </div>
                   </div>
                 </div>

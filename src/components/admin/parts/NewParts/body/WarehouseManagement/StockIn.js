@@ -1,249 +1,515 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { BsFillHouseAddFill } from "react-icons/bs";
-import CustomButton from '../../component/CustomButton';
-import Select from 'react-select';
-import NotSelectYet from '../../component/errorPages/NotSelectYet';
-import axiosInstance from '../../../../../../services/axiosConfig';
-import { toast, ToastContainer } from 'react-toastify';
-import { Form, InputGroup, Table } from 'react-bootstrap';
-import { FaSearch, FaTimes } from 'react-icons/fa';
-import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
+import React, { useEffect, useRef, useState, version } from "react";
+import StockProductSearch from "./StockProductSearch";
+import { Trash } from "phosphor-react";
+import DataTableSft from "../../../../DataTableSft";
+import { toast } from "react-toastify";
+import { stfExecAPI } from "../../../../../../stf/common";
+import makeAnimated from "react-select/animated";
+import Select from "react-select";
+import moment from "moment";
+import { getProfile } from "../../../../../../services/api/OAuthApi";
+import FullScreenSpinner from "../../../FullScreenSpinner";
+import { Package } from "phosphor-react";
+const animatedComponents = makeAnimated();
+
+function formatCurrencyVND(amount) {
+  return amount.toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  });
+}
+
+const currentDate = moment().format("DD/MM/YYYY");
 
 const StockIn = () => {
-    const { setValue, getValues, setError, formState: { errors }, register, trigger, reset, unregister } = useForm();
+  const [products, setProducts] = useState({});
+  const [versions, setVersions] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [supplier, setSupplier] = useState();
+  const [totalPriceAndQuantity, setTotalPriceAndQuantity] = useState([0, 0]);
+  const [profile, setProfile] = useState({});
+  const [loading, setLoading] = useState(false);
 
-    const [suppliers, setSuppliers] = useState([]);
-    const [selectedSupplier, setSelectedSupplier] = useState(null);
-    const supplierOptions = suppliers.map(item => ({
-        value: item?.supplierId,
-        label: item?.supplierName,
-    }));
+  //Đổ danh sách sản phẩm
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/product?page=1&size=4`,
+      });
 
-    useEffect(() => {
-        axiosInstance.get('/staff/suppliers/all').then(response => {
-            if (response?.data?.errorCode === 200) {
-                setSuppliers(response?.data?.data);
-            } else {
-                toast.error('Failed to get supplier. Please check for errors and try again!');
-            }
-        });
-    }, []);
+      if (data) {
+        // setLoading(false);
+        setProducts(data.data);
+        return;
+      }
 
-    const handleGetSupplier = (selectedOption) => {
-        const matchSupplier = suppliers.find(item => item?.supplierId === selectedOption?.value);
-        if (matchSupplier) {
-            setSelectedSupplier(matchSupplier);
-        }
+      // setLoading(false);
+      const err =
+        error.status === 403
+          ? "Account does not have permission to perform this function"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
     };
 
-    const [products, setProducts] = useState([]);
-    const [currentPage, setCurrentPage] = useState(0);
-    const [totalPage, setTotalPage] = useState(0);
-    useEffect(() => {
-        axiosInstance.get(`/staff/product?page=${currentPage + 1}&size=5`).then(response => {
-            if (response?.data?.code === 200) {
-                setProducts(response?.data?.data?.content);
-                setTotalPage(response?.data?.data?.totalPages);
-            } else {
-                toast.error('Failed to get product. Please check for errors and try again!');
-            }
-        });
-    }, [currentPage]);
+    fetchUsers();
+  }, []);
 
-    const nextPageProduct = () => {
-        if (currentPage + 1 < totalPage) {
-            setCurrentPage(currentPage + 1);
-        } else {
-            toast.warning('Last product page.');
-        }
+  //Đổ danh sách nhà cung cấp
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/suppliers/all`,
+      });
+
+      if (data) {
+        // setLoading(false);
+        setSuppliers(data.data);
+        return;
+      }
+
+      // setLoading(false);
+      const err =
+        error.status === 403
+          ? "Account does not have permission to perform this function"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
     };
 
-    const previousPageProduct = () => {
-        if (currentPage > 0) {
-            setCurrentPage(currentPage - 1);
-        } else {
-            toast.warning('First product page.');
-        }
+    fetchUsers();
+  }, []);
+
+  //Tính tổng tiền và số lượng sản phẩm
+  useEffect(() => {
+    let totalPrice = 0;
+    let totalQuantity = 0;
+
+    versions.forEach((i) => {
+      totalPrice += Number(i.total);
+      totalQuantity += Number(i.quantity);
+    });
+
+    setTotalPriceAndQuantity([totalPrice, totalQuantity]);
+  }, [versions]);
+
+  //Lay profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { listData } = await getProfile();
+        setProfile(listData);
+      } catch (error) {
+        console.error("Error fetching profile:", error.message);
+      }
     };
 
-    const [selectedProduct, setSelectedProduct] = useState(null);
+    fetchProfile();
+  }, []);
 
-    const getDate = () => {
-        const now = new Date();
-        const dd = String(now.getDate()).padStart(2, '0');
-        const MM = String(now.getMonth() + 1).padStart(2, '0');
-        const yy = String(now.getFullYear()).slice(-2);
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
+  //Cấu hình table
+  const columns = [
+    {
+      title: "Ảnh",
+      dataIndex: "image",
+      key: "image",
+      render: (text, record) => {
+        return (
+          <img
+            src={text}
+            alt="Product"
+            style={{ width: 50, height: 50, cursor: "pointer" }}
+          />
+        );
+      },
+    },
+    {
+      title: "Tên Sản Phẩm",
+      dataIndex: "versionName",
+      key: "versionName",
+    },
+    {
+      title: "Giá Nhập",
+      dataIndex: "importPrice",
+      key: "importPrice",
+      render: (value, row) => {
+        return formatCurrencyVND(value);
+      },
+    },
+    {
+      title: "Số Lượng",
+      dataIndex: "quantity",
+      key: "quantity",
+      render: (value, record) => {
+        return (
+          <input
+            type="number"
+            className="form-control"
+            id="basic-default-fullname"
+            placeholder="Enter quantity"
+            value={value}
+            onBlur={(e) => {
+              if (e.target.value <= 0) {
+                const vss = versions.map((d) => {
+                  if (d.id === record.id) {
+                    return {
+                      ...d,
+                      quantity: 1,
+                      total: d.importPrice,
+                    };
+                  }
 
-        return `${dd}${MM}${yy}-${hh}${mm}${ss}`;
-    };
+                  return d;
+                });
 
-    const handleRemoveProductVersion = (indexToRemove) => {
-        unregister(`productVersions[${indexToRemove}].quantity`);
-        unregister(`productVersions[${indexToRemove}].productVersionId`);
-
-        const updatedVersions = selectedProduct.versions.filter((_, index) => index !== indexToRemove);
-        setSelectedProduct({
-            ...selectedProduct,
-            versions: updatedVersions,
-        });
-    };
-
-    const handleSubmit = async () => {
-        if (selectedSupplier) {
-            setValue('supplierId', selectedSupplier?.supplierId);
-        } else {
-            setError('supplier', { type: 'manual', message: 'Supplier is required!' });
-            return;
-        }
-
-        const productQuantityFields = selectedProduct?.versions.map((_, index) => `productVersions[${index}].quantity`);
-
-        let isValid = await trigger([
-            ...productQuantityFields,
-            'supplierId'
-        ]);
-
-        if (isValid) {
-            // Lọc các phiên bản có `quantity` hợp lệ
-            const filteredVersions = getValues("productVersions").filter(
-                (version) => version.quantity && version.quantity > 0
-            );
-
-            // Thiết lập lại `productVersions` chỉ với các phiên bản hợp lệ
-            setValue("productVersions", filteredVersions);
-
-            // Gửi dữ liệu đã lọc đi
-            setValue('description', `receipt-prod${selectedProduct?.id}-${getDate()}`);
-            axiosInstance.post('/staff/receipt', getValues()).then(response => {
-                if (response?.data?.errorCode === 200) {
-                    toast.success('Receipt created successfully');
-                    setSelectedProduct(null);
-                    setSelectedSupplier(null);
-                    reset();
-                } else {
-                    toast.error('Failed to create receipt. Please check for errors and try again!');
+                setVersions(vss);
+              }
+            }}
+            onChange={(e) => {
+              const vss = versions.map((d) => {
+                if (d.id === record.id) {
+                  return {
+                    ...d,
+                    quantity: e.target.value,
+                    total: e.target.value * d.importPrice,
+                  };
                 }
-            });
-        }
+
+                return d;
+              });
+
+              setVersions(vss);
+            }}
+          />
+        );
+      },
+    },
+    {
+      title: "Tổng Tiền",
+      dataIndex: "total",
+      key: "total",
+      render: (value, record) => {
+        return formatCurrencyVND(value);
+      },
+    },
+    {
+      title: "Hành Động",
+      key: "actions",
+      render: (text, record) => {
+        return (
+          <div>
+            <button
+              type="button"
+              className="btn btn-danger btn-sm"
+              onClick={() => {
+                setVersions(versions.filter((i) => i.id !== record.id));
+              }}
+            >
+              <Trash weight="fill" />
+            </button>
+          </div>
+        );
+      },
+    },
+  ];
+
+  const handleNextPage = async () => {
+    const page = products.number + 2;
+    const [error, data] = await stfExecAPI({
+      url: `api/staff/product?page=${page}&size=4`,
+    });
+
+    if (data) {
+      setProducts(data.data);
+      return;
+    }
+
+    const err =
+      error.status === 403
+        ? "Account does not have permission to perform this function"
+        : error?.response?.data?.message;
+
+    toast.error(`${err}`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+  };
+
+  const handlePrevPage = async () => {
+    const page = products.number + 1;
+
+    const [error, data] = await stfExecAPI({
+      url: `api/staff/product?page=${page - 1 <= 0 ? 1 : page - 1}&size=4`,
+    });
+
+    if (data) {
+      setProducts(data.data);
+      return;
+    }
+
+    const err =
+      error.status === 403
+        ? "Account does not have permission to perform this function"
+        : error?.response?.data?.message;
+
+    toast.error(`${err}`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+  };
+
+  const handleSearch = async (keyword) => {
+    const [error, data] = await stfExecAPI({
+      url: `api/staff/product?page=${1}&size=4&keyword=${keyword}`,
+    });
+
+    if (data) {
+      setProducts(data.data);
+      return;
+    }
+
+    const err =
+      error.status === 403
+        ? "Account does not have permission to perform this function"
+        : error?.response?.data?.message;
+
+    toast.error(`${err}`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+  };
+
+  const handleClickProduct = (product) => {
+    setVersions([
+      ...versions,
+      ...product.versions
+        .map((i) => {
+          return {
+            ...i,
+            quantity: 1,
+            image: i.image.name,
+            total: i.importPrice,
+          };
+        })
+        .filter((i) => {
+          return !versions.find((v) => v.id === i.id);
+        }),
+    ]);
+  };
+
+  // Hàm xử lý sự kiện khi chọn supplier
+  const handleChange = (selectedOption) => {
+    setSelectedSupplier(selectedOption);
+
+    const fetchUsers = async () => {
+      // setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/suppliers/supplier-detail?id=${selectedOption.value}`,
+      });
+
+      if (data) {
+        // setLoading(false);
+        setSupplier(data.data);
+        return;
+      }
+
+      // setLoading(false);
+      const err =
+        error.status === 403
+          ? "Account does not have permission to perform this function"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
     };
 
+    fetchUsers();
+  };
 
-    return (
-        <div className='mt-2'>
-            <div className='container'>
-                <div className='mb-4 d-flex justify-content-between align-items-center'>
-                    <div>
-                        <h4 className='fw-bold d-flex align-items-center'><BsFillHouseAddFill />&ensp;Stock in</h4>
-                        <p className='fw-medium'>Stock in products</p>
-                    </div>
-                    <div>
-                        <CustomButton btnBG={'primary'} btnName={'STOCK!'} handleClick={handleSubmit} />
-                    </div>
+  const handleClickAdd = async () => {
+    if (!supplier) {
+      toast.info("Vui lòng chọn nhà cung cấp!");
+      return;
+    }
+
+    if (versions.length === 0) {
+      toast.info("Vui lòng chọn ít nhất một sản phẩm!");
+      return;
+    }
+
+    const versionPost = versions.map((i) => {
+      return { productVersionId: i.id, quantity: i.quantity };
+    });
+
+    const dat = {
+      supplierId: selectedSupplier.value,
+      productVersions: versionPost,
+      description: 'Nhập kho tốt'
+    };
+
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: `api/staff/receipt`,
+      data: dat,
+    });
+
+    if (data) {
+      setLoading(false);
+      toast.success("Nhập kho thành công!");
+      setVersions([]);
+      return;
+    }
+
+    setLoading(false);
+    const err =
+      error.status === 403
+        ? "Account does not have permission to perform this function"
+        : error?.response?.data?.message;
+
+    toast.error(`${err}`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+  };
+
+  return (
+    <>
+      <FullScreenSpinner isLoading={loading} />
+      <div className="d-flex justify-content-end mb-3">
+        <button
+          type="button"
+          className="btn btn-dark me-3"
+          onClick={handleClickAdd}
+        >
+          {<Package />} Nhập kho
+        </button>
+      </div>
+
+      <div className="row mb-3 d-flex">
+        <div className="col-7 d-flex">
+          <div className="card p-4 w-100">
+            <label htmlFor="exampleFormControlSelect1" className="form-label">
+              Nhà cung cấp
+            </label>
+
+            <Select
+              closeMenuOnSelect={true}
+              components={animatedComponents}
+              options={suppliers.map((supplier) => ({
+                value: supplier.supplierId,
+                label: supplier.supplierName,
+              }))} // Truyền options vào select
+              onChange={handleChange} // Khi chọn, gọi hàm này
+              value={selectedSupplier} // Giá trị được chọn
+            />
+            {selectedSupplier && (
+              <div className="mt-3">
+                <div className="row mb-3">
+                  <div className="col-6">
+                    <label>
+                      <strong>Tên nhà cung cấp:</strong>{" "}
+                      <span>{supplier?.supplierName}</span>
+                    </label>
+                  </div>
+                  <div className="col-6">
+                    <label>
+                      <strong>Email:</strong> <span>{supplier?.email}</span>
+                    </label>
+                  </div>
                 </div>
-                <div className='mt-2 d-flex'>
-                    <div className='col-9 pe-3'>
-                        <div className='me-2'>
-                            <div className='row bg-white border rounded-1' style={{ minHeight: '450px' }}>
-                                {selectedProduct ? (
-                                    <div>
-                                        <h3>{`Product: ${selectedProduct?.productName}`}</h3>
-                                        <Table striped>
-                                            <tbody>
-                                                {selectedProduct?.versions.map((item, index) => (
-                                                    <tr key={index} className='custom-table'>
-                                                        <td>
-                                                            <div style={{ maxWidth: '100px' }}>
-                                                                <div className='d-flex justify-content-center'>
-                                                                    <img
-                                                                        src={`${item?.image?.name}`}
-                                                                        alt={`${item?.versionName}`}
-                                                                        style={{ maxHeight: '70px', width: 'auto' }}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td>{item?.versionName}</td>
-                                                        <td>
-                                                            <Form.Control type='hidden' value={item?.id}
-                                                                {...register(`productVersions[${index}].productVersionId`)} />
-                                                            <Form.Control type='number' min={1} step={10} placeholder='Quantity. . .'
-                                                                {...register(`productVersions[${index}].quantity`, {
-                                                                    required: "Quantity is required",
-                                                                    min: { value: 1, message: "Must be at least 1 !" }
-                                                                })} />
-                                                            {errors.productVersions?.[index]?.quantity &&
-                                                                <p className='text-danger fw-medium'>{errors.productVersions[index].quantity.message}</p>}
-                                                        </td>
-                                                        <td>
-                                                            <CustomButton
-                                                                btnBG={'danger'}
-                                                                btnName={<FaTimes />}
-                                                                handleClick={() => handleRemoveProductVersion(index)}
-                                                            />
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </Table>
-                                    </div>
-                                ) : ''}
-                            </div>
-                            <div className='mt-2 mb-3 row bg-white border rounded-1' style={{ minHeight: '350px' }}>
-                                <div className='mt-1' style={{ minHeight: '50px', width: '100%' }}>
-                                    <div className='d-flex justify-content-around'>
-                                        <CustomButton btnBG={'warning'} textColor={'text-white'} btnName={"<"} handleClick={previousPageProduct} />
-                                        <InputGroup className='w-30'>
-                                            <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
-                                            <Form.Control className='custom-radius' placeholder='Search product . . .' />
-                                        </InputGroup>
-                                        <CustomButton btnBG={'warning'} textColor={'text-white'} btnName={">"} handleClick={nextPageProduct} />
-                                    </div>
-                                    <div className='mt-4 d-flex'>
-                                        {products?.map((product, index) => (
-                                            <motion.div key={index} className='col' whileHover={{ opacity: 0.6 }} onClick={() => setSelectedProduct(product)}>
-                                                <div style={{ minHeight: '200px' }}>
-                                                    <img src={product?.image} alt={product?.name} style={{ maxWidth: '120px' }} />
-                                                </div>
-                                                <h6>{product?.productName}</h6>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className='col-3'>
-                        <div style={{ minHeight: '150px', maxWidth: '500px' }}>
-                            <p className='fs-4 fw-medium mb-1'>Product's supplier</p>
-                            <div>
-                                <Select options={supplierOptions} placeholder={`Select supplier...`} onChange={handleGetSupplier} />
-                                <p className='text-danger fw-medium'>{errors?.supplier && errors?.supplier?.message}</p>
-                                {selectedSupplier ? (
-                                    <div className='border rounded-2 px-2 pt-1 mt-1 bg-white' style={{ minHeight: '150px' }}>
-                                        <p>{`Supplier's name: ${selectedSupplier?.supplierName}`}</p>
-                                        <p>{`Contacter: ${selectedSupplier?.contactName}`}</p>
-                                        <p>{`Address: ${selectedSupplier?.address}`}</p>
-                                        <p>{`Phone number: ${selectedSupplier?.phone}`}</p>
-                                        <p>{`Email: ${selectedSupplier?.email}`}</p>
-                                    </div>
-                                ) : (
-                                    <div className='border rounded-2 px-2 mt-1 bg-white d-flex justify-content-center align-items-center'
-                                        style={{ minHeight: '150px' }}>
-                                        <NotSelectYet text={`You haven't selected a supplier yet!`} />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
+
+                <div className="row">
+                  <div className="col-6">
+                    <label>
+                      <strong>Số điện thoại:</strong>{" "}
+                      <span>{supplier?.phone}</span>
+                    </label>
+                  </div>
+                  <div className="col-6">
+                    <label>
+                      <strong> Địa chỉ:</strong>{" "}
+                      <span>{supplier?.address}</span>
+                    </label>
+                  </div>
                 </div>
-            </div>
-            <ToastContainer />
+              </div>
+            )}
+          </div>
         </div>
-    );
+
+        <div className="col-5 d-flex">
+          <div className="card p-4 w-100">
+            <div className="row mb-3">
+              <label>
+                <strong>Người nhập: </strong>
+                <span> {profile?.fullName}</span>
+              </label>
+            </div>
+
+            <div className="row mb-3">
+              <label>
+                <strong>Ngày nhập: </strong>
+                <span>{currentDate}</span>
+              </label>
+            </div>
+
+            <div className="row mb-3">
+              <label>
+                <strong>Tổng số lượng sản phẩm: </strong>
+                <span>{totalPriceAndQuantity[1]}</span>
+              </label>
+            </div>
+
+            <div className="row mb-3">
+              <label>
+                <strong>Tổng tiền phải trả: </strong>
+                <span className="text-danger">
+                  {formatCurrencyVND(totalPriceAndQuantity[0])}
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mb-4">
+        <div
+          className="col-12"
+          style={{ maxHeight: "400px", overflowY: "auto" }}
+        >
+          <DataTableSft columns={columns} dataSource={versions} />
+        </div>
+      </div>
+
+      <StockProductSearch
+        products={products.content || []}
+        isPrev={products.number === 0}
+        isNext={products.number === products.totalPages - 1}
+        handleNext={handleNextPage}
+        handlePrev={handlePrevPage}
+        handleSearchs={handleSearch}
+        handleClickItem={handleClickProduct}
+      />
+    </>
+  );
 };
 
 export default StockIn;

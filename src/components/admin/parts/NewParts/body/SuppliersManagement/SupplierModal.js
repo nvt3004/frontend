@@ -11,55 +11,55 @@ const SupplierModal = ({ supplier, show, isNew, isEdit, handleChange, handelEdit
             <Modal show={show} onHide={handleCancel}>
                 <Modal.Header>
                     <Modal.Title className='d-flex align-items-center'>
-                        <AiOutlineProduct />&ensp;<p className='mb-0 fs-3'>{isNew ? `New Supplier` : `Supplier Infomations`}</p>
+                        <AiOutlineProduct />&ensp;<p className='mb-0 fs-3'>{isNew ? `Nhà cung cấp mối` : `Thông tin nhà cung cấp`}</p>
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form id='form1'>
                         <Form.Group>
-                            <Form.Label>Contacter</Form.Label>
+                            <Form.Label>Người liên hệ</Form.Label>
                             <Form.Control type='text' defaultValue={supplier?.contactName}
                                 {...register("contactName", { required: true })}
-                                placeholder={`Contacter's name`}
+                                placeholder={`Tên người liên hệ`}
                                 onKeyDown={handleChange} onPaste={handleChange}
                                 disabled={!supplier && !isNew} />
                             {errors?.contactName && (
-                                <p className='fw-bold text-danger'>Contacter required</p>
+                                <p className='fw-bold text-danger'>Vui lòng không bỏ trống</p>
                             )}
                         </Form.Group>
                         <Form.Group>
-                            <Form.Label>Supplier</Form.Label>
+                            <Form.Label>Nhà cung cấp</Form.Label>
                             <Form.Control type='text' defaultValue={(supplier && !isEdit) ? supplier?.supplierName : ''}
                                 {...register("supplierName", { required: true })}
-                                placeholder={`Supplier's name`}
+                                placeholder={`Tên nhà cung cấp`}
                                 onKeyDown={handleChange} onPaste={handleChange}
                                 disabled={!supplier && !isNew} />
                             {errors?.supplierName && (
-                                <p className='fw-bold text-danger'>Supplier is required</p>
+                                <p className='fw-bold text-danger'>Vui lòng không bỏ trống</p>
                             )}
                         </Form.Group>
                         <Form.Group>
-                            <Form.Label>Address</Form.Label>
+                            <Form.Label>Địa chỉ</Form.Label>
                             <Form.Control type='text' defaultValue={supplier && !isEdit ? supplier?.address : ''}
                                 {...register("address", { required: true })}
-                                placeholder={'Address'}
+                                placeholder={'Địa chỉ nhà cung cấp'}
                                 onKeyDown={handleChange} onPaste={handleChange}
                                 disabled={!supplier && !isNew} />
                             {errors?.address && (
-                                <p className='fw-bold text-danger'>Address is required</p>
+                                <p className='fw-bold text-danger'>Vui lòng không bỏ trống</p>
                             )}
                         </Form.Group>
                         <Form.Group>
                             <Form.Label>Email</Form.Label>
                             <Form.Control type='email' defaultValue={supplier && !isEdit ? supplier?.email : ''}
                                 {...register("email", {
-                                    required: "Email iss required",
+                                    required: "Vui lòng không bỏ trống",
                                     pattern: {
                                         value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
-                                        message: "Email does not valid"
+                                        message: "Email không hợp lệ"
                                     }
                                 })}
-                                placeholder={'Email'}
+                                placeholder={'Email nhà cung cấp'}
                                 onKeyDown={handleChange} onPaste={handleChange}
                                 disabled={!supplier && !isNew} />
                             {errors?.email && (
@@ -67,16 +67,16 @@ const SupplierModal = ({ supplier, show, isNew, isEdit, handleChange, handelEdit
                             )}
                         </Form.Group>
                         <Form.Group>
-                            <Form.Label>Phone</Form.Label>
+                            <Form.Label>Số điện thoại</Form.Label>
                             <Form.Control type='tel' defaultValue={supplier && !isEdit ? supplier?.phone : ''}
                                 {...register("phone", {
-                                    required: "Phone number is required",
+                                    required: "Vui lòng không bỏ trống",
                                     pattern: {
                                         value: /^0\d{9}$/,
-                                        message: "Phone number does not valid"
+                                        message: "Số điện thoại không hợp lệ"
                                     }
                                 })}
-                                placeholder={'Phone number'}
+                                placeholder={'Số điện thoại nhà cung cấp'}
                                 onKeyDown={handleChange} onPaste={handleChange}
                                 disabled={!supplier && !isNew} />
                             {errors?.phone && (
@@ -86,21 +86,21 @@ const SupplierModal = ({ supplier, show, isNew, isEdit, handleChange, handelEdit
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
-                    <CustomButton btnBG={'danger'} btnName={'Cancel'} handleClick={handleCancel} />
+                    <CustomButton btnBG={'danger'} btnName={'Hủy bỏ'} handleClick={handleCancel} />
                     {isNew ? (
                         <>
-                            <CustomButton btnBG={'success'} btnName={'Save'} btnType={'submit'}
+                            <CustomButton btnBG={'success'} btnName={'Lưu'} btnType={'submit'}
                                 form={'form1'} textColor={'text-white'} handleClick={handleSubmitNew} />
                         </>
                     ) : (
                         isEdit ? (
                             <>
-                                <CustomButton btnBG={'success'} btnName={'Save changed'} btnType={'submit'}
+                                <CustomButton btnBG={'success'} btnName={'Lưu thay đổi'} btnType={'submit'}
                                     form={'form1'} textColor={'text-white'} handleClick={handleSubmit} />
                             </>
                         ) : (
                             <>
-                                <CustomButton btnBG={'warning'} btnName={'Change infomations'} btnType={'button'}
+                                <CustomButton btnBG={'warning'} btnName={'Thay đổi thông tin'} btnType={'button'}
                                     textColor={'text-white'} handleClick={handelEdit} />
                             </>
                         )

@@ -6,7 +6,11 @@ const SuccessAlert = ({ title, text }) => {
     text: text || "Operation completed successfully!",
     icon: "success",
     confirmButtonText: "OK",
+    customClass: {
+      container: 'swal2-container-custom',
+    }
   });
 };
 
 export default SuccessAlert;
+ 

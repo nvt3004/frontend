@@ -29,8 +29,9 @@ const Navbar = () => {
 
   const token = Cookies.get("token");
 
-  const handleLogout = () => {
+  const handleLogout1 = () => {
     Cookies.remove("token");
+    Cookies.remove("refreshToken");
     navigate("/auth/login");
     window.location.reload(); // Reload trang để cập nhật giao diện
   };
@@ -62,7 +63,7 @@ const Navbar = () => {
     };
     fetchCart();
     fetchWishlist();
-  }, [dispatch]);
+  }, [cartCount, wishlistCount, dispatch]);
 
 
   useEffect(() => {
@@ -158,7 +159,12 @@ const Navbar = () => {
       zIndex: "999",
     },
   };
-
+  function formatCurrencyVND(amount) {
+    return amount.toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+  }
   return (
     <header>
       <div className="container-menu-desktop">
@@ -345,7 +351,7 @@ const Navbar = () => {
                     <li>
                       <button
                         className="dropdown-item stext-111"
-                        onClick={handleLogout}
+                        onClick={handleLogout1}
                       >
                         Logout
                       </button>
@@ -619,7 +625,7 @@ const Navbar = () => {
                     >
                       {product.productName}
                     </Link>
-                    <span className="header-cart-item-info">{`${product.quantity} x ${product.price} VND`}</span>
+                    <span className="header-cart-item-info">{`${product.quantity} x  ${formatCurrencyVND(product.price ?? "N/A")}`}</span>
                   </div>
                 </li>
               ))}
@@ -627,7 +633,7 @@ const Navbar = () => {
 
           <div className="container">
             <div className="header-cart-total w-full p-tb-40">
-              Total: {`${total.toFixed(2)} VND`}
+              Total: {` ${formatCurrencyVND(total ?? "N/A")}`}
             </div>
             <div className="header-cart-buttons">
               <Link

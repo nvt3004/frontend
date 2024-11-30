@@ -4,95 +4,9 @@ import PaginationSft from "../../../../PaginationSft";
 import DataTableSft from "../../../../DataTableSft";
 import ModalSft from "../../../../ModalSft";
 import AvatarUpload from "../../../../AvatarUpload ";
-import { Pencil, Trash, Plus, PenNib } from "phosphor-react";
+import { Pencil, Trash, Plus, UserCirclePlus } from "phosphor-react";
 import { stfExecAPI } from "../../../../../../stf/common";
-import { render } from "@testing-library/react";
-
-const dataSource = [
-  {
-    key: "1",
-    name: "Mike",
-    age: 32,
-    address: "10 Downing Street",
-    email: "mike@example.com",
-    phone: "123-456-7890",
-    company: "ABC Corp",
-  },
-  {
-    key: "2",
-    name: "John",
-    age: 42,
-    address: "20 Downing Street",
-    email: "john@example.com",
-    phone: "234-567-8901",
-    company: "XYZ Ltd",
-  },
-  {
-    key: "3",
-    name: "Sara",
-    age: 29,
-    address: "30 Oak Street",
-    email: "sara@example.com",
-    phone: "345-678-9012",
-    company: "Tech Solutions",
-  },
-  {
-    key: "4",
-    name: "David",
-    age: 35,
-    address: "40 Elm Street",
-    email: "david@example.com",
-    phone: "456-789-0123",
-    company: "Innovate LLC",
-  },
-  {
-    key: "5",
-    name: "Emma",
-    age: 28,
-    address: "50 Maple Avenue",
-    email: "emma@example.com",
-    phone: "567-890-1234",
-    company: "GreenTech Inc.",
-  },
-  {
-    key: "6",
-    name: "Chris",
-    age: 38,
-    address: "60 Pine Street",
-    email: "chris@example.com",
-    phone: "678-901-2345",
-    company: "Design Studio",
-  },
-];
-
-const userPermistions = [
-  {
-    title: "Manage user",
-    permission: [
-      { id: 2, name: "View" },
-      { id: 1, name: "Add" },
-      { id: 3, name: "Update" },
-      { id: 4, name: "Delete" },
-    ],
-  },
-  {
-    title: "Manage product",
-    permission: [
-      { id: 5, name: "View" },
-      { id: 6, name: "Add" },
-      { id: 10, name: "Update" },
-      { id: 11, name: "Delete" },
-    ],
-  },
-  {
-    title: "Manage feeddback",
-    permission: [
-      { id: 7, name: "View" },
-      { id: 8, name: "Add" },
-      { id: 9, name: "Delete" },
-    ],
-  },
-];
+import FullScreenSpinner from "../../../FullScreenSpinner";
 
 const convertToBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -103,10 +17,41 @@ const convertToBase64 = (file) => {
   });
 };
 
+function formatDate(dateString, format) {
+  const date = new Date(dateString);
+
+  if (isNaN(date)) {
+    return ""; // Nếu date không hợp lệ, trả về chuỗi rỗng
+  }
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  // Thay thế các ký tự định dạng
+  return format.replace("DD", day).replace("MM", month).replace("YYYY", year);
+}
+
+function formatDateString(dateString, format) {
+  const date = new Date(dateString);
+
+  if (isNaN(date)) {
+    return ""; // Trả về chuỗi rỗng nếu date không hợp lệ
+  }
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  // Thay thế các ký tự định dạng
+  return format.replace("DD", day).replace("MM", month).replace("YYYY", year);
+}
+
 const UserTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
-  const [permissions, setPermissions] = useState(userPermistions);
+  const [isModalQuyenOpen, setIsModalQuyenOpen] = useState(false);
+  const [permissions, setPermissions] = useState([]);
   const [file, setFile] = useState(null);
   const [user, setUser] = useState(null);
   const [users, setUsers] = useState({});
@@ -115,130 +60,245 @@ const UserTable = () => {
   const [password, setPassword] = useState("");
   const [birthday, setBirthday] = useState("");
   const [gender, setGender] = useState("0");
+  const [showPass, setShowPass] = useState(false);
+  const [keyword, setKeyword] = useState("");
+  const [status, setStatus] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   // ********** Cấu hình table*********
   const columns = [
-    { title: "Email / Phone number", dataIndex: "username", key: "name" },
-    { title: "Fullname", dataIndex: "fullname", key: "age" },
-    { title: "Birthday", dataIndex: "birthday", key: "birthday" },
+    { title: "Email / Điện Thoại", dataIndex: "username", key: "name" },
+    { title: "Họ Và Tên", dataIndex: "fullname", key: "age" },
+    { title: "Ngày Sinh", dataIndex: "birthday", key: "birthday" },
     {
-      title: "Gender",
+      title: "Giới Tính",
       dataIndex: "gender",
       key: "gender",
       render: (value, record) => {
-        return value === 0 ? "" : value === 1 ? "Male" : "Female";
+        return value === 0 ? "" : value === 1 ? "Nam" : "Nữ";
       },
     },
     {
-      title: "Status",
+      title: "Trạng Thái",
       dataIndex: "status",
       key: "status",
       render: (text, record) => {
         if (text === 0) {
           return (
             <span class="badge bg-label-danger me-1" style={{ width: "80px" }}>
-              inactive
+              Không hoạt động
             </span>
           );
         } else {
           return (
             <span class="badge bg-label-success me-1" style={{ width: "80px" }}>
-              active
+              Hoạt động
             </span>
           );
         }
       },
     },
     {
-      title: "Actions",
+      title: "Hành Động",
       key: "actions",
-      render: (text, record) => (
-        <div>
-          <button
-            className="btn btn-dark btn-sm me-2"
-            onClick={() => handleEdit(record)}
-          >
-            <Pencil weight="fill" />
-          </button>
-          <button
-            className="btn btn-danger btn-sm"
-            onClick={() => handleDelete(record)}
-          >
-            <Trash weight="fill" />
-          </button>
-        </div>
-      ),
+      render: (text, record) => {
+        return record.status === 0 ? (
+          ""
+        ) : (
+          <div>
+            <button
+              className="btn btn-dark btn-sm me-2"
+              onClick={() => handleEdit(record)}
+            >
+              <Pencil weight="fill" />
+            </button>
+            <button
+              className="btn btn-danger btn-sm"
+              onClick={() => handleDelete(record)}
+            >
+              <Trash weight="fill" />
+            </button>
+          </div>
+        );
+      },
     },
     {
-      title: "Permissions",
+      title: "Phân quyền",
       key: "permissions",
-      render: (text, record) => (
-        <div>
-          <button
-            className="btn btn-dark btn-sm me-2"
-            onClick={() => handleDelete(record)}
-          >
-            <PenNib weight="fill" />
-          </button>
-        </div>
-      ),
+      render: (text, record) => {
+        return record.status === 0 ? (
+          ""
+        ) : (
+          <div>
+            <button
+              className="btn btn-dark btn-sm me-2"
+              onClick={() => handleClickPermission(record)}
+            >
+              <UserCirclePlus size={17} weight="fill" />
+            </button>
+          </div>
+        );
+      },
       className: "center",
     },
   ];
 
   const btnTable = () => {
     return (
-      <>
-        <button className="btn btn-dark me-2" onClick={() => handleClickAdd()}>
-          Add new <Plus weight="fill" />
+      <div className="d-flex">
+        <button className="btn btn-dark me-3" onClick={handleClickAdd}>
+          Thêm mới <Plus weight="fill" />
         </button>
-      </>
+
+        <select
+          className="form-select w-25"
+          id="exampleFormControlSelect1"
+          onChange={(e) => {
+            handleChangeSelectFilterActive(e.target.value);
+            setStatus(e.target.value);
+          }}
+        >
+          <option value="1">Hoạt động</option>
+          <option value="0">Không hoạt động</option>
+        </select>
+      </div>
     );
   };
 
   // ********** Các hành động xử lý logic*********
+  //Change trạng thái lọc
+  const handleChangeSelectFilterActive = async (value) => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${keyword}&status=${Number(
+          value
+        )}`,
+      });
+
+      if (data) {
+        setLoading(false);
+        setUsers(data.data);
+        return;
+      }
+
+      setLoading(false);
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchUsers();
+  };
+
+  //Click vào edit trên bảng
   const handleEdit = (record) => {
     setFullName(record.fullname);
     setUsername(record.username);
-    setPassword('');
+    setPassword("");
     setGender(record.gender);
-    setBirthday(record.birthday)
+    setBirthday(formatDate(record.birthday, "YYYY-MM-DD"));
     setIsModalOpen(true);
     setUser({ ...record });
+    setShowPass(false);
   };
 
+  //Nhấn nút delete
   const handleDelete = (record) => {
     setIsModalDeleteOpen(true);
     setUser({ ...record });
   };
 
+  const handleClickPermission = async (record) => {
+    setIsModalQuyenOpen(true);
+    setUser({ ...record });
+
+    const fetchPermissions = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/userpermissions/${record.userId}`,
+      });
+
+      if (data) {
+        setPermissions(data.data);
+        return;
+      }
+
+      setPermissions([]);
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchPermissions();
+  };
+
+  //Nhấn nút thêm mới
   const handleClickAdd = () => {
-    setFullName('');
-    setUsername('');
-    setPassword('');
+    setFullName("");
+    setUsername("");
+    setPassword("");
     setGender(0);
-    setBirthday('');
+    setBirthday("");
     setIsModalOpen(true);
     setUser(null);
   };
 
   // Modal thêm mới
   const handleOk = async () => {
+    const isAdd = Object.keys(user || {}).length === 0;
+
+    if (!isAdd && showPass && !password.trim()) {
+      toast.error(
+        `Mật khẩu phải ít nhất 8 ký tự, bao gồm: chữ in hoa, chữ in thường, chữ số và ký tự đặc biệt !`,
+        {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
+        }
+      );
+      return;
+    }
+
+    setLoading(true);
+
     const [error, data] = await stfExecAPI({
-      method: "post",
-      url: `api/admin/userpermissions/add`,
+      method: isAdd ? "post" : "put",
+      url: isAdd
+        ? `api/admin/userpermissions/add`
+        : "api/admin/userpermissions/update",
       data: {
+        id: user?.userId || 0,
         fullName: fullName,
         username: username,
-        password: password,
-        image: file,
+        password: isAdd ? password : showPass ? password : "",
+        image: isAdd ? file : file !== null ? file : "",
         birthday: birthday,
         gender: gender,
       },
     });
 
+    setLoading(false);
     if (error) {
-      toast.error(`${error?.response?.data?.message}`, {
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -248,7 +308,7 @@ const UserTable = () => {
 
     const fetchUsers = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${""}`,
+        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
       });
 
       if (data) {
@@ -258,7 +318,7 @@ const UserTable = () => {
 
     fetchUsers();
 
-    toast.success(`Add user success!`, {
+    toast.success(`${isAdd ? "Thêm mới" : "Cập nhật"} người dùng thành công!`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
@@ -268,39 +328,114 @@ const UserTable = () => {
   };
 
   const handleCancel = () => {
-    console.log("Modal closed");
     setIsModalOpen(false); // Đóng modal khi nhấn "Close"
   };
 
   //Modal xóa
-  const handleModalDeleteOk = () => {
-    console.log("Changes saved!");
+  const handleModalDeleteOk = async () => {
+    setLoading(true);
+
+    const [error, data] = await stfExecAPI({
+      method: "delete",
+      url: `api/admin/userpermissions/delete/${user.userId}`,
+    });
+
+    setLoading(false);
+    if (error) {
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    const fetchUsers = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
+      });
+
+      if (data) {
+        setUsers(data.data);
+      }
+    };
+
+    fetchUsers();
+
+    toast.success(`Xóa thành công !`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+
     setIsModalDeleteOpen(false); // Đóng modal khi nhấn "Save changes"
   };
 
   const handleModalDeleteCancel = () => {
-    console.log("Modal closed");
     setIsModalDeleteOpen(false); // Đóng modal khi nhấn "Close"
+  };
+
+  //Modal phân quyền
+  const handleModalQuyenOk = async () => {
+    const pers = permissions.flatMap((item) => item.permission);
+    setLoading(true);
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: `api/admin/userpermissions/save-per`,
+      data: {
+        userId: user.userId,
+        permission: pers,
+      },
+    });
+
+    if (error) {
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      setLoading(false);
+      return;
+    }
+
+    toast.success(`Chỉnh sửa vai trò thành công !!`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+
+    setLoading(false);
+    setIsModalQuyenOpen(false); // Đóng modal khi nhấn "Save changes"
+  };
+
+  const handleModalQuyenCancel = () => {
+    setPermissions([]);
+    setIsModalQuyenOpen(false); // Đóng modal khi nhấn "Close"
   };
 
   // Hàm nhận file từ component con
   const handleFileSelect = async (selectedFile) => {
+    if (!selectedFile) {
+      setFile(null);
+      return;
+    }
+
     try {
       const base64String = await convertToBase64(selectedFile);
       setFile(base64String.split(",")[1]); // Lưu chuỗi Base64 vào state
     } catch (error) {
       console.error("Lỗi chuyển đổi file:", error);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (file) {
-      console.log("File đã chọn:", file);
-      console.log("Tên file:", file.name);
-      console.log("Loại file:", file.type);
-      console.log("Kích thước file (bytes):", file.size);
-    } else {
-      alert("Chưa có file nào được chọn.");
     }
   };
 
@@ -314,7 +449,7 @@ const UserTable = () => {
               ...u,
               permission: u.permission.map((p) => {
                 if (p.id === pId) {
-                  return { ...p, checked };
+                  return { ...p, use: checked };
                 }
                 return p;
               }),
@@ -325,33 +460,33 @@ const UserTable = () => {
   };
 
   const handleUpdateOrDeleteChange = (uTitle, pId, checked) => {
-    setPermissions((prevPermissions) =>
-      prevPermissions.map((u) => {
-        if (u.title === uTitle) {
-          console.log("Vô");
+    setPermissions((prevPermissions) => {
+      return prevPermissions.map((u) => {
+        if (u.title.toLowerCase() == uTitle.toLowerCase()) {
           const updatedPermissions = u.permission.map((p) => {
-            console.log("@id", pId, p);
             // Nếu chọn Update hoặc Delete, tự động chọn View nếu chưa chọn
-            if ((p.name === "Delete" || p.name === "Update") && checked) {
+            if ((p.name == "Delete" || p.name == "Update") && checked) {
               const viewPermission = u.permission.find(
                 (p) => p.name === "View"
               );
+
               if (viewPermission && !viewPermission.checked) {
-                viewPermission.checked = true;
+                viewPermission.use = true;
               }
             }
 
             if (p.id === pId) {
-              return { ...p, checked };
+              return { ...p, use: checked };
             }
 
             return p;
           });
           return { ...u, permission: updatedPermissions };
         }
+
         return u;
-      })
-    );
+      });
+    });
   };
 
   const handleViewChange = (uTitle, checked) => {
@@ -368,10 +503,10 @@ const UserTable = () => {
                 const deletePermission = u.permission.find(
                   (p) => p.name === "Delete"
                 );
-                if (updatePermission) updatePermission.checked = false;
-                if (deletePermission) deletePermission.checked = false;
+                if (updatePermission) updatePermission.use = false;
+                if (deletePermission) deletePermission.use = false;
               }
-              return { ...p, checked };
+              return { ...p, use: checked };
             }
             return p;
           });
@@ -384,7 +519,7 @@ const UserTable = () => {
 
   const handleAllCheckboxStatus = (uTitle) => {
     const userPerm = permissions.find((u) => u.title === uTitle);
-    return userPerm?.permission.every((p) => p.checked) || false; // kiểm tra tất cả các checkbox đã được chọn chưa
+    return userPerm?.permission.every((p) => p.use) || false; // kiểm tra tất cả các checkbox đã được chọn chưa
   };
 
   const handleAllCheckboxChange = (uTitle, checked) => {
@@ -395,7 +530,7 @@ const UserTable = () => {
               ...u,
               permission: u.permission.map((p) => ({
                 ...p,
-                checked,
+                use: checked,
               })),
             }
           : u
@@ -406,50 +541,86 @@ const UserTable = () => {
   //Đổ danh sách user
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
       const [error, data] = await stfExecAPI({
-        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${""}`,
+        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
       });
 
       if (data) {
+        setLoading(false);
         setUsers(data.data);
+        return;
       }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      setLoading(false);
     };
 
     fetchUsers();
   }, []);
 
-  const onChangePagination = async (page, keyword = "") => {
+  const onChangePagination = async (page) => {
+    setLoading(true);
+
     const [error, data] = await stfExecAPI({
-      url: `api/admin/user/all?page=${page}&size=${6}&keyword=${keyword}`,
+      url: `api/admin/user/all?page=${page}&size=${6}&keyword=${
+        keyword || ""
+      }&status=${Number(status)}`,
     });
 
+    setLoading(false);
     if (data) {
       setUsers(data.data);
     }
   };
 
   const onChangeInputSearch = async (value) => {
+    setKeyword(value);
+    setLoading(true);
     const [error, data] = await stfExecAPI({
       url: `api/admin/user/all?page=${
         (users.number || 0) + 1
-      }&size=${6}&keyword=${value}`,
+      }&size=${6}&keyword=${value}&status=${Number(status)}`,
     });
 
+    setLoading(false);
     if (data) {
       setUsers(data.data);
     } else {
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
       setUser({});
     }
   };
 
   return (
     <>
+      <FullScreenSpinner isLoading={loading} />
       <DataTableSft
         dataSource={users?.content || []}
         columns={columns}
         title={"Staff list"}
         isSearch={true}
         onChangeSearch={onChangeInputSearch}
+        keyword={keyword}
         buttonTable={btnTable()}
       />
 
@@ -466,8 +637,8 @@ const UserTable = () => {
       </div>
 
       <ModalSft
-        title="Infomation staff"
-        titleOk={"Add new"}
+        title="Thông tin nhân viên"
+        titleOk={Object.keys(user || {}).length === 0 ? "Thêm mới" : "Cập nhật"}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -489,13 +660,13 @@ const UserTable = () => {
                     className="form-label"
                     htmlFor="basic-default-fullname"
                   >
-                    Full Name <span className="text-danger">*</span>
+                    Họ và tên <span className="text-danger">*</span>
                   </label>
                   <input
                     type="text"
                     className="form-control"
                     id="basic-default-fullname"
-                    placeholder="Enter fullname"
+                    placeholder="Nhập họ và tên"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                   />
@@ -504,16 +675,17 @@ const UserTable = () => {
 
               <div className="row mb-4">
                 <label className="form-label" htmlFor="basic-default-email">
-                  Email / Phone number <span className="text-danger">*</span>
+                  Email / Số điện thoại <span className="text-danger">*</span>
                 </label>
                 <div className="input-group input-group-merge">
                   <input
                     type="text"
                     id="basic-default-email"
                     className="form-control"
-                    placeholder="Enter username"
+                    placeholder="Nhập email / số điện thoại"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    disabled={Object.keys(user || {}).length > 0}
                   />
                 </div>
               </div>
@@ -521,19 +693,56 @@ const UserTable = () => {
               <div className="row mb-3">
                 <div className="col-md-12">
                   <label
-                    className="form-label"
+                    className="form-label d-flex"
                     htmlFor="basic-default-password"
                   >
-                    Password <span className="text-danger">*</span>
+                    {Object.keys(user || {}).length === 0
+                      ? "Mật khẩu"
+                      : "Thay đổi mật khẩu"}{" "}
+                    <span className="text-danger">
+                      {Object.keys(user || {}).length === 0 ? "*" : ""}
+                    </span>{" "}
+                    {/* Checkbox pasword */}
+                    <div
+                      class="form-check form-switch mb-2"
+                      style={{ marginLeft: "10px" }}
+                    >
+                      {Object.keys(user || {}).length === 0 ? (
+                        ""
+                      ) : (
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="flexSwitchCheckChecked"
+                          onChange={(e) => {
+                            setShowPass(e.target.checked);
+                          }}
+                        />
+                      )}
+                    </div>
                   </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="basic-default-password"
-                    placeholder="Enter password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+
+                  {Object.keys(user || {}).length === 0 ? (
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="basic-default-password"
+                      placeholder="Nhập mật khẩu"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  ) : showPass ? (
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="basic-default-password"
+                      placeholder="Nhập mật khẩu"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  ) : (
+                    ""
+                  )}
                 </div>
               </div>
             </div>
@@ -542,7 +751,7 @@ const UserTable = () => {
           <div className="row">
             <div className="col-md-5 mb-3">
               <label className="form-label" htmlFor="basic-default-birthday">
-                Birthday
+                Ngày sinh
               </label>
               <input
                 type="date"
@@ -555,7 +764,7 @@ const UserTable = () => {
 
             <div className="col-md-7">
               <label htmlFor="exampleFormControlSelect1" className="form-label">
-                Gender
+                Giới tính
               </label>
               <select
                 className="form-select"
@@ -563,9 +772,9 @@ const UserTable = () => {
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
               >
-                <option value="-1">Chose gender</option>
-                <option value="0">Male</option>
-                <option value="1">Female</option>
+                <option value="0">Chọn giới tính</option>
+                <option value="1">Nam</option>
+                <option value="2">Nữ</option>
               </select>
             </div>
           </div>
@@ -573,18 +782,6 @@ const UserTable = () => {
       </ModalSft>
 
       {/* Modal xóa */}
-      {/* <ModalSft
-        title="Delete staff"
-        titleOk={"Delete"}
-        open={isModalDeleteOpen}
-        onOk={handleModalDeleteOk}
-        onCancel={handleModalDeleteCancel}
-        size="modal-lg"
-      >
-        <span>Are you sure you want to delete?</span>
-      </ModalSft> */}
-
-      {/* Modal phân quyền */}
       <ModalSft
         title="Delete staff"
         titleOk={"Delete"}
@@ -593,68 +790,87 @@ const UserTable = () => {
         onCancel={handleModalDeleteCancel}
         size="modal-lg"
       >
-        {permissions.map((u) => {
-          return (
-            <div className="row mb-3" key={u.title}>
-              <div className="col-md-3">
-                <label className="me-3">{u.title}:</label>
-              </div>
+        <span>Bạn có chắc muốn xóa?</span>
+      </ModalSft>
 
-              <div className="col-md-9">
-                <div className="d-flex gap-4">
-                  {u.permission.map((up) => (
-                    <div className="form-check me-4" key={up.id}>
+      {/* Modal phân quyền */}
+      <ModalSft
+        title="Permission"
+        titleOk={"Save"}
+        open={isModalQuyenOpen}
+        onOk={handleModalQuyenOk}
+        onCancel={handleModalQuyenCancel}
+        size="modal-lg"
+      >
+        {permissions &&
+          permissions.map((u) => {
+            return (
+              <div className="row mb-3" key={u.title}>
+                <div className="col-md-3">
+                  <label className="me-3">{u.title}:</label>
+                </div>
+
+                <div className="col-md-9">
+                  <div className="d-flex gap-4">
+                    {u.permission.map((up) => (
+                      <div className="form-check me-4" key={up.id}>
+                        <input
+                          className="form-check-input"
+                          type="checkbox"
+                          checked={up.use}
+                          onChange={(e) => {
+                            if (up.name === "Update" || up.name === "Delete") {
+                              handleUpdateOrDeleteChange(
+                                u.title,
+                                up.id,
+                                e.target.checked
+                              );
+                            } else if (up.name === "View") {
+                              handleViewChange(u.title, e.target.checked);
+                            } else {
+                              handleCheckboxChange(
+                                u.title,
+                                up.id,
+                                e.target.checked
+                              );
+                            }
+
+                            // const per = permissions.find(
+                            //   (p) =>
+                            //     p.title.toLowerCase() === u.title.toLowerCase()
+                            // );
+                            // setPermissions();
+                          }}
+                          id={up.id}
+                        />
+                        <label className="form-check-label" htmlFor={up.id}>
+                          {up.name}
+                        </label>
+                      </div>
+                    ))}
+
+                    <div className="form-check me-4">
                       <input
                         className="form-check-input"
                         type="checkbox"
-                        checked={up.checked || false}
-                        onChange={(e) => {
-                          if (up.name === "Update" || up.name === "Delete") {
-                            handleUpdateOrDeleteChange(
-                              u.title,
-                              up.id,
-                              e.target.checked
-                            );
-                          } else if (up.name === "View") {
-                            handleViewChange(u.title, e.target.checked);
-                          } else {
-                            handleCheckboxChange(
-                              u.title,
-                              up.id,
-                              e.target.checked
-                            );
-                          }
-                        }}
-                        id={up.id}
+                        checked={handleAllCheckboxStatus(u.title)}
+                        onChange={(e) =>
+                          handleAllCheckboxChange(u.title, e.target.checked)
+                        }
+                        id={u.title + "all"}
                       />
-                      <label className="form-check-label" htmlFor={up.id}>
-                        {up.name}
+                      <label
+                        className="form-check-label"
+                        htmlFor={u.title + "all"}
+                      >
+                        All
                       </label>
                     </div>
-                  ))}
-
-                  <div className="form-check me-4">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      checked={handleAllCheckboxStatus(u.title)}
-                      onChange={(e) =>
-                        handleAllCheckboxChange(u.title, e.target.checked)
-                      }
-                      id={u.title + "all"}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor={u.title + "all"}
-                    >
-                      All
-                    </label>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </ModalSft>
     </>
   );

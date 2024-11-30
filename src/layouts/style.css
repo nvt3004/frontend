@@ -10,7 +10,7 @@
 
 body {
   background-color: #f5f5f5 !important;
-  min-height: 900px !important;
+  min-height: 900px;
 }
 
 .container-stf {
@@ -295,6 +295,7 @@ body {
   min-height: 90vh;
   width: 100%;
   padding: 30px 20px;
+  background-color: #f5f5f5 !important;
 }
 
 

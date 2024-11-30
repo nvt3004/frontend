@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { UploadSimple } from "phosphor-react";
 
-const AvatarUpload = ({ onFileSelect, pathImage = "" }) => {
+const AvatarUpload = ({ onFileSelect, pathImage = "", marginRight = "50px" }) => {
   const [previewImage, setPreviewImage] = useState(pathImage);
+
+  // Đồng bộ previewImage khi pathImage thay đổi
+  useEffect(() => {
+    setPreviewImage(pathImage);
+  }, [pathImage]);
 
   // Xử lý khi chọn file
   const handleFileChange = (event) => {
@@ -16,7 +21,7 @@ const AvatarUpload = ({ onFileSelect, pathImage = "" }) => {
       };
       reader.readAsDataURL(file);
     } else {
-      alert("Chỉ cho phép các file JPG, GIF hoặc PNG.");
+      alert("Chỉ cho phép các file JPG hoặc PNG.");
     }
   };
 
@@ -33,8 +38,8 @@ const AvatarUpload = ({ onFileSelect, pathImage = "" }) => {
 
   return (
     <div className="card-body">
-      <div className="">
-        {previewImage ? (
+      <div>
+        {previewImage.trim().length > 0 ? (
           <img
             src={previewImage}
             alt="user-avatar"
@@ -45,13 +50,13 @@ const AvatarUpload = ({ onFileSelect, pathImage = "" }) => {
           />
         ) : (
           <div
-            class="upload-area d-block rounded mb-2"
-            style={{ width: "200px", height: "200px", marginRight: "50px" }}
+            className="upload-area d-block rounded mb-2"
+            style={{ width: "200px", height: "200px", marginRight }}
           >
             <p>None image</p>
           </div>
         )}
-        <div className="button-wrapper">
+        <div className="d-flex justify-content-start align-items-center">
           <label
             htmlFor="upload"
             className="btn btn-dark me-2 mb-4"
@@ -69,15 +74,10 @@ const AvatarUpload = ({ onFileSelect, pathImage = "" }) => {
               onChange={handleFileChange}
             />
           </label>
-          <button
-            type="button"
-            className="btn btn-outline-secondary account-image-reset mb-4"
-            onClick={handleReset}
-          >
+
+          <button type="button" className="btn btn-outline-secondary mb-4" onClick={handleReset}>
             Reset
           </button>
-
-          {/* <p className="text-muted mb-0">Allowed JPG, GIF or PNG. Max size of 800K</p> */}
         </div>
       </div>
     </div>

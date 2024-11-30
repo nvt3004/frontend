@@ -1,477 +1,619 @@
-import React, { useEffect, useRef, useState, version } from 'react';
-import { Button, Form, InputGroup, Modal, Table } from 'react-bootstrap';
-import { RiAddBoxFill } from "react-icons/ri";
-import CustomButton from '../../component/CustomButton';
-import suppliers from '../SuppliersManagement/data';
-import Variants from './Variants';
-import Organize from './Organize';
-import EmptyValues from '../../component/errorPages/EmptyValues';
-import ImagesDropzone from './ImagesDropzone';
-import { MdArtTrack, MdDeleteForever } from "react-icons/md";
-import SupplierModal from '../SuppliersManagement/SupplierModal';
-import axiosInstance from '../../../../../../services/axiosConfig';
-import { toast, ToastContainer } from 'react-toastify';
-import { set, useForm } from 'react-hook-form';
-import { FileToBase64, FilesToBase64 } from '../../../../../../services/fileToBase64';
-import { useLocation } from 'react-router-dom';
+import React, { useEffect, useRef, useState, version } from "react";
+import AvatarUpload from "../../../../AvatarUpload ";
+import { stfExecAPI } from "../../../../../../stf/common";
+import { toast } from "react-toastify";
+import FullScreenSpinner from "../../../FullScreenSpinner";
+import DataTableSft from "../../../../DataTableSft";
+import { Trash, ImageSquare } from "phosphor-react";
+import Select from "react-select";
+import makeAnimated from "react-select/animated";
+const animatedComponents = makeAnimated();
+
+const convertToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+};
 
 const NewProduct = () => {
-    const location = useLocation();
+  const [file, setFile] = useState(null);
+  const [productName, setProductName] = useState("");
+  const [discription, setDiscription] = useState("");
+  const [cate, setCate] = useState([]);
+  const [catId, setCatId] = useState(-1);
+  const [loading, setLoading] = useState(false);
+  const [attributes, setAttributes] = useState([]);
+  const [selectedOptions, setSelectedOptions] = useState({});
+  const [dataSource, setDataSource] = useState([]);
+  const [allPrice, setAllPrice] = useState("");
 
-    const [categories, setCategories] = useState([]);
-    const handleGetCategory = () => {
-        axiosInstance.get('/home/category/dashboard/get-all').then(
-            (response) => {
-                if (response?.data?.code === 200) {
-                    let list = response?.data?.data?.map(item => ({
-                        value: item?.categoryId,
-                        label: item?.categoryName,
-                    })).sort((a, b) => b.value - a.value);
+  //Các hàm xử lý logic
+  const handleDelete = (record) => {
+    setDataSource(dataSource.filter((i) => i.id !== record.id));
+  };
 
-                    setCategories(list);
-                } else {
-                    toast.error(`Couldn't get the category list. Please try again !`);
-                }
-            }
+  const generateProductVersions = (options) => {
+    const attributeKeys = Object.keys(options);
+
+    // Lấy tất cả các giá trị đã chọn từ từng thuộc tính
+    const attributeValues = attributeKeys.map((key) =>
+      options[key].map((opt) => opt.label)
+    );
+
+    // Lấy tất cả các kết hợp có thể giữa các thuộc tính
+    const combinations = cartesianProduct(attributeValues);
+
+    // Tạo mảng dataSource mới
+    const newDataSource = combinations.map((combination, index) => {
+      const versionName = `${productName} - ${combination.join(" - ")}`;
+
+      // Tạo mảng attributes cho từng phiên bản
+      const attributes = attributeKeys.map((key, attrIndex) => {
+        // Tìm option tương ứng với giá trị trong combination
+        const selectedOption = options[key].find(
+          (opt) => opt.label === combination[attrIndex]
         );
-    }
-    useEffect(() => {
-        handleGetCategory();
-    }, []);
 
-    const [attributes, setAttributes] = useState({
-        sizes: [],
-        colors: []
+        return {
+          id: selectedOption?.value, // Sử dụng `value` làm `id` của thuộc tính
+          value: combination[attrIndex],
+          key: "",
+        };
+      });
+
+      return {
+        id: index + 1,
+        versionName,
+        image: "",
+        retalPrice: "",
+        importPrice: "",
+        attributes,
+      };
     });
-    useEffect(() => {
-        axiosInstance.get('/admin/attribute/all').then(
-            (response) => {
-                if (response?.data?.code === 200) {
-                    const fetchData = response?.data?.data;
-                    let fetchSizes = [];
-                    let fetchColors = [];
 
-                    fetchData.forEach(item => {
-                        if (item.attributeName === 'Color') {
-                            fetchColors = item?.options?.map(i => ({
-                                value: i?.id,
-                                label: i?.value
-                            }));
-                        }
-                        if (item.attributeName === 'Size') {
-                            fetchSizes = item?.options?.map(i => ({
-                                value: i?.id,
-                                label: i?.value
-                            }));
-                        }
-                    });
-                    setAttributes(
-                        {
-                            colors: fetchColors,
-                            sizes: fetchSizes
-                        }
-                    );
+    setDataSource(newDataSource);
+  };
 
-                } else {
-                    toast.error(`Couldn't get the attribute list. Please try again !`);
+  const cartesianProduct = (arrays) => {
+    return arrays.reduce(
+      (acc, array) =>
+        acc.flatMap((accItem) => array.map((item) => [...accItem, item])),
+      [[]]
+    );
+  };
+
+  //Thêm sản phẩm
+  const handleClickAdd = async () => {
+    if (productName.trim().length === 0) {
+      toast.error(`Product name cannot be blank`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    if (catId === -1) {
+      toast.error(`Please select a category`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    if (!file) {
+      toast.error(`Please select image product`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    if (dataSource.length === 0) {
+      toast.error(`Please select attribute`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    if (dataSource.find((i) => i.image.trim().length === 0)) {
+      toast.error(`Please select full image for all versions`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    setLoading(true);
+    const versions = dataSource.map((i) => {
+      i = { ...i, images: [i.image.split(",")[1]] };
+      const { image, id, ...newDataSource } = i;
+
+      return newDataSource;
+    });
+
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: "api/staff/product/add",
+      data: {
+        name: productName,
+        price: 300000,
+        image: file.split(",")[1],
+        description: discription,
+        categories: [
+          {
+            id: catId,
+            name: "",
+          },
+        ],
+        versions,
+      },
+    });
+
+    setLoading(false);
+    if (error) {
+      const err =
+        error.status === 403
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      console.log(error);
+      return;
+    }
+
+    toast.success(`Success`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+  };
+
+  //Cấu hình table
+  const columns = [
+    {
+      title: "Image",
+      dataIndex: "image",
+      key: "image",
+      render: (text, record) => {
+        return (
+          <div style={{ position: "relative" }}>
+            {!text ? (
+              <div
+                onClick={() =>
+                  document.getElementById(`file-input-${record.id}`).click()
                 }
-            }
-        );
+              >
+                <ImageSquare
+                  style={{ color: "#8592a3", cursor: "pointer" }}
+                  size={35}
+                  weight="light"
+                />
+              </div>
+            ) : (
+              // Nếu có ảnh, hiển thị ảnh và cho phép click để thay đổi
+              <img
+                src={text}
+                alt="Product"
+                style={{ width: 50, height: 50, cursor: "pointer" }}
+                onClick={() =>
+                  document.getElementById(`file-input-${record.id}`).click()
+                }
+              />
+            )}
 
-
-    }, []);
-
-    const defaultValues = location?.state?.product;
-    const { register, trigger, setValue, getValues, formState: { errors }, setError, control, watch, reset, handleSubmit } = useForm({ defaultValues });
-
-    const [selectedSizes, setSelectedSize] = useState([]);
-    const [selectedColors, setSelectedColor] = useState([]);
-    const [variants, setVariants] = useState([]);
-    const handleSetVariants = () => {
-        const newVariants = [];
-        selectedSizes.forEach(size => {
-            selectedColors.forEach(color => {
-                newVariants.push({
-                    attributes: [
-                        {
-                            id: size?.value,
-                            key: 'Size',
-                            value: size?.label
-                        },
-                        {
-                            id: color?.value,
-                            key: 'Color',
-                            value: color?.label
-                        }
-                    ],
-                    images: [],
+            {/* Input file ẩn khi click vào biểu tượng ImageSquare hoặc ảnh */}
+            <input
+              type="file"
+              id={`file-input-${record.id}`}
+              hidden
+              accept="image/png, image/jpeg"
+              onChange={async (e) => {
+                const imgBase64 = await convertToBase64(e.target.files[0]);
+                const updatedDataSource = dataSource.map((d) => {
+                  if (d.id === record.id) {
+                    return { ...d, image: imgBase64 };
+                  }
+                  return d;
                 });
-            });
-        });
-        setVariants(newVariants);
-    };
-    useEffect(() => {
-        handleSetVariants();
-    }, [selectedSizes, selectedColors]);
-    // useEffect(() => {
-    //     console.log("variant: ", variants);
-
-    // }, [variants]);
-
-    const handleDrop = (files, versionIndex) => {
-        const newImages = files.map((file, index) => (
-            Object.assign(file, {
-                preview: URL.createObjectURL(file)
-            })
-        ));
-
-        setVariants((prevVariants) =>
-            prevVariants.map((variant, idx) =>
-                idx === versionIndex
-                    ? {
-                        ...variant,
-                        images: [...(variant.images || []), ...newImages],
-                    }
-                    : variant
-            )
+                setDataSource(updatedDataSource);
+              }}
+            />
+          </div>
         );
-    };
-    const handleDeleteImage = (versionIndex, imgIndex) => {
-        setVariants((prevVariants) =>
-            prevVariants.map((variant, idx) =>
-                idx === versionIndex
-                    ? {
-                        ...variant,
-                        images: variant.images.filter((_, index) => index !== imgIndex),
-                    }
-                    : variant
-            )
+      },
+    },
+    {
+      title: "Version Name",
+      dataIndex: "versionName",
+      key: "versionName",
+      render: (value, record) => {
+        return (
+          <input
+            type="text"
+            className="form-control"
+            id="basic-default-fullname"
+            placeholder="Enter name"
+            value={value}
+            onChange={(e) => {
+              const versions = dataSource.map((d) => {
+                if (d.id === record.id) {
+                  return { ...d, versionName: e.target.value };
+                }
+
+                return d;
+              });
+
+              setDataSource(versions);
+            }}
+          />
         );
+      },
+    },
+    {
+      title: "Retail Price",
+      dataIndex: "retalPrice",
+      key: "retalPrice",
+      render: (value, record) => {
+        return (
+          <input
+            type="text"
+            className="form-control w-50"
+            id="basic-default-fullname"
+            placeholder="Enter price"
+            value={value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+
+              // Chỉ giữ lại các ký tự là số
+              const numericValue = inputValue.replace(/\D/g, "");
+              const newPrice = numericValue;
+
+              const updatedDataSource = dataSource.map((d) => {
+                return record.id === d.id ? { ...d, retalPrice: newPrice } : d;
+              });
+
+              setDataSource(updatedDataSource);
+            }}
+          />
+        );
+      },
+    },
+    {
+      title: "Import Price",
+      dataIndex: "importPrice",
+      key: "importPrice",
+      render: (value, record) => {
+        return (
+          <input
+            type="text"
+            className="form-control w-50"
+            id="basic-default-fullname"
+            placeholder="Enter price"
+            value={value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+
+              // Chỉ giữ lại các ký tự là số
+              const numericValue = inputValue.replace(/\D/g, "");
+              const newPrice = numericValue;
+
+              const updatedDataSource = dataSource.map((d) => {
+                return record.id === d.id ? { ...d, importPrice: newPrice } : d;
+              });
+
+              setDataSource(updatedDataSource);
+            }}
+          />
+        );
+      },
+    },
+    {
+      title: "Attributes",
+      dataIndex: "attributes",
+      key: "attributes",
+      render: (value, record) => {
+        return record.attributes
+          .map((i) => {
+            return i.value;
+          })
+          .join(", ");
+      },
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (text, record) => {
+        return (
+          <div>
+            <button
+              type="button"
+              className="btn btn-danger btn-sm"
+              onClick={() => handleDelete(record)}
+            >
+              <Trash weight="fill" />
+            </button>
+          </div>
+        );
+      },
+    },
+  ];
+
+  //Đổ danh sách danh mục sản phẩm
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/attribute/all`,
+      });
+
+      if (data) {
+        setAttributes(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
     };
 
-    const [mainImage, setMainImage] = useState(null);
-    const handleDropMainImage = (file) => {
-        const preview = file?.map(file => Object.assign(file, {
-            preview: URL.createObjectURL(file),
-        }));
-        setMainImage(preview[0]);
+    fetchProducts();
+  }, []);
+
+  //Đổ danh sách thuộc tính sản phẩm
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/home/category/dashboard/get-all`,
+      });
+
+      if (data) {
+        setCate(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Hàm nhận file từ component con
+  const handleFileSelect = async (selectedFile) => {
+    if (!selectedFile) {
+      setFile(null);
+      return;
     }
 
-    const getDate = () => {
-        const now = new Date();
-        const dd = String(now.getDate()).padStart(2, '0');
-        const MM = String(now.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0 nên phải cộng thêm 1
-        const yy = String(now.getFullYear()).slice(-2); // Lấy 2 số cuối của năm
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-
-        return `${dd}${MM}${yy}-${hh}${mm}${ss}`;
-    };
-
-    const sizes = watch('sizes');
-    const colors = watch('colors');
-    useEffect(
-        () => {
-            if (sizes && sizes.length > 0 && colors && colors.length > 0) {
-                setSelectedColor(colors);
-                setSelectedSize(sizes);
-            }
-        }, [sizes, colors]
-    );
-
-    const handleSubmitAdd = async () => {
-        if (mainImage) {
-            setValue('image', await FileToBase64(mainImage));
-        } else {
-            setError('image', { type: 'manual', message: 'Main image is required!' });
-        }
-
-        const fieldsToValidate = [
-            'name',
-            'description',
-            'categories',
-            'sizes',
-            'colors',
-        ];
-
-        if (variants.length > 0) {
-            fieldsToValidate.push(
-                ...variants.flatMap((_, index) => [
-                    `variants[${index}].retailPrice`,
-                    `variants[${index}].wholesalePrice`
-                ])
-            );
-        }
-
-        let imageVersion = true;
-        if (variants?.length > 0) {
-            variants.forEach((item, index) => {
-                if (!item?.images?.length > 0) {
-                    setError(`variants[${index}].images`, { type: 'manual', message: 'Please add at least one image of each version!' });
-                    imageVersion = false;
-                }
-            });
-        }
-
-        let isValid = await trigger(fieldsToValidate);
-
-        if (isValid && imageVersion) {
-            const variantPrice = getValues('variants');
-            let combineVariant = [];
-            if (variants?.length > 0) {
-                const base64Array = await Promise.all(
-                    variants.map(item => FilesToBase64(item?.images || []))
-                );
-
-                if (variantPrice?.length > 0) {
-                    combineVariant = variants.map((item, index) => ({
-                        ...item,
-                        versionName: `${getValues('name')}-ver-${index + 1}-${getDate()}`,
-                        retalPrice: variantPrice[index]?.retailPrice,
-                        wholesalePrice: variantPrice[index]?.wholesalePrice,
-                        images: base64Array[index]
-                    }));
-                }
-            }
-
-            const productData = {
-                name: getValues('name'),
-                description: getValues('description'),
-                categories: getValues('categories'),
-                image: getValues('image'),
-                price: 0,
-                versions: combineVariant
-            };
-
-            if (productData) {
-                console.log("product:", productData);
-
-                axiosInstance.post('/staff/product/add', productData).then(
-                    (response) => {
-                        if (response?.data?.code === 200 || response?.data?.code === 201) {
-                            toast.success('Product published successfully!');
-                            reset();
-                            setMainImage(null);
-                            setVariants(null);
-                            setSelectedColor([]);
-                            setSelectedSize([]);
-                        } else {
-                            toast.error('Failed to add product. Please check for errors and try again!');
-                        }
-                    }
-                );
-            }
-        } else {
-            toast.error('Please fill in all required fields correctly!');
-        }
-    };
-
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    useEffect(() => {
-        if (location.state?.product) {
-            setSelectedProduct(location.state.product);
-        }
-    }, [location.state]);
-
-    useEffect(
-        () => {
-            console.log('selected product: ', selectedProduct);
-        }, [selectedProduct]
-    );
-
-    const [isModal, setIsModal] = useState({ cate: false, size: false, color: false });
-    const handleOpenCateModal = () => {
-        setIsModal({ cate: !isModal.cate });
+    try {
+      const base64String = await convertToBase64(selectedFile);
+      setFile(base64String); // Lưu chuỗi Base64 vào state
+    } catch (error) {
+      console.error("Lỗi chuyển đổi file:", error);
     }
-    const handleCancelCateModal = () => {
-        setIsModal({ cate: !isModal.cate });
+  };
 
-    }
-    const handleSubmitAddNewCategory = async () => {
-        let valid = await trigger('categoryNameNew');
-        if (valid) {
-            const categoryName = getValues('categoryNameNew') || '';
-            axiosInstance.post("/home/category/add", { categoryName }).then((response) => {
-                if (response?.status === 200) {
-                    toast.success('Added new category successfully!');
-                    handleCancelCateModal();
-                    handleGetCategory();
-                    reset({ categoryNameNew: '' });
-                } else {
-                    toast.error('Failed to add new category. Please check for errors and try again!');
-                }
-            }).catch((error) => {
-                console.error('Error adding category:', error);
-                toast.error('An error occurred while adding the category.');
-            });
-        } else {
-            setError('categoryNameNew', { type: 'manual', message: 'Category name cannot be null!' });
-        }
-    };
+  console.log(dataSource);
+  return (
+    <>
+      <FullScreenSpinner isLoading={loading} />
 
-    return (
-        <div className='mt-2'>
-            <div className='container'>
-                <div className='mb-4 d-flex justify-content-between align-items-center'>
-                    <div>
-                        <h4 className='fw-bold d-flex align-items-center'><RiAddBoxFill />&ensp;{`Add a product`}</h4>
-                        <p className='fw-medium'>{`Add a new product to your store`}</p>
-                    </div>
-                    <div>
-                        <CustomButton btnType={'button'} btnBG={'primary'} btnName={'Publish product'} textColor={'text-white'} handleClick={handleSubmitAdd} />
-                    </div>
-                </div>
-                <div className='d-flex justify-content-between custom-form'>
-                    <div className='col-9 pe-3'>
-                        <div>
-                            <Form>
-                                <Form.Group className='mb-3'>
-                                    <Form.Label className='fs-4 fw-medium'>Product name</Form.Label>
-                                    <Form.Control className='py-2 custome-placeholder-font-12'
-                                        type='text' placeholder='Write product name here'
-                                        defaultValue={selectedProduct?.productName || ''}
-                                        {...register('name', { required: true })} />
-                                    <p className='fs-6 fw-medium text-danger'>{errors?.name && `Product's name is required !`}</p>
-                                </Form.Group>
-                                <Form.Group className='mb-3'>
-                                    <Form.Label className='fs-4 fw-medium'>Product main image</Form.Label>
-                                    <div className='bg-white border rounded-2 py-2 px-1'>
-                                        <ImagesDropzone maxFile={true} maxFileNum={1} onDrop={(files) => handleDropMainImage(files)}
-                                            register={register} errors={errors} />
-                                        <div className='d-flex justify-content-around'>
-                                            {mainImage && (
-                                                <div className='position-relative'>
-                                                    <img
-                                                        src={mainImage.preview}
-                                                        alt="Main image preview"
-                                                        style={{ width: '150px', height: 'auto' }}
-                                                    />
-                                                    <Button
-                                                        className='position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center'
-                                                        variant='secondary'
-                                                        style={{ width: '30px', height: '30px', borderRadius: '50%' }}
-                                                        onClick={() => setMainImage(null)}
-                                                    >
-                                                        <MdDeleteForever style={{ width: '60%', height: '60%' }} />
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <p className='fs-6 fw-medium text-danger'>{errors?.image && errors?.image?.message}</p>
-                                </Form.Group>
-                            </Form>
-                        </div>
-                        <div>
-                            <label className=' fs-4 fw-medium'>Product versions</label>
-                            <div>
-                                {variants?.length > 0 ? (
-                                    <Table className='custom-table' striped hover>
-                                        <thead>
-                                            <th>#</th>
-                                            <th className='text-center'>Size</th>
-                                            <th className='text-center'>Color</th>
-                                            <th className='text-center'>Retail price</th>
-                                            <th className='text-center'>Wholesale price</th>
-                                        </thead>
-                                        <tbody>
-                                            {variants?.map((item, index) => {
-                                                return (
-                                                    <>
-                                                        <tr key={index + 1} className=''>
-                                                            <td>{index + 1}</td>
-                                                            <td className='text-center'>{item?.attributes[0]?.value}</td>
-                                                            <td className='text-center'>{item?.attributes[1]?.value}</td>
-                                                            <td className='w-30'>
-                                                                <InputGroup>
-                                                                    <Form.Control placeholder={`Product's retail price...`}
-                                                                        {...register(`variants[${index}].retailPrice`, { required: true, min: 1000, pattern: /^[0-9]+$/ })} />
-                                                                    <InputGroup.Text>VND</InputGroup.Text>
-                                                                </InputGroup>
-                                                                <p className='fs-6 fw-medium text-danger'>
-                                                                    {errors.variants?.[index]?.retailPrice && 'Required anumber and must be equal or greater than 1000 !'}</p>
-                                                            </td>
-                                                            <td className='w-30'>
-                                                                <InputGroup>
-                                                                    <Form.Control placeholder={`Product's wholesale price...`}
-                                                                        {...register(`variants[${index}].wholesalePrice`, { required: true, min: 1000, pattern: /^[0-9]+$/ })} />
-                                                                    <InputGroup.Text>VND</InputGroup.Text>
-                                                                </InputGroup>
-                                                                <p className='fs-6 fw-medium text-danger'>
-                                                                    {errors.variants?.[index]?.wholesalePrice && 'Required a number and must be equal or greater than 1000 ! !'}</p>
-                                                            </td>
-                                                        </tr>
-                                                        <tr className=''>
-                                                            <td colSpan={5}>
-                                                                <ImagesDropzone onDrop={(files) => handleDrop(files, index)} />
-                                                                <p className='fs-6 fw-medium text-danger'>
-                                                                    {errors.variants?.[index]?.images?.message}
-                                                                </p>
-                                                                <div className='d-flex justify-content-around'>
-                                                                    {item.images && item.images.map((image, imgIndex) => (
-                                                                        <div className='position-relative'>
-                                                                            <img key={imgIndex} src={image?.preview} alt={`Variant's image`}
-                                                                                style={{ width: '150px', height: 'auto' }} />
-                                                                            <Button
-                                                                                className='position-absolute top-0 end-0 p-0 d-flex justify-content-center align-items-center'
-                                                                                variant='secondary'
-                                                                                style={{ width: '30px', height: '30px', borderRadius: '50%' }}
-                                                                                onClick={() => handleDeleteImage(index, imgIndex)}
-                                                                            >
-                                                                                <MdDeleteForever style={{ width: '60%', height: '60%' }} />
-                                                                            </Button>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-
-                                                            </td>
-                                                        </tr>
-                                                    </>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </Table>
-                                ) : (<EmptyValues text={'Please select full attributes of variants  !!'} />)}
-                            </div>
-                        </div>
-                    </div>
-                    <div className='col-3'>
-                        <Organize errors={errors} categories={categories} control={control} handleOpenCateModal={() => { handleOpenCateModal() }} />
-                        <Variants
-                            sizes={attributes?.sizes} colors={attributes?.colors}
-                            control={control} errors={errors}
-                        />
-                    </div>
-                </div>
-                <div>
-                    <ToastContainer />
-                    <div>
-                        <Form>
-                            <Modal show={isModal.cate}>
-                                <Modal.Body>
-                                    <Form.Control
-                                        type='text'
-                                        placeholder={`Category's name. . .`}
-                                        {...register("categoryNameNew", { required: true })}
-                                    />
-                                    {errors?.categoryNameNew && (
-                                        <p className='fw-bold text-danger'>Category name is required</p>
-                                    )}
-                                </Modal.Body>
-                                <Modal.Footer>
-                                    <div className='d-flex justify-content-between' style={{ minWidth: '140px' }}>
-                                        <CustomButton btnBG={'success'} btnName={'Save'} handleClick={handleSubmitAddNewCategory} />
-                                        <CustomButton btnBG={'danger'} btnName={'Cancel'} handleClick={handleCancelCateModal} />
-                                    </div>
-                                </Modal.Footer>
-                            </Modal>
-                        </Form>
-                    </div>
-                </div>
-            </div>
+      <form className="card p-4">
+        <div className="row">
+          <label>Product</label>
         </div>
-    );
-}
+
+        <div className="row">
+          <div className="col-md-5">
+            <AvatarUpload
+              marginRight="200px"
+              pathImage={""}
+              onFileSelect={handleFileSelect}
+            />
+          </div>
+
+          <div className="col-md-7">
+            <div className="row mb-4">
+              <div className="col-md-12">
+                <label className="form-label" htmlFor="basic-default-fullname">
+                  Product name <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="basic-default-fullname"
+                  placeholder="Enter product name"
+                  value={productName}
+                  onChange={(e) => {
+                    dataSource.length > 0 &&
+                      setDataSource(
+                        dataSource.map((i) => {
+                          const name =
+                            e.target.value +
+                            i.versionName.substring(
+                              i.versionName.indexOf(" -"),
+                              i.versionName.length
+                            );
+
+                          return { ...i, versionName: name };
+                        })
+                      );
+
+                    setProductName(e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="row  mb-4">
+              <div className="col-md-12">
+                <label
+                  htmlFor="exampleFormControlSelect1"
+                  className="form-label"
+                >
+                  Category <span className="text-danger">*</span>
+                </label>
+                <select
+                  className="form-select"
+                  id="exampleFormControlSelect1"
+                  value={catId}
+                  onChange={(e) => {
+                    setCatId(e.target.value);
+                  }}
+                >
+                  <option value="-1">Select category</option>
+                  {cate &&
+                    cate.map((c, index) => {
+                      return (
+                        <option key={c.categoryName} value={c.categoryId}>
+                          {c.categoryName}
+                        </option>
+                      );
+                    })}
+                </select>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-12">
+                <label for="exampleFormControlTextarea1" class="form-label">
+                  Description
+                </label>
+                <textarea
+                  class="form-control"
+                  id="exampleFormControlTextarea1"
+                  rows="3"
+                  value={discription}
+                  onInput={(e) => setDiscription(e.target.value)}
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <form className="card p-4 mt-3">
+        <div className="row mb-3">
+          <label>Attributes</label>
+        </div>
+
+        <div className="row row-cols-sm-3">
+          {attributes &&
+            attributes.map((a) => {
+              return (
+                <div className="col" key={a.id}>
+                  <label
+                    htmlFor="exampleFormControlSelect1"
+                    className="form-label"
+                  >
+                    {a.attributeName}
+                  </label>
+
+                  <Select
+                    closeMenuOnSelect={false}
+                    components={animatedComponents}
+                    isMulti
+                    options={a.options.map((i) => {
+                      return { key: a.id, value: i.id, label: i.value };
+                    })}
+                    value={selectedOptions[a.id] || []} // Lấy các lựa chọn cho Select hiện tại, nếu không có thì mặc định là mảng rỗng
+                    onChange={(selected) => {
+                      // Cập nhật selectedOptions cho attribute tương ứng
+                      setSelectedOptions((prevSelectedOptions) => {
+                        const updatedOptions = {
+                          ...prevSelectedOptions,
+                          [a.id]: selected, // Lưu lựa chọn cho attribute có id là a.id
+                        };
+
+                        // Gọi hàm để tạo phiên bản sản phẩm
+                        generateProductVersions(updatedOptions);
+
+                        return updatedOptions;
+                      });
+                    }}
+                  />
+                </div>
+              );
+            })}
+        </div>
+
+        <div className="row mt-3">
+          <div className="col-md-4">
+            <label className="form-label" htmlFor="basic-default-fullname">
+              Enter price for all version
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="basic-default-fullname"
+              placeholder="Enter price"
+              value={
+                allPrice
+                  ? Number(allPrice.replace(/,/g, "")).toLocaleString("en-US")
+                  : ""
+              }
+              onChange={(e) => {
+                const rawValue = e.target.value.replace(/,/g, ""); // Loại bỏ dấu phẩy
+                const newValue = rawValue.replace(/\D/g, ""); // Loại bỏ ký tự không phải số
+                setAllPrice(newValue); // Cập nhật giá trị
+
+                setDataSource(
+                  dataSource.map((i) => {
+                    return {
+                      ...i,
+                      retalPrice: newValue,
+                      importPrice: newValue,
+                    };
+                  })
+                );
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="row">
+          <DataTableSft dataSource={dataSource} columns={columns} title={""} />
+        </div>
+
+        <div className="d-flex justify-content-end mt-3">
+          <button
+            type="button"
+            className="btn btn-dark me-3"
+            onClick={handleClickAdd}
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </>
+  );
+};
 
 export default NewProduct;
