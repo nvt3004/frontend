@@ -35,6 +35,7 @@ const OrderTable = () => {
     const [statusId, setStatusId] = useState(null);
     const [statusOptions, setStatusOptions] = useState([]);
     const [pageSize, setPageSize] = useState(5);
+    const [numberOfElements, setNumberOfElements] = useState(0);
     const navigate = useNavigate();
     const handleGetOrderAPI = () => {
         axiosInstance.get(`/staff/orders`, {
@@ -50,10 +51,12 @@ const OrderTable = () => {
                     setOrders(response.data.data.content);
                     setTotalPage(response?.data?.data?.totalPages);
                     setTotalElements(response?.data?.data?.totalElements);
+                    setNumberOfElements(response?.data?.data?.numberOfElements);
                 } else if (response?.data?.errorCode === 404) {
                     setOrders([]);
                     setTotalPage(0);
                     setTotalElements(0);
+                    setNumberOfElements(0);
                     toast.error(response?.data?.message || 'No orders found.');
                 } else if (response?.data?.errorCode === 998) {
                     toast.error(response?.data?.message || 'You do not have permission to access the order list.');
@@ -964,7 +967,7 @@ const OrderTable = () => {
                     insecure: [8182, 8283, 8384, 8485]
                 },
                 // usingSecure: true, // If using HTTPS
-                allowUserInteraction: false, 
+                allowUserInteraction: false,
                 usingSecure: false,
                 keepAlive: 60,
                 retries: 3,
@@ -1093,13 +1096,13 @@ const OrderTable = () => {
                     <div className='container d-flex justify-content-between px-0'>
                         <div className='d-flex align-items-center justify-content-between' style={{ width: "45%" }}>
                             <h4 className='m-0 d-flex align-items-center'>
-                                <FaClipboardList />&ensp;Orders
+                                <FaClipboardList />&ensp;Đơn hàng
                             </h4>
                             <InputGroup className='mx-0' style={{ width: "400px" }}>
                                 <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
                                 <Form.Control
                                     className='custom-radius'
-                                    placeholder='Search orders . . .'
+                                    placeholder='Tìm kiếm đơn hàng . . .'
                                     value={keyword}
                                     onChange={(e) => handleKeywordChange(e)}
                                 />
@@ -1110,7 +1113,7 @@ const OrderTable = () => {
                             <Select
                                 className="w-20 mx-3"
                                 options={statusOptions}
-                                placeholder="Order Status"
+                                placeholder="Trạng thái đơn hàng"
                                 onChange={(selectedOption) => handleChange(selectedOption, 'status')}
                                 isClearable
                             />
@@ -1118,17 +1121,17 @@ const OrderTable = () => {
                             <Select
                                 className="w-20 mx-3"
                                 options={pageSizeOptions}
-                                placeholder="Page Size"
+                                placeholder="Số lượng trên trang"
                                 onChange={(selectedOption) => handleChange(selectedOption, 'pageSize')}
                                 isClearable
                             />
-                            <Button
+                            {/* <Button
                                 variant="secondary"
                                 className="font-14 custom-radius custom-hover mx-3"
                                 onClick={handleExport}
                             >
                                 <FaFileExport /> Export
-                            </Button>
+                            </Button> */}
                         </div>
                     </div>
 
@@ -1138,18 +1141,18 @@ const OrderTable = () => {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th className=''>Customer</th>
-                                <th>Address</th>
-                                <th>Phone</th>
-                                <th>Order date</th>
-                                <th>Status</th>
+                                <th>Khách hàng</th>
+                                <th>Địa chỉ</th>
+                                <th>Điện thoại</th>
+                                <th>Ngày đặt hàng</th>
+                                <th>Trạng thái</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
 
                             {orders.length === 0 ? (
-                                <p>No orders found.</p>
+                                <p>Không tìm thấy đơn hàng nào.</p>
                             ) : (
                                 orders?.map(
                                     (order) => (
@@ -1165,34 +1168,29 @@ const OrderTable = () => {
                                                     {order?.address}
                                                 </td>
                                                 <td>
-                                                    {order?.phone ||
-                                                        (
-                                                            <p className='px-2 py-1 bg-danger-subtle text-center rounded-3 me-1'>Missing</p>
-                                                        )
-                                                    }
-                                                </td>
-                                                <td> {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')} </td>
-                                                <td style={{ width: '200px' }}>
-                                                    <Select options={orderStatus}
-                                                        value={
-                                                            orderStatus.find(option => option.label === order?.statusName)
-                                                        }
-                                                        styles={customReactSelectOrderStatusOptionsStyles}
-                                                        onChange={(option) => handleChangeStatus(option, order?.orderId)}
-                                                    />
+                                                    {order?.phone ? (
+                                                        order.phone
+                                                    ) : (
+                                                        <p className='px-2 py-1 bg-danger-subtle text-center rounded-3 me-1'>Chưa có</p>
+                                                    )}
                                                 </td>
 
-                                                {/* Bắt buộc phải call api để check xem có order detail không */}
+                                                <td> {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')} </td>
+                                                <td style={{ width: '200px' }}>
+                                                    <Select options={orderStatus} value={orderStatus.find(option => option.label === order?.statusName)}
+                                                        styles={customReactSelectOrderStatusOptionsStyles}
+                                                        onChange={(option) => handleChangeStatus(option, order?.orderId)} /> </td>
                                                 <td>
                                                     <CustomButton
                                                         btnBG={'secondary'}
                                                         btnName={
                                                             <>
-                                                                Details {orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail ? <FaChevronDown /> : <FaChevronRight />}
+                                                                {orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail ? <FaChevronDown /> : <FaChevronRight />}
                                                             </>
                                                         }
                                                         textColor={'white'}
                                                         handleClick={() => toggleOrderDetails(order)}
+                                                        tooltip="Xem chi tiết đơn hàng"
                                                     />
                                                 </td>
                                             </tr>
@@ -1202,13 +1200,13 @@ const OrderTable = () => {
                                                         <td colSpan={7} ref={componentRef} id="my-content">
                                                             <Table hover striped>
                                                                 <thead>
-                                                                    <th className='text-center'>#</th>
-                                                                    <th style={{ width: '270px' }} className='text-center'>Product</th>
+                                                                    <th className='text-center'>STT</th>
+                                                                    <th style={{ width: '270px' }} className='text-center'>Sản phẩm</th>
                                                                     <th style={{ width: '150px' }} className='text-center'></th>
-                                                                    <th colSpan={2} className='text-center no-print'>Attributes</th>
-                                                                    <th className='text-center'>Unit price</th>
-                                                                    <th className='text-center'>Quantity</th>
-                                                                    <th className='text-center'>Total</th>
+                                                                    <th colSpan={2} className='text-center no-print'>Thuộc tính</th>
+                                                                    <th className='text-center'>Đơn giá</th>
+                                                                    <th className='text-center'>Số lượng</th>
+                                                                    <th className='text-center'>Thành tiền</th>
                                                                     <th colSpan={2} className='no-print' ></th>
                                                                 </thead>
                                                                 <tbody>
@@ -1270,7 +1268,7 @@ const OrderTable = () => {
                                                                                 <td className='text-center p-1'>
                                                                                     {order?.statusName === 'Pending' ? (
                                                                                         <div className='d-flex justify-content-center'>
-                                                                                            <Button className='no-print' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}>
+                                                                                            <Button className='bg-black bg-gradient' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}>
                                                                                                 -
                                                                                             </Button>
                                                                                             <input
@@ -1282,7 +1280,7 @@ const OrderTable = () => {
                                                                                                 onKeyDown={(e) => handleKeyPress(e, orderDetail.orderDetailId, item.productID, e.target.value)}
                                                                                                 style={{ width: '50px', textAlign: 'center' }}
                                                                                             />
-                                                                                            <Button className='no-print' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}>
+                                                                                            <Button className='bg-black bg-gradient' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}>
                                                                                                 +
                                                                                             </Button>
                                                                                         </div>
@@ -1296,47 +1294,51 @@ const OrderTable = () => {
                                                                                 {order?.statusName === 'Pending' &&
                                                                                     (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
                                                                                         <React.Fragment style={{ width: '50px !important' }}>
-                                                                                            <td className='no-print p-1 text-center'>
-                                                                                                <CustomButton
-                                                                                                    btnBG={'success'}
-                                                                                                    btnType={'button'}
-                                                                                                    textColor={'text-white'}
-                                                                                                    btnName={<HiCheck />}
-                                                                                                    handleClick={() => handleSaveVersionChanges(orderDetail)}
-                                                                                                />
-                                                                                            </td>
-                                                                                            <td className='no-print p-1 text-center'>
-                                                                                                <CustomButton
-                                                                                                    btnBG={'danger'}
-                                                                                                    btnType={'button'}
-                                                                                                    textColor={'text-white'}
-                                                                                                    btnName={<ImCancelCircle />}
-                                                                                                    handleClick={() => setEditVersion({ isEdit: false, orderDetailsID: null })}
-                                                                                                />
-                                                                                            </td>
-                                                                                        </React.Fragment>
-                                                                                    ) : (
-                                                                                        <React.Fragment style={{ width: '50px !important' }}>
-                                                                                            <td className='no-print p-1 text-center'>
-                                                                                                <CustomButton
-                                                                                                    btnBG={'danger'}
-                                                                                                    btnType={'button'}
-                                                                                                    textColor={'text-white'}
-                                                                                                    btnName={<FaTrash />}
-                                                                                                    handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
-                                                                                                />
-                                                                                            </td>
-
-                                                                                            <td className='no-print p-1 text-center'>
-                                                                                                <CustomButton
-                                                                                                    btnBG={'warning'}
-                                                                                                    btnType={'button'}
-                                                                                                    textColor={'text-white'}
-                                                                                                    btnName={<MdModeEdit />}
-                                                                                                    handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
-                                                                                                />
-                                                                                            </td>
-                                                                                        </React.Fragment>
+                                                                                        <td className='no-print p-1 text-center'>
+                                                                                            <CustomButton
+                                                                                                btnBG={'success'}
+                                                                                                btnType={'button'}
+                                                                                                textColor={'text-white'}
+                                                                                                btnName={<HiCheck />}
+                                                                                                handleClick={() => handleSaveVersionChanges(orderDetail)}
+                                                                                                tooltip="Lưu thay đổi" // Tooltip cho nút Lưu
+                                                                                            />
+                                                                                        </td>
+                                                                                        <td className='no-print p-1 text-center'>
+                                                                                            <CustomButton
+                                                                                                btnBG={'danger'}
+                                                                                                btnType={'button'}
+                                                                                                textColor={'text-white'}
+                                                                                                btnName={<ImCancelCircle />}
+                                                                                                handleClick={() => setEditVersion({ isEdit: false, orderDetailsID: null })}
+                                                                                                tooltip="Hủy bỏ" // Tooltip cho nút Hủy
+                                                                                            />
+                                                                                        </td>
+                                                                                    </React.Fragment>
+                                                                                ) : (
+                                                                                    <React.Fragment style={{ width: '50px !important' }}>
+                                                                                        <td className='no-print p-1 text-center'>
+                                                                                            <CustomButton
+                                                                                                btnBG={'danger'}
+                                                                                                btnType={'button'}
+                                                                                                textColor={'text-white'}
+                                                                                                btnName={<FaTrash />}
+                                                                                                handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
+                                                                                                tooltip="Xóa" // Tooltip cho nút Xóa
+                                                                                            />
+                                                                                        </td>
+                                                                                
+                                                                                        <td className='no-print p-1 text-center'>
+                                                                                            <CustomButton
+                                                                                                btnBG={'warning'}
+                                                                                                btnType={'button'}
+                                                                                                textColor={'text-white'}
+                                                                                                btnName={<MdModeEdit />}
+                                                                                                handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
+                                                                                                tooltip="Sửa" // Tooltip cho nút Sửa
+                                                                                            />
+                                                                                        </td>
+                                                                                    </React.Fragment>
                                                                                     ))}
                                                                             </tr>
                                                                         ))
@@ -1344,10 +1346,10 @@ const OrderTable = () => {
 
                                                                     <tr className='no-print'>
                                                                         <td rowSpan="7" colSpan="6" className="text-center font-weight-bold">
-                                                                            <span>Last Updated: {moment(order?.lastUpdatedDate).format('DD/MM/YYYY HH:mm:ss')} </span>
 
                                                                             {order?.lastUpdatedBy && (
                                                                                 <>
+                                                                                    <span>Last Updated: {moment(order?.lastUpdatedDate).format('DD/MM/YYYY HH:mm:ss')} </span>
                                                                                     By:
                                                                                     <Link to={`/user-management/${order?.lastUpdatedBy?.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                                                                         {order?.lastUpdatedBy}
@@ -1386,10 +1388,13 @@ const OrderTable = () => {
                                                                     </tr>
                                                                     <tr className='no-print'>
                                                                         <td colSpan={2} style={{ textAlign: 'right' }}>
-                                                                            <button className="btn bg-black bg-gradient" style={{ color: 'white' }} onClick={() => printInvoice(order?.orderId)}
-                                                                                title="Nhấn để xuất hóa đơn">
-                                                                                Xuất hóa đơn
-                                                                            </button>
+                                                                            <CustomButton
+                                                                                className='bg-black bg-gradient'
+                                                                                textColor="white"
+                                                                                handleClick={() => printInvoice(order?.orderId)}
+                                                                                btnName="Xuất hóa đơn"
+                                                                                tooltip="Nhấn để xuất hóa đơn"
+                                                                            />
                                                                         </td>
                                                                     </tr>
 
@@ -1407,8 +1412,8 @@ const OrderTable = () => {
                         </tbody>
                     </Table>
                     <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
-                        <p className='font-13'>{`${(currentPage + 1) * 5 <= totalElements ? (currentPage + 1) * 5 : totalElements} of ${totalElements} `}
-                            {/* <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span> */}
+                        <p className='font-13'>
+                            Hiển thị <span className="text-primary">{numberOfElements || 0}</span> trong tổng số <span className="text-primary">{totalElements || 0}</span> kết quả
                         </p>
                         <Pagination className='border-0'>
                             <Pagination.First>{`<`}</Pagination.First>
