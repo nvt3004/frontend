@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import axiosInstance from '../../../../../../services/axiosConfig';
 import axios from 'axios';
 import moment from 'moment';
 import { toast } from 'react-toastify';
 import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
 import './style/order.scss';
 import { Link } from 'react-router-dom';
-import { FaHome } from 'react-icons/fa'; 
+import { FaHome } from 'react-icons/fa';
 const OrderDetail = () => {
     const { orderId } = useParams();
     const [order, setOrder] = useState(null);
 
     useEffect(() => {
-        axios.get(`http://localhost:8080/api/orders/${orderId}`)
+        axiosInstance.get(`/orders/${orderId}`)
             .then(response => {
                 setOrder(response.data.data.orderDetail[0]);
             })
@@ -42,8 +43,8 @@ const OrderDetail = () => {
                 <div className="border-bottom pb-4 mb-4">
                     <div className="row justify-content-end mt-4">
                         <div className="col-auto">
-                            <Link to="/home" className="btn btn-success btn-lg"> 
-                                <FaHome className="me-2" /> 
+                            <Link to="/home" className="btn btn-success btn-lg">
+                                <FaHome className="me-2" />
                                 Đi đến trang chủ
                             </Link>
                         </div>
@@ -81,19 +82,22 @@ const OrderDetail = () => {
                 </div>
 
                 <div className="table-responsive">
-                    <table className="table table-hover table-striped border">
-                        <thead>
-                            <tr>
-                                <th className="text-center" scope="col">#</th>
-                                <th className="text-center" scope="col">Sản phẩm</th>
-                                <th className="text-center" scope="col">Hình ảnh</th>
-                                <th className="text-center" scope="col">Màu</th>
-                                <th className="text-center" scope="col">Kích cỡ</th>
-                                <th className="text-center" scope="col">Đơn giá</th>
-                                <th className="text-center" scope="col">Số lượng</th>
-                                <th className="text-center" scope="col">Tổng</th>
-                            </tr>
-                        </thead>
+                    <table className="table table-hover table-striped border" style={{ width: "100%", tableLayout: "fixed" }}>
+                    
+                            <thead>
+                                <tr>
+                                    <th className="text-center" scope="col" style={{ width: "5%" }}>#</th>
+                                    <th className="text-center" scope="col" style={{ width: "20%" }}>Sản phẩm</th>
+                                    <th className="text-center" scope="col" style={{ width: "15%" }}>Hình ảnh</th>
+                                    <th className="text-center" scope="col" style={{ width: "10%" }}>Màu</th>
+                                    <th className="text-center" scope="col" style={{ width: "10%" }}>Kích cỡ</th>
+                                    <th className="text-center" scope="col" style={{ width: "10%" }}>Đơn giá</th>
+                                    <th className="text-center" scope="col" style={{ width: "10%" }}>Số lượng</th>
+                                    <th className="text-center" scope="col" style={{ width: "20%" }}>Tổng</th>
+                                </tr>
+                            </thead>
+            
+
                         <tbody>
                             {order?.productDetails?.map((product, index) => (
                                 <tr key={product.orderDetailId}>

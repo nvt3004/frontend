@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
-const CustomButton = ({ btnName, btnBG, handleClick, textColor, btnType, form, textSize, className, tooltip }) => {
+const CustomButton = ({ btnName, btnBG, handleClick, textColor, btnType, form, textSize, className, tooltip, disabled,icon }) => {
     const renderTooltip = (props) => (
         <Tooltip id="button-tooltip" {...props}>
             {tooltip}
@@ -22,12 +22,14 @@ const CustomButton = ({ btnName, btnBG, handleClick, textColor, btnType, form, t
                     variant={btnBG}
                     style={{ opacity: 0.8 }}
                     onClick={handleClick}
+                    disabled={disabled}
+                   
                 >
-                    {btnName}
+                    {icon} {btnName}
                 </Button>
             </OverlayTrigger>
         );
-    } else { 
+    } else {
         return (
             <Button
                 form={form}
@@ -36,8 +38,10 @@ const CustomButton = ({ btnName, btnBG, handleClick, textColor, btnType, form, t
                 variant={btnBG}
                 style={{ opacity: 0.8 }}
                 onClick={handleClick}
+                disabled={disabled}
+                icon = {icon}
             >
-                {btnName}
+                {icon} {btnName}
             </Button>
         );
     }
