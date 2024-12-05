@@ -409,7 +409,7 @@ const UserTable = () => {
       return;
     }
 
-    toast.success(`Chỉnh sửa vai trò thành công !!`, {
+    toast.success(`Thành công`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,

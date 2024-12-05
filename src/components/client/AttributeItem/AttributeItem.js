@@ -66,7 +66,7 @@ const AttributeItem = ({ pd, onClick, clickSave = () => {}, message }) => {
           className="btn stext-101 cl0  bg2 bor14 text-black hov1 trans-04 pointer rounded-0"
           data-bs-dismiss="modal"
         >
-          Cancel
+          Hủy
         </button>
         <button
           type="button"
@@ -75,7 +75,7 @@ const AttributeItem = ({ pd, onClick, clickSave = () => {}, message }) => {
             clickSave(pd);
           }}
         >
-          Save change
+          Ok
         </button>
       </div>
     </>

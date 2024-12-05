@@ -207,7 +207,7 @@ console.log(version);
             retailPrice: version.retailPrice,
             importPrice: version.importPrice,
             image: {
-              name: version.image,
+              name: version.image.split(",")[1],
             },
             attributes: version.attributes,
           };
@@ -287,7 +287,7 @@ console.log(version);
   //Cấu hình table
   const columns = [
     {
-      title: "Image",
+      title: "Ảnh",
       dataIndex: "image",
       key: "image",
       render: (text, record) => {
