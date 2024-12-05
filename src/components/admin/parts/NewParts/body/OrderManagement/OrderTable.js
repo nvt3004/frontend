@@ -722,6 +722,9 @@ const OrderTable = () => {
     const [qzConnected, setQzConnected] = useState(false);
     let qzSocket = null; 
 
+    console.log(PUBLIC_CERTIFICATE + " PUBLIC_CERTIFICATE");
+    console.log(PRIVATE_KEY + " PRIVATE_KEY");
+    
     const connectToQz = async (options) => {
         try {
             qzSocket = await qz.websocket.connect(options); 
@@ -749,23 +752,23 @@ const OrderTable = () => {
     };
     const printInvoice = async (orderId) => {
         try {
-            const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {}, { responseType: 'blob' });
-
+            const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {},{ responseType: 'blob'});
+            // const imageUrl = response.data.data; 
             if (!response || !response.data) {
-                throw new Error("No image data received from backend.");
+                throw new Error("No PDF data received from backend.");
             }
 
-            const blob = new Blob([response.data], { type: 'image/png' });
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
+            const blob = new Blob([response.data], { type: 'application/pdf' });
 
+            const reader = new FileReader();
             const base64Promise = new Promise((resolve, reject) => {
-                reader.onloadend = () => resolve(reader.result);
+                reader.onloadend = () => resolve(reader.result.split(',')[1]); // Tách phần Base64
                 reader.onerror = reject;
             });
-
-            const base64data = (await base64Promise).split(',')[1].replace(/[^A-Za-z0-9+/=]/g, '');
-             // Loại bỏ các ký tự không mong muốn
+            
+            reader.readAsDataURL(blob);
+            const base64data = await base64Promise;            
+           
             if (!qzConnected) {
                 const options = {
                     host: 'localhost', //Sử dụng tên miền chính thức để không phải hiển thị hỏi lại.
@@ -814,19 +817,24 @@ const OrderTable = () => {
                     }
                 };
             });
-
-            const printerName = 'Microsoft Print to PDF';
+            // console.log(imageUrl + " imageUrl");
+            
+            const printerName = 'XP-58';
+            // const printerName = 'Microsoft Print to PDF';
             const printConfig = qz.configs.create(printerName);
 
             console.log("Printing with config:", printConfig);
 
             // In hình ảnh
-            await qz.print(printConfig, [{ type: 'image', format: 'base64', data: base64data }]);
-
+            await qz.print(printConfig, [{ type: 'pdf',format:'base64', data: base64data }]);
             // Lệnh cắt giấy
+            // await qz.print(printConfig, [
+            //     { type: 'raw', format: 'command', data: '\x1B\x69' } // Lệnh ESC/POS để cắt giấy
+            // ]);
             await qz.print(printConfig, [
-                { type: 'raw', format: 'command', data: '\x1B\x69' } // Lệnh ESC/POS để cắt giấy
+                { type: 'raw', format: 'command', data: '\x1B\x64\x01' } // Lệnh ESC/POS để cắt giấy
             ]);
+            
 
             toast.success('Print successful and paper cut!');
         } catch (error) {
@@ -907,7 +915,7 @@ const OrderTable = () => {
                 }
             });
 
-            const printerName = 'XP-58';
+            const printerName = 'Microsoft Print to PDF';
             const printConfig = qz.configs.create(printerName);
 
             for (const orderId of orderIds) {
@@ -940,20 +948,19 @@ const OrderTable = () => {
             if (!response || !response.data) {
                 throw new Error("No image data received from backend.");
             }
+            const blob = new Blob([response.data], { type: 'application/pdf' });
 
-            const blob = new Blob([response.data], { type: 'image/png' });
             const reader = new FileReader();
-            reader.readAsDataURL(blob);
-
             const base64Promise = new Promise((resolve, reject) => {
-                reader.onloadend = () => resolve(reader.result);
+                reader.onloadend = () => resolve(reader.result.split(',')[1]); // Tách phần Base64
                 reader.onerror = reject;
             });
-
-            const base64data = (await base64Promise).split(',')[1].replace(/[^A-Za-z0-9+/=]/g, ''); // Loại bỏ các ký tự không mong muốn
+            
+            reader.readAsDataURL(blob);
+            const base64data = await base64Promise;  // Loại bỏ các ký tự không mong muốn
 
             console.log("Printing with config:", printConfig);
-            await qz.print(printConfig, [{ type: 'image', format: 'base64', data: base64data }]);
+            await qz.print(printConfig, [{ type: 'pdf', format: 'base64', data: base64data }]);
 
             // Lệnh cắt giấy
             await qz.print(printConfig, [
