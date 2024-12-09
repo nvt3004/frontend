@@ -51,8 +51,8 @@ const menus = [
         icon: <Archive />,
         subItems: [
           { id: "3", label: "Phân loại", link: "/admin/products/categories" },
-          { id: "4", label: "Sản phẩm mới", link: "/admin/products/new" },
-          { id: "5", label: "Quản lý sản phẩm", link: "/admin/products/manage" },
+          { id: "4", label: "Thêm mới", link: "/admin/products/new" },
+          { id: "5", label: "Danh sách", link: "/admin/products/manage" },
         ],
       },
       {
@@ -82,7 +82,7 @@ const menus = [
         // link: "/admin/warehouse/stock-in",
         subItems: [
           {id: '12', label: 'Nhập hàng', link: "/admin/warehouse/stockin"},
-          {id: '13', label: 'Danh sách phiếu nhập', link: "/admin/warehouse/manage"}
+          {id: '13', label: 'Phiếu nhập', link: "/admin/warehouse/manage"}
         ],
       },
       {
