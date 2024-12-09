@@ -4,7 +4,15 @@ import { stfExecAPI } from "../../../../../../stf/common";
 import { toast } from "react-toastify";
 import FullScreenSpinner from "../../../FullScreenSpinner";
 import DataTableSft from "../../../../DataTableSft";
-import { Trash, ImageSquare } from "phosphor-react";
+import ModalSft from "../../../../ModalSft";
+import { TagsInput } from "react-tag-input-component";
+import {
+  Trash,
+  ImageSquare,
+  FloppyDiskBack,
+  Article,
+  PlusCircle,
+} from "phosphor-react";
 import Select from "react-select";
 import makeAnimated from "react-select/animated";
 const animatedComponents = makeAnimated();
@@ -29,10 +37,209 @@ const NewProduct = () => {
   const [selectedOptions, setSelectedOptions] = useState({});
   const [dataSource, setDataSource] = useState([]);
   const [allPrice, setAllPrice] = useState("");
+  const [isModalAttribute, setIsModalAttribute] = useState(false);
+  const [isModalOption, setIsModalOption] = useState(false);
+  const [listThuocTinh, setListThuocTinh] = useState([]);
+  const [listOption, setListOption] = useState([]);
+  const [attributeName, setAttributeName] = useState("");
+  const [idAttribute, setIdAttribute] = useState();
 
   //Các hàm xử lý logic
   const handleDelete = (record) => {
     setDataSource(dataSource.filter((i) => i.id !== record.id));
+  };
+
+  const handleOkModalAttribute = async () => {
+    if (attributeName.trim().length <= 0) {
+      toast.error(`Tên thuộc tính không được để trống`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    const duplicateName = attributes.find(i=>  i.attributeName.trim().toLocaleLowerCase() === attributeName.trim().toLowerCase());
+    if(duplicateName){
+      toast.error(`Tên thuộc tính đã tồn  tại`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    if (listThuocTinh.length === 0) {
+      toast.error(`Giá trị thuộc tính không được để trống`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    const hasDuplicates =
+      new Set(listThuocTinh.map((i) => i.trim())).size !== listThuocTinh.length;
+
+    if (hasDuplicates) {
+      toast.error(`Giá trị thuộc tính không được trùng`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    const dat = { attibuteName: attributeName, options: listThuocTinh };
+
+    setLoading(true);
+
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: `api/staff/attribute/option/add`,
+      data: dat,
+    });
+
+    if (error) {
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      setLoading(false);
+      return;
+    }
+
+    const fetchProducts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/attribute/all`,
+      });
+
+      if (data) {
+        setAttributes(
+          data.data.map((i) => {
+            return {
+              ...i,
+              // options: [{ id: 0, value: "Thêm giá trị" }, ...i.options],
+            };
+          })
+        );
+        return;
+      }
+    };
+
+    fetchProducts();
+
+    toast.success(`Thành công`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+
+    setAttributeName("");
+    setListThuocTinh([]);
+
+    setLoading(false);
+    setIsModalAttribute(false);
+  };
+
+  const handleCancelModalAttribute = () => {
+    setAttributeName("");
+    setListThuocTinh([]);
+    setIsModalAttribute(false);
+  };
+
+  const handleOkModalOption = async () => {
+
+    if (listOption.length === 0) {
+      toast.error(`Giá trị thuộc tính không được để trống`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    const hasDuplicates =
+      new Set(listOption.map((i) => i.trim())).size !== listOption.length;
+
+    if (hasDuplicates) {
+      toast.error(`Giá trị thuộc tính không được trùng`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    const dat = { attributeId: idAttribute, optionName: listOption };
+
+    setLoading(true);
+
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: `api/staff/attribute/option/add-option`,
+      data: dat,
+    });
+
+    if (error) {
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      setLoading(false);
+      return;
+    }
+
+    const fetchProducts = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/attribute/all`,
+      });
+
+      if (data) {
+        setAttributes(
+          data.data.map((i) => {
+            return {
+              ...i,
+              // options: [{ id: 0, value: "Thêm giá trị" }, ...i.options],
+            };
+          })
+        );
+        return;
+      }
+    };
+
+    fetchProducts();
+
+    toast.success(`Thành công`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+
+    setIdAttribute(-1);
+    setListOption([]);
+
+    setLoading(false);
+    setIsModalOption(false);
+  };
+
+  const handleCancelModalOption = () => {
+    setListOption([]);
+    setIsModalOption(false);
   };
 
   const generateProductVersions = (options) => {
@@ -88,7 +295,7 @@ const NewProduct = () => {
   //Thêm sản phẩm
   const handleClickAdd = async () => {
     if (productName.trim().length === 0) {
-      toast.error(`Product name cannot be blank`, {
+      toast.error(`Tên sản phẩm không được bỏ trống`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -97,7 +304,7 @@ const NewProduct = () => {
     }
 
     if (catId === -1) {
-      toast.error(`Please select a category`, {
+      toast.error(`Vui lòng chọn loại sản phẩm`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -106,7 +313,7 @@ const NewProduct = () => {
     }
 
     if (!file) {
-      toast.error(`Please select image product`, {
+      toast.error(`Vui lòng chọn ảnh cho sản phẩm`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -115,7 +322,7 @@ const NewProduct = () => {
     }
 
     if (dataSource.length === 0) {
-      toast.error(`Please select attribute`, {
+      toast.error(`Vui lòng chọn ít nhất một thuộc tính cho sản phẩm`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -124,7 +331,7 @@ const NewProduct = () => {
     }
 
     if (dataSource.find((i) => i.image.trim().length === 0)) {
-      toast.error(`Please select full image for all versions`, {
+      toast.error(`Vui lòng chọn hình ảnh cho tất cả các phiên bản`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -174,7 +381,7 @@ const NewProduct = () => {
       return;
     }
 
-    toast.success(`Success`, {
+    toast.success(`Thành công`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
@@ -184,7 +391,7 @@ const NewProduct = () => {
   //Cấu hình table
   const columns = [
     {
-      title: "Image",
+      title: "Ảnh",
       dataIndex: "image",
       key: "image",
       render: (text, record) => {
@@ -236,7 +443,7 @@ const NewProduct = () => {
       },
     },
     {
-      title: "Version Name",
+      title: "Tên phiên bản",
       dataIndex: "versionName",
       key: "versionName",
       render: (value, record) => {
@@ -263,7 +470,7 @@ const NewProduct = () => {
       },
     },
     {
-      title: "Retail Price",
+      title: "Giá phiên bản",
       dataIndex: "retalPrice",
       key: "retalPrice",
       render: (value, record) => {
@@ -272,7 +479,7 @@ const NewProduct = () => {
             type="text"
             className="form-control w-50"
             id="basic-default-fullname"
-            placeholder="Enter price"
+            placeholder="Nhập giá"
             value={value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
             onChange={(e) => {
               const inputValue = e.target.value;
@@ -292,36 +499,7 @@ const NewProduct = () => {
       },
     },
     {
-      title: "Import Price",
-      dataIndex: "importPrice",
-      key: "importPrice",
-      render: (value, record) => {
-        return (
-          <input
-            type="text"
-            className="form-control w-50"
-            id="basic-default-fullname"
-            placeholder="Enter price"
-            value={value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-
-              // Chỉ giữ lại các ký tự là số
-              const numericValue = inputValue.replace(/\D/g, "");
-              const newPrice = numericValue;
-
-              const updatedDataSource = dataSource.map((d) => {
-                return record.id === d.id ? { ...d, importPrice: newPrice } : d;
-              });
-
-              setDataSource(updatedDataSource);
-            }}
-          />
-        );
-      },
-    },
-    {
-      title: "Attributes",
+      title: "Thuộc tính",
       dataIndex: "attributes",
       key: "attributes",
       render: (value, record) => {
@@ -333,7 +511,7 @@ const NewProduct = () => {
       },
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (text, record) => {
         return (
@@ -359,7 +537,14 @@ const NewProduct = () => {
       });
 
       if (data) {
-        setAttributes(data.data);
+        setAttributes(
+          data.data.map((i) => {
+            return {
+              ...i,
+              // options: [{ id: 0, value: "Thêm giá trị" }, ...i.options],
+            };
+          })
+        );
         return;
       }
 
@@ -420,20 +605,19 @@ const NewProduct = () => {
     }
   };
 
-  console.log(dataSource);
   return (
     <>
       <FullScreenSpinner isLoading={loading} />
 
       <form className="card p-4">
         <div className="row">
-          <label>Product</label>
+          <label>Sản phẩm</label>
         </div>
 
         <div className="row">
           <div className="col-md-5">
             <AvatarUpload
-              marginRight="200px"
+              marginRight="260px"
               pathImage={""}
               onFileSelect={handleFileSelect}
             />
@@ -442,14 +626,14 @@ const NewProduct = () => {
           <div className="col-md-7">
             <div className="row mb-4">
               <div className="col-md-12">
-                <label className="form-label" htmlFor="basic-default-fullname">
-                  Product name <span className="text-danger">*</span>
+                <label className="mb-2" htmlFor="basic-default-fullname">
+                  Tên sản phẩm <span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
                   className="form-control"
                   id="basic-default-fullname"
-                  placeholder="Enter product name"
+                  placeholder="Nhập tên sản phẩm"
                   value={productName}
                   onChange={(e) => {
                     dataSource.length > 0 &&
@@ -476,9 +660,9 @@ const NewProduct = () => {
               <div className="col-md-12">
                 <label
                   htmlFor="exampleFormControlSelect1"
-                  className="form-label"
+                  className="mb-2"
                 >
-                  Category <span className="text-danger">*</span>
+                  Loại sản phẩm <span className="text-danger">*</span>
                 </label>
                 <select
                   className="form-select"
@@ -488,7 +672,7 @@ const NewProduct = () => {
                     setCatId(e.target.value);
                   }}
                 >
-                  <option value="-1">Select category</option>
+                  <option value="-1">Chọn loại sản phẩm</option>
                   {cate &&
                     cate.map((c, index) => {
                       return (
@@ -503,12 +687,13 @@ const NewProduct = () => {
 
             <div className="row">
               <div className="col-md-12">
-                <label for="exampleFormControlTextarea1" class="form-label">
-                  Description
+                <label for="exampleFormControlTextarea1" class="mb-2">
+                  Mô tả
                 </label>
                 <textarea
                   class="form-control"
                   id="exampleFormControlTextarea1"
+                  placeholder="Nhập mô tả"
                   rows="3"
                   value={discription}
                   onInput={(e) => setDiscription(e.target.value)}
@@ -519,21 +704,100 @@ const NewProduct = () => {
         </div>
       </form>
 
+      {/* Modal thêm thuộc tính */}
+      <ModalSft
+        title="Thuộc tính"
+        titleOk={"Thêm"}
+        open={isModalAttribute}
+        onOk={handleOkModalAttribute}
+        onCancel={handleCancelModalAttribute}
+        size="modal-lg"
+      >
+        <div className="row">
+          <div className="col-4">
+            <label className="mb-2">Tên thuộc tính</label>
+            <input
+              type="text"
+              className="form-control"
+              id="basic-default-fullname"
+              placeholder="Nhập tên thuộc tính"
+              value={attributeName}
+              onChange={(e) => {
+                setAttributeName(e.target.value);
+              }}
+            />
+          </div>
+
+          <div className="col-8">
+            <label className="mb-1">Giá trị</label>
+
+            <TagsInput
+              value={listThuocTinh}
+              onChange={setListThuocTinh}
+              name="fruits"
+              placeHolder="Nhập xong một giá trị nhấn enter"
+            />
+          </div>
+        </div>
+      </ModalSft>
+
+      {/* Modal thêm giá trị option */}
+      <ModalSft
+        title="Giá trị thuộc tính"
+        titleOk={"Thêm"}
+        open={isModalOption}
+        onOk={handleOkModalOption}
+        onCancel={handleCancelModalOption}
+        size="modal-lg"
+      >
+        <div className="row">
+          <div className="col-12">
+            <label className="mb-1">Giá trị</label>
+
+            <TagsInput
+              value={listOption}
+              onChange={setListOption}
+              name="fruits"
+              placeHolder="Nhập xong một giá trị nhấn enter"
+            />
+          </div>
+        </div>
+      </ModalSft>
+
       <form className="card p-4 mt-3">
         <div className="row mb-3">
-          <label>Attributes</label>
+          <label>
+            Thuộc tính{" "}
+            <PlusCircle
+              onClick={() => {
+                setIsModalAttribute(true);
+              }}
+              size={20}
+              style={{ cursor: "pointer" }}
+              className="text-primary"
+            />{" "}
+          </label>
         </div>
 
-        <div className="row row-cols-sm-3">
+        <div className="row row-cols-sm-3 mt-3">
           {attributes &&
             attributes.map((a) => {
               return (
                 <div className="col" key={a.id}>
                   <label
-                    htmlFor="exampleFormControlSelect1"
-                    className="form-label"
+                    htmlFor=""
+                    className="mb-2"
                   >
-                    {a.attributeName}
+                    {a.attributeName}{" "}
+                    <PlusCircle
+                      onClick={() => {
+                        setIsModalOption(true);
+                        setIdAttribute(a.id);
+                      }}
+                      size={20}
+                      style={{ cursor: "pointer" }}
+                      className="text-primary"
+                    />
                   </label>
 
                   <Select
@@ -566,35 +830,51 @@ const NewProduct = () => {
 
         <div className="row mt-3">
           <div className="col-md-4">
-            <label className="form-label" htmlFor="basic-default-fullname">
-              Enter price for all version
+            <label className="mb-2" htmlFor="">
+              Giá cho tất cả phiên bản
             </label>
-            <input
-              type="text"
-              className="form-control"
-              id="basic-default-fullname"
-              placeholder="Enter price"
-              value={
-                allPrice
-                  ? Number(allPrice.replace(/,/g, "")).toLocaleString("en-US")
-                  : ""
-              }
-              onChange={(e) => {
-                const rawValue = e.target.value.replace(/,/g, ""); // Loại bỏ dấu phẩy
-                const newValue = rawValue.replace(/\D/g, ""); // Loại bỏ ký tự không phải số
-                setAllPrice(newValue); // Cập nhật giá trị
+            <div className="row">
+              <div className="col-7">
+                <input
+                  type="text"
+                  className="form-control"
+                  id="basic-default-fullname"
+                  placeholder="Nhập giá"
+                  value={
+                    allPrice
+                      ? Number(allPrice.replace(/,/g, "")).toLocaleString(
+                          "en-US"
+                        )
+                      : ""
+                  }
+                  onChange={(e) => {
+                    const rawValue = e.target.value.replace(/,/g, ""); // Loại bỏ dấu phẩy
+                    const newValue = rawValue.replace(/\D/g, ""); // Loại bỏ ký tự không phải số
+                    setAllPrice(newValue); // Cập nhật giá trị
+                  }}
+                />
+              </div>
 
-                setDataSource(
-                  dataSource.map((i) => {
-                    return {
-                      ...i,
-                      retalPrice: newValue,
-                      importPrice: newValue,
-                    };
-                  })
-                );
-              }}
-            />
+              <div className="col-5">
+                <button
+                  type="button"
+                  className="btn  btn-dark"
+                  onClick={() => {
+                    setDataSource(
+                      dataSource.map((i) => {
+                        return {
+                          ...i,
+                          retalPrice: allPrice,
+                          importPrice: allPrice,
+                        };
+                      })
+                    );
+                  }}
+                >
+                  Áp dụng
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -608,7 +888,7 @@ const NewProduct = () => {
             className="btn btn-dark me-3"
             onClick={handleClickAdd}
           >
-            Save
+            <FloppyDiskBack /> Lưu
           </button>
         </div>
       </form>

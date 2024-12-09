@@ -51,8 +51,8 @@ const menus = [
         icon: <Archive />,
         subItems: [
           { id: "3", label: "Phân loại", link: "/admin/products/categories" },
-          { id: "4", label: "Sản phẩm mới", link: "/admin/products/new" },
-          { id: "5", label: "Quản lý sản phẩm", link: "/admin/products/manage" },
+          { id: "4", label: "Thêm mới", link: "/admin/products/new" },
+          { id: "5", label: "Danh sách", link: "/admin/products/manage" },
         ],
       },
       {
@@ -82,7 +82,7 @@ const menus = [
         // link: "/admin/warehouse/stock-in",
         subItems: [
           {id: '12', label: 'Nhập hàng', link: "/admin/warehouse/stockin"},
-          {id: '13', label: 'Danh sách phiếu nhập', link: "/admin/warehouse/manage"}
+          {id: '13', label: 'Phiếu nhập', link: "/admin/warehouse/manage"}
         ],
       },
       {
@@ -97,8 +97,8 @@ const menus = [
         icon: <FaAdversal  />,
         // link: "/admin/advertisement/manage",
         subItems: [
-          {id: '15', label: 'New', link: "/admin/advertisement/new"},
-          {id: '16', label: 'Manage', link: "/admin/advertisement/manage"}
+          {id: '15', label: 'Thêm mới', link: "/admin/advertisement/new"},
+          {id: '16', label: 'Danh sách', link: "/admin/advertisement/manage"}
         ],
       }
     ],
@@ -109,13 +109,13 @@ const menus = [
   //     { id: "settings", label: "Settings", icon: <Gear />, link: "/admin/settings", subItems: null },
   //   ],
   // },
-  {
-    title: "Account",
-    items: [
-      { id: "help", label: "Help", icon: <Info />, link: "/admin/help", subItems: null },
-      { id: "logout", label: "Logout", icon: <SignOut />, link: "/logout", subItems: null },
-    ],
-  },
+  // {
+  //   title: "Account",
+  //   items: [
+  //     { id: "help", label: "Help", icon: <Info />, link: "/admin/help", subItems: null },
+  //     { id: "logout", label: "Logout", icon: <SignOut />, link: "/logout", subItems: null },
+  //   ],
+  // },
 ];
 
 const AdminLayout = () => {

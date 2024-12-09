@@ -182,7 +182,7 @@ const ProductTable = () => {
         }
       },
     },
-    { title: "Description", dataIndex: "discription", key: "discription" },
+    { title: "Mô tả", dataIndex: "discription", key: "discription" },
   ];
 
   const btnTable = () => {
@@ -200,7 +200,7 @@ const ProductTable = () => {
             setCatId(e.target.value);
           }}
         >
-          <option value="-1">Select category</option>
+          <option value="-1">Chọn loại sản phẩm</option>
           {cate &&
             cate.map((c, index) => {
               return (

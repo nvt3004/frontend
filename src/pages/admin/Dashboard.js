@@ -1,6 +1,10 @@
 import React from "react";
-import { useEffect, useState } from "react";
-import { ShoppingCart, Money, CreditCard } from "phosphor-react";
+import { useEffect, useState, useRef } from "react";
+import { ShoppingCart, Money, CreditCard, CalendarBlank } from "phosphor-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { vi } from "date-fns/locale";
+import moment from "moment";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -78,6 +82,8 @@ function Dashboard() {
   const [reportQuantityProduct, setReportQuantityProduct] = useState(0);
   const [reportRevenue, setReportRevenue] = useState(0);
   const [reportProfit, setReportProfit] = useState(0);
+  const startDatePickerRef = useRef();
+  const endDatePickerRef = useRef();
   const [startDate, setStartDate] = useState(
     formatDateString(new Date(), "YYYY/MM/DD")
   );
@@ -280,15 +286,33 @@ function Dashboard() {
             Từ ngày
           </label>
 
-          <input
-            type="date"
-            id="basic-default-birthday"
-            className="form-control"
-            value={formatDate(startDate, "YYYY-MM-DD")}
-            onChange={(e) => {
-              setStartDate(formatDateString(e.target.value,"YYYY/MM/DD"));
-            }}
-          />
+          <div style={{ position: "relative", display: "inline-block" }}>
+            <DatePicker
+              ref={startDatePickerRef}
+              selected={startDate}
+              onChange={setStartDate}
+              dateFormat="dd/MM/yyyy"
+              locale={vi} // Sử dụng locale tiếng Việt
+              placeholderText="dd/mm/yyyy"
+              className="form-control"
+            />
+
+            <CalendarBlank
+              onClick={() => {
+                startDatePickerRef.current.setFocus();
+              }}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                color: "#666",
+              }}
+              size={19}
+              weight="fill"
+            />
+          </div>
         </div>
 
         <div>
@@ -296,15 +320,33 @@ function Dashboard() {
             Đến ngày
           </label>
 
-          <input
-            type="date"
-            id="basic-default-birthday"
-            className="form-control"
-            value={formatDate(endDate, "YYYY-MM-DD")}
-            onChange={(e) => {
-              setEndDate(formatDateString(e.target.value,"YYYY/MM/DD"));
-            }}
-          />
+          <div style={{ position: "relative", display: "inline-block" }}>
+            <DatePicker
+              ref={endDatePickerRef}
+              selected={endDate}
+              onChange={setEndDate}
+              dateFormat="dd/MM/yyyy"
+              locale={vi} // Sử dụng locale tiếng Việt
+              placeholderText="dd/mm/yyyy"
+              className="form-control"
+            />
+
+            <CalendarBlank
+              onClick={() => {
+                endDatePickerRef.current.setFocus();
+              }}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                color: "#666",
+              }}
+              size={19}
+              weight="fill"
+            />
+          </div>
         </div>
       </div>
 
