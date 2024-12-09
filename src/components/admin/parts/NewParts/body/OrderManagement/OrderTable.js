@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
-import { FaClipboardList, FaSearch, FaFileExport } from 'react-icons/fa';
+import { FaClipboardList, FaSearch, FaFileExport, FaFileInvoice } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import axiosInstance from '../../../../../../services/axiosConfig';
 import CustomButton from '../../component/CustomButton';
@@ -18,6 +18,11 @@ import html2canvas from 'html2canvas';
 import printJS from 'print-js';
 import Modal from 'react-modal';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import qz from 'qz-tray';
+import { Link } from 'react-router-dom';
+import JSEncrypt from 'jsencrypt';
+// import fs from 'fs';
+import CryptoJS from 'crypto-js'
 
 const OrderTable = () => {
     // START GET orders
@@ -30,6 +35,7 @@ const OrderTable = () => {
     const [statusId, setStatusId] = useState(null);
     const [statusOptions, setStatusOptions] = useState([]);
     const [pageSize, setPageSize] = useState(5);
+    const [numberOfElements, setNumberOfElements] = useState(0);
     const navigate = useNavigate();
     const handleGetOrderAPI = () => {
         axiosInstance.get(`/staff/orders`, {
@@ -45,10 +51,12 @@ const OrderTable = () => {
                     setOrders(response.data.data.content);
                     setTotalPage(response?.data?.data?.totalPages);
                     setTotalElements(response?.data?.data?.totalElements);
+                    setNumberOfElements(response?.data?.data?.numberOfElements);
                 } else if (response?.data?.errorCode === 404) {
                     setOrders([]);
                     setTotalPage(0);
                     setTotalElements(0);
+                    setNumberOfElements(0);
                     toast.error(response?.data?.message || 'No orders found.');
                 } else if (response?.data?.errorCode === 998) {
                     toast.error(response?.data?.message || 'You do not have permission to access the order list.');
@@ -325,37 +333,37 @@ const OrderTable = () => {
 
     const handleChangeStatus = (option, orderID) => {
         // if (option?.value < 4 || option?.value === 5) {
-            Swal.fire({
-                title: 'Confirm to change status',
-                text: 'Do you want to change the status of this order?',
-                icon: 'question',
-                showConfirmButton: true,
-                showCancelButton: true,
-                confirmButtonText: 'OK!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`)
-                        .then((response) => {
-                            if (response.data?.errorCode === 200) {
-                                toast.success('Updated order status successfully!');
-                                handleGetOrderAPI();
-                            } else if (response.data?.errorCode === 998) {
-                                toast.error(response.data?.message || "Bạn không có quyền thay đổi trạng thái đơn hàng này.");
-                            } else {
-                                toast.error(response.data?.message || 'Could not update status of the order. Please try again!');
-                            }
-                        })
-                        .catch((error) => {
-                            if (error?.response?.status === 403) {
-                                toast.error("Session expired. Redirecting to login...");
-                                navigate('/auth/login');
-                            } else {
-                                toast.error(error.response?.data?.message || error.message || 'Could not update status of the order. Please try again!');
-                            }
-                        });
-                }
-            });
+        Swal.fire({
+            title: 'Confirm to change status',
+            text: 'Do you want to change the status of this order?',
+            icon: 'question',
+            showConfirmButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'OK!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`)
+                    .then((response) => {
+                        if (response.data?.errorCode === 200) {
+                            toast.success('Updated order status successfully!');
+                            handleGetOrderAPI();
+                        } else if (response.data?.errorCode === 998) {
+                            toast.error(response.data?.message || "Bạn không có quyền thay đổi trạng thái đơn hàng này.");
+                        } else {
+                            toast.error(response.data?.message || 'Could not update status of the order. Please try again!');
+                        }
+                    })
+                    .catch((error) => {
+                        if (error?.response?.status === 403) {
+                            toast.error("Session expired. Redirecting to login...");
+                            navigate('/auth/login');
+                        } else {
+                            toast.error(error.response?.data?.message || error.message || 'Could not update status of the order. Please try again!');
+                        }
+                    });
+            }
+        });
         // } 
         // else {
         //     toast.warning(`You cannot set the status to ${option?.label.toLowerCase()}`);
@@ -709,285 +717,265 @@ const OrderTable = () => {
         });
     };
 
-    const componentRef = React.useRef();
-    const [modalIsOpen, setModalIsOpen] = useState(false);
-    const handlePrint = async () => {
+    const PUBLIC_CERTIFICATE = process.env.REACT_APP_PUBLIC_CERTIFICATE;
+    const PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEY;
+    const [qzConnected, setQzConnected] = useState(false);
+    let qzSocket = null; 
+
+    console.log(PUBLIC_CERTIFICATE + " PUBLIC_CERTIFICATE");
+    console.log(PRIVATE_KEY + " PRIVATE_KEY");
+    
+    const connectToQz = async (options) => {
         try {
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none'; // Ẩn iframe
-            document.body.appendChild(iframe);
-
-            const printContents = componentRef.current.innerHTML;
-
-            if (!printContents) {
-                console.error("Không có nội dung để in.");
-                return;
-            }
-            const doc = iframe.contentWindow.document;
-            doc.open();
-            doc.write(`
-            <html>
-                <head>
-                    <title>Invoice</title>
-                    <style>
-
-                        body {
-                            font-size: 12px;
-                            color: #333;
-                            padding: 0;
-                        }
-
-                        @page {
-                            size: A5;
-                            transform: scale(50)!important; 
-                            transform-origin: top left; 
-                        }
-
-                        h3 {
-                            text-align: center;
-                            color: #444;
-                            margin-bottom: 20px;
-                        }
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                            margin-top: 20px;
-                        }
-
-                        .no-print {
-                            display: none !important;
-                        }
-                        .product-name {
-                            max-width: 150px;
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                        }
-                        .order-table-img {
-                            max-width: 120px;
-                            max-height: 80px;
-                            width: auto;
-                            height: auto;
-                            object-fit: contain;
-                        }
-                        .custom-button {
-                            display: none;
-                        }
-                        .order-summary td {
-                            font-weight: bold;
-                        }
-                        .order-summary {
-                            margin-top: 20px;
-                        }
-                    
-                       .print-text-wrap {
-                                white-space: normal !important;
-                                word-wrap: break-word !important;
-                                overflow: visible !important;
-                       }
-                        
-                       table {
-                        width: 100%;
-                        border-collapse: collapse;  /* Hợp nhất các đường viền */
-                    }
-
-                    th, td {
-                        border: 1px solid #000; 
-                        padding: 8px; 
-                        text-align: left; 
-                        word-wrap: break-word;
-                    }                      
-
-                  
-                    th:nth-child(2),
-                    td:nth-child(2) {
-                        width: auto !important; 
-                    }
-
-                    th:nth-child(3),
-                    td:nth-child(3) {
-                        width: 80px !important; 
-                    }
-                    
-                    
-                    th:nth-child(5),
-                    td:nth-child(5) {
-                        width: 100px !important; 
-                    }
-
-
-                    /*Cột quantity*/
-                    th:nth-child(7),
-                    td:nth-child(7) {
-                         width: 10px !important; 
-                    }
-
-                    /*Cột tiền*/
-                    th:nth-child(8),
-                    td:nth-child(8) {
-                         width: 150px !important; 
-                    }
-                            
-                    .print {
-                        display: table-row !important;
-                    }
-                    .no-print {
-                        display: none !important;
-                    }
-
-                    .text-center {
-                        text-align: center;
-                    }
-
-                     .text-right {
-                        text-align: right;
-                    }
-
-                    th {
-                        background-color: #f8f8f8;
-                        font-weight: bold;
-                    }
-
-                    tr {
-                        page-break-inside: avoid;  /* Tránh chia cắt các dòng khi in */
-                    }
-                    .quantity-custom{
-                        background: none !important;
-                        box-shadow: none !important; 
-                        border: none !important; 
-                        text-align: center !important; 
-                        padding: 0;
-                    }
-                      
-                    .print-width {
-                        width: 600px !important;
-                    }
-                    .qr-code {
-                    position: absolute;
-                    top: 0px;  
-                    left: 0px; 
-                    text-align: left;
-                    padding: 10px;
-                    border: 1px solid pink;
-                    border-radius: 5px;
-                }
-        
-                    </style>
-                </head>
-                <body>
-                ${printContents}
-                </body>
-            </html>
-        `);
-
-            doc.close();
-
-            // Chờ ảnh tải xong 
-            await new Promise((resolve, reject) => {
-                const images = iframe.contentWindow.document.images;
-                if (images.length === 0) {
-                    resolve();
-                    return;
-                }
-                Promise.all(Array.from(images).map(img => new Promise((res, rej) => {
-                    const handleLoad = () => res();
-                    const handleError = () => rej();
-                    img.onload = handleLoad;
-                    img.onerror = handleError;
-                    if (img.complete) handleLoad();
-                }))).then(resolve).catch(reject);
-            });
-
-            if (typeof window.print !== 'function') {
-                console.warn('Trình duyệt này có vẻ không hỗ trợ chức năng in.');
-                alert('Trình duyệt của bạn có thể không hỗ trợ chức năng in. Vui lòng thử trình duyệt khác.');
-                return;
-            }
-
-            // Kiểm tra khả năng in
-            if (iframe.contentWindow && iframe.contentWindow.print) {
-                iframe.contentWindow.print();
-            } else {
-                console.error("Print function not supported or blocked by the browser.");
-                alert("Trình duyệt không hỗ trợ chức năng in hoặc bị chặn. Vui lòng kiểm tra cài đặt trình duyệt.");
-            }
-
-            document.body.removeChild(iframe);
+            qzSocket = await qz.websocket.connect(options); 
+            setQzConnected(true);
+            console.log("Connected to QZ Tray");
+            return qzSocket;
         } catch (error) {
-            console.error("Error during printing:", error);
-            let errorMessage = "Đã xảy ra lỗi trong quá trình in. Vui lòng thử lại.";
-            if (error instanceof DOMException && error.name === "SecurityError") {
-                errorMessage = "Trình duyệt hoặc cài đặt bảo mật đã chặn thao tác in ấn. Vui lòng kiểm tra cài đặt của bạn.";
-            } else if (error.message.includes("blocked by a popup blocker")) {
-                errorMessage = "Cửa sổ in ấn đã bị trình chặn popup chặn. Vui lòng kiểm tra cài đặt của trình chặn popup.";
+            console.error("QZ Tray connection error:", error);
+            qzSocket = null;
+            setQzConnected(false);
+            throw error;
+        }
+    };
+    const disconnectFromQz = async () => {
+        if (qzSocket && qz.websocket.isActive()) {
+            try {
+                await qzSocket.disconnect();
+                qzSocket = null; 
+                setQzConnected(false);
+                console.log("Disconnected from QZ Tray");
+            } catch (error) {
+                console.error("QZ Tray disconnection error:", error);
             }
-            toast.error(errorMessage, {
-                position: toast.POSITION.TOP_RIGHT,
-                autoClose: 5000,
+        }
+    };
+    const printInvoice = async (orderId) => {
+        try {
+            const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {},{ responseType: 'blob'});
+            // const imageUrl = response.data.data; 
+            if (!response || !response.data) {
+                throw new Error("No PDF data received from backend.");
+            }
+
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+
+            const reader = new FileReader();
+            const base64Promise = new Promise((resolve, reject) => {
+                reader.onloadend = () => resolve(reader.result.split(',')[1]); // Tách phần Base64
+                reader.onerror = reject;
             });
-            setModalIsOpen(true);
-            toast.error(errorMessage);
+            
+            reader.readAsDataURL(blob);
+            const base64data = await base64Promise;            
+           
+            if (!qzConnected) {
+                const options = {
+                    host: 'localhost', //Sử dụng tên miền chính thức để không phải hiển thị hỏi lại.
+                    port: {
+                        secure: [8181, 8282, 8383, 8484],
+                        insecure: [8182, 8283, 8384, 8485]
+                    },
+                    // usingSecure: true, 
+                    allowUserInteraction: false,
+                    usingSecure: false,
+                    keepAlive: 60,
+                    retries: 3,
+                    delay: 5
+                };
+
+                console.log("Connecting to QZ Tray with options:", options);
+
+                try {
+                    await connectToQz(options);
+                    setQzConnected(true);
+                } catch (connectError) {
+                    // Handle connection error
+                    console.log("Connection error:", connectError);
+                    setQzConnected(false);
+                    throw connectError; 
+                }
+
+                if (!qz.websocket.isActive()) {
+                    throw new Error(`Failed to connect to QZ Tray`);
+                }
+
+                console.log("Connected to QZ Tray");
+            }
+            qz.security.setCertificatePromise(() => {
+                return Promise.resolve(PUBLIC_CERTIFICATE);
+            });
+
+            qz.security.setSignaturePromise((toSign) => {
+                return (resolve, reject) => {
+                    try {
+                        const rsa = new JSEncrypt();
+                        rsa.setPrivateKey(PRIVATE_KEY);
+                        resolve(rsa.sign(toSign, CryptoJS.SHA256, "sha256"));
+                    } catch (err) {
+                        reject(err);
+                    }
+                };
+            });
+            // console.log(imageUrl + " imageUrl");
+            
+            const printerName = 'XP-58';
+            // const printerName = 'Microsoft Print to PDF';
+            const printConfig = qz.configs.create(printerName);
+
+            console.log("Printing with config:", printConfig);
+
+            // In hình ảnh
+            await qz.print(printConfig, [{ type: 'pdf',format:'base64', data: base64data }]);
+            // Lệnh cắt giấy
+            // await qz.print(printConfig, [
+            //     { type: 'raw', format: 'command', data: '\x1B\x69' } // Lệnh ESC/POS để cắt giấy
+            // ]);
+            await qz.print(printConfig, [
+                { type: 'raw', format: 'command', data: '\x1B\x64\x01' } // Lệnh ESC/POS để cắt giấy
+            ]);
+            
+
+            toast.success('Print successful and paper cut!');
+        } catch (error) {
+            toast.error(`Print error: ${error.message}`);
+            setQzConnected(false);
+        } finally {
+            if (qzConnected) {
+                try {
+                    await disconnectFromQz();  // Await disconnection
+                    console.log("Disconnected from QZ Tray");
+                } catch (disconnectError) {
+                    console.log("Disconnection error:", disconnectError);
+                } finally {
+                    await disconnectFromQz();
+                }
+
+            }
+
         }
     };
 
+    const [selectedOrders, setSelectedOrders] = useState([]);
+    const [allChecked, setAllChecked] = useState(false);
 
-    // const handlePrint = () => {
-    //     printJS({
-    //         printable: componentRef.current, // Tham chiếu đến phần tử React cần in
-    //         type: 'html', 
-    //         // Đường dẫn đến file CSS cho in ấn (quan trọng!)
-    //         // optional properties:
-    //         // style: '', // Inline styles
-    //         // documentTitle: 'Invoice', // Title của cửa sổ in
-    //         // header: '', // Nội dung header (tùy chọn)
-    //         // footer: '', // Nội dung footer (tùy chọn)
-    //     });
-    // };
-    // const handlePrint = async () => {
-    //     try {
-    //         if (componentRef.current) {
-    //             console.log('Component content:', componentRef.current.innerHTML);
 
-    //             const elements = document.querySelectorAll('.d-none'); elements.forEach(element => element.classList.remove('d-none')); const canvas = await html2canvas(componentRef.current); const imgData = canvas.toDataURL('image/png'); const width = 900; const height = 650; elements.forEach(element => element.classList.add('d-none'));
-    //             // Tính toán vị trí để cửa sổ xuất hiện ở giữa
-    //             const left = (window.screen.width - width) / 2;
-    //             const top = (window.screen.height - height) / 2;
+    const handlePrintSelected = () => {
+        console.log(selectedOrders.length + " selectedOrders.length");
+        if (selectedOrders.length === 0) {
+            toast.info("No orders selected to print.");
+            return;
+        }
 
-    //             const printWindow = window.open('', '', `width=${width},height=${height},top=${top},left=${left}`);
-    //             printWindow.document.write(`
-    //                 <html>
-    //                     <head>
-    //                         <title>Invoice</title>
-    //                         <style>
-    //                             body {
-    //                                 font-size: 12px;
-    //                                 color: #333;
-    //                                 margin: 0;
-    //                                 padding: 0;
-    //                             }
-    //                             img {
-    //                                 width: 100%;
-    //                                 height: auto;
-    //                             }
-    //                         </style>
-    //                     </head>
-    //                     <body>
-    //                         <img src="${imgData}" />
-    //                     </body>
-    //                 </html>
-    //             `);
 
-    //             printWindow.document.close();
-    //             printWindow.focus();
-    //             printWindow.print();
-    //             printWindow.close();
-    //         } else {
-    //             console.log('Component ref is undefined');
-    //         }
-    //     } catch (error) {
-    //         console.log('Error generating canvas:', error);
-    //     }
-    // };
+        printMultipleInvoices(selectedOrders);
+    }
+
+    const printMultipleInvoices = async (orderIds) => {
+        try {
+            if (!qzConnected) {
+                const options = {
+                    host: 'localhost', // Sử dụng tên miền chính thức để không phải hiển thị hỏi lại.
+                    port: {
+                        secure: [8181, 8282, 8383, 8484],
+                        insecure: [8182, 8283, 8384, 8485]
+                    },
+                    allowUserInteraction: false,
+                    usingSecure: false,
+                    keepAlive: 60,
+                    retries: 3,
+                    delay: 5
+                };
+
+                console.log("Connecting to QZ Tray with options:", options);
+
+                try {
+                    await connectToQz(options); 
+                    setQzConnected(true);
+                } catch (connectError) {
+                    console.log("Connection error:", connectError);
+                    setQzConnected(false);
+                    throw connectError; 
+                }
+
+                if (!qz.websocket.isActive()) {
+                    throw new Error(`Failed to connect to QZ Tray`);
+                }
+
+                console.log("Connected to QZ Tray");
+            }
+            qz.security.setCertificatePromise(() => Promise.resolve(PUBLIC_CERTIFICATE));
+            qz.security.setSignaturePromise((toSign) => (resolve, reject) => {
+                try {
+                    const rsa = new JSEncrypt();
+                    rsa.setPrivateKey(PRIVATE_KEY);
+                    resolve(rsa.sign(toSign, CryptoJS.SHA256, "sha256"));
+                } catch (err) {
+                    reject(err);
+                }
+            });
+
+            const printerName = 'Microsoft Print to PDF';
+            const printConfig = qz.configs.create(printerName);
+
+            for (const orderId of orderIds) {
+                await printInvoice1(orderId, printConfig);
+            }
+
+            toast.success('All invoices printed successfully and paper cut!');
+        } catch (error) {
+            toast.error(`Print error: ${error.message}`);
+        } finally {
+            if (qzConnected) {
+                try {
+                    await disconnectFromQz();
+                    console.log("Disconnected from QZ Tray");
+                } catch (disconnectError) {
+                    console.log("Disconnection error:", disconnectError);
+                } finally {
+                    await disconnectFromQz();
+                }
+
+            }
+
+        }
+    };
+
+    const printInvoice1 = async (orderId, printConfig) => {
+        try {
+            const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {}, { responseType: 'blob' });
+
+            if (!response || !response.data) {
+                throw new Error("No image data received from backend.");
+            }
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+
+            const reader = new FileReader();
+            const base64Promise = new Promise((resolve, reject) => {
+                reader.onloadend = () => resolve(reader.result.split(',')[1]); // Tách phần Base64
+                reader.onerror = reject;
+            });
+            
+            reader.readAsDataURL(blob);
+            const base64data = await base64Promise;  // Loại bỏ các ký tự không mong muốn
+
+            console.log("Printing with config:", printConfig);
+            await qz.print(printConfig, [{ type: 'pdf', format: 'base64', data: base64data }]);
+
+            // Lệnh cắt giấy
+            await qz.print(printConfig, [
+                { type: 'raw', format: 'command', data: '\x1B\x69' } // Lệnh ESC/POS để cắt giấy
+            ]);
+
+        } catch (error) {
+            throw new Error(`Print error for order ID ${orderId}: ${error.message}`);
+        }
+    };
+    useEffect(() => {
+        return () => {
+            disconnectFromQz(); // Safe to call directly, no need for isMounted
+        };
+    }, []);
 
     function formatDiscount(discount) {
         if (!discount) return '0 VND';
@@ -1000,45 +988,69 @@ const OrderTable = () => {
         return `${numericValue.toLocaleString('vi-VN')} VND`;
     }
 
-    const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'https://domain.com';
-    const qrCodeValue = `${baseUrl}`;
+    const handleSelectAllChange = () => {
+        setAllChecked(!allChecked);
+        setSelectedOrders(prevSelected => {
+            if (!allChecked) {
+                return orders
+                    .filter(order => order.statusName === "Processed")
+                    .map(order => order.orderId);
+            } else {
+                return [];
+            }
+        });
+    };
+
+
+    const handleCheckboxChange = (orderId) => {
+        setSelectedOrders(prevSelected => {
+            const order = orders.find(o => o.orderId === orderId);
+
+            if (!order) return prevSelected;
+
+
+            if (order.statusName !== "Processed") return prevSelected;
+
+            const newSelected = prevSelected.includes(orderId)
+                ? prevSelected.filter(id => id !== orderId)
+                : [...prevSelected, orderId];
+
+            setAllChecked(orders.filter(o => o.statusName === "Processed").every(order => newSelected.includes(order.orderId)));
+
+            return newSelected;
+        });
+    };
+
+    const [showSelectAll, setShowSelectAll] = useState(false);
+
+    useEffect(() => {
+        setShowSelectAll(orders.some(order => order.statusName === "Processed"));
+    }, [orders]);
 
     return (
         <div>
-            <Modal isOpen={modalIsOpen} onRequestClose={() => setModalIsOpen(false)}>
-                <h2>Lỗi In Ấn</h2>
-                <p>In ấn không thành công. Có thể do trình chặn popup, cài đặt bảo mật, hoặc lỗi trình duyệt. Vui lòng thử các bước sau:</p>
-                <ol>
-                    <li><strong>Tắt trình chặn popup tạm thời:</strong> Nếu bạn đang sử dụng phần mềm chặn popup (như AdBlock, uBlock Origin,...), hãy tạm thời tắt nó đi để kiểm tra.  Sau khi in xong, hãy bật lại để đảm bảo an ninh.</li>
-                    <li><strong>Kiểm tra cài đặt popup của trình duyệt:</strong>
-                        <ul>
-                            <li><strong>Chrome:</strong> <a href="https://support.google.com/chrome/answer/95647?hl=vi" target="_blank" rel="noopener noreferrer">Hướng dẫn Chrome</a> (Tìm kiếm "Popup" trong cài đặt)</li>
-                            <li><strong>Firefox:</strong> <a href="https://support.mozilla.org/vi/kb/cho-phep-hoac-chan-cua-so-popup" target="_blank" rel="noopener noreferrer">Hướng dẫn Firefox</a> (Tìm kiếm "Popup" trong cài đặt)</li>
-                            <li><strong>Edge:</strong> <a href="https://support.microsoft.com/vi-vn/windows/qu%E1%BA%A3n-l%C3%BD-c%C3%A1c-c%E1%BB%A7a-s%E1%BB%91-b%E1%BA%ADt-l%C3%AAn-trong-microsoft-edge-5041c7d4-d15e-4b02-8b9b-6435b663a921" target="_blank" rel="noopener noreferrer">Hướng dẫn Edge</a> (Tìm kiếm "Popup" trong cài đặt)</li>
-                            <li><strong>Safari:</strong>  Trong cài đặt Safari, tìm kiếm "Popup".</li>
-                        </ul>
-                    </li>
-                    <li><strong>Kiểm tra cài đặt quyền riêng tư:</strong>  Một số cài đặt quyền riêng tư nghiêm ngặt có thể chặn việc in ấn. Kiểm tra cài đặt quyền riêng tư trong trình duyệt của bạn để xem có thiết lập nào quá khắt khe không.</li>
-                    <li><strong>Thêm website vào danh sách trắng (nếu có):</strong> Nếu bạn sử dụng trình chặn quảng cáo hoặc popup, hãy thử thêm website này vào danh sách trắng (whitelist) của nó.</li>
-                    <li><strong>Thử trình duyệt khác:</strong>  Thử in từ một trình duyệt khác (Chrome, Firefox, Edge...) để xem có khắc phục được lỗi hay không.</li>
-                    <li><strong>Cập nhật trình duyệt:</strong>  Đảm bảo trình duyệt của bạn đang sử dụng phiên bản mới nhất.</li>
-                    <li><strong>Tắt các tiện ích mở rộng:</strong>  Một số tiện ích mở rộng có thể gây xung đột và cản trở việc in ấn. Hãy thử tắt các tiện ích mở rộng tạm thời để xem có cải thiện không.</li>
-                    <li><strong>Nếu vẫn gặp sự cố:</strong> Vui lòng liên hệ bộ phận hỗ trợ của chúng tôi tại [địa chỉ email hoặc liên hệ khác].</li>
-                </ol>
-                <button onClick={() => setModalIsOpen(false)}>Đóng</button>
-            </Modal>
             <div className='font-14'>
                 <div className='bg-body-tertiary d-flex align-items-center justify-content-between' style={{ height: "50px" }}>
                     <div className='container d-flex justify-content-between px-0'>
-                        <div className='d-flex align-items-center justify-content-between' style={{ width: "45%" }}>
+                        <div className='d-flex align-items-center justify-content-between' style={{ width: "60%" }}>
                             <h4 className='m-0 d-flex align-items-center'>
-                                <FaClipboardList />&ensp;Orders
+                                <FaClipboardList />&ensp;Đơn hàng
                             </h4>
+                            {selectedOrders.length > 0 && (
+                                <CustomButton
+                                    className='bg-black bg-gradient text-white'
+                                    textColor="white"
+                                    handleClick={handlePrintSelected}
+                                    btnName="Xuất hóa đơn"
+                                    tooltip="Nhấn để xuất hóa đơn"
+                                    icon={<FaFileInvoice />}
+                                />
+                            )}
                             <InputGroup className='mx-0' style={{ width: "400px" }}>
                                 <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
                                 <Form.Control
                                     className='custom-radius'
-                                    placeholder='Search orders . . .'
+                                    placeholder='Tìm kiếm đơn hàng . . .'
                                     value={keyword}
                                     onChange={(e) => handleKeywordChange(e)}
                                 />
@@ -1049,7 +1061,7 @@ const OrderTable = () => {
                             <Select
                                 className="w-20 mx-3"
                                 options={statusOptions}
-                                placeholder="Order Status"
+                                placeholder="Trạng thái đơn hàng"
                                 onChange={(selectedOption) => handleChange(selectedOption, 'status')}
                                 isClearable
                             />
@@ -1057,43 +1069,65 @@ const OrderTable = () => {
                             <Select
                                 className="w-20 mx-3"
                                 options={pageSizeOptions}
-                                placeholder="Page Size"
+                                placeholder="Số lượng trên trang"
                                 onChange={(selectedOption) => handleChange(selectedOption, 'pageSize')}
                                 isClearable
                             />
-                            <Button
-                                variant="secondary"
-                                className="font-14 custom-radius custom-hover mx-3"
-                                onClick={handleExport}
-                            >
-                                <FaFileExport /> Export
-                            </Button>
+
                         </div>
                     </div>
-
                 </div>
                 <div>
                     <Table>
                         <thead>
                             <tr>
+                                <th>
+                                    {showSelectAll ? (
+                                        <OverlayTrigger placement="top" overlay={<Tooltip id="select-all-tooltip">Chọn tất cả để xuất hóa đơn</Tooltip>}>
+                                            <di className='d-flex justify-content-between'>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={allChecked}
+                                                    onChange={handleSelectAllChange}
+                                                />
+                                                <span>Chọn tất</span>
+                                            </di>
+                                        </OverlayTrigger>
+                                    ) : (
+                                        <span> </span>
+                                    )}
+                                </th>
                                 <th>ID</th>
-                                <th className=''>Customer</th>
-                                <th>Address</th>
-                                <th>Phone</th>
-                                <th>Order date</th>
-                                <th>Status</th>
+                                <th>Khách hàng</th>
+                                <th>Địa chỉ</th>
+                                <th>Điện thoại</th>
+                                <th>Ngày đặt hàng</th>
+                                <th>Trạng thái</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
 
                             {orders.length === 0 ? (
-                                <p>No orders found.</p>
+                                <p>Không tìm thấy đơn hàng nào.</p>
                             ) : (
                                 orders?.map(
                                     (order) => (
                                         <React.Fragment key={order?.orderId}>
                                             <tr className='custom-table'>
+                                                <td>
+                                                    {order?.statusName === 'Processed' && (
+                                                        <OverlayTrigger placement="top" overlay={<Tooltip id={`order-${order.orderId}-tooltip`}>Chọn đơn hàng để xuất hóa đơn</Tooltip>}>
+                                                            <div>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={selectedOrders.includes(order.orderId)}
+                                                                    onChange={() => handleCheckboxChange(order.orderId)}
+                                                                />
+                                                            </div>
+                                                        </OverlayTrigger>
+                                                    )}
+                                                </td>
                                                 <td>
                                                     {order?.orderId}
                                                 </td>
@@ -1104,91 +1138,45 @@ const OrderTable = () => {
                                                     {order?.address}
                                                 </td>
                                                 <td>
-                                                    {order?.phone ||
-                                                        (
-                                                            <p className='px-2 py-1 bg-danger-subtle text-center rounded-3 me-1'>Missing</p>
-                                                        )
-                                                    }
-                                                </td>
-                                                <td> {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')} </td>
-                                                <td style={{ width: '200px' }}>
-                                                    <Select options={orderStatus}
-                                                        value={
-                                                            orderStatus.find(option => option.label === order?.statusName)
-                                                        }
-                                                        styles={customReactSelectOrderStatusOptionsStyles}
-                                                        onChange={(option) => handleChangeStatus(option, order?.orderId)}
-                                                    />
+                                                    {order?.phone ? (
+                                                        order.phone
+                                                    ) : (
+                                                        <p className='px-2 py-1 bg-danger-subtle text-center rounded-3 me-1'>Chưa có</p>
+                                                    )}
                                                 </td>
 
-                                                {/* Bắt buộc phải call api để check xem có order detail không */}
+                                                <td> {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')} </td>
+                                                <td style={{ width: '200px' }}>
+                                                    <Select options={orderStatus} value={orderStatus.find(option => option.label === order?.statusName)}
+                                                        styles={customReactSelectOrderStatusOptionsStyles}
+                                                        onChange={(option) => handleChangeStatus(option, order?.orderId)} /> </td>
                                                 <td>
                                                     <CustomButton
                                                         btnBG={'secondary'}
                                                         btnName={
                                                             <>
-                                                                Details {orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail ? <FaChevronDown /> : <FaChevronRight />}
+                                                                {orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail ? <FaChevronDown /> : <FaChevronRight />}
                                                             </>
                                                         }
                                                         textColor={'white'}
                                                         handleClick={() => toggleOrderDetails(order)}
+                                                        tooltip="Xem chi tiết đơn hàng"
                                                     />
                                                 </td>
                                             </tr>
                                             {(orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail) &&
                                                 (
                                                     <tr>
-                                                        <td colSpan={7} ref={componentRef} id="my-content">
-                                                            <div className='d-none qr-code'>
-                                                                {/* <h3 style={{ textAlign: 'left', margin: '0 0 10px 0' }}>Mã QR hóa đơn</h3> */}
-                                                                <QRCodeSVG
-                                                                    value={`${qrCodeValue}/orders/${order.orderId}`}
-                                                                    size={100}
-                                                                    level="H"
-                                                                    style={{ border: '1px solid black' }}
-                                                                />
-                                                                {/* <p style={{ margin: '10px 0 0 0' }}>Quét mã QR để xem hóa đơn trực tuyến</p> */}
-                                                            </div>
-                                                            <div className='d-none' style={{ padding: '0 20px 20px 20px', borderBottom: '1px solid #ddd', marginBottom: '20px' }}>
-                                                                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                                                                    <h3 style={{ fontSize: '24px', fontWeight: 'bold' }}>HÓA ĐƠN BÁN HÀNG</h3>
-                                                                    <img src="/images/logo.png" alt="Company Logo" style={{ width: '100px', marginBottom: '20px' }} />
-                                                                    <p><strong>Công ty TNHH Step To The Future</strong></p>
-                                                                    <p>Địa chỉ: Đ. Số 22, Thường Thạnh, Cái Răng, Cần Thơ, Việt Nam</p>
-                                                                    <p>Số điện thoại: 098 388 11 00</p>
-                                                                    <p>Email: caodangfptcantho@gmail.com</p>
-                                                                </div>
-
-                                                                <div className='d-flex' style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                                                    {/* Thông tin khách hàng */}
-                                                                    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '48%' }}>
-                                                                        <p><strong>Thông tin khách hàng</strong></p>
-                                                                        <p>Tên khách hàng: {order?.fullname || 'N/A'}</p>
-                                                                        <p>Địa chỉ: {order?.address || 'N/A'}</p>
-                                                                        <p>Số điện thoại: {order?.phone || 'N/A'}</p>
-                                                                    </div>
-
-                                                                    {/* Thông tin đơn hàng */}
-                                                                    <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px', width: '48%' }}>
-                                                                        <p><strong>Thông tin đơn hàng</strong></p>
-                                                                        <p>Ngày đặt hàng: {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
-                                                                        <p>Ngày giao hàng dự kiến: {moment(order?.deliveryDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
-                                                                        <p>Phương thức thanh toán: {order?.paymentMethod || 'N/A'}</p>
-                                                                        <p>Tổng tiền:  {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}</p>
-                                                                        <p>Trạng thái: {order?.statusName || 'N/A'}</p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            <Table hover striped>
-                                                                <thead>
-                                                                    <th className='text-center'>#</th>
-                                                                    <th style={{ width: '270px' }} className='text-center'>Product</th>
+                                                        <td colSpan={8}>
+                                                            <Table responsive variant="light">
+                                                                <thead  className='bg-light'>
+                                                                    <th className='text-center'>STT</th>
+                                                                    <th style={{ width: '270px' }} className='text-center'>Sản phẩm</th>
                                                                     <th style={{ width: '150px' }} className='text-center'></th>
-                                                                    <th colSpan={2} className='text-center no-print'>Attributes</th>
-                                                                    <th className='text-center'>Unit price</th>
-                                                                    <th className='text-center'>Quantity</th>
-                                                                    <th className='text-center'>Total</th>
+                                                                    <th colSpan={2} className='text-center no-print'>Thuộc tính</th>
+                                                                    <th className='text-center'>Đơn giá</th>
+                                                                    <th className='text-center'>Số lượng</th>
+                                                                    <th className='text-center'>Thành tiền</th>
                                                                     <th colSpan={2} className='no-print' ></th>
                                                                 </thead>
                                                                 <tbody>
@@ -1246,25 +1234,48 @@ const OrderTable = () => {
 
                                                                                 <td className='text-center p-1'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
 
-
                                                                                 <td className='text-center p-1'>
                                                                                     {order?.statusName === 'Pending' ? (
                                                                                         <div className='d-flex justify-content-center'>
-                                                                                            <Button className='no-print' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}>
-                                                                                                -
-                                                                                            </Button>
+                                                                                            <OverlayTrigger placement="top" overlay={<Tooltip id={`decrease-quantity-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>Giảm số lượng</Tooltip>}>
+                                                                                                <span>
+                                                                                                    <Button
+                                                                                                        className='bg-black bg-gradient'
+                                                                                                        variant="secondary"
+                                                                                                        size="sm"
+                                                                                                        onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}
+                                                                                                    >
+                                                                                                        -
+                                                                                                    </Button>
+                                                                                                </span>
+                                                                                            </OverlayTrigger>
+                                                                                          
+                                                                                            <OverlayTrigger placement="top" overlay={<Tooltip id={`quantity-input-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>Nhập số lượng</Tooltip>}>
+                                                                                            <div>
                                                                                             <input
                                                                                                 type="text"
-                                                                                                className="mx-2 text-center quantity-custom"
+                                                                                                className="mx-2 text-center quantity-custom form-control form-control-sm"
                                                                                                 value={quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetail.orderDetailId}-${item.productID}`] : item.quantity}
                                                                                                 onChange={(e) => handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)}
                                                                                                 onBlur={(e) => handleQuantityInputBlur(orderDetail.orderDetailId, item.productID, e.target.value)}
                                                                                                 onKeyDown={(e) => handleKeyPress(e, orderDetail.orderDetailId, item.productID, e.target.value)}
                                                                                                 style={{ width: '50px', textAlign: 'center' }}
                                                                                             />
-                                                                                            <Button className='no-print' variant="secondary" size="sm" onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}>
-                                                                                                +
-                                                                                            </Button>
+                                                                                            </div>
+                                                                                            </OverlayTrigger>
+                                                                                         
+                                                                                            <OverlayTrigger placement="top" overlay={<Tooltip id={`increase-quantity-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>Tăng số lượng</Tooltip>}>
+                                                                                                <span>
+                                                                                                    <Button
+                                                                                                        className='bg-black bg-gradient'
+                                                                                                        variant="secondary"
+                                                                                                        size="sm"
+                                                                                                        onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}
+                                                                                                    >
+                                                                                                        +
+                                                                                                    </Button>
+                                                                                                </span>
+                                                                                            </OverlayTrigger>
                                                                                         </div>
                                                                                     ) : (
                                                                                         item?.quantity
@@ -1283,6 +1294,7 @@ const OrderTable = () => {
                                                                                                     textColor={'text-white'}
                                                                                                     btnName={<HiCheck />}
                                                                                                     handleClick={() => handleSaveVersionChanges(orderDetail)}
+                                                                                                    tooltip="Lưu thay đổi"
                                                                                                 />
                                                                                             </td>
                                                                                             <td className='no-print p-1 text-center'>
@@ -1292,6 +1304,7 @@ const OrderTable = () => {
                                                                                                     textColor={'text-white'}
                                                                                                     btnName={<ImCancelCircle />}
                                                                                                     handleClick={() => setEditVersion({ isEdit: false, orderDetailsID: null })}
+                                                                                                    tooltip="Hủy bỏ"
                                                                                                 />
                                                                                             </td>
                                                                                         </React.Fragment>
@@ -1304,6 +1317,7 @@ const OrderTable = () => {
                                                                                                     textColor={'text-white'}
                                                                                                     btnName={<FaTrash />}
                                                                                                     handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
+                                                                                                    tooltip="Xóa"
                                                                                                 />
                                                                                             </td>
 
@@ -1314,6 +1328,7 @@ const OrderTable = () => {
                                                                                                     textColor={'text-white'}
                                                                                                     btnName={<MdModeEdit />}
                                                                                                     handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
+                                                                                                    tooltip="Sửa"
                                                                                                 />
                                                                                             </td>
                                                                                         </React.Fragment>
@@ -1322,25 +1337,46 @@ const OrderTable = () => {
                                                                         ))
                                                                     ))}
 
-                                                                    <tr className='no-print'>
-                                                                        <td rowSpan={7} colSpan={6}>
+                                                                    <tr className="no-print bg-white">
+                                                                        <td rowSpan="7" colSpan="6" className='bg-light'>
+                                                                            <div className="p-3 d-flex flex-column align-items-start">
+                                                                                <div className="d-flex align-items-center mb-2">
+                                                                                    <strong className="text-info me-2">Phương thức thanh toán:</strong>
+                                                                                    <span>{order?.paymentMethod}</span>
+                                                                                </div>
 
+                                                                                {order?.lastUpdatedBy && (
+                                                                                    <div className="d-flex align-items-center"> {/* Last Updated Row */}
+                                                                                        <strong className="text-info me-2">Cập nhật lần cuối:</strong>
+                                                                                        <span>{moment(order?.lastUpdatedDate).format('DD/MM/YYYY HH:mm:ss')}</span>
+                                                                                        <span className="mx-2">|</span> {/* Separator */}
+                                                                                        <strong className="text-info me-2">Bởi:</strong>
+                                                                                        <Link
+                                                                                            to={`/user-management/${order?.lastUpdatedBy?.id}`}
+                                                                                            style={{ textDecoration: 'none', color: 'inherit', fontWeight: 'bold' }}
+                                                                                        >
+                                                                                            {order?.lastUpdatedBy}
+                                                                                        </Link>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
                                                                         </td>
                                                                     </tr>
-                                                                    <tr className='no-print'>
+
+                                                                    <tr>
 
                                                                         <td colSpan={1} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
                                                                         <td className='text-end'>
                                                                             {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
-                                                                    <tr className='no-print'>
+                                                                    <tr>
                                                                         <td colSpan={1} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
                                                                         <td className='text-end'>
                                                                             {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
-                                                                    <tr className='no-print'>
+                                                                    <tr>
                                                                         <td colSpan={1} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>
                                                                             Giảm giá: ({formatDiscount(order?.disCount)})
                                                                         </td>
@@ -1349,67 +1385,26 @@ const OrderTable = () => {
                                                                         </td>
                                                                     </tr>
 
-                                                                    <tr className='no-print'>
+                                                                    <tr>
                                                                         <td colSpan={1} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
                                                                         <td className='text-end'>
                                                                             {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
-                                                                    <tr className='no-print'>
-                                                                        <td colSpan={2} style={{ textAlign: 'right' }}>
-                                                                            <button className="btn bg-black bg-gradient" style={{ color: 'white' }} onClick={handlePrint} title="Nhấn để xuất hóa đơn">
-                                                                                Xuất hóa đơn
-                                                                            </button>
-                                                                        </td>
-                                                                    </tr>
-
-                                                                    {/* Đoạn để hiển thị print đơn hàng */}
-                                                                    <tr className='print d-none'>
-                                                                        <td rowSpan={4} colSpan={3} className='text-center'>
-                                                                            <div class="row mt-5 pt-5 border-top">
-                                                                                <div class="col-12 text-center" style={{ color: '#71bdd8' }}>
-                                                                                    <h1 class="display-4 font-weight-bold text-primary">
-                                                                                        Cảm ơn {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} {order?.fullname}!
-                                                                                    </h1>
-                                                                                    <p class="lead">
-                                                                                        Chúng tôi rất cảm kích vì {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} đã đặt hàng.
-                                                                                        Chúng tôi hy vọng được tiếp tục phục vụ {order?.gender === 0 ? 'Anh' : order?.gender === 1 ? 'Chị' : 'Quý khách'} trong những lần mua sắm tiếp theo.
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-
-                                                                        </td>
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
-                                                                        <td className='text-right print-width' style={{ width: '600px' }}>
-                                                                            {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr className='print d-none'>
-                                                                        <td colSpan={2} className='reduce-colspan deo-print' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Phí vận chuyển:</td>
-                                                                        <td className='text-right print-width' style={{ width: '200px' }}>
-                                                                            {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr className='print d-none'>
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Giảm giá: ({formatDiscount(order?.disCount)})</td>
-                                                                        <td className='text-right'>
-                                                                            {`${(order?.discountValue || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr className='print d-none'>
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold', width: '150px' }}>Tổng cộng:</td>
-                                                                        <td className='text-right'>
-                                                                            {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td className='d-none text-center' colSpan={7}>
-                                                                            Tổng cộng bằng chữ: {order?.finalTotalInWords || "Không có dữ liệu"}
-                                                                        </td>
-                                                                    </tr>
-
-
-
+                                                                    {order?.statusName === 'Processed' && (
+                                                                        <tr className='no-print'>
+                                                                            <td colSpan={2} style={{ textAlign: 'right' }}>
+                                                                                <CustomButton
+                                                                                    className='bg-black bg-gradient'
+                                                                                    textColor="white"
+                                                                                    handleClick={() => printInvoice(order?.orderId)}
+                                                                                    btnName="Xuất hóa đơn"
+                                                                                    tooltip="Nhấn để xuất hóa đơn"
+                                                                                    icon={<FaFileInvoice />}
+                                                                                />
+                                                                            </td>
+                                                                        </tr>
+                                                                    )}
                                                                 </tbody>
                                                             </Table>
                                                         </td>
@@ -1424,8 +1419,8 @@ const OrderTable = () => {
                         </tbody>
                     </Table>
                     <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
-                        <p className='font-13'>{`${(currentPage + 1) * 5 <= totalElements ? (currentPage + 1) * 5 : totalElements} of ${totalElements} `}
-                            {/* <span><a href='#' className='text-decoration-none fw-medium'>{`View all >`}</a></span> */}
+                        <p className='font-13'>
+                            Hiển thị <span className="text-primary">{numberOfElements || 0}</span> trong tổng số <span className="text-primary">{totalElements || 0}</span> kết quả
                         </p>
                         <Pagination className='border-0'>
                             <Pagination.First>{`<`}</Pagination.First>
