@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import PaginationSft from "../../../../PaginationSft";
 import DataTableSft from "../../../../DataTableSft";
@@ -57,12 +58,11 @@ function formatDateString(dateString, format) {
   return format.replace("DD", day).replace("MM", month).replace("YYYY", year);
 }
 
-const getYearDisible = ()=>{
+const getYearDisible = () => {
   const currentYear = moment().year();
 
   return currentYear - 16;
-}
-
+};
 
 const UserTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -82,7 +82,8 @@ const UserTable = () => {
   const [status, setStatus] = useState(1);
   const [loading, setLoading] = useState(false);
   const datePickerRef = useRef();
-
+  const location = useLocation();
+  const userFromOrder = location.state || {}; //{ id, fullname }
 
   // ********** Cấu hình table*********
   const columns = [
@@ -223,7 +224,7 @@ const UserTable = () => {
     setUsername(record.username);
     setPassword("");
     setGender(record.gender);
-    setBirthday(new Date(record.birthday.split('/').reverse().join('-')));
+    setBirthday(new Date(record.birthday.split("/").reverse().join("-")));
     setIsModalOpen(true);
     setUser({ ...record });
     setShowPass(false);
@@ -560,13 +561,26 @@ const UserTable = () => {
   //Đổ danh sách user
   useEffect(() => {
     const fetchUsers = async () => {
+      const isFromOrder = Object.keys(userFromOrder).length > 0;
+
       setLoading(true);
       const [error, data] = await stfExecAPI({
-        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${""}&status=${1}`,
+        url: `api/admin/user/all?page=${1}&size=${6}&keyword=${
+          isFromOrder ? userFromOrder.fullname : ""
+        }&status=${1}`,
       });
 
       if (data) {
         setLoading(false);
+
+        if (isFromOrder) {
+          setUsers({
+            ...data.data,
+            content: data.data.content.filter((i) => {
+              return i.userId === userFromOrder.id;
+            }),
+          });
+        }
         setUsers(data.data);
         return;
       }
@@ -675,10 +689,7 @@ const UserTable = () => {
             <div className="col-md-7">
               <div className="row mb-4">
                 <div className="col-md-12">
-                  <label
-                    className="mb-2"
-                    htmlFor="basic-default-fullname"
-                  >
+                  <label className="mb-2" htmlFor="basic-default-fullname">
                     Họ và tên <span className="text-danger">*</span>
                   </label>
                   <input
