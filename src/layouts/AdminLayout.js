@@ -97,8 +97,8 @@ const menus = [
         icon: <FaAdversal  />,
         // link: "/admin/advertisement/manage",
         subItems: [
-          {id: '15', label: 'New', link: "/admin/advertisement/new"},
-          {id: '16', label: 'Manage', link: "/admin/advertisement/manage"}
+          {id: '15', label: 'Thêm mới', link: "/admin/advertisement/new"},
+          {id: '16', label: 'Danh sách', link: "/admin/advertisement/manage"}
         ],
       }
     ],
@@ -109,13 +109,13 @@ const menus = [
   //     { id: "settings", label: "Settings", icon: <Gear />, link: "/admin/settings", subItems: null },
   //   ],
   // },
-  {
-    title: "Account",
-    items: [
-      { id: "help", label: "Help", icon: <Info />, link: "/admin/help", subItems: null },
-      { id: "logout", label: "Logout", icon: <SignOut />, link: "/logout", subItems: null },
-    ],
-  },
+  // {
+  //   title: "Account",
+  //   items: [
+  //     { id: "help", label: "Help", icon: <Info />, link: "/admin/help", subItems: null },
+  //     { id: "logout", label: "Logout", icon: <SignOut />, link: "/logout", subItems: null },
+  //   ],
+  // },
 ];
 
 const AdminLayout = () => {

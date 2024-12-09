@@ -75,7 +75,7 @@ const UpdateProduct = () => {
       [[]]
     );
   };
-console.log(version);
+  console.log(version);
   //Thêm sản phẩm
   const handleClickAdd = async () => {
     if (productName.trim().length === 0) {
@@ -277,7 +277,7 @@ console.log(version);
       return;
     }
 
-    toast.success(`Success`, {
+    toast.success(`Thành công`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
@@ -339,7 +339,7 @@ console.log(version);
       },
     },
     {
-      title: "Version Name",
+      title: "Tên phiên bản",
       dataIndex: "versionName",
       key: "versionName",
       render: (value, record) => {
@@ -366,7 +366,7 @@ console.log(version);
       },
     },
     {
-      title: "Retail Price",
+      title: "Giá phiên bản",
       dataIndex: "retailPrice",
       key: "retailPrice",
       render: (value, record) => {
@@ -375,7 +375,7 @@ console.log(version);
             type="text"
             className="form-control w-50"
             id="basic-default-fullname"
-            placeholder="Enter price"
+            placeholder="Giá phiên bản"
             value={value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
             onChange={(e) => {
               const inputValue = e.target.value;
@@ -394,35 +394,7 @@ console.log(version);
       },
     },
     {
-      title: "Import Price",
-      dataIndex: "importPrice",
-      key: "importPrice",
-      render: (value, record) => {
-        return (
-          <input
-            type="text"
-            className="form-control w-50"
-            id="basic-default-fullname"
-            placeholder="Enter price"
-            value={value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-            onChange={(e) => {
-              const inputValue = e.target.value;
-              // Chỉ giữ lại các ký tự là số
-              const numericValue = inputValue.replace(/\D/g, "");
-              const newPrice = numericValue;
-
-              const updatedDataSource = dataSource.map((d) => {
-                return record.id === d.id ? { ...d, importPrice: newPrice } : d;
-              });
-
-              setDataSource(updatedDataSource);
-            }}
-          />
-        );
-      },
-    },
-    {
-      title: "Attributes",
+      title: "Thuộc tính",
       dataIndex: "attributes",
       key: "attributes",
       render: (value, record) => {
@@ -434,7 +406,7 @@ console.log(version);
       },
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (text, record) => {
         return (
@@ -560,6 +532,26 @@ console.log(version);
 
   // Modal thêm mới
   const handleOk = async () => {
+    if (Object.keys(selectedOptions).length === 0) {
+      toast.error(`Vui lòng chọn thuộc tính`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      return;
+    }
+
+    if(!retailPrice){
+      toast.error(`Vui lòng nhập giá phiên bản`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      return;
+    }
+
     generateProductVersions(Object.values(selectedOptions));
     setIsModalOpen(false);
   };
@@ -579,7 +571,7 @@ console.log(version);
 
       <form className="card p-4">
         <div className="row">
-          <label>Product</label>
+          <label>Sản phẩm</label>
         </div>
 
         <div className="row">
@@ -594,8 +586,8 @@ console.log(version);
           <div className="col-md-7">
             <div className="row mb-4">
               <div className="col-md-12">
-                <label className="form-label" htmlFor="basic-default-fullname">
-                  Product name <span className="text-danger">*</span>
+                <label className="mb-2" htmlFor="">
+                  Tên sản phẩm <span className="text-danger">*</span>
                 </label>
                 <input
                   type="text"
@@ -612,11 +604,8 @@ console.log(version);
 
             <div className="row  mb-4">
               <div className="col-md-12">
-                <label
-                  htmlFor="exampleFormControlSelect1"
-                  className="form-label"
-                >
-                  Category <span className="text-danger">*</span>
+                <label htmlFor="" className="mb-2">
+                  Loại sản phẩm <span className="text-danger">*</span>
                 </label>
                 <select
                   className="form-select"
@@ -641,8 +630,8 @@ console.log(version);
 
             <div className="row">
               <div className="col-md-12">
-                <label for="exampleFormControlTextarea1" class="form-label">
-                  Discription
+                <label for="" class="mb-2">
+                  Mô tả
                 </label>
                 <textarea
                   class="form-control"
@@ -666,10 +655,10 @@ console.log(version);
               setSelectedOptions({});
               setIsModalOpen(true);
               setRetailPrice("");
-              setImportPrice("")
+              setImportPrice("");
             }}
           >
-            Add version <Plus weight="fill" />
+            Thêm phiên bản <Plus weight="fill" />
           </button>
         </div>
 
@@ -686,7 +675,7 @@ console.log(version);
               setVersionDelete([]);
             }}
           >
-            Reset
+            Làm lại
           </button>
 
           <button
@@ -694,13 +683,13 @@ console.log(version);
             className="btn btn-dark me-3"
             onClick={handleClickAdd}
           >
-            Save
+            Lưu
           </button>
         </div>
       </form>
 
       <ModalSft
-        title="Add version"
+        title="Thêm phiên bản"
         titleOk={"Add"}
         open={isModalOpen}
         onOk={handleOk}
@@ -709,7 +698,7 @@ console.log(version);
       >
         <form className="card p-4 mt-3">
           <div className="row mb-3">
-            <label>Attributes</label>
+            <label>Thuộc tính</label>
           </div>
 
           <div
@@ -753,16 +742,18 @@ console.log(version);
 
             <div className="col mb-3">
               <label className="form-label" htmlFor="basic-default-fullname">
-                Retail Price
+                Giá phiên bản
               </label>
               <input
                 type="text"
                 className="form-control"
                 id="basic-default-fullname"
-                placeholder="Enter price"
+                placeholder="Giá phiên bản"
                 value={
                   retailPrice
-                    ? Number(retailPrice.replace(/,/g, "")).toLocaleString("en-US")
+                    ? Number(retailPrice.replace(/,/g, "")).toLocaleString(
+                        "en-US"
+                      )
                     : ""
                 }
                 onChange={(e) => {
@@ -773,34 +764,6 @@ console.log(version);
                   setDataSource(
                     dataSource.map((i) => {
                       return { ...i, retalPrice: newValue };
-                    })
-                  );
-                }}
-              />
-            </div>
-
-            <div className="col mb-3">
-              <label className="form-label" htmlFor="basic-default-fullname">
-                Import Price
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                id="basic-default-fullname"
-                placeholder="Enter price"
-                value={
-                  importPrice
-                    ? Number(importPrice.replace(/,/g, "")).toLocaleString("en-US")
-                    : ""
-                }
-                onChange={(e) => {
-                  const rawValue = e.target.value.replace(/,/g, ""); // Loại bỏ dấu phẩy
-                  const newValue = rawValue.replace(/\D/g, ""); // Loại bỏ ký tự không phải số
-                  setImportPrice(newValue); // Cập nhật giá trị
-
-                  setDataSource(
-                    dataSource.map((i) => {
-                      return { ...i, importPrice: newValue };
                     })
                   );
                 }}

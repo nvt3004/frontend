@@ -51,7 +51,17 @@ const NewProduct = () => {
 
   const handleOkModalAttribute = async () => {
     if (attributeName.trim().length <= 0) {
-      toast.error(`Tên thuộc tính không được để trống ${attributeName}`, {
+      toast.error(`Tên thuộc tính không được để trống`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    const duplicateName = attributes.find(i=>  i.attributeName.trim().toLocaleLowerCase() === attributeName.trim().toLowerCase());
+    if(duplicateName){
+      toast.error(`Tên thuộc tính đã tồn  tại`, {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -607,7 +617,7 @@ const NewProduct = () => {
         <div className="row">
           <div className="col-md-5">
             <AvatarUpload
-              marginRight="200px"
+              marginRight="260px"
               pathImage={""}
               onFileSelect={handleFileSelect}
             />
@@ -616,7 +626,7 @@ const NewProduct = () => {
           <div className="col-md-7">
             <div className="row mb-4">
               <div className="col-md-12">
-                <label className="" htmlFor="basic-default-fullname">
+                <label className="mb-2" htmlFor="basic-default-fullname">
                   Tên sản phẩm <span className="text-danger">*</span>
                 </label>
                 <input
@@ -650,7 +660,7 @@ const NewProduct = () => {
               <div className="col-md-12">
                 <label
                   htmlFor="exampleFormControlSelect1"
-                  className=""
+                  className="mb-2"
                 >
                   Loại sản phẩm <span className="text-danger">*</span>
                 </label>
@@ -677,7 +687,7 @@ const NewProduct = () => {
 
             <div className="row">
               <div className="col-md-12">
-                <label for="exampleFormControlTextarea1" class="">
+                <label for="exampleFormControlTextarea1" class="mb-2">
                   Mô tả
                 </label>
                 <textarea
@@ -820,7 +830,7 @@ const NewProduct = () => {
 
         <div className="row mt-3">
           <div className="col-md-4">
-            <label className="form-label" htmlFor="basic-default-fullname">
+            <label className="mb-2" htmlFor="">
               Giá cho tất cả phiên bản
             </label>
             <div className="row">

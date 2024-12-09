@@ -372,7 +372,7 @@ const StockIn = () => {
 
     if (data) {
       setLoading(false);
-      toast.success("Nhập kho thành công!");
+      toast.success("Thành công");
       setVersions([]);
       return;
     }
@@ -380,7 +380,7 @@ const StockIn = () => {
     setLoading(false);
     const err =
       error.status === 403
-        ? "Account does not have permission to perform this function"
+        ? "Bạn không có quyền để thực thi công việc này !"
         : error?.response?.data?.message;
 
     toast.error(`${err}`, {

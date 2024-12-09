@@ -1,10 +1,20 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
 import PaginationSft from "../../../../PaginationSft";
 import DataTableSft from "../../../../DataTableSft";
 import ModalSft from "../../../../ModalSft";
 import AvatarUpload from "../../../../AvatarUpload ";
-import { Pencil, Trash, Plus, UserCirclePlus } from "phosphor-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { vi } from "date-fns/locale";
+import moment from "moment";
+import {
+  Pencil,
+  Trash,
+  Plus,
+  UserCirclePlus,
+  CalendarBlank,
+} from "phosphor-react";
 import { stfExecAPI } from "../../../../../../stf/common";
 import FullScreenSpinner from "../../../FullScreenSpinner";
 
@@ -47,6 +57,13 @@ function formatDateString(dateString, format) {
   return format.replace("DD", day).replace("MM", month).replace("YYYY", year);
 }
 
+const getYearDisible = ()=>{
+  const currentYear = moment().year();
+
+  return currentYear - 16;
+}
+
+
 const UserTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
@@ -64,6 +81,12 @@ const UserTable = () => {
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const datePickerRef = useRef();
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
 
   // ********** Cấu hình table*********
   const columns = [
@@ -204,7 +227,7 @@ const UserTable = () => {
     setUsername(record.username);
     setPassword("");
     setGender(record.gender);
-    setBirthday(formatDate(record.birthday, "YYYY-MM-DD"));
+    setBirthday(new Date(record.birthday.split('/').reverse().join('-')));
     setIsModalOpen(true);
     setUser({ ...record });
     setShowPass(false);
@@ -318,7 +341,7 @@ const UserTable = () => {
 
     fetchUsers();
 
-    toast.success(`${isAdd ? "Thêm mới" : "Cập nhật"} người dùng thành công!`, {
+    toast.success(`Thành công`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
@@ -617,7 +640,7 @@ const UserTable = () => {
       <DataTableSft
         dataSource={users?.content || []}
         columns={columns}
-        title={"Staff list"}
+        title={"Danh sách nhân viên"}
         isSearch={true}
         onChangeSearch={onChangeInputSearch}
         keyword={keyword}
@@ -657,7 +680,7 @@ const UserTable = () => {
               <div className="row mb-4">
                 <div className="col-md-12">
                   <label
-                    className="form-label"
+                    className="mb-2"
                     htmlFor="basic-default-fullname"
                   >
                     Họ và tên <span className="text-danger">*</span>
@@ -674,7 +697,7 @@ const UserTable = () => {
               </div>
 
               <div className="row mb-4">
-                <label className="form-label" htmlFor="basic-default-email">
+                <label className="mb-2" htmlFor="basic-default-email">
                   Email / Số điện thoại <span className="text-danger">*</span>
                 </label>
                 <div className="input-group input-group-merge">
@@ -693,7 +716,7 @@ const UserTable = () => {
               <div className="row mb-3">
                 <div className="col-md-12">
                   <label
-                    className="form-label d-flex"
+                    className="d-flex mb-2"
                     htmlFor="basic-default-password"
                   >
                     {Object.keys(user || {}).length === 0
@@ -750,20 +773,41 @@ const UserTable = () => {
 
           <div className="row">
             <div className="col-md-5 mb-3">
-              <label className="form-label" htmlFor="basic-default-birthday">
+              <label className="mb-2" htmlFor="basic-default-birthday">
                 Ngày sinh
               </label>
-              <input
-                type="date"
-                id="basic-default-birthday"
-                className="form-control"
-                value={birthday}
-                onChange={(e) => setBirthday(e.target.value)}
-              />
+              <div style={{ position: "relative", display: "inline-block" }}>
+                <DatePicker
+                  ref={datePickerRef}
+                  selected={birthday}
+                  onChange={setBirthday}
+                  dateFormat="dd/MM/yyyy"
+                  locale={vi} // Sử dụng locale tiếng Việt
+                  placeholderText="dd/mm/yyyy"
+                  className="form-control"
+                  maxDate={new Date(getYearDisible(), 11, 31)}
+                />
+
+                <CalendarBlank
+                  onClick={() => {
+                    datePickerRef.current.setFocus();
+                  }}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                    color: "#666",
+                  }}
+                  size={19}
+                  weight="fill"
+                />
+              </div>
             </div>
 
             <div className="col-md-7">
-              <label htmlFor="exampleFormControlSelect1" className="form-label">
+              <label htmlFor="exampleFormControlSelect1" className="mb-2">
                 Giới tính
               </label>
               <select
@@ -783,8 +827,8 @@ const UserTable = () => {
 
       {/* Modal xóa */}
       <ModalSft
-        title="Delete staff"
-        titleOk={"Delete"}
+        title="Xóa nhân viên"
+        titleOk={"Xóa"}
         open={isModalDeleteOpen}
         onOk={handleModalDeleteOk}
         onCancel={handleModalDeleteCancel}
@@ -795,8 +839,8 @@ const UserTable = () => {
 
       {/* Modal phân quyền */}
       <ModalSft
-        title="Permission"
-        titleOk={"Save"}
+        title="Phân quyền"
+        titleOk={"Lưu"}
         open={isModalQuyenOpen}
         onOk={handleModalQuyenOk}
         onCancel={handleModalQuyenCancel}

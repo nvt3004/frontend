@@ -45,7 +45,7 @@ const DataTableSft = ({
                 value={searchKeyword} // Hiển thị giá trị keyword trong input
                 type="text"
                 className="form-control"
-                placeholder="Search..."
+                placeholder="Tìm kiếm"
                 aria-label="Search..."
                 aria-describedby="basic-addon-search31"
               />
