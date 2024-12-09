@@ -81,12 +81,8 @@ const UserTable = () => {
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
   const datePickerRef = useRef();
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-  };
 
   // ********** Cấu hình table*********
   const columns = [
