@@ -7,6 +7,7 @@ import AvatarUpload from "../../../../AvatarUpload ";
 import { Pencil, Trash, Plus, UserCirclePlus } from "phosphor-react";
 import { stfExecAPI } from "../../../../../../stf/common";
 import FullScreenSpinner from "../../../FullScreenSpinner";
+import { useLocation } from "react-router-dom";
 
 const convertToBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -64,7 +65,9 @@ const UserTable = () => {
   const [keyword, setKeyword] = useState("");
   const [status, setStatus] = useState(1);
   const [loading, setLoading] = useState(false);
-
+  const location = useLocation();
+  const { id, fullname } = location.state || {}; 
+  
   // ********** Cấu hình table*********
   const columns = [
     { title: "Email / Điện Thoại", dataIndex: "username", key: "name" },

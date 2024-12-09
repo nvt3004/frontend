@@ -720,14 +720,14 @@ const OrderTable = () => {
     const PUBLIC_CERTIFICATE = process.env.REACT_APP_PUBLIC_CERTIFICATE;
     const PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEY;
     const [qzConnected, setQzConnected] = useState(false);
-    let qzSocket = null; 
+    let qzSocket = null;
 
     console.log(PUBLIC_CERTIFICATE + " PUBLIC_CERTIFICATE");
     console.log(PRIVATE_KEY + " PRIVATE_KEY");
-    
+
     const connectToQz = async (options) => {
         try {
-            qzSocket = await qz.websocket.connect(options); 
+            qzSocket = await qz.websocket.connect(options);
             setQzConnected(true);
             console.log("Connected to QZ Tray");
             return qzSocket;
@@ -742,7 +742,7 @@ const OrderTable = () => {
         if (qzSocket && qz.websocket.isActive()) {
             try {
                 await qzSocket.disconnect();
-                qzSocket = null; 
+                qzSocket = null;
                 setQzConnected(false);
                 console.log("Disconnected from QZ Tray");
             } catch (error) {
@@ -752,7 +752,7 @@ const OrderTable = () => {
     };
     const printInvoice = async (orderId) => {
         try {
-            const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {},{ responseType: 'blob'});
+            const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {}, { responseType: 'blob' });
             // const imageUrl = response.data.data; 
             if (!response || !response.data) {
                 throw new Error("No PDF data received from backend.");
@@ -765,10 +765,10 @@ const OrderTable = () => {
                 reader.onloadend = () => resolve(reader.result.split(',')[1]); // Tách phần Base64
                 reader.onerror = reject;
             });
-            
+
             reader.readAsDataURL(blob);
-            const base64data = await base64Promise;            
-           
+            const base64data = await base64Promise;
+
             if (!qzConnected) {
                 const options = {
                     host: 'localhost', //Sử dụng tên miền chính thức để không phải hiển thị hỏi lại.
@@ -793,7 +793,7 @@ const OrderTable = () => {
                     // Handle connection error
                     console.log("Connection error:", connectError);
                     setQzConnected(false);
-                    throw connectError; 
+                    throw connectError;
                 }
 
                 if (!qz.websocket.isActive()) {
@@ -818,15 +818,15 @@ const OrderTable = () => {
                 };
             });
             // console.log(imageUrl + " imageUrl");
-            
-            const printerName = 'XP-58';
-            // const printerName = 'Microsoft Print to PDF';
+
+            // const printerName = 'XP-58';
+            const printerName = 'Microsoft Print to PDF';
             const printConfig = qz.configs.create(printerName);
 
             console.log("Printing with config:", printConfig);
 
             // In hình ảnh
-            await qz.print(printConfig, [{ type: 'pdf',format:'base64', data: base64data }]);
+            await qz.print(printConfig, [{ type: 'pdf', format: 'base64', data: base64data }]);
             // Lệnh cắt giấy
             // await qz.print(printConfig, [
             //     { type: 'raw', format: 'command', data: '\x1B\x69' } // Lệnh ESC/POS để cắt giấy
@@ -834,7 +834,7 @@ const OrderTable = () => {
             await qz.print(printConfig, [
                 { type: 'raw', format: 'command', data: '\x1B\x64\x01' } // Lệnh ESC/POS để cắt giấy
             ]);
-            
+
 
             toast.success('Print successful and paper cut!');
         } catch (error) {
@@ -890,12 +890,12 @@ const OrderTable = () => {
                 console.log("Connecting to QZ Tray with options:", options);
 
                 try {
-                    await connectToQz(options); 
+                    await connectToQz(options);
                     setQzConnected(true);
                 } catch (connectError) {
                     console.log("Connection error:", connectError);
                     setQzConnected(false);
-                    throw connectError; 
+                    throw connectError;
                 }
 
                 if (!qz.websocket.isActive()) {
@@ -955,7 +955,7 @@ const OrderTable = () => {
                 reader.onloadend = () => resolve(reader.result.split(',')[1]); // Tách phần Base64
                 reader.onerror = reject;
             });
-            
+
             reader.readAsDataURL(blob);
             const base64data = await base64Promise;  // Loại bỏ các ký tự không mong muốn
 
@@ -1169,7 +1169,7 @@ const OrderTable = () => {
                                                     <tr>
                                                         <td colSpan={8}>
                                                             <Table responsive variant="light">
-                                                                <thead  className='bg-light'>
+                                                                <thead className='bg-light'>
                                                                     <th className='text-center'>STT</th>
                                                                     <th style={{ width: '270px' }} className='text-center'>Sản phẩm</th>
                                                                     <th style={{ width: '150px' }} className='text-center'></th>
@@ -1249,21 +1249,21 @@ const OrderTable = () => {
                                                                                                     </Button>
                                                                                                 </span>
                                                                                             </OverlayTrigger>
-                                                                                          
+
                                                                                             <OverlayTrigger placement="top" overlay={<Tooltip id={`quantity-input-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>Nhập số lượng</Tooltip>}>
-                                                                                            <div>
-                                                                                            <input
-                                                                                                type="text"
-                                                                                                className="mx-2 text-center quantity-custom form-control form-control-sm"
-                                                                                                value={quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetail.orderDetailId}-${item.productID}`] : item.quantity}
-                                                                                                onChange={(e) => handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                onBlur={(e) => handleQuantityInputBlur(orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                onKeyDown={(e) => handleKeyPress(e, orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                style={{ width: '50px', textAlign: 'center' }}
-                                                                                            />
-                                                                                            </div>
+                                                                                                <div>
+                                                                                                    <input
+                                                                                                        type="text"
+                                                                                                        className="mx-2 text-center quantity-custom form-control form-control-sm"
+                                                                                                        value={quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetail.orderDetailId}-${item.productID}`] : item.quantity}
+                                                                                                        onChange={(e) => handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)}
+                                                                                                        onBlur={(e) => handleQuantityInputBlur(orderDetail.orderDetailId, item.productID, e.target.value)}
+                                                                                                        onKeyDown={(e) => handleKeyPress(e, orderDetail.orderDetailId, item.productID, e.target.value)}
+                                                                                                        style={{ width: '50px', textAlign: 'center' }}
+                                                                                                    />
+                                                                                                </div>
                                                                                             </OverlayTrigger>
-                                                                                         
+
                                                                                             <OverlayTrigger placement="top" overlay={<Tooltip id={`increase-quantity-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>Tăng số lượng</Tooltip>}>
                                                                                                 <span>
                                                                                                     <Button
@@ -1345,18 +1345,23 @@ const OrderTable = () => {
                                                                                     <span>{order?.paymentMethod}</span>
                                                                                 </div>
 
-                                                                                {order?.lastUpdatedBy && (
+                                                                                {order?.lastUpdatedById && order?.lastUpdatedByFullname && (
                                                                                     <div className="d-flex align-items-center"> {/* Last Updated Row */}
                                                                                         <strong className="text-info me-2">Cập nhật lần cuối:</strong>
                                                                                         <span>{moment(order?.lastUpdatedDate).format('DD/MM/YYYY HH:mm:ss')}</span>
                                                                                         <span className="mx-2">|</span> {/* Separator */}
                                                                                         <strong className="text-info me-2">Bởi:</strong>
                                                                                         <Link
-                                                                                            to={`/user-management/${order?.lastUpdatedBy?.id}`}
+                                                                                            to={`/admin/users/manage`}
+                                                                                            state={{
+                                                                                                id: order?.lastUpdatedById,
+                                                                                                fullname: order?.lastUpdatedByFullname
+                                                                                            }}
                                                                                             style={{ textDecoration: 'none', color: 'inherit', fontWeight: 'bold' }}
                                                                                         >
-                                                                                            {order?.lastUpdatedBy}
+                                                                                            {order?.lastUpdatedByFullname}
                                                                                         </Link>
+
                                                                                     </div>
                                                                                 )}
                                                                             </div>
