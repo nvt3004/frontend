@@ -438,12 +438,19 @@ const getFeedback = async ({ idProduct, page }) => {
   }
 };
 
-
-const addFeedback = async ({ idProd, idOrderDetail, comment, photos, rating }) => {
+const addFeedback = async ({
+  idProd,
+  idOrderDetail,
+  comment,
+  photos,
+  rating,
+}) => {
   try {
     // Kiểm tra tham số trước khi gửi
     if (!idProd || !idOrderDetail || !comment) {
-      throw new Error("Missing required fields. Please provide all the necessary data.");
+      throw new Error(
+        "Missing required fields. Please provide all the necessary data."
+      );
     }
 
     const formData = new FormData();
@@ -477,7 +484,9 @@ const addFeedback = async ({ idProd, idOrderDetail, comment, photos, rating }) =
         case 400:
           DangerAlert({
             title: "Invalid Input",
-            text: data?.message || "Invalid input or file format. Please check your data.",
+            text:
+              data?.message ||
+              "Invalid input or file format. Please check your data.",
           });
           break;
         case 401:
@@ -489,7 +498,9 @@ const addFeedback = async ({ idProd, idOrderDetail, comment, photos, rating }) =
         case 403:
           DangerAlert({
             title: "Forbidden",
-            text: data?.message || "Your account is restricted or action is forbidden.",
+            text:
+              data?.message ||
+              "Your account is restricted or action is forbidden.",
           });
           break;
         case 404:
@@ -501,19 +512,25 @@ const addFeedback = async ({ idProd, idOrderDetail, comment, photos, rating }) =
         case 422:
           DangerAlert({
             title: "Invalid Data",
-            text: data?.message || "Unable to process your feedback due to invalid data.",
+            text:
+              data?.message ||
+              "Unable to process your feedback due to invalid data.",
           });
           break;
         case 500:
           DangerAlert({
             title: "Server Error",
-            text: data?.message || "An unexpected server error occurred. Please try again later.",
+            text:
+              data?.message ||
+              "An unexpected server error occurred. Please try again later.",
           });
           break;
         default:
           DangerAlert({
             title: "Error",
-            text: data?.message || "An unknown error occurred. Please contact support.",
+            text:
+              data?.message ||
+              "An unknown error occurred. Please contact support.",
           });
           break;
       }
@@ -526,8 +543,6 @@ const addFeedback = async ({ idProd, idOrderDetail, comment, photos, rating }) =
     }
   }
 };
-
-
 
 const cancelOrder = async (idOrder) => {
   try {
@@ -550,7 +565,7 @@ const cancelOrder = async (idOrder) => {
         title: "Thành công!",
         text: "Đơn hàng của bạn đã được hủy.",
       });
-    };
+    }
   } catch (error) {
     if (error.response) {
       const { status, data } = error.response;
@@ -559,13 +574,15 @@ const cancelOrder = async (idOrder) => {
         case 400:
           DangerAlert({
             title: "Lỗi dữ liệu",
-            text: data?.message || "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.",
+            text:
+              data?.message || "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.",
           });
           break;
         case 401:
           DangerAlert({
             title: "Chưa xác thực",
-            text: data?.message || "Bạn cần đăng nhập để thực hiện thao tác này.",
+            text:
+              data?.message || "Bạn cần đăng nhập để thực hiện thao tác này.",
           });
           break;
         case 403:
@@ -583,13 +600,17 @@ const cancelOrder = async (idOrder) => {
         case 500:
           DangerAlert({
             title: "Lỗi hệ thống",
-            text: data?.message || "Có lỗi xảy ra trên hệ thống. Vui lòng thử lại sau.",
+            text:
+              data?.message ||
+              "Có lỗi xảy ra trên hệ thống. Vui lòng thử lại sau.",
           });
           break;
         default:
           DangerAlert({
             title: "Lỗi",
-            text: data?.message || "Đã xảy ra lỗi không xác định. Vui lòng liên hệ hỗ trợ.",
+            text:
+              data?.message ||
+              "Đã xảy ra lỗi không xác định. Vui lòng liên hệ hỗ trợ.",
           });
           break;
       }
@@ -603,7 +624,31 @@ const cancelOrder = async (idOrder) => {
   }
 };
 
+const searchProductByImage = async (imageFile) => {
+  try {
+    const formData = new FormData();
+    formData.append("image", imageFile);
 
+    const { data } = await axiosInstance.post(
+      "product/searchByImage",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return data;
+  } catch (error) {
+    if (error.response) {
+      console.error("Error response:", error.response.data);
+    } else {
+      console.error("Error message:", error.message);
+    }
+    throw error;
+  }
+};
 
 const productApi = {
   getProds: search,
@@ -619,6 +664,7 @@ const productApi = {
   getRecommendedProducts,
   getOrderStatus,
   addFeedback,
-  cancelOrder
+  cancelOrder,
+  searchProductByImage,
 };
 export default productApi;
