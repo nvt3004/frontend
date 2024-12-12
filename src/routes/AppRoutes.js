@@ -52,6 +52,7 @@ import CouponTable from "../components/admin/parts/NewParts/body/CouponManagemen
 import AdvertisementTable from "../components/admin/parts/NewParts/body/AdvertisementManagement/AdvertisementTable";
 import NewAdvertisement from "../components/admin/parts/NewParts/body/AdvertisementManagement/NewAdvertisement";
 import OrderDetail from "../components/admin/parts/NewParts/body/OrderManagement/OrderDetail";
+import FeedbacksTable from "../components/admin/parts/NewParts/body/FeedbackManagement/FeedbacksTable";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -204,7 +205,7 @@ const router = createBrowserRouter([
       },
       {
         path: "feedback",
-        children: [{ path: "manage", element: <FeedbackManagement /> }],
+        children: [{ path: "manage", element: <FeedbacksTable /> }],
       },
       {
         path: "products",
