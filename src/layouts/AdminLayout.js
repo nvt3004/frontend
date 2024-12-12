@@ -53,6 +53,7 @@ const menus = [
           { id: "3", label: "Phân loại", link: "/admin/products/categories" },
           { id: "4", label: "Thêm mới", link: "/admin/products/new" },
           { id: "5", label: "Danh sách", link: "/admin/products/manage" },
+          { id: "20", label: "Giảm giá", link: "/admin/products/sale" },
         ],
       },
       {
