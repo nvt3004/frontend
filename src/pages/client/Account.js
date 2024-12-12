@@ -585,7 +585,7 @@ const Account = () => {
         <div className="d-flex align-items-center bg-white shadow-sm rounded p-3 mb-4">
           <div>
             <img
-              src={`http://localhost:8080/images/${
+              src={`https://api.stepstothefuture.store/images/${
                 profile?.listData?.image || Avatar
               }`}
               alt="User Avatar"

@@ -11,7 +11,7 @@ const OrderDetail = () => {
     const [order, setOrder] = useState(null);
 
     useEffect(() => {
-        axios.get(`http://localhost:8080/api/orders/${orderId}`)
+        axios.get(`https://api.stepstothefuture.store/api/orders/${orderId}`)
             .then(response => {
                 setOrder(response.data.data.orderDetail[0]);
             })

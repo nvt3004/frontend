@@ -2,18 +2,20 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: "https://api.stepstothefuture.store/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
   },
 });
 
 const refreshAxiosInstance = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: "https://api.stepstothefuture.store/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
   },
 });
 

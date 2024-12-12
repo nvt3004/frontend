@@ -234,7 +234,7 @@ const NewAdvertisement = () => {
                   <img
                     src={
                       image.imageUrl
-                        ? `http://localhost:8080/images/${image.imageUrl}`
+                        ? `https://api.stepstothefuture.store/images/${image.imageUrl}`
                         : URL.createObjectURL(image)
                     }
                     alt="Preview"

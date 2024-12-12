@@ -10,7 +10,7 @@ const Slider = () => {
   useEffect(() => {
     const fetchAdvertisements = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/today");
+        const response = await axios.get("https://api.stepstothefuture.store/api/today");
         setAdvertisements(response.data);
       } catch (error) {
         console.error("Lỗi khi gọi API:", error);
@@ -42,7 +42,7 @@ const Slider = () => {
                     <div
                       className="item-slick1"
                       style={{
-                        backgroundImage: `url("http://localhost:8080/images/${image.imageUrl}")`,
+                        backgroundImage: `url("https://api.stepstothefuture.store/images/${image.imageUrl}")`,
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                       }}

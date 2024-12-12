@@ -1,0 +1,16 @@
+services:
+  stepstothefuture_fe:
+    container_name: stepstothefuture_fe
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  my-network:
+    driver: bridge
