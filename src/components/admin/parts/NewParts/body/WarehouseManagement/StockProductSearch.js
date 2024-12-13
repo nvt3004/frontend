@@ -52,8 +52,8 @@ const StockProductSearch = ({
           value={searchQuery} // Hiển thị giá trị keyword trong input
           type="text"
           className="form-control"
-          placeholder="Search..."
-          aria-label="Search..."
+          placeholder="Tìm kiếm..."
+          aria-label="Tìm kiếm..."
           aria-describedby="basic-addon-search31"
         />
       </div>

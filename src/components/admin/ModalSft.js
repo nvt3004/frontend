@@ -31,7 +31,7 @@ const ModalSft = ({ title, size ='' ,titleOk, open, onOk, onCancel, children }) 
               className="btn btn-outline-secondary"
               onClick={onCancel} // Đóng modal khi nhấn Cancel
             >
-              Close
+              Hủy
             </button>
             <button
               type="button"

@@ -54,7 +54,7 @@ const TableProductStf = ({
                 value={searchKeyword}
                 type="text"
                 className="form-control"
-                placeholder="Search..."
+                placeholder="Tìm kiếm"
                 aria-label="Search..."
                 aria-describedby="basic-addon-search31"
               />
@@ -108,12 +108,12 @@ const TableProductStf = ({
                         <table className="table table-hover">
                           <thead>
                             <tr>
-                              <th className="text-start">Version Name</th>
-                              <th>Retail Price</th>
-                              <th>Import Price</th>
-                              <th>Quantity</th>
-                              <th>Image</th>
-                              <th>Attributes</th>
+                              <th className="text-start">Tên Phiên bản</th>
+                              <th>Giá Phiên Bản</th>
+                              {/* <th>Import Price</th> */}
+                              <th>Số lượng</th>
+                              <th>Ảnh</th>
+                              <th>Thuộc tính</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -123,7 +123,7 @@ const TableProductStf = ({
                                   {version.versionName}
                                 </td>
                                 <td>{formatCurrencyVND(version.retailPrice)}</td>
-                                <td>{formatCurrencyVND(version.importPrice)}</td>
+                                {/* <td>{formatCurrencyVND(version.importPrice)}</td> */}
                                 <td>{version.quantity}</td>
                                 <td>
                                   <img

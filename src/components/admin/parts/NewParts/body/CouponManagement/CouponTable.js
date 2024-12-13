@@ -313,14 +313,6 @@ const CouponTable = () => {
                 onOk={selectedCoupon ? handleSubmit(onSubmitUpdate) : handleSubmit(onSubmit)}
             >
                 <Form>
-                    {/* <Form.Group className="mb-2">
-                        <Form.Label>Code</Form.Label>
-                        <Form.Control
-                            {...register("code", { required: "Code is required." })}
-                            placeholder="Coupon's code"
-                        />
-                        {errors.code && <span className="text-danger">{errors.code.message}</span>}
-                    </Form.Group> */}
                     <Form.Group className="mb-2">
                         <Form.Label>Descriptions</Form.Label>
                         <Form.Control

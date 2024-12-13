@@ -27,7 +27,8 @@ import NewPermission from "../components/admin/parts/NewPermission";
 import FeedbackManagement from "../components/admin/parts/FeedbackManagement";
 import CustomerTable from "../components/admin/parts/NewParts/body/CustomerManagement/CustomerTable";
 import ReceiptDetail from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptDetail";
-
+import Sale from "../components/admin/parts/NewParts/body/ProductManagement/Sale";
+import AddSale from "../components/admin/parts/NewParts/body/ProductManagement/AddSale";
 // Auth Pages
 import AuthLayout from "../layouts/AuthLayout";
 import Login from "../pages/auth/Login";
@@ -52,6 +53,7 @@ import CouponTable from "../components/admin/parts/NewParts/body/CouponManagemen
 import AdvertisementTable from "../components/admin/parts/NewParts/body/AdvertisementManagement/AdvertisementTable";
 import NewAdvertisement from "../components/admin/parts/NewParts/body/AdvertisementManagement/NewAdvertisement";
 import OrderDetail from "../components/admin/parts/NewParts/body/OrderManagement/OrderDetail";
+import FeedbacksTable from "../components/admin/parts/NewParts/body/FeedbackManagement/FeedbacksTable";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -204,7 +206,7 @@ const router = createBrowserRouter([
       },
       {
         path: "feedback",
-        children: [{ path: "manage", element: <FeedbackManagement /> }],
+        children: [{ path: "manage", element: <FeedbacksTable /> }],
       },
       {
         path: "products",
@@ -213,6 +215,8 @@ const router = createBrowserRouter([
           { path: "new", element: <NewProduct /> },
           { path: "categories", element: <ProductCategories /> },
           { path: "update", element: <UpdateProduct /> },
+          { path: "sale", element: <Sale /> },
+          { path: "sale/add", element: <AddSale /> },
         ],
       },
     ],
