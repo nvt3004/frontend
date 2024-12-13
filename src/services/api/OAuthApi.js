@@ -227,7 +227,7 @@ export const sendResetPasswordSMS = async (phoneNumber) => {
 };
 
 export const verifyOtp = async ({ username, otp }) => {
-  const response = await fetch('/api/verify-otp', {
+  const response = await axiosInstance.post('/verify-otp', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

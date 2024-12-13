@@ -24,7 +24,6 @@ const NewAdvertisement = () => {
     reset,
   } = useForm();
 
-  // Load the advertisement data if available (for editing)
   useEffect(() => {
     if (advertisement) {
       const transformedAdvertisement = {
@@ -34,14 +33,12 @@ const NewAdvertisement = () => {
       };
       reset(transformedAdvertisement);
 
-      // Set existing images from advertisement
       if (advertisement.images && advertisement.images.length > 0) {
         setImages(advertisement.images);
       }
     }
   }, [advertisement, reset]);
 
-  // Helper function to format date for input[type="datetime-local"]
   const formatDateForInput = (dateString) => {
     if (!dateString) return "";
     const [day, month, year, hour, minute] = [
@@ -54,7 +51,6 @@ const NewAdvertisement = () => {
     return `${year}-${month}-${day}T${hour}:${minute}`;
   };
 
-  // Handle image selection
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setImages((prevImages) => [...prevImages, ...files]);
@@ -63,7 +59,7 @@ const NewAdvertisement = () => {
   const removeImage = (index) => {
     const removed = images[index];
     if (removed.imageUrl) {
-      setRemovedImages((prev) => [...prev, removed.imageUrl]); // Thêm imageUrl vào danh sách xóa
+      setRemovedImages((prev) => [...prev, removed.imageUrl]);
     }
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
     if (imageInputRef.current) {
@@ -81,19 +77,16 @@ const NewAdvertisement = () => {
     formData.append("endDate", data.endDate);
     formData.append("status", data.status);
 
-    // Ảnh từ DB
     const dbImages = images.filter((image) => image.imageUrl);
     dbImages.forEach((image) => {
       formData.append("existingImages", image.imageUrl);
     });
 
-    // Ảnh mới tải lên
     const newFiles = images.filter((image) => image instanceof File);
     newFiles.forEach((file) => {
       formData.append("images", file);
     });
 
-    // Ảnh cần xóa
     if (removedImages.length > 0) {
       removedImages.forEach((url) => {
         formData.append("removedImages", url);
@@ -116,8 +109,6 @@ const NewAdvertisement = () => {
         );
       }
 
-      console.log("Trạng thái: "+response?.data?.code);
-
       if (response?.data?.code === 1000) {
         toast.success(
           advertisement?.advId
@@ -126,13 +117,9 @@ const NewAdvertisement = () => {
         );
         reset();
         setImages([]);
-        setRemovedImages([]); // Reset removed images
+        setRemovedImages([]);
         setImageInputKey(Date.now());
-      } else if (response?.data?.code === 444) {
-        toast.error("Thời gian bắt đầu không hợp lệ");
-      } else if (response?.data?.code === 445) {
-        toast.error("Thời gian kết thúc phải lớn hơn thời gian bắt đầu");
-      }else {
+      } else {
         toast.error(response?.data?.message || "Failed to save advertisement.");
       }
     } catch (error) {
@@ -210,7 +197,6 @@ const NewAdvertisement = () => {
           )}
         </Form.Group>
 
-        {/* Image Upload */}
         <Form.Group className="mb-2">
           <Form.Label>Images</Form.Label>
           <div className="custom-file-input">
