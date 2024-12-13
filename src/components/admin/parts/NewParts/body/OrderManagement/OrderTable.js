@@ -37,6 +37,7 @@ const OrderTable = () => {
     const [pageSize, setPageSize] = useState(5);
     const [numberOfElements, setNumberOfElements] = useState(0);
     const navigate = useNavigate();
+
     const handleGetOrderAPI = () => {
         axiosInstance.get(`/staff/orders`, {
             params: {
@@ -48,7 +49,16 @@ const OrderTable = () => {
         }).then(
             (response) => {
                 if (response?.data?.errorCode === 200) {
-                    setOrders(response.data.data.content);
+                    // Ánh xạ trạng thái tiếng Anh sang tiếng Việt
+                    const ordersWithVietnameseStatus = response.data.data.content.map(order => {
+                        const statusNameVietnamese = statusMapping[order.statusName] || order.statusName;
+                        return {
+                            ...order,
+                            statusName: statusNameVietnamese
+                        };
+                    });
+
+                    setOrders(ordersWithVietnameseStatus);
                     setTotalPage(response?.data?.data?.totalPages);
                     setTotalElements(response?.data?.data?.totalElements);
                     setNumberOfElements(response?.data?.data?.numberOfElements);
@@ -126,14 +136,34 @@ const OrderTable = () => {
     };
 
     const [orderStatus, setOrderStatus] = useState([]);
+
+    const statusColorMapping = {
+        Pending: "#FFFF33",
+        Processed: "#FF9933",
+        Shipped: "#3399FF",
+        Delivered: "#33FF33",
+        Cancelled: "#FF3333",
+    };
+    const statusMapping = {
+        Pending: "Chờ xử lý",
+        Processed: "Đã xử lý",
+        Shipped: "Đã giao",
+        Delivered: "Đã nhận",
+        Cancelled: "Đã hủy"
+    };
+
     useEffect(() => {
         axiosInstance.get('/staff/orders/statuses')
             .then((response) => {
                 if (response.data?.errorCode === 200) {
                     let status = response?.data?.data.map(item => {
                         let color;
-                        // Loại bỏ khoảng trắng và chuyển về chữ thường cho statusName
-                        switch (item.statusName.trim().toLowerCase()) {
+                        const statusNameEnglish = item.statusName.trim().toLowerCase();
+
+                        // Ánh xạ tiếng Anh sang tiếng Việt
+                        const statusNameVietnamese = statusMapping[item.statusName.trim()] || item.statusName;
+
+                        switch (statusNameEnglish) {
                             case "pending":
                                 color = "#FFFF33"; // Vàng
                                 break;
@@ -152,9 +182,10 @@ const OrderTable = () => {
                             default:
                                 color = "#E0E0E0"; // Xám cho Temp hoặc trạng thái không xác định
                         }
+
                         return {
                             value: item.statusId,
-                            label: item.statusName,
+                            label: statusNameVietnamese, // Hiển thị trạng thái tiếng Việt
                             color: color
                         };
                     });
@@ -175,6 +206,7 @@ const OrderTable = () => {
                 }
             });
     }, [navigate]);
+
 
     // END GET status
 
@@ -523,7 +555,6 @@ const OrderTable = () => {
     };
 
 
-
     const handleKeyPress = (e, orderDetailId, productID, newQuantity) => {
         if (e.key === 'Enter') {
             handleQuantityInputBlur(orderDetailId, productID, newQuantity);
@@ -538,13 +569,22 @@ const OrderTable = () => {
                 if (response?.data?.errorCode === 200) {
                     const statuses = response.data.data;
 
-                    const formattedOptions = statuses.map(status => ({
-                        value: status.statusId,
-                        label: status.statusName
-                    }));
+                    const formattedOptions = statuses.map(status => {
+                        const statusName = status.statusName.trim();
+                        const statusNameVietnamese = statusMapping[statusName] || statusName;
+                        const statusColor = statusColorMapping[statusName] || "#E0E0E0";
+
+                        return {
+                            value: status.statusId,
+                            label: statusNameVietnamese,
+                            color: statusColor
+                        };
+                    });
+
                     formattedOptions.unshift({
                         value: null,
-                        label: 'All Statuses'
+                        label: 'Tất cả trạng thái',
+                        color: "#74c2de"
                     });
 
                     setStatusOptions(formattedOptions);
@@ -567,9 +607,7 @@ const OrderTable = () => {
         };
 
         fetchStatuses();
-    }, []);
-
-
+    }, [navigate]);
 
     const handleChange = (event, type) => {
 
@@ -634,8 +672,6 @@ const OrderTable = () => {
             }
         }
     };
-
-
 
     const handleDeleteOrderDetail = async (orderId, orderDetailId) => {
         Swal.fire({
@@ -771,7 +807,7 @@ const OrderTable = () => {
 
             if (!qzConnected) {
                 const options = {
-                    host: 'localhost', //Sử dụng tên miền chính thức để không phải hiển thị hỏi lại.
+                    host: 'https://stepstothefuture.store/',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
@@ -819,18 +855,19 @@ const OrderTable = () => {
             });
             // console.log(imageUrl + " imageUrl");
 
-            // const printerName = 'XP-58';
-            const printerName = 'Microsoft Print to PDF';
+            const printerName = 'XP-58';
+            // const printerName = 'Microsoft Print to PDF';
             const printConfig = qz.configs.create(printerName);
 
             console.log("Printing with config:", printConfig);
 
-            // In hình ảnh
+
             await qz.print(printConfig, [{ type: 'pdf', format: 'base64', data: base64data }]);
-            // Lệnh cắt giấy
+
             // await qz.print(printConfig, [
             //     { type: 'raw', format: 'command', data: '\x1B\x69' } // Lệnh ESC/POS để cắt giấy
             // ]);
+
             await qz.print(printConfig, [
                 { type: 'raw', format: 'command', data: '\x1B\x64\x01' } // Lệnh ESC/POS để cắt giấy
             ]);
@@ -843,7 +880,7 @@ const OrderTable = () => {
         } finally {
             if (qzConnected) {
                 try {
-                    await disconnectFromQz();  // Await disconnection
+                    await disconnectFromQz();
                     console.log("Disconnected from QZ Tray");
                 } catch (disconnectError) {
                     console.log("Disconnection error:", disconnectError);
@@ -875,7 +912,7 @@ const OrderTable = () => {
         try {
             if (!qzConnected) {
                 const options = {
-                    host: 'localhost', // Sử dụng tên miền chính thức để không phải hiển thị hỏi lại.
+                    host: 'https://stepstothefuture.store/',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
@@ -915,7 +952,8 @@ const OrderTable = () => {
                 }
             });
 
-            const printerName = 'Microsoft Print to PDF';
+            const printerName = 'XP-58';
+            // const printerName = 'Microsoft Print to PDF';
             const printConfig = qz.configs.create(printerName);
 
             for (const orderId of orderIds) {
@@ -952,19 +990,22 @@ const OrderTable = () => {
 
             const reader = new FileReader();
             const base64Promise = new Promise((resolve, reject) => {
-                reader.onloadend = () => resolve(reader.result.split(',')[1]); // Tách phần Base64
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
                 reader.onerror = reject;
             });
 
             reader.readAsDataURL(blob);
-            const base64data = await base64Promise;  // Loại bỏ các ký tự không mong muốn
+            const base64data = await base64Promise;
 
             console.log("Printing with config:", printConfig);
-            await qz.print(printConfig, [{ type: 'pdf', format: 'base64', data: base64data }]);
 
-            // Lệnh cắt giấy
+            await qz.print(printConfig, [{ type: 'pdf', format: 'base64', data: base64data }]);
+            // await qz.print(printConfig, [
+            //     { type: 'raw', format: 'command', data: '\x1B\x69' } // Lệnh ESC/POS để cắt giấy
+            // ]);
+
             await qz.print(printConfig, [
-                { type: 'raw', format: 'command', data: '\x1B\x69' } // Lệnh ESC/POS để cắt giấy
+                { type: 'raw', format: 'command', data: '\x1B\x64\x01' } // Lệnh ESC/POS để cắt giấy
             ]);
 
         } catch (error) {
@@ -973,7 +1014,7 @@ const OrderTable = () => {
     };
     useEffect(() => {
         return () => {
-            disconnectFromQz(); // Safe to call directly, no need for isMounted
+            disconnectFromQz();
         };
     }, []);
 
@@ -993,7 +1034,7 @@ const OrderTable = () => {
         setSelectedOrders(prevSelected => {
             if (!allChecked) {
                 return orders
-                    .filter(order => order.statusName === "Processed")
+                    .filter(order => order.statusName === "Đã xử lý")
                     .map(order => order.orderId);
             } else {
                 return [];
@@ -1009,13 +1050,13 @@ const OrderTable = () => {
             if (!order) return prevSelected;
 
 
-            if (order.statusName !== "Processed") return prevSelected;
+            if (order.statusName !== "Đã xử lý") return prevSelected;
 
             const newSelected = prevSelected.includes(orderId)
                 ? prevSelected.filter(id => id !== orderId)
                 : [...prevSelected, orderId];
 
-            setAllChecked(orders.filter(o => o.statusName === "Processed").every(order => newSelected.includes(order.orderId)));
+            setAllChecked(orders.filter(o => o.statusName === "Đã xử lý").every(order => newSelected.includes(order.orderId)));
 
             return newSelected;
         });
@@ -1024,15 +1065,15 @@ const OrderTable = () => {
     const [showSelectAll, setShowSelectAll] = useState(false);
 
     useEffect(() => {
-        setShowSelectAll(orders.some(order => order.statusName === "Processed"));
+        setShowSelectAll(orders.some(order => order.statusName === "Đã xử lý"));
     }, [orders]);
 
     return (
         <div>
             <div className='font-14'>
-                <div className='bg-body-tertiary d-flex align-items-center justify-content-between' style={{ height: "50px" }}>
-                    <div className='container d-flex justify-content-between px-0'>
-                        <div className='d-flex align-items-center justify-content-between' style={{ width: "60%" }}>
+                <div className='bg-body-tertiary py-2'>
+                    <div className='container'>
+                        <div className='d-flex align-items-center justify-content-between mb-3'>
                             <h4 className='m-0 d-flex align-items-center'>
                                 <FaClipboardList />&ensp;Đơn hàng
                             </h4>
@@ -1046,7 +1087,10 @@ const OrderTable = () => {
                                     icon={<FaFileInvoice />}
                                 />
                             )}
-                            <InputGroup className='mx-0' style={{ width: "400px" }}>
+                        </div>
+
+                        <div className='d-flex flex-wrap flex-md-nowrap align-items-center justify-content-between gap-3'>
+                            <InputGroup className='flex-grow-1'>
                                 <InputGroup.Text className='custom-radius'><FaSearch /></InputGroup.Text>
                                 <Form.Control
                                     className='custom-radius'
@@ -1055,30 +1099,34 @@ const OrderTable = () => {
                                     onChange={(e) => handleKeywordChange(e)}
                                 />
                             </InputGroup>
-                        </div>
 
-                        <div className='d-flex justify-content-between align-items-center' style={{ width: "40%" }}>
-                            <Select
-                                className="w-20 mx-3"
-                                options={statusOptions}
-                                placeholder="Trạng thái đơn hàng"
-                                onChange={(selectedOption) => handleChange(selectedOption, 'status')}
-                                isClearable
-                            />
-
-                            <Select
-                                className="w-20 mx-3"
-                                options={pageSizeOptions}
-                                placeholder="Số lượng trên trang"
-                                onChange={(selectedOption) => handleChange(selectedOption, 'pageSize')}
-                                isClearable
-                            />
-
+                            <div className='d-flex flex-column flex-md-row gap-3 w-100 mt-md-0'>
+                                <div className='flex-grow-1'>
+                                    <Select
+                                        className="w-100"
+                                        options={statusOptions}
+                                        placeholder="Trạng thái đơn hàng"
+                                        onChange={(selectedOption) => handleChange(selectedOption, 'status')}
+                                        styles={customReactSelectOrderStatusOptionsStyles}
+                                        isClearable
+                                    />
+                                </div>
+                                <div className='flex-grow-1'>
+                                    <Select
+                                        className="w-100"
+                                        options={pageSizeOptions}
+                                        placeholder="Số lượng trên trang"
+                                        onChange={(selectedOption) => handleChange(selectedOption, 'pageSize')}
+                                        isClearable
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
                 <div>
-                    <Table>
+                    <Table responsive>
                         <thead>
                             <tr>
                                 <th>
@@ -1116,7 +1164,7 @@ const OrderTable = () => {
                                         <React.Fragment key={order?.orderId}>
                                             <tr className='custom-table'>
                                                 <td>
-                                                    {order?.statusName === 'Processed' && (
+                                                    {order?.statusName === 'Đã xử lý' && (
                                                         <OverlayTrigger placement="top" overlay={<Tooltip id={`order-${order.orderId}-tooltip`}>Chọn đơn hàng để xuất hóa đơn</Tooltip>}>
                                                             <div>
                                                                 <input
@@ -1396,7 +1444,7 @@ const OrderTable = () => {
                                                                             {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
-                                                                    {order?.statusName === 'Processed' && (
+                                                                    {order?.statusName === 'Đã xử lý' && (
                                                                         <tr className='no-print'>
                                                                             <td colSpan={2} style={{ textAlign: 'right' }}>
                                                                                 <CustomButton
