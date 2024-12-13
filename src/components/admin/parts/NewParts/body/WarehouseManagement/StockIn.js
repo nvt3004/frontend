@@ -48,7 +48,7 @@ const StockIn = () => {
       // setLoading(false);
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -78,7 +78,7 @@ const StockIn = () => {
       // setLoading(false);
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -275,7 +275,7 @@ const StockIn = () => {
 
     const err =
       error.status === 403
-        ? "Account does not have permission to perform this function"
+        ? "Bạn không có quyền để thực thi công việc này !"
         : error?.response?.data?.message;
 
     toast.error(`${err}`, {
@@ -299,7 +299,7 @@ const StockIn = () => {
 
     const err =
       error.status === 403
-        ? "Account does not have permission to perform this function"
+        ? "Bạn không có quyền để thực thi công việc này !"
         : error?.response?.data?.message;
 
     toast.error(`${err}`, {
@@ -321,7 +321,7 @@ const StockIn = () => {
 
     const err =
       error.status === 403
-        ? "Account does not have permission to perform this function"
+        ? "Bạn không có quyền để thực thi công việc này !"
         : error?.response?.data?.message;
 
     toast.error(`${err}`, {
@@ -369,7 +369,7 @@ const StockIn = () => {
       // setLoading(false);
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -417,6 +417,18 @@ const StockIn = () => {
       setLoading(false);
       toast.success("Thành công");
       setVersions([]);
+      const fetchProducts = async () => {
+        const [error, data] = await stfExecAPI({
+          url: `api/staff/product?page=1&size=4`,
+        });
+
+        if (data) {
+          setProducts(data.data);
+          return;
+        }
+      };
+
+      fetchProducts();
       return;
     }
 

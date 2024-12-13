@@ -350,7 +350,7 @@ const AddSale = () => {
         size="modal-lg"
       >
         <div className="p-2">
-          <div className="input-group input-group-merge">
+          <div className="input-group input-group-merge mb-3">
             <span className="input-group-text" id="basic-addon-search31">
               <MagnifyingGlass />
             </span>
@@ -371,7 +371,70 @@ const AddSale = () => {
               minHeight: "400px",
               overflowY: "auto",
             }}
-          ></div>
+          >
+            <table className="table table-hover">
+              <tbody>
+                {products.map((pd) => {
+                  return (
+                    <React.Fragment key={pd.id}>
+                      <tr className="row" style={{ cursor: "pointer" }}>
+                        <td className="col-1">
+                          <input
+                            className="form-check-input"
+                            type="checkbox"
+                            checked={pd.check}
+                            onChange={(e) => {
+                              setProducts(
+                                products.map((i) => {
+                                  return pd.id === i.id
+                                    ? { ...i, check: e.target.checked }
+                                    : i;
+                                })
+                              );
+                            }}
+                          />
+                        </td>
+                        <td className="col-1">
+                          <img
+                            src={pd.image}
+                            alt={"No"}
+                            style={{ width: 35, height: 35 }}
+                          />
+                        </td>
+                        <td className="col-10">
+                          <p className="text-start">{pd.productName}</p>
+                        </td>
+                      </tr>
+
+                      {pd.versions.length > 0 &&
+                        pd.versions.map((vs, index) => {
+                          return (
+                            <tr className="row" key={index}>
+                              <td className="col-11 offset-1">
+                                <tr
+                                  className="row"
+                                  style={{ cursor: "pointer" }}
+                                >
+                                  <td className="col-1">
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      // checked={}
+                                      onChange={(e) => {}}
+                                    />
+                                  </td>
+                                  <td className="col-9">{vs.versionName}</td>
+                                </tr>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </ModalSft>
     </>

@@ -182,6 +182,7 @@ const SuppliersTable = () => {
     });
 
     setLoading(false);
+
     if (error) {
       const err =
         error.status === 403
@@ -193,6 +194,7 @@ const SuppliersTable = () => {
         position: "top-right",
         autoClose: 5000,
       });
+
       return;
     }
 

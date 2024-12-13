@@ -1,190 +1,333 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import axiosInstance from '../../../../../../services/axiosConfig';
-import { toast, ToastContainer } from 'react-toastify';
-import DataTableSft from '../../../../DataTableSft';
-import { Button, Form, Modal } from 'react-bootstrap';
-import { FaEye } from 'react-icons/fa';
-import { Input } from 'react-select/animated';
-import { useForm } from 'react-hook-form';
+import React, { useEffect, useState } from "react";
+import { stfExecAPI } from "../../../../../../stf/common";
+import { toast } from "react-toastify";
+import FullScreenSpinner from "../../../FullScreenSpinner";
+import DataTableSft from "../../../../DataTableSft";
+import ModalSft from "../../../../ModalSft";
+import PaginationSft from "../../../../PaginationSft";
+import moment from "moment";
+import { useNavigate } from "react-router-dom";
+import { ChatCircleDots } from "phosphor-react";
+
+function formatCurrencyVND(amount) {
+  return amount.toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  });
+}
+
+function formatNumber(input) {
+  if (typeof input !== "number") {
+    throw new Error("Input must be a number");
+  }
+  return input.toLocaleString("vi-VN");
+}
+
+function formatDateToDDMMYYYY(isoString) {
+  const date = new Date(isoString); // Chuyển chuỗi ISO thành đối tượng Date
+
+  if (isNaN(date.getTime())) {
+    throw new Error("Invalid date format");
+  }
+
+  const day = String(date.getDate()).padStart(2, "0"); // Lấy ngày, thêm 0 nếu cần
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Lấy tháng (bắt đầu từ 0)
+  const year = date.getFullYear(); // Lấy năm
+
+  return `${day}/${month}/${year}`;
+}
 
 const FeedbacksTable = () => {
-    const [originalFeedbackData, setOriginalFeedbackData] = useState([]);
-    const [tableData, setTableData] = useState(
-        [
-            {
-                id: '',
-                product: '',
-                date: '',
-                rating: 0,
-                user: '',
-                reply: '',
-                comment: '',
-                images: ''
-            }
-        ]
-    );
-    const handleGetFeedbacskAPI = () => {
-        axiosInstance.get('/staff/feedback/dashboard').then(
-            (response) => {
-                if (response?.data?.code === 200) {
-                    setOriginalFeedbackData(response?.data?.data?.contents);
-                }
-            }
-        ).catch(
-            (error) => {
-                if (error) {
-                    console.log(error);
-                    toast.error('Bạn không có quyền thực thi chức năng này ! Hoặc đã có lỗi xảy ra. Hãy báo cho bộ phận kỹ thuật khi phát hiện ra lỗi !');
-                }
-            }
+  const [receipts, setReceipt] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const [feedback, setFeedback] = useState({});
+  const navigate = useNavigate();
+
+  // ********** Cấu hình table*********
+  const columns = [
+    {
+      title: "Sản phẩm",
+      dataIndex: "productName",
+      key: "productName",
+      //   render: (text, record) => {
+      //     return (
+      //       <span
+      //         style={{
+      //           color: "#6610f2",
+      //           cursor: "pointer",
+      //           textDecoration: "underline",
+      //         }}
+      //         onClick={() => {
+      //           navigate("/admin/warehouse/detail", {
+      //             state: record,
+      //           });
+      //         }}
+      //       >
+      //         {text}
+      //       </span>
+      //     );
+      //   },
+    },
+    {
+      title: "Phản hồi",
+      dataIndex: "feedbackDate",
+      key: "feedbackDate",
+      render: (value, fb) => {
+        return (
+          <div className="flex-w flex-t p-b-68">
+            <div className="size-207">
+              <div className="flex-w flex-sb-m p-b-17">
+                {/* User Name */}
+                <div className="d-flex align-items-center">
+                  <span className="mtext-107 cl2 p-r-20">
+                    {fb?.user?.fullName}
+                  </span>
+                  <p className="stext-104 cl6">
+                    {moment(fb?.feedbackDate).format("DD/MM/YYYY")}
+                  </p>
+                </div>
+                <span className="fs-18 cl11">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <i
+                      key={i}
+                      className={`zmdi zmdi-star${
+                        i < fb?.rating ? "" : "-outline"
+                      }`}
+                    ></i>
+                  ))}
+                </span>
+              </div>
+
+              <p className="stext-102 cl6">{fb.comment}</p>
+              {fb?.images?.map((img, index) => (
+                <img
+                  key={index}
+                  className="me-2 mb-3"
+                  style={{ width: "100px", height: "100px" }}
+                  src={img}
+                  alt={`Img ${index}`}
+                />
+              ))}
+
+              {fb?.reply && (
+                <div className="bg-body-secondary p-3">
+                  <p className="stext-102 cl6">
+                    <span className="fs-6 text-dark">
+                      {fb?.reply?.userReply?.fullName}
+                    </span>{" "}
+                    <span className="mx-3">
+                      {moment(fb?.reply?.replyDate).format("DD/MM/YYYY")}
+                    </span>
+                  </p>
+                  {/* Reply Section */}
+                  {fb?.reply && (
+                    <div className="flex-w flex-t reply-section">
+                      <div>
+                        {/* <span className="mtext-107 cl2">STTF STORE</span> */}
+                        <p className="stext-102 cl6">{fb?.reply?.content}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         );
-    }
-    const mapDataToTableData = (apiData) => {
-        return apiData.map((item) => ({
-            id: item.feedbackId,
-            product: item.productName,
-            date: item.feedbackDate,
-            rating: item.rating,
-            user: item.user.fullName,
-            reply: item.reply != null ? item?.reply : 0,
-            comment: item?.comment,
-            image: item.images || 0
-        }));
+      },
+    },
+    {
+      title: "Trả lời",
+      dataIndex: "totalQuantity",
+      key: "totalQuantity",
+      render: (value, row) => {
+        return row?.reply ? (
+          <span>Đã trả lời</span>
+        ) : (
+          <button
+            className={`btn ${"btn-dark"} btn-sm`}
+            onClick={() => {
+              setFeedback({ ...row });
+              setIsModalDeleteOpen(true);
+            }}
+          >
+            <ChatCircleDots weight="bold" size={28} />
+          </button>
+        );
+      },
+    },
+  ];
+
+  //Đổ danh sách phản hồi
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/feedback/dashboard?page=${1}&idProduct=${-1}`,
+      });
+
+      if (data) {
+        setLoading(false);
+        setReceipt(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      setLoading(false);
     };
 
-    useEffect(
-        () => {
-            handleGetFeedbacskAPI();
-        }, []
-    );
-    const mappedData = useMemo(() => mapDataToTableData(originalFeedbackData), [originalFeedbackData]);
-    useEffect(() => {
-        setTableData(mappedData);
-    }, [mappedData]);
+    fetchUsers();
+  }, []);
 
-    useEffect(
-        () => {
-            if (tableData) {
-                console.log("table data: ", tableData);
-            }
-            if (originalFeedbackData.length >= 1) {
-                console.log("original data: ", originalFeedbackData);
-            }
-        }, [tableData, originalFeedbackData]
-    );
+  const onChangePagination = async (page) => {
+    setLoading(true);
+    const [error, data] = await stfExecAPI({
+      url: `api/staff/receipt?page=${page - 1}&size=${8}`,
+    });
 
-    const [showModal, setShowModal] = useState(false);
-    const [selectedFeedback, setSelectedFeedback] = useState(null);
-    const { setValue, register, getValues, formState: { errors }, setError } = useForm();
-    useEffect(
-        () => {
-            if (selectedFeedback && selectedFeedback?.reply !== 0) {
-                console.log("selected feedback: ", selectedFeedback);
-                setValue('content', selectedFeedback?.reply?.content);
-            }
-        }, [selectedFeedback]
-    );
-    const handleReply = () => {
-        const replyText = getValues("content");
-        if (!replyText) {
-            setError("content", { type: 'manual', message: "Không được bỏ trống phản hồi !" });
-        } else {
-            const data = {
-                feedbackId: selectedFeedback?.id,
-                content: replyText
-            }
-            if (data) {
-                axiosInstance.post("/admin/reply/add", data).then(
-                    (response) => {
-                        if (response.data?.code === 200) {
-                            setSelectedFeedback(null);
-                            setShowModal(false);
-                            toast.success('Phản hồi thành công !');
-                        } else if (response.data?.code === 998) {
-                            toast.error('Bạn không có quyền thực hiện chức năng này, vui lòng thử lại ! Hoặc nếu có lỗi xảy ra, vui lòng liên hệ ỹ thuật.');
-                        } else {
-                            toast.error('Không thể phản hồi ! Có thể đã xảy ra lỗi, vui lòng liên hệ kỹ thuật.');
-                        }
-                    }
-                ).catch(
-                    (error) => {
-                        if (error) {
-                            console.log(error);
-                            toast.error('Bạn không có quyền thực hiện chức năng này, vui lòng thử lại ! Hoặc nếu có lỗi xảy ra, vui lòng liên hệ ỹ thuật.');
-                            return;
-                        }
-                    }
-                );
-            }
-        }
+    setLoading(false);
+    if (data) {
+      setReceipt(data.data);
+    }
+  };
+
+  //Modal xóa
+  const handleModalDeleteOk = async () => {
+    if (!reason.trim()) {
+      toast.error(`Câu trả lời không được để trống`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      return;
     }
 
-    const column = [
-        { title: 'Mã', dataIndex: 'id', key: 'id' },
-        { title: 'Sản phẩm', dataIndex: 'product', key: 'product' },
-        { title: 'Ngày đăng', dataIndex: 'date', key: 'date' },
-        { title: 'Đánh giá', dataIndex: 'rating', key: 'rating' },
-        { title: 'Bình luận', dataIndex: 'comment', key: 'comment' },
-        {
-            dataIndex: 'image', key: 'image', render: (
-                (value) => {
-                    return (
-                        <img src={value} alt='feedback-images' />
-                    );
-                }
-            )
-        },
-        {
-            title: 'Phản hồi', dataIndex: 'reply', key: 'reply', render: (_, record) => {
-                return (
-                    record?.reply === 0 ?
-                        (
-                            <Button variant='dark' onClick={() => { setShowModal(true); setSelectedFeedback(record) }}>Phản hồi</Button>
-                        ) :
-                        (
-                            <Button variant='dark' onClick={() => { setShowModal(true); setSelectedFeedback(record) }}><FaEye /></Button>
-                        )
-                )
-            }
-        },
-    ];
-    return (
-        <div>
-            <div>
-                <DataTableSft
-                    columns={column}
-                    dataSource={tableData}
-                />
-            </div>
-            <div>
-                <Modal show={showModal} onHide={() => { setShowModal(false); setSelectedFeedback(null) }}>
-                    <Modal.Body>
-                        <Form>
-                            <Form.Group>
-                                <textarea className='border px-2 py-1 rounded-1' style={{ width: '100%' }}
-                                    placeholder='Phản hồi bình luận. . .'
-                                    {...register("content", { required: true })} />
-                                <p className='text-danger'>{errors?.content?.message}</p>
-                                <div className='d-flex justify-content-end mt-2'>
-                                    {selectedFeedback && selectedFeedback?.reply !== 0 ?
-                                        <Button variant='dark' onClick={() => { setShowModal(false); setSelectedFeedback(null) }}>Close</Button> :
-                                        <div className='d-flex justify-content-between mt-2'>
-                                            <Button className='me-2' variant='success' onClick={() => { handleReply() }}>Phản hồi</Button>
-                                            <Button variant='danger' onClick={() => { setShowModal(false); setSelectedFeedback(null) }}>Hủy bỏ</Button>
-                                        </div>
-                                    }
-                                </div>
+    setLoading(true);
+    const [error, data] = await stfExecAPI({
+      method: "post",
+      url: `api/admin/reply/add`,
+      data: {
+        feedbackId: feedback?.feedbackId,
+        content: reason,
+      },
+    });
 
-                            </Form.Group>
-                        </Form>
-                    </Modal.Body>
-                </Modal>
-            </div>
-            <div>
-                <ToastContainer />
-            </div>
+    if (error) {
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      setLoading(false);
+      return;
+    }
+
+    const fetchUsers = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/staff/feedback/dashboard?page=${1}&idProduct=${-1}`,
+      });
+
+      if (data) {
+        setReceipt(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchUsers();
+    setLoading(false);
+
+    toast.success(`Thành công`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+
+    setLoading(false);
+    setFeedback({});
+    setReason("");
+    setIsModalDeleteOpen(false); // Đóng modal khi nhấn "Save changes"
+  };
+
+  const handleModalDeleteCancel = () => {
+    setReason("");
+    setFeedback({});
+    setIsModalDeleteOpen(false); // Đóng modal khi nhấn "Close"
+  };
+
+  return (
+    <>
+      <FullScreenSpinner isLoading={loading} />
+      <DataTableSft
+        dataSource={receipts?.contents || []}
+        columns={columns}
+        title={"Danh sách phản hồi sản phẩm"}
+      />
+
+      <div className="d-flex justify-content-end align-items-center mt-3">
+        {/* <p className="me-3">Total 247 item</p> */}
+        {receipts.totalPages > 1 && (
+          <PaginationSft
+            count={receipts.totalPage}
+            defaultPage={(receipts.number || 0) + 1}
+            siblingCount={1}
+            onPageChange={onChangePagination}
+          />
+        )}
+      </div>
+
+      {/* Modal xóa */}
+      <ModalSft
+        title={"Trả lời"}
+        titleOk={"Ok"}
+        open={isModalDeleteOpen}
+        onOk={handleModalDeleteOk}
+        onCancel={handleModalDeleteCancel}
+        size="modal-lg"
+      >
+        <div>
+          <label for="" className="mb-2">
+            Câu trả lời
+          </label>
+          <textarea
+            class="form-control"
+            id="exampleFormControlTextarea1"
+            rows="3"
+            value={reason}
+            onInput={(e) => setReason(e.target.value)}
+            placeholder="Nhập câu trả lời"
+          ></textarea>
         </div>
-    );
-}
+      </ModalSft>
+    </>
+  );
+};
 
 export default FeedbacksTable;

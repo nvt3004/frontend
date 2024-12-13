@@ -13,6 +13,13 @@ function formatCurrencyVND(amount) {
   });
 }
 
+function formatNumber(input) {
+  if (typeof input !== "number") {
+    throw new Error("Input must be a number");
+  }
+  return input.toLocaleString("vi-VN");
+}
+
 const ReceiptList = () => {
   const [receipts, setReceipt] = useState({});
   const [loading, setLoading] = useState(false);
@@ -54,6 +61,9 @@ const ReceiptList = () => {
       title: "Số lượng Sản Phẩm",
       dataIndex: "totalQuantity",
       key: "totalQuantity",
+      render: (value, row) => {
+        return formatNumber(value);
+      },
     },
     {
       title: "Tổng Tiền",

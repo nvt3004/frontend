@@ -6,6 +6,7 @@ import React, {
   useMemo,
 } from "react";
 import Avatar from "../../assets/images/userDefaut.jpg";
+import { useNavigate } from "react-router-dom";
 import {
   getAllProvince,
   getAllDistrictByProvince,
@@ -60,6 +61,8 @@ const Account = () => {
     email: "",
     phone: "",
   });
+
+  const navigate = useNavigate();
 
   const [orders, setOrders] = useState([]);
   const [page, setPage] = useState(0); // Quản lý trang hiện tại
@@ -674,7 +677,7 @@ const Account = () => {
             <div>
               {orders?.length === 0 ? (
                 <div className="text-center py-3 text-muted">
-                  No orders found
+                  Bạn chưa có đơn hàng nào cả
                 </div>
               ) : (
                 orders.map((order) => (
@@ -693,7 +696,7 @@ const Account = () => {
                         {/* Thông tin cơ bản */}
                         <div>
                           <p className="fw-bold mb-1">
-                            Order ID: #{order.orderId}
+                            Mã đơn hàng: #{order.orderId}
                           </p>
                           <p className="text-muted small mb-0">
                             <i className="zmdi zmdi-calendar-note me-2"></i>
@@ -762,7 +765,18 @@ const Account = () => {
                                           objectFit: "cover",
                                         }}
                                       />
-                                      <span>{product.productName}</span>
+                                      <span
+                                        style={{
+                                          color: "#6610f2",
+                                          cursor: "pointer",
+                                          textDecoration: "underline",
+                                        }}
+                                        onClick={() => {
+                                          navigate(`/product-detail/${product.productId}`);
+                                        }}
+                                      >
+                                        {product.productName}
+                                      </span>
                                     </div>
                                   </td>
                                   <td className="text-center">
