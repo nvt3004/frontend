@@ -1,8 +1,18 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { registerUser, verifyOtp } from "../../services/api/OAuthApi";
+import {
+  Link,
+  useNavigate,
+  useLocation,
+  useNavigation,
+} from "react-router-dom";
+import { registerUser, verifyOtp, loginWithEmail } from "../../services/api/OAuthApi";
 
 const Register = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const {} = useNavigation();
+
   const [fullName, setFullName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -11,6 +21,8 @@ const Register = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isOtpStage, setIsOtpStage] = useState(false);
+
+  const from = location.state?.from || "/home";
 
   const handleRegister = async (event) => {
     event.preventDefault();
@@ -23,7 +35,9 @@ const Register = () => {
     try {
       const response = await registerUser({ fullName, username, password });
       if (response.statusCode === 200) {
-        setSuccess("Registration successful. Please enter the OTP sent to your email/phone.");
+        setSuccess(
+          "Registration successful. Please enter the OTP sent to your email/phone."
+        );
         setIsOtpStage(true);
       } else {
         setError(response.error || "Registration failed");
@@ -35,17 +49,26 @@ const Register = () => {
 
   const handleVerifyOtp = async (event) => {
     event.preventDefault();
-  
     try {
       const response = await verifyOtp({ username, otp });
+  
       if (response.statusCode === 200) {
         setSuccess("OTP verified successfully. You can now login.");
-        setError("");
+
+        const loginResponse = await loginWithEmail(username, password);
+  
+        if (loginResponse.data.statusCode === 200) {
+          setSuccess("Login successful.");
+          navigate(from, { replace: true });
+        } else {
+          setError("Login failed after OTP verification.");
+        }
       } else {
-        setError(response.error || "OTP verification failed");
+        setError("An error occurred during OTP verification.");
       }
     } catch (error) {
-      setError("An error occurred during OTP verification");
+      console.error("Error: ", error);
+      setError("An error occurred during OTP verification.");
     }
   };
 

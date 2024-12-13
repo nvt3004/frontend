@@ -130,13 +130,13 @@ const Login = () => {
 
     try {
       const response = await loginWithEmail(username, password);
-
+    
       if (response.status === 200) {
         const token = Cookies.get("token");
         if (token) {
           const profileData = await getProfile();
           setProfile(profileData);
-
+    
           const role = profileData?.listData?.authorities[0]?.authority;
           if (role === "Admin") {
             navigate("/admin");
@@ -157,6 +157,7 @@ const Login = () => {
       }
       console.error("Error during username login:", error.message);
     }
+    
   };
 
   useEffect(() => {

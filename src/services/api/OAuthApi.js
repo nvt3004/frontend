@@ -89,7 +89,6 @@ export const loginWithEmail = async (username, password) => {
   }
 };
 
-
 export const registerUser = async (userData) => {
   try {
     const response = await axiosInstance.post("/register", userData);
@@ -227,14 +226,6 @@ export const sendResetPasswordSMS = async (phoneNumber) => {
 };
 
 export const verifyOtp = async ({ username, otp }) => {
-  const response = await axiosInstance.post('/verify-otp', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ username, otp }),
-  });
-  return response.json();
+  const response = await axiosInstance.post("/verify-otp", { username, otp });
+  return response.data;
 };
-
-
