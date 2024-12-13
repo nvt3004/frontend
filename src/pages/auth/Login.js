@@ -81,6 +81,7 @@ const Login = () => {
   const handleFacebookLogin = async () => {
     try {
       facebookProvider.addScope("email");
+      googleProvider.addScope("profile");
       const result = await signInWithPopup(auth, facebookProvider);
       const user = result.user;
       const userId = user.uid;
@@ -91,7 +92,8 @@ const Login = () => {
 
       const additionalUserInfo = getAdditionalUserInfo(result);
       const userEmail = user.email || additionalUserInfo.profile.email;
-
+      console.log("data: ", user);
+      console.log("email: ", additionalUserInfo.profile.email);
       if (userEmail) {
         const userData = {
           fullName: fullName,
