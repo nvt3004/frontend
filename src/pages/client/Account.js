@@ -585,9 +585,9 @@ const Account = () => {
         <div className="d-flex align-items-center bg-white shadow-sm rounded p-3 mb-4">
           <div>
             <img
-              src={`https://api.stepstothefuture.store/images/${
-                profile?.listData?.image || Avatar
-              }`}
+              src={
+                selectedImage || profile?.listData?.image || Avatar
+              }
               alt="User Avatar"
               className="rounded-2 me-3"
               style={{ width: "180px", height: "180px", objectFit: "cover" }}
