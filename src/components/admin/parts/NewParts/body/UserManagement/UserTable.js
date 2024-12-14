@@ -19,6 +19,27 @@ import {
 import { stfExecAPI } from "../../../../../../stf/common";
 import FullScreenSpinner from "../../../FullScreenSpinner";
 
+const categoryVn = [
+  { en: "Sale", vn: "Giảm giá sản phẩm" },
+  { en: "Advertisement", vn: "Quảng cáo" },
+  { en: "Attribute", vn: "Thuộc tính" },
+  { en: "Category", vn: "Thể loại" },
+  { en: "Coupon", vn: "Phiếu giảm giá" },
+  { en: "Feedback", vn: "Phản hồi" },
+  { en: "Product", vn: "Sản phẩm" },
+  { en: "Order", vn: "Hóa đơn" },
+  { en: "Receipt", vn: "Nhập kho" },
+  { en: "Supplier", vn: "Nhà cung cấp" },
+  { en: "Reply", vn: "Trả lời phản hồi" },
+];
+
+const roleVn = [
+  { en: "Add", vn: "Thêm" },
+  { en: "Update", vn: "Cập nhật" },
+  { en: "View", vn: "Xem" },
+  { en: "Delete", vn: "Xóa" },
+];
+
 const convertToBase64 = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -858,7 +879,14 @@ const UserTable = () => {
             return (
               <div className="row mb-3" key={u.title}>
                 <div className="col-md-3">
-                  <label className="me-3">{u.title}:</label>
+                  <label className="me-3">
+                    {
+                      categoryVn.find(
+                        (i) => i.en.toLowerCase() === u.title.toLowerCase()
+                      ).vn
+                    }
+                    :
+                  </label>
                 </div>
 
                 <div className="col-md-9">
@@ -895,7 +923,12 @@ const UserTable = () => {
                           id={up.id}
                         />
                         <label className="form-check-label" htmlFor={up.id}>
-                          {up.name}
+                          {
+                            roleVn.find(
+                              (i) =>
+                                i.en.toLowerCase() === up.name.toLowerCase()
+                            ).vn
+                          }
                         </label>
                       </div>
                     ))}
@@ -914,7 +947,7 @@ const UserTable = () => {
                         className="form-check-label"
                         htmlFor={u.title + "all"}
                       >
-                        All
+                        Tất cả
                       </label>
                     </div>
                   </div>
