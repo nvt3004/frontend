@@ -257,6 +257,7 @@ const OrderTable = () => {
             ]
         }
     );
+    const initialVersionRef = useRef({});
     const initialQuantitiesRef = useRef({});
     const handleGetOrderDetail = () => {
         axiosInstance.get(`/staff/orders/${orderID?.value}`)
@@ -267,7 +268,10 @@ const OrderTable = () => {
 
                     const orderDetail = temp?.productDetails.map((item) => {
                         initialQuantities[`${item.orderDetailId}-${item.productId}`] = item.quantity;
-
+                        initialVersionRef.current[`${item.orderDetailId}-${item.productId}`] = {
+                            colorId: item.attributeProductVersion?.color?.colorId,
+                            sizeId: item.attributeProductVersion?.size?.sizeId,
+                        };
                         return {
                             orderDetailId: item.orderDetailId,
                             product: [
@@ -419,72 +423,60 @@ const OrderTable = () => {
         const sizeId = orderVersionAttribute.size?.value;
 
         if (!colorId || !sizeId) {
-            toast.error("Please select both color and size.");
+            toast.error("Vui lòng chọn cả màu sắc và kích thước.");
             return;
         }
 
-        axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`)
-            .then((response) => {
-                console.log("API Response:", response);
-                if (response.data?.errorCode === 200) {
-                    toast.success("Updated order detail successfully!");
-                    handleGetOrderDetail();
-                    handleGetOrderAPI();
-                    setEditVersion({ isEdit: false, orderDetailsID: null });
-                } else if (response.data?.errorCode === 998) {
-                    console.log("Permission Denied:", response.data);
-                    toast.error(response.data?.message || "Bạn không có quyền thực hiện hành động này.");
-                } else {
-                    console.log("Error Response:", response.data);
-                    toast.error(response.data?.message || "Could not update order detail. Please try again!");
-                }
+        const currentQuantity = initialQuantitiesRef.current[`${orderDetailId}-${productID}`];
+        const updatedQuantity = quantities[`${orderDetailId}-${productID}`];
+        const quantityChanged = currentQuantity !== updatedQuantity;
+
+        const versionHasChanged =
+            colorId !== initialVersionRef.current[`${orderDetailId}-${productID}`]?.colorId ||
+            sizeId !== initialVersionRef.current[`${orderDetailId}-${productID}`]?.sizeId;
+        let updatePromise;
+
+        if (quantityChanged && versionHasChanged) {
+            updatePromise = Promise.all([
+                axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${updatedQuantity}`),
+                axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`)
+            ]);
+        } else if (quantityChanged) {
+            updatePromise = axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${updatedQuantity}`);
+        } else if (versionHasChanged) {
+            updatePromise = axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`);
+        } else {
+            toast.info("Không có thay đổi nào cần lưu.");
+            setEditVersion({ isEdit: false, orderDetailsID: null });
+            return;
+        }
+
+        updatePromise
+            .then(() => {
+                toast.success("Cập nhật chi tiết đơn hàng thành công!");
+                handleGetOrderDetail();
+                handleGetOrderAPI();
+                setEditVersion({ isEdit: false, orderDetailsID: null });
             })
             .catch((error) => {
-                console.error("Error updating order detail:", error);
-                if (error?.response?.status === 403) {
-                    toast.error("Session expired. Redirecting to login...");
-                    navigate('/auth/login');
-                } else {
-                    toast.error(error?.response?.data?.message || "An error occurred while updating order detail.");
-                }
+                const message = error.response?.data?.message || "Có lỗi xảy ra khi cập nhật chi tiết đơn hàng.";
+                toast.error(message);
             });
     };
 
-
-
     const handleQuantityChange = (orderDetailId, productID, currentQuantity, change) => {
-        const newQuantity = currentQuantity + change;
+        const newQuantity = quantities[`${orderDetailId}-${productID}`] + change;
 
         if (newQuantity < 1) {
-            toast.error("Quantity cannot be less than 1.");
+            toast.error("Số lượng không được nhỏ hơn 1.");
             return;
         }
+        setQuantities(prevQuantities => ({
+            ...prevQuantities,
+            [`${orderDetailId}-${productID}`]: newQuantity,
+        }));
 
-        axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&quantity=${newQuantity}`)
-            .then((response) => {
-                if (response.data?.errorCode === 200) {
-                    toast.success("Updated quantity successfully!");
-                    setQuantities(prevQuantities => ({
-                        ...prevQuantities,
-                        [`${orderDetailId}-${productID}`]: newQuantity,
-                    }));
-                    handleGetOrderDetail();
-                    handleGetOrderAPI();
-                } else if (response.data?.errorCode === 998) {
-                    toast.error(response.data?.message || "You do not have permission to update the quantity.");
-                } else {
-                    toast.error(response.data?.message || "Could not update quantity. Please try again!");
-                }
-            })
-            .catch((error) => {
-                console.error("Error updating quantity:", error);
-                if (error?.response?.status === 403) {
-                    toast.error("Session expired. Redirecting to login...");
-                    navigate('/auth/login');
-                } else {
-                    toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
-                }
-            });
+        toast.success("Số lượng đã được cập nhật. Vui lòng lưu thay đổi.");
     };
 
 
@@ -493,72 +485,6 @@ const OrderTable = () => {
             ...prevQuantities,
             [`${orderDetailId}-${productID}`]: newQuantity,
         }));
-    };
-
-    const handleQuantityInputBlur = (orderDetailId, productID, newQuantity) => {
-        newQuantity = parseInt(newQuantity, 10);
-        const currentQuantity = initialQuantitiesRef.current[`${orderDetailId}-${productID}`];
-        if (newQuantity === currentQuantity) {
-            setQuantities(prevQuantities => ({
-                ...prevQuantities,
-                [`${orderDetailId}-${productID}`]: currentQuantity,
-            }));
-            return;
-        }
-        if (isNaN(newQuantity) || newQuantity < 1) {
-            toast.error("Quantity must be a positive number.");
-            setQuantities(prevQuantities => ({
-                ...prevQuantities,
-                [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
-            }));
-            return;
-        }
-
-        axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${newQuantity}`)
-            .then(response => {
-                if (response.data?.errorCode === 200) {
-                    toast.success("Updated quantity successfully!");
-                    setQuantities(prevQuantities => ({
-                        ...prevQuantities,
-                        [`${orderDetailId}-${productID}`]: newQuantity,
-                    }));
-                    initialQuantitiesRef.current[`${orderDetailId}-${productID}`] = newQuantity;
-                    handleGetOrderDetail();
-                    handleGetOrderAPI();
-                } else if (response.data?.errorCode === 998) {
-                    toast.error(response.data?.message || "Bạn không có quyền thực hiện hành động này.");
-                    setQuantities(prevQuantities => ({
-                        ...prevQuantities,
-                        [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
-                    }));
-                } else {
-                    setQuantities(prevQuantities => ({
-                        ...prevQuantities,
-                        [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
-                    }));
-                    toast.error(response.data?.message || "Could not update quantity. Please try again!");
-                }
-            })
-            .catch(error => {
-                setQuantities(prevQuantities => ({
-                    ...prevQuantities,
-                    [`${orderDetailId}-${productID}`]: initialQuantitiesRef.current[`${orderDetailId}-${productID}`],
-                }));
-                console.error("Error updating quantity:", error);
-                if (error?.response?.status === 403) {
-                    toast.error("Session expired. Redirecting to login...");
-                    navigate('/auth/login');
-                } else {
-                    toast.error(error.response?.data?.message || "An error occurred while updating quantity.");
-                }
-            });
-    };
-
-
-    const handleKeyPress = (e, orderDetailId, productID, newQuantity) => {
-        if (e.key === 'Enter') {
-            handleQuantityInputBlur(orderDetailId, productID, newQuantity);
-        }
     };
 
     useEffect(() => {
@@ -717,8 +643,6 @@ const OrderTable = () => {
             }
         });
     };
-
-
 
     const handleKeywordChange = (e) => {
         setKeyword(e.target.value);
@@ -903,7 +827,6 @@ const OrderTable = () => {
             toast.info("No orders selected to print.");
             return;
         }
-
 
         printMultipleInvoices(selectedOrders);
     }
@@ -1107,7 +1030,13 @@ const OrderTable = () => {
                                         options={statusOptions}
                                         placeholder="Trạng thái đơn hàng"
                                         onChange={(selectedOption) => handleChange(selectedOption, 'status')}
-                                        styles={customReactSelectOrderStatusOptionsStyles}
+                                        styles={{
+                                            ...customReactSelectOrderStatusOptionsStyles,
+                                            container: (provided) => ({
+                                                ...provided,
+                                                minWidth: '200px',
+                                            }),
+                                        }}
                                         isClearable
                                     />
                                 </div>
@@ -1117,16 +1046,24 @@ const OrderTable = () => {
                                         options={pageSizeOptions}
                                         placeholder="Số lượng trên trang"
                                         onChange={(selectedOption) => handleChange(selectedOption, 'pageSize')}
+                                        styles={{
+                                            ...customReactSelectOrderStatusOptionsStyles,
+                                            container: (provided) => ({
+                                                ...provided,
+                                                minWidth: '200px',
+                                            }),
+                                        }}
                                         isClearable
                                     />
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <Table responsive>
+                    <Table responsive variant="light">
                         <thead>
                             <tr>
                                 <th>
@@ -1138,7 +1075,7 @@ const OrderTable = () => {
                                                     checked={allChecked}
                                                     onChange={handleSelectAllChange}
                                                 />
-                                                <span>Chọn tất</span>
+                                                <span>Tất cả</span>
                                             </di>
                                         </OverlayTrigger>
                                     ) : (
@@ -1196,7 +1133,14 @@ const OrderTable = () => {
                                                 <td> {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')} </td>
                                                 <td style={{ width: '200px' }}>
                                                     <Select options={orderStatus} value={orderStatus.find(option => option.label === order?.statusName)}
-                                                        styles={customReactSelectOrderStatusOptionsStyles}
+                                                         styles={{
+                                                            ...customReactSelectOrderStatusOptionsStyles,
+                                                            container: (provided) => ({
+                                                                ...provided,
+                                                                minWidth: '200px',
+                                                            }),
+                                                        }}
+                                                        menuPortalTarget={document.body}
                                                         onChange={(option) => handleChangeStatus(option, order?.orderId)} /> </td>
                                                 <td>
                                                     <CustomButton
@@ -1214,19 +1158,22 @@ const OrderTable = () => {
                                             </tr>
                                             {(orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail) &&
                                                 (
-                                                    <tr>
-                                                        <td colSpan={8}>
-                                                            <Table responsive variant="light">
-                                                                <thead className='bg-light'>
-                                                                    <th className='text-center'>STT</th>
-                                                                    <th style={{ width: '270px' }} className='text-center'>Sản phẩm</th>
-                                                                    <th style={{ width: '150px' }} className='text-center'></th>
-                                                                    <th colSpan={2} className='text-center no-print'>Thuộc tính</th>
-                                                                    <th className='text-center'>Đơn giá</th>
-                                                                    <th className='text-center'>Số lượng</th>
-                                                                    <th className='text-center'>Thành tiền</th>
-                                                                    <th colSpan={2} className='no-print' ></th>
+                                                    <tr className='border-bottom-2'>
+                                                        <td colSpan={7} className='border' style={{ background: '#F2F8FF' }}>
+                                                            <Table responsive style={{ background: '#F2F8FF' }}>
+                                                                <thead style={{ background: '#F2F8FF', height: '30px' }}>
+                                                                    <tr>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>STT</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '200px' }}>Sản phẩm</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '150px' }}></th>
+                                                                        <th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print">Thuộc tính</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>Đơn giá</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '130px' }}>Số lượng</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>Thành tiền</th>
+                                                                        {order?.statusName === 'Chờ xử lý' && (<th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print"></th>)}
+                                                                    </tr>
                                                                 </thead>
+
                                                                 <tbody>
                                                                     {orderDetails?.orderDetail?.map((orderDetail) => (
                                                                         orderDetail?.product.map((item) => (
@@ -1283,47 +1230,64 @@ const OrderTable = () => {
                                                                                 <td className='text-center p-1'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
 
                                                                                 <td className='text-center p-1'>
-                                                                                    {order?.statusName === 'Pending' ? (
+                                                                                    {order?.statusName === 'Chờ xử lý' ? (
                                                                                         <div className='d-flex justify-content-center'>
-                                                                                            <OverlayTrigger placement="top" overlay={<Tooltip id={`decrease-quantity-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>Giảm số lượng</Tooltip>}>
-                                                                                                <span>
-                                                                                                    <Button
-                                                                                                        className='bg-black bg-gradient'
-                                                                                                        variant="secondary"
-                                                                                                        size="sm"
-                                                                                                        onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}
-                                                                                                    >
-                                                                                                        -
-                                                                                                    </Button>
-                                                                                                </span>
-                                                                                            </OverlayTrigger>
+                                                                                            {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId && (
+                                                                                                <CustomButton
+                                                                                                    btnName="-"
+                                                                                                    btnBG="secondary"
+                                                                                                    handleClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}
+                                                                                                    textColor="bg-black bg-gradient"
+                                                                                                    textSize="sm"
+                                                                                                    tooltip="Giảm số lượng"
+                                                                                                    btnSize="sm"
+                                                                                                />
+                                                                                            )}
 
-                                                                                            <OverlayTrigger placement="top" overlay={<Tooltip id={`quantity-input-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>Nhập số lượng</Tooltip>}>
-                                                                                                <div>
-                                                                                                    <input
-                                                                                                        type="text"
-                                                                                                        className="mx-2 text-center quantity-custom form-control form-control-sm"
-                                                                                                        value={quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined ? quantities[`${orderDetail.orderDetailId}-${item.productID}`] : item.quantity}
-                                                                                                        onChange={(e) => handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                        onBlur={(e) => handleQuantityInputBlur(orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                        onKeyDown={(e) => handleKeyPress(e, orderDetail.orderDetailId, item.productID, e.target.value)}
-                                                                                                        style={{ width: '50px', textAlign: 'center' }}
-                                                                                                    />
-                                                                                                </div>
-                                                                                            </OverlayTrigger>
+                                                                                            {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                                <OverlayTrigger
+                                                                                                    placement="top"
+                                                                                                    overlay={
+                                                                                                        <Tooltip id={`quantity-input-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>
+                                                                                                            Nhập số lượng
+                                                                                                        </Tooltip>
+                                                                                                    }
+                                                                                                >
+                                                                                                    <div>
+                                                                                                        <input
+                                                                                                            type="text"
+                                                                                                            className="mx-2 text-center quantity-custom form-control form-control-sm"
+                                                                                                            value={
+                                                                                                                quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined
+                                                                                                                    ? quantities[`${orderDetail.orderDetailId}-${item.productID}`]
+                                                                                                                    : item.quantity
+                                                                                                            }
+                                                                                                            onChange={(e) =>
+                                                                                                                handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)
+                                                                                                            }
+                                                                                                            style={{
+                                                                                                                width: "50px",
+                                                                                                                textAlign: "center",
+                                                                                                            }}
+                                                                                                        />
+                                                                                                    </div>
+                                                                                                </OverlayTrigger>
+                                                                                            ) : (
+                                                                                                <span>{item.quantity}</span>
+                                                                                            )}
 
-                                                                                            <OverlayTrigger placement="top" overlay={<Tooltip id={`increase-quantity-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>Tăng số lượng</Tooltip>}>
-                                                                                                <span>
-                                                                                                    <Button
-                                                                                                        className='bg-black bg-gradient'
-                                                                                                        variant="secondary"
-                                                                                                        size="sm"
-                                                                                                        onClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}
-                                                                                                    >
-                                                                                                        +
-                                                                                                    </Button>
-                                                                                                </span>
-                                                                                            </OverlayTrigger>
+
+                                                                                            {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId && (
+                                                                                                <CustomButton
+                                                                                                    btnName="+"
+                                                                                                    btnBG="secondary"
+                                                                                                    handleClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}
+                                                                                                    textColor="bg-black bg-gradient"
+                                                                                                    textSize="sm"
+                                                                                                    tooltip="Tăng số lượng"
+                                                                                                    btnSize="sm"
+                                                                                                />
+                                                                                            )}
                                                                                         </div>
                                                                                     ) : (
                                                                                         item?.quantity
@@ -1332,7 +1296,7 @@ const OrderTable = () => {
 
                                                                                 <td className='text-end text-right'>{`${(item?.total || 0).toLocaleString('vi-VN')} VND`}</td>
 
-                                                                                {order?.statusName === 'Pending' &&
+                                                                                {order?.statusName === 'Chờ xử lý' &&
                                                                                     (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
                                                                                         <React.Fragment style={{ width: '50px !important' }}>
                                                                                             <td className='no-print p-1 text-center'>
@@ -1343,6 +1307,7 @@ const OrderTable = () => {
                                                                                                     btnName={<HiCheck />}
                                                                                                     handleClick={() => handleSaveVersionChanges(orderDetail)}
                                                                                                     tooltip="Lưu thay đổi"
+                                                                                                    btnSize={'sm'}
                                                                                                 />
                                                                                             </td>
                                                                                             <td className='no-print p-1 text-center'>
@@ -1353,6 +1318,7 @@ const OrderTable = () => {
                                                                                                     btnName={<ImCancelCircle />}
                                                                                                     handleClick={() => setEditVersion({ isEdit: false, orderDetailsID: null })}
                                                                                                     tooltip="Hủy bỏ"
+                                                                                                    btnSize={'sm'}
                                                                                                 />
                                                                                             </td>
                                                                                         </React.Fragment>
@@ -1366,6 +1332,7 @@ const OrderTable = () => {
                                                                                                     btnName={<FaTrash />}
                                                                                                     handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
                                                                                                     tooltip="Xóa"
+                                                                                                    btnSize={'sm'}
                                                                                                 />
                                                                                             </td>
 
@@ -1377,6 +1344,7 @@ const OrderTable = () => {
                                                                                                     btnName={<MdModeEdit />}
                                                                                                     handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
                                                                                                     tooltip="Sửa"
+                                                                                                    btnSize={'sm'}
                                                                                                 />
                                                                                             </td>
                                                                                         </React.Fragment>
@@ -1385,8 +1353,8 @@ const OrderTable = () => {
                                                                         ))
                                                                     ))}
 
-                                                                    <tr className="no-print bg-white">
-                                                                        <td rowSpan="7" colSpan="6" className='bg-light'>
+                                                                    <tr className="no-print" >
+                                                                        <td rowSpan="7" colSpan="5" className='border-end' style={{ background: '#F2F8FF' }}>
                                                                             <div className="p-3 d-flex flex-column align-items-start">
                                                                                 <div className="d-flex align-items-center mb-2">
                                                                                     <strong className="text-info me-2">Phương thức thanh toán:</strong>
@@ -1418,19 +1386,19 @@ const OrderTable = () => {
 
                                                                     <tr>
 
-                                                                        <td colSpan={1} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
                                                                         <td className='text-end'>
                                                                             {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td colSpan={1} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
                                                                         <td className='text-end'>
                                                                             {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
-                                                                        <td colSpan={1} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>
                                                                             Giảm giá: ({formatDiscount(order?.disCount)})
                                                                         </td>
                                                                         <td className='text-end'>
@@ -1439,14 +1407,14 @@ const OrderTable = () => {
                                                                     </tr>
 
                                                                     <tr>
-                                                                        <td colSpan={1} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
+                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
                                                                         <td className='text-end'>
                                                                             {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
                                                                         </td>
                                                                     </tr>
                                                                     {order?.statusName === 'Đã xử lý' && (
                                                                         <tr className='no-print'>
-                                                                            <td colSpan={2} style={{ textAlign: 'right' }}>
+                                                                            <td colSpan={3} style={{ textAlign: 'right' }}>
                                                                                 <CustomButton
                                                                                     className='bg-black bg-gradient'
                                                                                     textColor="white"
@@ -1462,6 +1430,7 @@ const OrderTable = () => {
                                                             </Table>
                                                         </td>
                                                     </tr>
+
                                                 )
                                             }
                                         </React.Fragment>
