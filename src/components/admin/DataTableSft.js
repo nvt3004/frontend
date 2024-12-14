@@ -36,19 +36,21 @@ const DataTableSft = ({
         {/* Thanh tìm kiếm */}
         {isSearch && (
           <div className="col-3 px-4">
-            <div className="input-group input-group-merge">
-              <span className="input-group-text" id="basic-addon-search31">
-                <MagnifyingGlass />
-              </span>
-              <input
-                onChange={handleSearchChange} // Sử dụng hàm handleSearchChange thay vì onChangeSearch trực tiếp
-                value={searchKeyword} // Hiển thị giá trị keyword trong input
-                type="text"
-                className="form-control"
-                placeholder="Search..."
-                aria-label="Search..."
-                aria-describedby="basic-addon-search31"
-              />
+            <div className="d-flex align-items-center h-100">
+              <div className="input-group input-group-merge">
+                <span className="input-group-text" id="basic-addon-search31">
+                  <MagnifyingGlass />
+                </span>
+                <input
+                  onChange={handleSearchChange} // Sử dụng hàm handleSearchChange thay vì onChangeSearch trực tiếp
+                  value={searchKeyword} // Hiển thị giá trị keyword trong input
+                  type="text"
+                  className="form-control"
+                  placeholder="Tìm kiếm"
+                  aria-label="Search..."
+                  aria-describedby="basic-addon-search31"
+                />
+              </div>
             </div>
           </div>
         )}

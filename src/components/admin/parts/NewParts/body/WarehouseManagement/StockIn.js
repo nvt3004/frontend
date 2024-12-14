@@ -48,7 +48,7 @@ const StockIn = () => {
       // setLoading(false);
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -78,7 +78,7 @@ const StockIn = () => {
       // setLoading(false);
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -140,11 +140,40 @@ const StockIn = () => {
       key: "versionName",
     },
     {
-      title: "Giá Nhập",
+      title: "Giá nhập",
       dataIndex: "importPrice",
       key: "importPrice",
-      render: (value, row) => {
-        return formatCurrencyVND(value);
+      render: (value, record) => {
+        return (
+          <input
+            type="text"
+            className="form-control w-100"
+            id="basic-default-fullname"
+            placeholder="Nhập giá"
+            value={value?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            onChange={(e) => {
+              const inputValue = e.target.value;
+
+              // Chỉ giữ lại các ký tự là số
+              const numericValue = inputValue.replace(/\D/g, "");
+              const newPrice = Number(numericValue);
+
+              const vss = versions.map((d) => {
+                if (d.id === record.id) {
+                  return {
+                    ...d,
+                    importPrice: newPrice,
+                    total: d.quantity * newPrice,
+                  };
+                }
+
+                return d;
+              });
+
+              setVersions(vss);
+            }}
+          />
+        );
       },
     },
     {
@@ -155,12 +184,23 @@ const StockIn = () => {
         return (
           <input
             type="number"
-            className="form-control"
+            className="form-control w-50"
             id="basic-default-fullname"
-            placeholder="Enter quantity"
+            placeholder="Nhập số lượng"
             value={value}
+            onInput={(e) => {
+              const inputValue = e.target.value;
+              // Cho phép giá trị rỗng (xóa sạch để nhập lại), chỉ xử lý khi có nội dung
+              if (
+                inputValue !== "" &&
+                (!/^\d+$/.test(inputValue) || Number(inputValue) <= 0)
+              ) {
+                e.target.value = inputValue.replace(/[^1-9][^0-9]*/g, "");
+              }
+            }}
             onBlur={(e) => {
-              if (e.target.value <= 0) {
+              if (e.target.value === "" || Number(e.target.value) <= 0) {
+                // Nếu người dùng để trống hoặc nhập giá trị không hợp lệ khi mất tiêu điểm
                 const vss = versions.map((d) => {
                   if (d.id === record.id) {
                     return {
@@ -169,7 +209,6 @@ const StockIn = () => {
                       total: d.importPrice,
                     };
                   }
-
                   return d;
                 });
 
@@ -185,7 +224,6 @@ const StockIn = () => {
                     total: e.target.value * d.importPrice,
                   };
                 }
-
                 return d;
               });
 
@@ -237,7 +275,7 @@ const StockIn = () => {
 
     const err =
       error.status === 403
-        ? "Account does not have permission to perform this function"
+        ? "Bạn không có quyền để thực thi công việc này !"
         : error?.response?.data?.message;
 
     toast.error(`${err}`, {
@@ -261,7 +299,7 @@ const StockIn = () => {
 
     const err =
       error.status === 403
-        ? "Account does not have permission to perform this function"
+        ? "Bạn không có quyền để thực thi công việc này !"
         : error?.response?.data?.message;
 
     toast.error(`${err}`, {
@@ -283,7 +321,7 @@ const StockIn = () => {
 
     const err =
       error.status === 403
-        ? "Account does not have permission to perform this function"
+        ? "Bạn không có quyền để thực thi công việc này !"
         : error?.response?.data?.message;
 
     toast.error(`${err}`, {
@@ -300,9 +338,10 @@ const StockIn = () => {
         .map((i) => {
           return {
             ...i,
+            importPrice: "",
             quantity: 1,
             image: i.image.name,
-            total: i.importPrice,
+            total: 0,
           };
         })
         .filter((i) => {
@@ -330,7 +369,7 @@ const StockIn = () => {
       // setLoading(false);
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -355,13 +394,17 @@ const StockIn = () => {
     }
 
     const versionPost = versions.map((i) => {
-      return { productVersionId: i.id, quantity: i.quantity };
+      return {
+        productVersionId: i.id,
+        quantity: i.quantity,
+        price: i.importPrice,
+      };
     });
 
     const dat = {
       supplierId: selectedSupplier.value,
       productVersions: versionPost,
-      description: 'Nhập kho tốt'
+      description: "Nhập kho tốt",
     };
 
     const [error, data] = await stfExecAPI({
@@ -372,15 +415,27 @@ const StockIn = () => {
 
     if (data) {
       setLoading(false);
-      toast.success("Nhập kho thành công!");
+      toast.success("Thành công");
       setVersions([]);
+      const fetchProducts = async () => {
+        const [error, data] = await stfExecAPI({
+          url: `api/staff/product?page=1&size=4`,
+        });
+
+        if (data) {
+          setProducts(data.data);
+          return;
+        }
+      };
+
+      fetchProducts();
       return;
     }
 
     setLoading(false);
     const err =
       error.status === 403
-        ? "Account does not have permission to perform this function"
+        ? "Bạn không có quyền để thực thi công việc này !"
         : error?.response?.data?.message;
 
     toast.error(`${err}`, {

@@ -53,7 +53,7 @@ const AvatarUpload = ({ onFileSelect, pathImage = "", marginRight = "50px" }) =>
             className="upload-area d-block rounded mb-2"
             style={{ width: "200px", height: "200px", marginRight }}
           >
-            <p>None image</p>
+            <p>Ảnh trống</p>
           </div>
         )}
         <div className="d-flex justify-content-start align-items-center">
@@ -63,7 +63,7 @@ const AvatarUpload = ({ onFileSelect, pathImage = "", marginRight = "50px" }) =>
             tabIndex="0"
           >
             <span className="d-none d-sm-block d-flex align-items-center">
-              <UploadSimple weight="fill" /> <span>Upload</span>
+              <UploadSimple weight="fill" /> <span>Tải lên</span>
             </span>
             <input
               type="file"
@@ -76,7 +76,7 @@ const AvatarUpload = ({ onFileSelect, pathImage = "", marginRight = "50px" }) =>
           </label>
 
           <button type="button" className="btn btn-outline-secondary mb-4" onClick={handleReset}>
-            Reset
+            Làm lại
           </button>
         </div>
       </div>

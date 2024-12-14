@@ -6,6 +6,14 @@ import {
 } from "phosphor-react"; // Đảm bảo import đúng các icon
 import debounce from "lodash.debounce"; // Import debounce từ lodash
 
+function formatNumber(input) {
+  if (typeof input !== "number") {
+    throw new Error("Input must be a number");
+  }
+  return input.toLocaleString("vi-VN");
+}
+
+
 const StockProductSearch = ({
   products,
   handleNext,
@@ -52,8 +60,8 @@ const StockProductSearch = ({
           value={searchQuery} // Hiển thị giá trị keyword trong input
           type="text"
           className="form-control"
-          placeholder="Search..."
-          aria-label="Search..."
+          placeholder="Tìm kiếm..."
+          aria-label="Tìm kiếm..."
           aria-describedby="basic-addon-search31"
         />
       </div>
@@ -96,7 +104,7 @@ const StockProductSearch = ({
                       <h6 className="card-title">{product.productName}</h6>
                       <p className="">
                         Trong kho:{" "}
-                        {product.totalStock < 0 ? 0 : product.totalStock}
+                        {product.totalStock < 0 ? 0 : formatNumber(product.totalStock)}
                       </p>
                       <p className="">
                         Số lượng phiên bản: {product.versions.length}

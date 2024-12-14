@@ -1,12 +1,15 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
 import PaginationSft from "../../../../PaginationSft";
 import DataTableSft from "../../../../DataTableSft";
 import ModalSft from "../../../../ModalSft";
-import AvatarUpload from "../../../../AvatarUpload ";
-import { Lock, LockOpen, Plus, Eye } from "phosphor-react";
+import DatePicker from "react-datepicker";
+import { format } from "date-fns";
+import "react-datepicker/dist/react-datepicker.css";
+import { vi } from "date-fns/locale";
 import { stfExecAPI } from "../../../../../../stf/common";
 import FullScreenSpinner from "../../../FullScreenSpinner";
+import {  CalendarBlank } from "phosphor-react";
 
 const convertToBase64 = (file) => {
   return new Promise((resolve, reject) => {
@@ -60,40 +63,40 @@ const CustomerTable = () => {
 
   // ********** Cấu hình table*********
   const columns = [
-    { title: "Username", dataIndex: "username", key: "name" },
-    { title: "Fullname", dataIndex: "fullname", key: "age" },
+    { title: "Tên Đăng Nhập", dataIndex: "username", key: "name" },
+    { title: "Họ và tên", dataIndex: "fullname", key: "age" },
     { title: "Email", dataIndex: "email", key: "email" },
-    { title: "Birthday", dataIndex: "birthday", key: "birthday" },
+    { title: "Ngày sinh", dataIndex: "birthday", key: "birthday" },
     {
-      title: "Gender",
+      title: "Giới tính",
       dataIndex: "gender",
       key: "gender",
       render: (value, record) => {
-        return value === 0 ? "" : value === 1 ? "Male" : "Female";
+        return value === 0 ? "" : value === 1 ? "Nam" : "Nữ";
       },
     },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (text, record) => {
         if (text === 0) {
           return (
             <span class="badge bg-label-danger me-1" style={{ width: "80px" }}>
-              inactive
+              Đã khóa
             </span>
           );
         } else {
           return (
             <span class="badge bg-label-success me-1" style={{ width: "80px" }}>
-              active
+              Hoạt động
             </span>
           );
         }
       },
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (text, record) => {
         return (
@@ -104,12 +107,12 @@ const CustomerTable = () => {
               } btn-sm`}
               onClick={() => handleDelete(record)}
             >
-              {record.status === 1 ? "Block" : "Unblock"}
+              {record.status === 1 ? "Khóa" : "Mở khóa"}
             </button>
           </div>
         );
       },
-    }
+    },
   ];
 
   const btnTable = () => {
@@ -123,8 +126,8 @@ const CustomerTable = () => {
             setStatus(e.target.value);
           }}
         >
-          <option value="1">Active</option>
-          <option value="0">Inactive</option>
+          <option value="1">Hoạt động</option>
+          <option value="0">Đã khóa</option>
         </select>
       </div>
     );
@@ -147,7 +150,7 @@ const CustomerTable = () => {
 
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -162,7 +165,7 @@ const CustomerTable = () => {
 
   //Nhấn nút delete
   const handleDelete = (record) => {
-    setReason('');
+    setReason("");
     setIsBlock(record.status === 1);
     setIsModalDeleteOpen(true);
     setUser({ ...record });
@@ -180,7 +183,7 @@ const CustomerTable = () => {
     if (error) {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -204,7 +207,7 @@ const CustomerTable = () => {
 
     fetchUsers();
 
-    toast.success(`Success!`, {
+    toast.success(`Thành công`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
@@ -235,7 +238,7 @@ const CustomerTable = () => {
 
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -278,7 +281,7 @@ const CustomerTable = () => {
     } else {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -291,13 +294,14 @@ const CustomerTable = () => {
     setLoading(false);
   };
 
+
   return (
     <>
-    <FullScreenSpinner isLoading={loading} />
+      <FullScreenSpinner isLoading={loading} />
       <DataTableSft
         dataSource={users?.content || []}
         columns={columns}
-        title={"Customer list"}
+        title={"Danh sách khách hàng"}
         isSearch={true}
         onChangeSearch={onChangeInputSearch}
         keyword={keyword}
@@ -318,7 +322,7 @@ const CustomerTable = () => {
 
       {/* Modal xóa */}
       <ModalSft
-        title="Block account"
+        title={isblock ? "Khóa tài khoản" : "Mở khóa tài khoản"}
         titleOk={"Ok"}
         open={isModalDeleteOpen}
         onOk={handleModalDeleteOk}
@@ -327,8 +331,8 @@ const CustomerTable = () => {
       >
         {isblock ? (
           <div>
-            <label for="exampleFormControlTextarea1" class="form-label">
-              Reason
+            <label for="" className="mb-2">
+              Lý do
             </label>
             <textarea
               class="form-control"
@@ -336,9 +340,12 @@ const CustomerTable = () => {
               rows="3"
               value={reason}
               onInput={(e) => setReason(e.target.value)}
+              placeholder="Nhập lý do khóa"
             ></textarea>
           </div>
-        ):'Are you sure you want to unlock this account?'}
+        ) : (
+          "Bạn có chắc muốn mở cho khóa tài khoản này?"
+        )}
       </ModalSft>
     </>
   );

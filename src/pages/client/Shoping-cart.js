@@ -14,7 +14,7 @@ import moment from "moment";
 const getEndDate = (end) => {
   const now = moment(); // Lấy thời gian hiện tại
   const endDate = moment(end, "DD/MM/YYYY HH:mm"); // Chuyển đổi chuỗi thành moment
-  
+
   if (!endDate.isValid()) {
     return "Ngày giờ không hợp lệ"; // Kiểm tra nếu thời gian không hợp lệ
   }
@@ -915,12 +915,12 @@ const ShopingCart = () => {
                             onChange={handleSelectAll} // Xử lý khi checkbox tổng được click
                           />
                         </th>
-                        <th>Product</th>
+                        <th>Sản phẩm</th>
                         <th></th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Total</th>
-                        <th>Action</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Tổng</th>
+                        <th>Hành động</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1166,35 +1166,36 @@ const ShopingCart = () => {
                 </div>
 
                 <div className="d-flex align-items-center flex-sb-m bor15 p-t-18 p-b-15 p-lr-40 p-lr-15-sm">
-                  <div className="input-group">
-                    <div>
-                      <select
-                        className="flex-c-m stext-101 cl2 size-119 bg8 bor13 p-lr-15 trans-04 pointer m-tb-5 form-select rounded-start-5"
-                        onChange={handleCoupon}
-                        value={Coupon}
-                      >
-                        <option value="-1" selected>
-                          Select a coupon
-                        </option>
+                  <div className="w-100 me-2">
+                    <select
+                      className="flex-c-m stext-101 cl2 size-119 bg8 bor13 p-lr-15 trans-04 pointer m-tb-5 form-select rounded-start-5"
+                      onChange={handleCoupon}
+                      value={Coupon}
+                    >
+                      <option value="-1" selected>
+                        Select a coupon
+                      </option>
 
-                        {coupons &&
-                          coupons.map((c) => {
-                            return (
-                              <option value={c.id}>{`${c.couponCode} - Giảm ${
-                                c.percent ? c.percent + " %" : formatCurrencyVND(c.price)
-                              } - Còn ${getEndDate(c.endDate)}`}</option>
-                            );
-                          })}
-                      </select>
-                    </div>
-                    <input
-                      type="text"
-                      className="form-control stext-104 cl2 plh4 size-117 bor13 p-lr-20 m-r-10 m-tb-5 rounded-end-5"
-                      aria-label="Text input with dropdown button"
-                      onChange={handleInputCoupon}
-                      value={iputEnter}
-                    />
+                      {coupons &&
+                        coupons.map((c) => {
+                          return (
+                            <option value={c.id}>{`${c.couponCode} - Giảm ${
+                              c.percent
+                                ? c.percent + " %"
+                                : formatCurrencyVND(c.price)
+                            } - Còn ${getEndDate(c.endDate)}`}</option>
+                          );
+                        })}
+                    </select>
                   </div>
+                  <input
+                    style={{ display: "none" }}
+                    type="hide"
+                    aria-label="Text input with dropdown button"
+                    onChange={handleInputCoupon}
+                    value={iputEnter}
+                  />
+
                   <div
                     onClick={handleApplyCoupon}
                     className="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10"
@@ -1207,10 +1208,10 @@ const ShopingCart = () => {
 
             <div className="col-sm-10 col-lg-7 col-xl-5 m-lr-auto m-b-50">
               <div className="bor10 p-lr-40 p-t-30 p-b-40 m-l-63 m-r-40 m-lr-0-xl p-lr-15-sm">
-                <h4 className="mtext-109 cl2 p-b-30">Cart Totals</h4>
+                <h4 className="mtext-109 cl2 p-b-30">Tổng giỏ hàng</h4>
 
                 <div className="d-flex bor12 p-3">
-                  <span className="stext-110 cl2">Subtotal:</span>
+                  <span className="stext-110 cl2">Tổng:</span>
 
                   <div className="w-100 ">
                     <div className="text-end">
@@ -1225,7 +1226,7 @@ const ShopingCart = () => {
                   {/* Address Section */}
                   <div className="w-full-ssm h-100  p-3">
                     <div className="mb-3">
-                      <span className="stext-110 cl2">Address*:</span>
+                      <span className="stext-110 cl2">Địa chỉ:</span>
                       <div className="mt-2">
                         <select
                           className="pe-5 text-ellipsis w-100 border border-1 p-2 form-select stext-111"
@@ -1261,7 +1262,7 @@ const ShopingCart = () => {
                         </select>
 
                         <div className=" w-full d-flex justify-content-between mt-3">
-                          <span className="stext-111 cl2">Delivery fee:</span>
+                          <span className="stext-111 cl2">Phí vận chuyển:</span>
                           <span className="stext-110 cl2">
                             {fee ? formatCurrencyVND(fee) : ""}
                           </span>
@@ -1288,7 +1289,9 @@ const ShopingCart = () => {
 
                     {/* Coupon Section */}
                     <div className="mb-3">
-                      <span className="stext-110 cl2">Coupon (Read Only):</span>
+                      <span className="stext-110 cl2">
+                        Mã giảm giá (Chỉ đọc):
+                      </span>
                       <div className="bor8 bg0 mt-2">
                         <input
                           className="rounded-0 stext-110 cl8 plh3 size-111 p-lr-15 w-100 text-danger text-end"
@@ -1301,12 +1304,14 @@ const ShopingCart = () => {
                     </div>
 
                     <div>
-                      <span className="stext-110 cl2">Payment method:</span>
+                      <span className="stext-110 cl2">
+                        Phương thức thành toán:
+                      </span>
 
                       <div className="mt-3 d-flex">
-                        <div className="form-check me-3">
+                        <div className="d-flex me-2">
                           <input
-                            className="form-check-input"
+                            className="form-check-input  me-2"
                             type="radio"
                             name="flexRadioDefault"
                             id="flexRadioDefault1"
@@ -1318,10 +1323,12 @@ const ShopingCart = () => {
                           <label
                             className="form-check-label"
                             htmlFor="flexRadioDefault1"
+                            style={{ display: "inline" }}
                           >
-                            Cash on Delivery
+                            Khi nhận hàng
                           </label>
                         </div>
+
                         <div className="form-check">
                           <input
                             className="form-check-input"
@@ -1345,14 +1352,14 @@ const ShopingCart = () => {
                   </div>
                 </div>
 
-                <div className="flex-w flex-t p-t-27 p-b-33">
-                  <div className="size-208 ps-3">
-                    <span className="mtext-101 cl2">Total:</span>
+                <div className="d-flex justify-content-between mb-3 mt-3">
+                  <div className="ps-3">
+                    <span className="mtext-101 cl2">Tổng cộng:</span>
                   </div>
 
-                  <div className="size-209 p-t-1 text-end pe-3">
+                  <div className="p-t-1 text-end pe-3">
                     <span className="mtext-110 cl2">
-                      {formatCurrencyVND(total<0 ?0: total)}
+                      {formatCurrencyVND(total < 0 ? 0 : total)}
                     </span>
                   </div>
                 </div>
@@ -1361,7 +1368,7 @@ const ShopingCart = () => {
                   className="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer"
                   onClick={handleProceedToCheckout}
                 >
-                  Proceed to Checkout
+                  Thanh toán
                 </button>
               </div>
             </div>
@@ -1382,7 +1389,7 @@ const ShopingCart = () => {
                   className="modal-title  stext-101 cl5 size-103 d-flex align-items-center"
                   id="exampleModalLabel"
                 >
-                  Edit Version
+                  Chọn sản phẩm
                 </h1>
                 <button
                   type="button"
@@ -1455,7 +1462,7 @@ const ShopingCart = () => {
                 className="modal-title  stext-101 cl5 size-103 d-flex align-items-center"
                 id="exampleModalLabel"
               >
-                Edit Version
+                Chọn sản phẩm
               </h1>
               <button
                 type="button"
@@ -1478,4 +1485,4 @@ const ShopingCart = () => {
 };
 export default ShopingCart;
 
-//Thêm bảng có id của quyền add product, 
+//Thêm bảng có id của quyền add product,

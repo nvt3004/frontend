@@ -19,7 +19,7 @@ import heart1 from "../../assets/images/icons/icon-heart-01.png";
 import heart2 from "../../assets/images/icons/icon-heart-02.png";
 import prod12 from "../../assets/images/product-01.jpg";
 import SizeGuide from "../../components/client/Modal/SizeGuideModal";
-import logo from "../../assets/images/icons/logo.png"
+import logo from "../../assets/images/icons/logo.png";
 function getRowCelCick(attributes = [], item) {
   for (let i = 0; i < attributes.length; i++) {
     const key = attributes[i].key;
@@ -746,8 +746,8 @@ const ProductDetail = () => {
                                   </span>
                                   <p className="stext-104 cl6">
                                     {moment(fb?.feedbackDate)
-                                      .subtract(8, "hours")
-                                      .format("DD/MM/YYYY HH:mm")}
+                                      // .subtract(8, "hours")
+                                      .format("DD/MM/YYYY")}
                                   </p>
                                 </div>
                                 <span className="fs-18 cl11">
@@ -771,32 +771,35 @@ const ProductDetail = () => {
                                   alt={`Img ${index}`}
                                 />
                               ))}
-                   
-                   {fb?.reply && (
-                              <div className="bg-body-secondary p-3">
-                                <p className="stext-102 cl6">
-                                  Phản hồi của người bán:
-                                </p>
-                                {/* Reply Section */}
-                                {fb?.reply && (
-                                  <div className="flex-w flex-t reply-section">
-                                    <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-                                      <img
-                                        src={logo}
-                                        alt="Reply Avatar"
-                                      />
+
+                              {fb?.reply && (
+                                <div className="bg-body-secondary p-3">
+                                  <p className="stext-102 cl6">
+                                    Phản hồi của người bán:
+                                  </p>
+                                  {/* Reply Section */}
+                                  {fb?.reply && (
+                                    <div className="flex-w flex-t reply-section">
+                                      <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+                                        <img
+                                          src={
+                                            "https://getbootstrap.com/docs/5.3/assets/brand/bootstrap-logo-black.svg"
+                                          }
+                                          alt="Reply Avatar"
+                                        />
+                                      </div>
+                                      <div>
+                                        <span className="mtext-107 cl2">
+                                          STTF STORE
+                                        </span>
+                                        <p className="stext-102 cl6">
+                                          {fb?.reply?.content}
+                                        </p>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <span className="mtext-107 cl2">
-                                     STTF STORE
-                                      </span>
-                                      <p className="stext-102 cl6">
-                                        {fb?.reply?.content}
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>       )}
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
