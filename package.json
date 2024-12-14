@@ -47,6 +47,7 @@
     "react-tag-input-component": "^2.0.2",
     "react-to-print": "^3.0.1",
     "react-toastify": "^10.0.5",
+    "recordrtc": "^5.6.2",
     "redux": "^5.0.1",
     "semver": "^7.6.3",
     "slick-carousel": "^1.8.1",
