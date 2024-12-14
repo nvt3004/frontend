@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import PaginationSft from "../../../../PaginationSft";
 import DataTableSft from "../../../../DataTableSft";
 import ModalSft from "../../../../ModalSft";
-import DatePicker from "react-datepicker";
+// import DatePicker from "react-datepicker";
 import { format } from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
 import { vi } from "date-fns/locale";
@@ -150,7 +150,7 @@ const CustomerTable = () => {
 
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -183,7 +183,7 @@ const CustomerTable = () => {
     if (error) {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -207,7 +207,7 @@ const CustomerTable = () => {
 
     fetchUsers();
 
-    toast.success(`Success!`, {
+    toast.success(`Thành công`, {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
@@ -238,7 +238,7 @@ const CustomerTable = () => {
 
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -281,7 +281,7 @@ const CustomerTable = () => {
     } else {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Bạn không có quyền để thực thi công việc này !"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {

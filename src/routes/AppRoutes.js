@@ -29,6 +29,7 @@ import CustomerTable from "../components/admin/parts/NewParts/body/CustomerManag
 import ReceiptDetail from "../components/admin/parts/NewParts/body/WarehouseManagement/ReceiptDetail";
 import Sale from "../components/admin/parts/NewParts/body/ProductManagement/Sale";
 import AddSale from "../components/admin/parts/NewParts/body/ProductManagement/AddSale";
+import UpdateSale from "../components/admin/parts/NewParts/body/ProductManagement/UpdateSale";
 // Auth Pages
 import AuthLayout from "../layouts/AuthLayout";
 import Login from "../pages/auth/Login";
@@ -67,7 +68,10 @@ const router = createBrowserRouter([
       {
         path: "/shoping-cart",
         element: (
-          <ProtectedRoute element={<ShopingCart />} requiredRole="User,Staff,Admin" />
+          <ProtectedRoute
+            element={<ShopingCart />}
+            requiredRole="User,Staff,Admin"
+          />
         ),
       },
       { path: "/blog", element: <Blog /> },
@@ -193,9 +197,7 @@ const router = createBrowserRouter([
       },
       {
         path: "coupon",
-        children: [
-          { path: "manage", element: <CouponTable /> },
-        ],
+        children: [{ path: "manage", element: <CouponTable /> }],
       },
       {
         path: "advertisement",
@@ -217,6 +219,7 @@ const router = createBrowserRouter([
           { path: "update", element: <UpdateProduct /> },
           { path: "sale", element: <Sale /> },
           { path: "sale/add", element: <AddSale /> },
+          { path: "sale/update", element: <UpdateSale /> },
         ],
       },
     ],

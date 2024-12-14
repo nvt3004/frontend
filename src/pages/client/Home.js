@@ -337,12 +337,12 @@ const Home = () => {
     });
 
     if (error) {
-      // DangerAlert({
-      //   text:
-      //     `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-      //     "Server error",
-      // });
-      window.location.href = "/auth/login";
+      DangerAlert({
+        text:
+          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
+          "Lỗi máy chủ",
+      });
+     // window.location.href = "/auth/login";
       return;
     } else {
       dispatch(incrementCart());
