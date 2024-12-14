@@ -1095,7 +1095,12 @@ const OrderTable = () => {
                         <tbody>
 
                             {orders.length === 0 ? (
-                                <p>Không tìm thấy đơn hàng nào.</p>
+                              <tr>
+                              <td colSpan={8} className="text-center" style={{ height: '100px' }}>
+                                  Không tìm thấy đơn hàng nào.
+                              </td>
+                          </tr>
+                          
                             ) : (
                                 orders?.map(
                                     (order) => (
@@ -1117,7 +1122,7 @@ const OrderTable = () => {
                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                     {order?.orderId}
                                                 </td>
-                                                <td style={{verticalAlign: 'middle' }}>
+                                                <td style={{ verticalAlign: 'middle' }}>
                                                     {order?.fullname}
                                                 </td>
                                                 <td style={{ verticalAlign: 'middle' }}>
@@ -1132,7 +1137,7 @@ const OrderTable = () => {
                                                 </td>
 
                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle' }}> {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')} </td>
-                                                <td style={{ width: '200px', textAlign: 'center', verticalAlign: 'middle' }}>
+                                                <td style={{ width: '200px',  verticalAlign: 'middle' }}>
                                                     <Select options={orderStatus} value={orderStatus.find(option => option.label === order?.statusName)}
                                                         styles={{
                                                             ...customReactSelectOrderStatusOptionsStyles,
