@@ -1018,13 +1018,13 @@ const Product = () => {
         aria-labelledby="exampleModalLabel"
       >
         <div className="modal-dialog modal-xl">
-          <div className="modal-content rounded-0">
+        <div className="modal-content shadow-lg rounded-4">
             <div className="modal-header pb-1 pt-2">
               <h1
                 className="modal-title flex-c-m stext-101 cl5 size-103  p-lr-15"
                 id="exampleModalLabel"
               >
-                Quick view product details
+           Thông tin sản phẩm
               </h1>
               <button
                 type="button"

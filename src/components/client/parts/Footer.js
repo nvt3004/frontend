@@ -35,9 +35,9 @@ const Footer = () => {
         </div>
     
       {/* Footer */}
-      <footer className="bg3 p-t-75 p-b-32">
+      <footer className="bg3  p-b-32">
         <div className="container">
-          <div className="row">
+          {/* <div className="row">
             <div className="col-sm-6 col-lg-3 p-b-50">
               <h4 className="stext-301 cl0 p-b-30">Categories</h4>
 
@@ -166,10 +166,10 @@ const Footer = () => {
                 </div>
               </form>
             </div>
-          </div>
+          </div> */}
 
           <div className="p-t-40">
-            <div className="flex-c-m flex-w p-b-18">
+            {/* <div className="flex-c-m flex-w p-b-18">
               <Link to="#" className="m-all-1">
                 <img src={pay1} alt="ICON-PAY" />
               </Link>
@@ -189,7 +189,7 @@ const Footer = () => {
               <Link to="#" className="m-all-1">
                 <img src={pay5} alt="ICON-PAY" />
               </Link>
-            </div>
+            </div> */}
 
             <p className="stext-107 cl6 txt-center">
               &copy; {year} All rights reserved | Proudly crafted by Step to

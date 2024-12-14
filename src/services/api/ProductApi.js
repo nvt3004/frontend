@@ -650,6 +650,33 @@ const searchProductByImage = async (imageFile) => {
   }
 };
 
+
+const speechToText = async (audioWavFile) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", audioWavFile);
+
+    const { data } = await axiosInstance.post(
+      "product/transcription",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return data;
+  } catch (error) {
+    if (error.response) {
+      console.error("Error response:", error.response.data);
+    } else {
+      console.error("Error message:", error.message);
+    }
+    throw error;
+  }
+};
+
 const productApi = {
   getProds: search,
   getFilterAttribute,
@@ -666,5 +693,6 @@ const productApi = {
   addFeedback,
   cancelOrder,
   searchProductByImage,
+  speechToText
 };
 export default productApi;
