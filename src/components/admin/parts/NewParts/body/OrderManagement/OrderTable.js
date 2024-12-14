@@ -731,7 +731,8 @@ const OrderTable = () => {
 
             if (!qzConnected) {
                 const options = {
-                    host: 'https://stepstothefuture.store/',
+                    // host: 'https://stepstothefuture.store/',
+                    host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
@@ -796,7 +797,6 @@ const OrderTable = () => {
                 { type: 'raw', format: 'command', data: '\x1B\x64\x01' } // Lệnh ESC/POS để cắt giấy
             ]);
 
-
             toast.success('Print successful and paper cut!');
         } catch (error) {
             toast.error(`Print error: ${error.message}`);
@@ -835,7 +835,8 @@ const OrderTable = () => {
         try {
             if (!qzConnected) {
                 const options = {
-                    host: 'https://stepstothefuture.store/',
+                    // host: 'https://stepstothefuture.store/',
+                    host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
@@ -1117,7 +1118,7 @@ const OrderTable = () => {
                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                     {order?.orderId}
                                                 </td>
-                                                <td style={{verticalAlign: 'middle' }}>
+                                                <td style={{ verticalAlign: 'middle' }}>
                                                     {order?.fullname}
                                                 </td>
                                                 <td style={{ verticalAlign: 'middle' }}>
@@ -1167,10 +1168,12 @@ const OrderTable = () => {
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>STT</th>
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '200px' }}>Sản phẩm</th>
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '150px' }}></th>
-                                                                        <th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print">Thuộc tính</th>
+                                                                        {/* <th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print">Thuộc tính</th> */}
+                                                                        <th></th>
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>Đơn giá</th>
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '130px' }}>Số lượng</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>Thành tiền</th>
+
+                                                                        <th colSpan={2} style={{ textAlign: 'end', verticalAlign: 'middle' }}>Thành tiền</th>
                                                                         {order?.statusName === 'Chờ xử lý' && (<th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print"></th>)}
                                                                     </tr>
                                                                 </thead>
@@ -1186,7 +1189,8 @@ const OrderTable = () => {
                                                                                     textOverflow: 'ellipsis',
                                                                                     whiteSpace: 'nowrap'
                                                                                 }} className="print-text-wrap p-1">
-                                                                                    {item?.productName} <span> - [{item?.orderVersionAttribute?.color?.label} - {item?.orderVersionAttribute?.size?.label}]</span>
+                                                                                    {item?.productName}
+                                                                                    {/* <span> - [{item?.orderVersionAttribute?.color?.label} - {item?.orderVersionAttribute?.size?.label}]</span> */}
                                                                                 </td>
 
                                                                                 <td className='d-flex justify-content-center text-center p-1'>
@@ -1202,8 +1206,8 @@ const OrderTable = () => {
                                                                                         }}
                                                                                     />
                                                                                 </td>
-
-                                                                                {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                <td></td>
+                                                                                {/* {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
                                                                                     <React.Fragment>
                                                                                         <td className="no-print text-center p-1">
                                                                                             <Select
@@ -1226,7 +1230,7 @@ const OrderTable = () => {
                                                                                         <td className='no-print text-center p-1'>{item?.orderVersionAttribute?.color?.label}</td>
                                                                                         <td className='no-print text-center p-1'>{item?.orderVersionAttribute?.size?.label}</td>
                                                                                     </React.Fragment>
-                                                                                )}
+                                                                                )} */}
 
                                                                                 <td className='text-center p-1'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
 
@@ -1295,7 +1299,7 @@ const OrderTable = () => {
                                                                                     )}
                                                                                 </td>
 
-                                                                                <td className='text-end text-right'>{`${(item?.total || 0).toLocaleString('vi-VN')} VND`}</td>
+                                                                                <td colSpan={2} className='text-end text-right'>{`${(item?.total || 0).toLocaleString('vi-VN')} VND`}</td>
 
                                                                                 {order?.statusName === 'Chờ xử lý' &&
                                                                                     (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
