@@ -1066,31 +1066,32 @@ const OrderTable = () => {
                     <Table responsive variant="light">
                         <thead>
                             <tr>
-                                <th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '8%' }} className='p-0 ps-3 pt-3 pb-3' >
                                     {showSelectAll ? (
                                         <OverlayTrigger placement="top" overlay={<Tooltip id="select-all-tooltip">Chọn tất cả để xuất hóa đơn</Tooltip>}>
-                                            <di className='d-flex justify-content-between'>
+                                            <div className="d-flex justify-content-between">
                                                 <input
                                                     type="checkbox"
                                                     checked={allChecked}
                                                     onChange={handleSelectAllChange}
                                                 />
                                                 <span>Tất cả</span>
-                                            </di>
+                                            </div>
                                         </OverlayTrigger>
                                     ) : (
                                         <span> </span>
                                     )}
                                 </th>
-                                <th>ID</th>
-                                <th>Khách hàng</th>
-                                <th>Địa chỉ</th>
-                                <th>Điện thoại</th>
-                                <th>Ngày đặt hàng</th>
-                                <th>Trạng thái</th>
-                                <th></th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '10%' }}>ID</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '20%' }}>Khách hàng</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '25%' }}>Địa chỉ</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '15%' }}>Điện thoại</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '15%' }}>Ngày đặt hàng</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '10%' }}>Trạng thái</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '5%' }}></th>
                             </tr>
                         </thead>
+
                         <tbody>
 
                             {orders.length === 0 ? (
@@ -1099,7 +1100,7 @@ const OrderTable = () => {
                                 orders?.map(
                                     (order) => (
                                         <React.Fragment key={order?.orderId}>
-                                            <tr className='custom-table'>
+                                            <tr className='custom-table' >
                                                 <td>
                                                     {order?.statusName === 'Đã xử lý' && (
                                                         <OverlayTrigger placement="top" overlay={<Tooltip id={`order-${order.orderId}-tooltip`}>Chọn đơn hàng để xuất hóa đơn</Tooltip>}>
@@ -1113,16 +1114,16 @@ const OrderTable = () => {
                                                         </OverlayTrigger>
                                                     )}
                                                 </td>
-                                                <td>
+                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                     {order?.orderId}
                                                 </td>
-                                                <td>
+                                                <td style={{verticalAlign: 'middle' }}>
                                                     {order?.fullname}
                                                 </td>
-                                                <td>
+                                                <td style={{ verticalAlign: 'middle' }}>
                                                     {order?.address}
                                                 </td>
-                                                <td>
+                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                     {order?.phone ? (
                                                         order.phone
                                                     ) : (
@@ -1130,10 +1131,10 @@ const OrderTable = () => {
                                                     )}
                                                 </td>
 
-                                                <td> {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')} </td>
-                                                <td style={{ width: '200px' }}>
+                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}> {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')} </td>
+                                                <td style={{ width: '200px', textAlign: 'center', verticalAlign: 'middle' }}>
                                                     <Select options={orderStatus} value={orderStatus.find(option => option.label === order?.statusName)}
-                                                         styles={{
+                                                        styles={{
                                                             ...customReactSelectOrderStatusOptionsStyles,
                                                             container: (provided) => ({
                                                                 ...provided,
@@ -1142,7 +1143,7 @@ const OrderTable = () => {
                                                         }}
                                                         menuPortalTarget={document.body}
                                                         onChange={(option) => handleChangeStatus(option, order?.orderId)} /> </td>
-                                                <td>
+                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                     <CustomButton
                                                         btnBG={'secondary'}
                                                         btnName={
