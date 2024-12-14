@@ -772,7 +772,9 @@ const Account = () => {
                                           textDecoration: "underline",
                                         }}
                                         onClick={() => {
-                                          navigate(`/product-detail/${product.productId}`);
+                                          navigate(
+                                            `/product-detail/${product.productId}`
+                                          );
                                         }}
                                       >
                                         {product.productName}
@@ -822,7 +824,13 @@ const Account = () => {
                               {formatCurrencyVND(order.shippingFee)}
                             </p>
                             <p className="text-muted mb-1">
-                              Giảm giá: {formatCurrencyVND(order.discountValue)}
+                              Giảm giá:{" "}
+                              <span className="text-danger">
+                                {order.discountValue? "- ":''}
+                                {order.discountValue === 0
+                                  ? 0
+                                  : formatCurrencyVND(order.discountValue)}
+                              </span>
                             </p>
                             <h6 className="fw-bold text-dark">
                               Thành tiền: {formatCurrencyVND(order.finalTotal)}

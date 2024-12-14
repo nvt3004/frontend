@@ -462,7 +462,7 @@ const ShopingCart = () => {
       setCouponRead("");
       setIputEnter("");
 
-      toast.success("Checkout success!", {
+      toast.success("Thanh toán thành công!", {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -810,7 +810,7 @@ const ShopingCart = () => {
 
     setCouponRead(`${c.couponCode} - Giảm ${formatCurrencyVND(pri)}`);
 
-    toast.success("Apply coupon success!", {
+    toast.success("Áp mã giảm giá thành công!", {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,

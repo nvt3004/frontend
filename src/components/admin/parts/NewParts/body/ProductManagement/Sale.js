@@ -49,6 +49,7 @@ function Sale() {
   const [endDate, setEndDate] = useState(
     formatDateString(new Date(), "YYYY/MM/DD")
   );
+  const [isModalUpdateStatus, setIsModalUpdateStatus] = useState(false);
 
   //Đổ danh sách sale
   useEffect(() => {
@@ -278,9 +279,6 @@ function Sale() {
   };
 
   //*************** Các hàm xử lý logic********************
-  const handleEdit = (record) => {
-    navigate("/admin/products/new");
-  };
 
   const handleDelete = (record) => {
     setSale({ ...record });
@@ -288,38 +286,63 @@ function Sale() {
   };
 
   const handleModalDeleteOk = async () => {
-    //   const [error, data] = await stfExecAPI({
-    //     method: "delete",
-    //     url: `api/staff/suppliers?id=${supplier?.supplierId}`,
-    //   });
-    //   setLoading(false);
-    //   if (error) {
-    //     const err =
-    //       error.status === 403
-    //         ? "Bạn không có quyền để thực thi công việc này !"
-    //         : error?.response?.data?.message;
-    //     toast.error(`${err}`, {
-    //       className: "toast-message",
-    //       position: "top-right",
-    //       autoClose: 5000,
-    //     });
-    //     return;
-    //   }
-    //   const fetchSuppliers = async () => {
-    //     const [error, data] = await stfExecAPI({
-    //       url: `api/staff/suppliers?size=${8}&page=${0}&status=true&keyword=`,
-    //     });
-    //     if (data) {
-    //       setSuppliers(data.data);
-    //     }
-    //   };
-    //   fetchSuppliers();
-    //   toast.success(`Thành công`, {
-    //     className: "toast-message",
-    //     position: "top-right",
-    //     autoClose: 5000,
-    //   });
-    //   setIsModalDeleteOpen(false);
+    setLoading(true);
+
+    const [error, data] = await stfExecAPI({
+      method: "delete",
+      url: `api/admin/sale/delete/${sale.id}`,
+    });
+
+    setLoading(false);
+    if (error) {
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      return;
+    }
+
+    const fetchSales = async () => {
+      setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/sale/all?page=${1}&size=${8}&keyword=${keyword}&startDate=${formatDateString(
+          startDate,
+          "YYYY/MM/DD"
+        )}&endDate=${formatDateString(endDate, "YYYY/MM/DD")}&status=${status}`,
+      });
+
+      if (data) {
+        setLoading(false);
+        setSales(data.data);
+        return;
+      }
+
+      setLoading(false);
+      const err =
+        error.status === 403
+          ? "Bạn không có đủ phân quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchSales();
+
+    toast.success(`Thành công`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+    setIsModalDeleteOpen(false);
   };
 
   const handleModalDeleteCancel = async () => {
@@ -334,7 +357,7 @@ function Sale() {
       dataIndex: "saleName",
       key: "saleName",
       render: (text, record) => {
-        return (
+        return record.active === 2 ? (
           <span
             style={{
               color: "#6610f2",
@@ -342,13 +365,15 @@ function Sale() {
               textDecoration: "underline",
             }}
             onClick={() => {
-              navigate("/admin/products/sale/add", {
-                state: { product: {} },
+              navigate("/admin/products/sale/update", {
+                state: { sale: { ...record } },
               });
             }}
           >
             {text}
           </span>
+        ) : (
+          <span>{text}</span>
         );
       },
     },
@@ -378,21 +403,47 @@ function Sale() {
           );
         } else if (text === 1) {
           return (
-            <span
-              class="badge bg-label-success me-1"
-              style={{ width: "110px" }}
-            >
-              Đang diễn ra
-            </span>
+            // <span
+            //   class="badge bg-label-success me-1"
+            //   style={{ width: "110px" }}
+            // >
+            //   Đang diễn ra
+            // </span>
+            <div class="form-check form-switch">
+              <input
+                className="form-check-input float-center"
+                type="checkbox"
+                role="switch"
+                checked={true}
+                onClick={() => {
+                  setIsModalUpdateStatus(true);
+                  setSale({ ...record, statusId: 1 });
+                }}
+                style={{ height: "30px", width: "50px", cursor: "pointer" }}
+              />
+            </div>
           );
         } else if (text === 3) {
           return (
-            <span
-              class="badge bg-label-warning me-1"
-              style={{ width: "110px" }}
-            >
-              Đang khóa
-            </span>
+            // <span
+            //   class="badge bg-label-warning me-1"
+            //   style={{ width: "110px" }}
+            // >
+            //   Đang khóa
+            // </span>
+            <div class="form-check form-switch">
+              <input
+                className="form-check-input float-center"
+                type="checkbox"
+                role="switch"
+                checked={false}
+                onClick={() => {
+                  setIsModalUpdateStatus(true);
+                  setSale({ ...record, statusId: 3 });
+                }}
+                style={{ height: "30px", width: "50px", cursor: "pointer" }}
+              />
+            </div>
           );
         } else {
           return (
@@ -423,6 +474,62 @@ function Sale() {
       className: "center",
     },
   ];
+
+  const handleModalUpdateStatusOk = async () => {
+    setLoading(true);
+    const [error, data] = await stfExecAPI({
+      method: "put",
+      url: `api/admin/sale/update-status`,
+      data: {
+        id: sale.id,
+        status: !(sale.statusId === 1),
+      },
+    });
+
+    if (error) {
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+      setLoading(false);
+      return;
+    }
+
+    setLoading(false);
+
+    const fetchSales = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/sale/all?page=${1}&size=${8}&keyword=${keyword}&startDate=${formatDateString(
+          startDate,
+          "YYYY/MM/DD"
+        )}&endDate=${formatDateString(endDate, "YYYY/MM/DD")}&status=${status}`,
+      });
+
+      if (data) {
+        setSales(data.data);
+        return;
+      }
+    };
+
+    fetchSales();
+    setIsModalUpdateStatus(false);
+
+    toast.success(`Thành công`, {
+      className: "toast-message",
+      position: "top-right",
+      autoClose: 5000,
+    });
+  };
+
+  const handleModalUpdateStatusCancel = () => {
+    setIsModalUpdateStatus(false);
+  };
 
   return (
     <>
@@ -460,6 +567,19 @@ function Sale() {
         size="modal-lg"
       >
         <span>Bạn có chắc muốn xóa?</span>
+      </ModalSft>
+
+      <ModalSft
+        title="Cập nhật trạng thái trương trình"
+        titleOk={"Ok"}
+        open={isModalUpdateStatus}
+        onOk={handleModalUpdateStatusOk}
+        onCancel={handleModalUpdateStatusCancel}
+        size="modal-lg"
+      >
+        <span>{`Bạn có chắc muốn ${
+          sale?.statusId === 1 ? "khóa" : "mở khóa"
+        } chương trình giảm giá lại không ?`}</span>
       </ModalSft>
     </>
   );
