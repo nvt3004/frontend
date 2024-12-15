@@ -43,7 +43,7 @@ export default function SizeGuide({ isOpen, onClose }) {
                 }`}
                 onClick={() => setActiveTab("tops")}
               >
-                Tops
+             Áo
               </button>
               <button
                 className={`size-guide__tab ${
@@ -51,7 +51,7 @@ export default function SizeGuide({ isOpen, onClose }) {
                 }`}
                 onClick={() => setActiveTab("bottoms")}
               >
-                Bottoms
+        Quần
               </button>
             </div>
             <div className="size-guide__content">
@@ -62,10 +62,10 @@ export default function SizeGuide({ isOpen, onClose }) {
               >
                 <thead>
                   <tr>
-                    <th>Size</th>
-                    <th>Chest (cm)</th>
-                    <th>Waist (cm)</th>
-                    <th>Hip (cm)</th>
+                  <th>Kích thước</th>
+                    <th>Vòng ngực (cm)</th>
+                    <th>Vòng eo (cm)</th>
+                    <th>Vòng hông (cm)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -108,10 +108,10 @@ export default function SizeGuide({ isOpen, onClose }) {
               >
                 <thead>
                   <tr>
-                    <th>Size</th>
-                    <th>Waist (cm)</th>
-                    <th>Hip (cm)</th>
-                    <th>Inseam (cm)</th>
+                  <th>Kích thước</th>
+                    <th>Vòng eo (cm)</th>
+                    <th>Vòng hông (cm)</th>
+                    <th>Chiều dài (cm)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -149,25 +149,21 @@ export default function SizeGuide({ isOpen, onClose }) {
               </table>
             </div>
             <div className="size-guide__info">
-              <p>
-                Measurements are in centimeters. For the best fit, measure your
-                body and compare to the size chart above.
+            <p>
+                Kích thước được tính bằng cm. Để có kích thước phù hợp nhất, hãy đo cơ thể bạn và so sánh với bảng kích thước bên trên.
               </p>
               <ul>
                 <li>
-                  Chest: Measure around the fullest part of your chest, keeping
-                  the tape horizontal.
+                  Vòng ngực: Đo xung quanh phần rộng nhất của ngực, giữ thước dây nằm ngang.
                 </li>
                 <li>
-                  Waist: Measure around your natural waistline, keeping the tape
-                  comfortably loose.
+                  Vòng eo: Đo xung quanh vòng eo tự nhiên của bạn, giữ thước dây thoải mái.
                 </li>
                 <li>
-                  Hip: Measure around the fullest part of your hips, keeping the
-                  tape horizontal.
+                  Vòng hông: Đo xung quanh phần rộng nhất của hông, giữ thước dây nằm ngang.
                 </li>
                 <li>
-                  Inseam: Measure from the crotch to the bottom of the leg.
+                  Chiều dài: Đo từ đáy quần đến phần cuối của ống quần.
                 </li>
               </ul>
             </div>

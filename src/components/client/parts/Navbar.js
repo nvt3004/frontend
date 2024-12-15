@@ -227,7 +227,7 @@ const Navbar = () => {
                   }}
                 >
                   <Link to="/" className="text-decoration-none">
-                    Home
+             Trang chủ
                   </Link>
                 </li>
 
@@ -238,21 +238,22 @@ const Navbar = () => {
                   }}
                 >
                   <Link to="/product" className="text-decoration-none">
-                    Shop
+             Sản phẩm
                   </Link>
                 </li>
 
                 <li
                   className={`${
                     uri === "/shoping-cart" ? "active-menu " : ""
-                  } label1`}
-                  data-label1="hot"
+                  } `}
+                  //label1
+               //   data-label1="hot"
                   onClick={() => {
                     setUri(window.location.pathname);
                   }}
                 >
                   <Link to="/shoping-cart" className="text-decoration-none">
-                    Features
+                   Đặt hàng
                   </Link>
                 </li>
 
@@ -285,7 +286,7 @@ const Navbar = () => {
                   }}
                 >
                   <Link to="/contact" className="text-decoration-none">
-                    Contact
+          Liên hệ
                   </Link>
                 </li>
               </ul>
@@ -296,12 +297,12 @@ const Navbar = () => {
               style={styles.wrapIconHeader}
             >
               {/* <!-- Button trigger modal --> */}
-              <button
+              {/* <button
                 type="button"
                 className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 "
               >
                 <i className="zmdi zmdi-search"></i>
-              </button>
+              </button> */}
               <button
                 className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart"
                 data-notify={cartCount}

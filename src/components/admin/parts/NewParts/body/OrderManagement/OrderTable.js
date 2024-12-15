@@ -767,7 +767,8 @@ const OrderTable = () => {
 
             if (!qzConnected) {
                 const options = {
-                    host: 'https://stepstothefuture.store/',
+                    // host: 'https://stepstothefuture.store/',
+                    host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
@@ -832,7 +833,6 @@ const OrderTable = () => {
                 { type: 'raw', format: 'command', data: '\x1B\x64\x01' } // Lệnh ESC/POS để cắt giấy
             ]);
 
-
             toast.success('Print successful and paper cut!');
         } catch (error) {
             toast.error(`Print error: ${error.message}`);
@@ -871,7 +871,8 @@ const OrderTable = () => {
         try {
             if (!qzConnected) {
                 const options = {
-                    host: 'https://stepstothefuture.store/',
+                    // host: 'https://stepstothefuture.store/',
+                    host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
@@ -1300,7 +1301,7 @@ const OrderTable = () => {
                                                                         {/* <th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print">Thuộc tính</th> */}
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>Đơn giá</th>
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '130px' }} colSpan={2}>Số lượng</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle' }} colSpan={2}>Thành tiền</th>
+                                                                        <th style={{ textAlign: 'end', verticalAlign: 'middle' }} colSpan={2}>Thành tiền</th>
                                                                         {order?.statusName === 'Chờ xử lý' && (<th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print"></th>)}
                                                                     </tr>
                                                                 </thead>
@@ -1333,7 +1334,6 @@ const OrderTable = () => {
                                                                                         }}
                                                                                     />
                                                                                 </td>
-
                                                                                 {/* {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
                                                                                     <React.Fragment>
                                                                                         <td className="no-print text-center p-1">

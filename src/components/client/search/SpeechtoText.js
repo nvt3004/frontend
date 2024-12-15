@@ -73,12 +73,12 @@ const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
 
   const handleCloseModal = () => {
     if (isRecording) {
-      handleRecordButton();
+      stopRecordingWebSpeech(); // Dừng ghi âm khi đóng modal
     }
     if (onCloseModal) {
-      onCloseModal();
+      onCloseModal(); // Gọi hàm onCloseModal khi modal đóng
     }
-    setTranscript("");
+    setTranscript(""); // Reset transcript khi đóng modal
   };
 
   return (
@@ -89,10 +89,10 @@ const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
           className="modal fade show"
           tabIndex="-1"
           role="dialog"
-          style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
+          style={{ display: "block", backgroundColor: "rgba(0,0,0,0.7)" }}
         >
           <div className="modal-dialog modal-dialog-centered" role="document">
-            <div className="modal-content rounded-0">
+            <div className="modal-content shadow-lg rounded-4">
               <div className="w-100 text-end">
                 <button
                   type="button"
@@ -137,10 +137,10 @@ const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
                   </div>
                 )}
                 {/* Nút ghi âm */}
-                <div className="d-grid gap-3 mb-3">
+                <div className="text-center">
                   <button
-                    className={`btn flex-c-m stext-101 cl0 size-101  bor1 hov-btn1 p-lr-15 trans-04 ${
-                      isRecording ? "btn-danger" : "bg1"
+                    className={`btn btn-primary w-100 shadow-sm mb-3 ${
+                      isRecording ? "btn-danger" : ""
                     }`}
                     onClick={handleRecordButton}
                   >
@@ -148,7 +148,7 @@ const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
                   </button>
                   <button
                     type="button"
-                    className="btn flex-c-m stext-101 cl0 size-101  bor1 p-lr-15 trans-04 bg-secondary-subtle text-black"
+                    className="btn btn-secondary w-100 shadow-sm"
                     onClick={handleCloseModal}
                   >
                     Đóng
