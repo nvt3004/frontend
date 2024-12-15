@@ -701,7 +701,6 @@ const Account = () => {
                           <p className="text-muted small mb-0">
                             <i className="zmdi zmdi-calendar-note me-2"></i>
                             {moment(order?.orderDate)
-                              .subtract(7, "hours")
                               .format("DD/MM/YYYY HH:mm")}
                           </p>
                           <p className="text-muted small mb-0">

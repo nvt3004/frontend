@@ -257,8 +257,10 @@ const OrderTable = () => {
             ]
         }
     );
+
     const initialVersionRef = useRef({});
     const initialQuantitiesRef = useRef({});
+
     const handleGetOrderDetail = () => {
         axiosInstance.get(`/staff/orders/${orderID?.value}`)
             .then((response) => {
@@ -368,43 +370,79 @@ const OrderTable = () => {
     const toggleOrderDetails = (order) => { setOrderID(prevState => ({ value: prevState.value === order?.orderId ? null : order?.orderId, isOpen: prevState.value !== order?.orderId })); };
 
     const handleChangeStatus = (option, orderID) => {
-        // if (option?.value < 4 || option?.value === 5) {
-        Swal.fire({
-            title: 'Confirm to change status',
-            text: 'Do you want to change the status of this order?',
-            icon: 'question',
-            showConfirmButton: true,
-            showCancelButton: true,
-            confirmButtonText: 'OK!',
-            cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`)
-                    .then((response) => {
-                        if (response.data?.errorCode === 200) {
-                            toast.success('Updated order status successfully!');
-                            handleGetOrderAPI();
-                        } else if (response.data?.errorCode === 998) {
-                            toast.error(response.data?.message || "Bạn không có quyền thay đổi trạng thái đơn hàng này.");
-                        } else {
-                            toast.error(response.data?.message || 'Could not update status of the order. Please try again!');
+        if (option?.value < 4 || option?.value === 5) {
+            if (option?.value === 5) {
+                Swal.fire({
+                    title: 'Nhập lý do hủy đơn hàng',
+                    input: 'textarea',
+                    inputPlaceholder: 'Hãy nhập lý do hủy đơn hàng...',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xác nhận',
+                    cancelButtonText: 'Hủy',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'Bạn cần nhập lý do để hủy đơn hàng!';
                         }
-                    })
-                    .catch((error) => {
-                        if (error?.response?.status === 403) {
-                            toast.error("Session expired. Redirecting to login...");
-                            navigate('/auth/login');
-                        } else {
-                            toast.error(error.response?.data?.message || error.message || 'Could not update status of the order. Please try again!');
-                        }
-                    });
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const cancelReason = result.value;
+                        axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`, { reason: cancelReason })
+                            .then((response) => {
+                                if (response.data?.errorCode === 200) {
+                                    toast.success('Đơn hàng đã được hủy thành công!');
+                                    handleGetOrderAPI();
+                                } else {
+                                    toast.error(response.data?.message || 'Không thể hủy đơn hàng. Vui lòng thử lại!');
+                                }
+                            })
+                            .catch((error) => {
+                                if (error?.response?.status === 403) {
+                                    toast.error("Phiên làm việc đã hết hạn. Đang chuyển đến trang đăng nhập...");
+                                    navigate('/auth/login');
+                                } else {
+                                    toast.error(error.response?.data?.message || error.message || 'Không thể hủy đơn hàng. Vui lòng thử lại!');
+                                }
+                            });
+                    }
+                });
+            } else {
+                Swal.fire({
+                    title: 'Xác nhận thay đổi trạng thái',
+                    text: 'Bạn có muốn thay đổi trạng thái của đơn hàng này không?',
+                    icon: 'question',
+                    showConfirmButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: 'Đồng ý',
+                    cancelButtonText: 'Hủy'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`)
+                            .then((response) => {
+                                if (response.data?.errorCode === 200) {
+                                    toast.success('Cập nhật trạng thái đơn hàng thành công!');
+                                    handleGetOrderAPI();
+                                } else {
+                                    toast.error(response.data?.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại!');
+                                }
+                            })
+                            .catch((error) => {
+                                if (error?.response?.status === 403) {
+                                    toast.error("Phiên làm việc đã hết hạn. Đang chuyển đến trang đăng nhập...");
+                                    navigate('/auth/login');
+                                } else {
+                                    toast.error(error.response?.data?.message || error.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại!');
+                                }
+                            });
+                    }
+                });
             }
-        });
-        // } 
-        // else {
-        //     toast.warning(`You cannot set the status to ${option?.label.toLowerCase()}`);
-        // }
+        } else {
+            toast.warning(`Bạn không thể thay đổi trạng thái thành ${option?.label.toLowerCase()}`);
+        }
     };
+
+
 
     useEffect(
         () => {
@@ -422,10 +460,10 @@ const OrderTable = () => {
         const colorId = orderVersionAttribute.color?.value;
         const sizeId = orderVersionAttribute.size?.value;
 
-        if (!colorId || !sizeId) {
-            toast.error("Vui lòng chọn cả màu sắc và kích thước.");
-            return;
-        }
+        // if (!colorId || !sizeId) {
+        //     toast.error("Vui lòng chọn cả màu sắc và kích thước.");
+        //     return;
+        // }
 
         const currentQuantity = initialQuantitiesRef.current[`${orderDetailId}-${productID}`];
         const updatedQuantity = quantities[`${orderDetailId}-${productID}`];
@@ -518,8 +556,6 @@ const OrderTable = () => {
                     toast.error(response?.data?.message || "Bạn không có quyền thực hiện hành động này.");
                 }
             } catch (error) {
-                console.error("Error fetching statuses:", error);
-
                 const errorCode = error?.response?.status || error.response?.data?.code;
                 const errorMessage = error?.response?.data?.message || error.message;
 
@@ -991,6 +1027,63 @@ const OrderTable = () => {
         setShowSelectAll(orders.some(order => order.statusName === "Đã xử lý"));
     }, [orders]);
 
+    const paymentStatuses = [
+        { value: -1, label: 'Chờ hoàn tiền' },
+        { value: -2, label: 'Đã hoàn tiền' },
+    ];
+
+    const [selectedStatus, setSelectedStatus] = useState(paymentStatuses[0]);
+    const toggleStatusChange = (order) => {
+        setOrderID(prevState => {
+            // Nếu chưa mở chi tiết, mới mở, nếu đã mở thì giữ nguyên trạng thái
+            if (prevState.value !== order?.orderId) {
+                return {
+                    value: order?.orderId,   // Mở chi tiết đơn hàng
+                    isOpen: true              // Đặt trạng thái mở
+                };
+            }
+            return prevState;  // Giữ nguyên trạng thái nếu đơn hàng đã mở
+        });
+    };
+    
+    const handleStatusChange = (selectedOption, order) => {
+        Swal.fire({
+            title: 'Xác nhận thay đổi trạng thái',
+            text: `Bạn có chắc chắn muốn cập nhật trạng thái thành: "${selectedOption.label}" không?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Cập nhật',
+            cancelButtonText: 'Hủy bỏ',
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    // Make API call to update the status
+                    const response = await axiosInstance.put(
+                        `/staff/orders/refund/${order.orderId}`,
+                    );
+
+                    if (response.status === 200) {
+                      
+                        toast.success(`${response?.data?.message || 'Hoàn tiền thành công cho đơn hàng'}#${order.orderId}`);
+
+                        setSelectedStatus(selectedOption);
+                        handleGetOrderAPI();
+                    } else {
+                        toast.error(`Lỗi: ${response.data.message}`);
+                    }
+                } catch (error) {
+                    console.error('Error updating status:', error);
+
+                    const errorMessage = error?.response?.data?.message || 'Đã xảy ra lỗi không xác định.';
+                    if (error.response?.status === 401) {
+                        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+                    } else {
+                        toast.error(`Lỗi: ${errorMessage}`);
+                    }
+                }
+            }
+        });
+    };
     return (
         <div>
             <div className='font-14'>
@@ -1066,28 +1159,28 @@ const OrderTable = () => {
                     <Table responsive variant="light">
                         <thead>
                             <tr>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '8%' }} className='p-0 ps-3 pt-3 pb-3' >
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '3%' }} className='p-0 ps-3 pt-3 pb-3' >
                                     {showSelectAll ? (
                                         <OverlayTrigger placement="top" overlay={<Tooltip id="select-all-tooltip">Chọn tất cả để xuất hóa đơn</Tooltip>}>
-                                            <div className="d-flex justify-content-between">
+                                            <div>
                                                 <input
                                                     type="checkbox"
                                                     checked={allChecked}
                                                     onChange={handleSelectAllChange}
                                                 />
-                                                <span>Tất cả</span>
                                             </div>
                                         </OverlayTrigger>
                                     ) : (
                                         <span> </span>
                                     )}
                                 </th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '10%' }}>ID</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '5%' }}>ID</th>
                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '20%' }}>Khách hàng</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '25%' }}>Địa chỉ</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '34%' }}>Địa chỉ</th>
                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '15%' }}>Điện thoại</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '15%' }}>Ngày đặt hàng</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '10%' }}>Trạng thái</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '20%' }}>Ngày đặt hàng</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '3%' }}>TT Đơn hàng</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '10%' }}>TT Thanh toán</th>
                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '5%' }}></th>
                             </tr>
                         </thead>
@@ -1095,18 +1188,19 @@ const OrderTable = () => {
                         <tbody>
 
                             {orders.length === 0 ? (
-                              <tr>
-                              <td colSpan={8} className="text-center" style={{ height: '100px' }}>
-                                  Không tìm thấy đơn hàng nào.
-                              </td>
-                          </tr>
-                          
+                                <tr>
+                                    <td colSpan={8} className="text-center" style={{ height: '100px' }}>
+                                        Không tìm thấy đơn hàng nào.
+                                    </td>
+                                </tr>
+
                             ) : (
                                 orders?.map(
                                     (order) => (
+
                                         <React.Fragment key={order?.orderId}>
                                             <tr className='custom-table' >
-                                                <td>
+                                                <td className='p-0 ps-3 pt-3 pb-3'>
                                                     {order?.statusName === 'Đã xử lý' && (
                                                         <OverlayTrigger placement="top" overlay={<Tooltip id={`order-${order.orderId}-tooltip`}>Chọn đơn hàng để xuất hóa đơn</Tooltip>}>
                                                             <div>
@@ -1119,16 +1213,16 @@ const OrderTable = () => {
                                                         </OverlayTrigger>
                                                     )}
                                                 </td>
-                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }} className='p-2'>
                                                     {order?.orderId}
                                                 </td>
-                                                <td style={{ verticalAlign: 'middle' }}>
+                                                <td style={{ verticalAlign: 'middle' }} className='p-2'>
                                                     {order?.fullname}
                                                 </td>
-                                                <td style={{ verticalAlign: 'middle' }}>
+                                                <td style={{ verticalAlign: 'middle' }} className='p-2'>
                                                     {order?.address}
                                                 </td>
-                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }} className='p-2'>
                                                     {order?.phone ? (
                                                         order.phone
                                                     ) : (
@@ -1136,18 +1230,49 @@ const OrderTable = () => {
                                                     )}
                                                 </td>
 
-                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}> {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm')} </td>
-                                                <td style={{ width: '200px',  verticalAlign: 'middle' }}>
+                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }} className='p-2'> {moment(order?.orderDate).format('DD/MM/YYYY HH:mm')} </td>
+                                                <td style={{ width: '150px', verticalAlign: 'middle' }} className='p-2'>
                                                     <Select options={orderStatus} value={orderStatus.find(option => option.label === order?.statusName)}
                                                         styles={{
                                                             ...customReactSelectOrderStatusOptionsStyles,
                                                             container: (provided) => ({
                                                                 ...provided,
-                                                                minWidth: '200px',
+                                                                minWidth: '150px',
                                                             }),
                                                         }}
                                                         menuPortalTarget={document.body}
                                                         onChange={(option) => handleChangeStatus(option, order?.orderId)} /> </td>
+                                                <td className='p-2'>
+                                                    {order.amount === 0 ? (
+                                                        <div style={{ minWidth: '150px' }}>Không chuyển tiền</div>
+                                                    ) : order.amount === -2 ? (
+                                                        <div style={{ minWidth: '150px' }}>Đã hoàn tiền</div>
+                                                    ) :
+                                                        order.amount > 0 ? (
+                                                            <div style={{ minWidth: '150px' }}>Đã chuyển tiền</div>
+                                                        ) : (
+                                                            <div>
+                                                                <Select
+                                                                    options={paymentStatuses}
+                                                                    value={order.amount === -1
+                                                                        ? paymentStatuses[0]
+                                                                        : null
+                                                                    }
+                                                                    onChange={(paymentStatuses) => handleStatusChange(paymentStatuses, order)}
+                                                                    styles={{
+                                                                        container: (provided) => ({
+                                                                            ...provided,
+                                                                            minWidth: '150px',
+                                                                        }),
+                                                                        menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+                                                                    }}
+                                                                    menuPortalTarget={document.body}
+                                                                    placeholder="Chọn trạng thái..."
+                                                                />
+                                                            </div>
+                                                        )}
+                                                </td>
+
                                                 <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
                                                     <CustomButton
                                                         btnBG={'secondary'}
@@ -1165,17 +1290,17 @@ const OrderTable = () => {
                                             {(orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail) &&
                                                 (
                                                     <tr className='border-bottom-2'>
-                                                        <td colSpan={7} className='border' style={{ background: '#F2F8FF' }}>
+                                                        <td colSpan={8} className='border' style={{ background: '#F2F8FF' }}>
                                                             <Table responsive style={{ background: '#F2F8FF' }}>
                                                                 <thead style={{ background: '#F2F8FF', height: '30px' }}>
                                                                     <tr>
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>STT</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '200px' }}>Sản phẩm</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '270px' }}>Sản phẩm</th>
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '150px' }}></th>
-                                                                        <th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print">Thuộc tính</th>
+                                                                        {/* <th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print">Thuộc tính</th> */}
                                                                         <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>Đơn giá</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '130px' }}>Số lượng</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>Thành tiền</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '130px' }} colSpan={2}>Số lượng</th>
+                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle' }} colSpan={2}>Thành tiền</th>
                                                                         {order?.statusName === 'Chờ xử lý' && (<th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print"></th>)}
                                                                     </tr>
                                                                 </thead>
@@ -1191,7 +1316,8 @@ const OrderTable = () => {
                                                                                     textOverflow: 'ellipsis',
                                                                                     whiteSpace: 'nowrap'
                                                                                 }} className="print-text-wrap p-1">
-                                                                                    {item?.productName} <span> - [{item?.orderVersionAttribute?.color?.label} - {item?.orderVersionAttribute?.size?.label}]</span>
+                                                                                    {item?.productName}
+                                                                                    {/* <span> - [{item?.orderVersionAttribute?.color?.label} - {item?.orderVersionAttribute?.size?.label}]</span> */}
                                                                                 </td>
 
                                                                                 <td className='d-flex justify-content-center text-center p-1'>
@@ -1208,7 +1334,7 @@ const OrderTable = () => {
                                                                                     />
                                                                                 </td>
 
-                                                                                {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                {/* {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
                                                                                     <React.Fragment>
                                                                                         <td className="no-print text-center p-1">
                                                                                             <Select
@@ -1231,11 +1357,11 @@ const OrderTable = () => {
                                                                                         <td className='no-print text-center p-1'>{item?.orderVersionAttribute?.color?.label}</td>
                                                                                         <td className='no-print text-center p-1'>{item?.orderVersionAttribute?.size?.label}</td>
                                                                                     </React.Fragment>
-                                                                                )}
+                                                                                )} */}
 
                                                                                 <td className='text-center p-1'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
 
-                                                                                <td className='text-center p-1'>
+                                                                                <td className='text-center p-1' colSpan={2}>
                                                                                     {order?.statusName === 'Chờ xử lý' ? (
                                                                                         <div className='d-flex justify-content-center'>
                                                                                             {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId && (
@@ -1300,7 +1426,7 @@ const OrderTable = () => {
                                                                                     )}
                                                                                 </td>
 
-                                                                                <td className='text-end text-right'>{`${(item?.total || 0).toLocaleString('vi-VN')} VND`}</td>
+                                                                                <td className='text-end text-right' colSpan={2}>{`${(item?.total || 0).toLocaleString('vi-VN')} VND`}</td>
 
                                                                                 {order?.statusName === 'Chờ xử lý' &&
                                                                                     (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (

@@ -102,7 +102,9 @@ const OrderDetail = () => {
                             {order?.productDetails?.map((product, index) => (
                                 <tr key={product.orderDetailId}>
                                     <th scope="row" className="text-center">{index + 1}</th>
-                                    <td>{product.productName} <span> - [{product?.attributeProductVersion?.color?.color} - {product?.attributeProductVersion?.size?.size}]</span></td>
+                                    <td>{product.productName}
+                                         {/* <span> - [{product?.attributeProductVersion?.color?.color} - {product?.attributeProductVersion?.size?.size}]</span> */}
+                                         </td>
                                     <td className="text-center">
                                         <img
                                             src={product.imageUrl || '/images/default-image.png'}
