@@ -7,7 +7,7 @@ function ClientLayout() {
   return (
     <div>
       <Navbar />
-      <main>
+      <main className="bg-white">
         <ScrollToTop />
         <Outlet />
       </main>

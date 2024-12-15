@@ -8,6 +8,7 @@ const SearchWithImage = ({
   image,
   closeModal,
   setHasMoreProducts,
+  handleClearFilter
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -15,19 +16,21 @@ const SearchWithImage = ({
     const file = event.target.files[0];
     if (file) {
       setImage(file); // Gán ảnh được chọn
+      handleSearch(file); // Gọi tìm kiếm ngay sau khi ảnh được chọn
     }
   };
 
-  const handleSearch = async () => {
-    if (image) {
-      setLoading(true); // Show loading indicator while fetching
+  const handleSearch = async (imageFile) => {
+    if (imageFile) {
+      setLoading(true); // Hiển thị trạng thái loading
       try {
-        const result = await productApi.searchProductByImage(image);
-        setProducts(result.data || []); // Update products with the search results (not needed for this version)
+        const result = await productApi.searchProductByImage(imageFile);
+        setProducts(result.data || []); // Cập nhật sản phẩm sau khi tìm kiếm
+        closeModal();
       } catch (error) {
         console.error("Error searching products:", error);
       } finally {
-        setLoading(false); // Hide loading indicator
+        setLoading(false); // Ẩn trạng thái loading
         setHasMoreProducts(false);
       }
     }
@@ -59,63 +62,44 @@ const SearchWithImage = ({
             {/* Body */}
             <div className="modal-body px-4 pb-4">
               {/* Upload Section */}
-              <div className="mb-4">
-                <label htmlFor="imageInput" className="form-label fw-semibold">
-                  Chọn hình ảnh:
-                </label>
+              <div className="mb-4 text-center">
                 <input
                   type="file"
-                  className="form-control shadow-sm"
-                  id="imageInput"
+                  id="hiddenImageInput"
+                  style={{ display: "none" }}
                   accept="image/*"
                   onChange={handleImageChange}
                 />
-              </div>
-
-              {/* Preview Selected Image */}
-              {image && (
-                <div className="mb-4 text-center">
-                  <div
-                    className="position-relative mx-auto shadow-sm border rounded-3"
-                    style={{
-                      width: "300px",
-                      height: "300px",
-                      overflow: "hidden",
-                      backgroundColor: "#f8f9fa",
-                    }}
-                  >
-                    <img
-                      src={URL.createObjectURL(image)}
-                      alt="Selected"
-                      className="w-100 h-100 object-fit-cover"
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-danger position-absolute top-0 end-0 m-2 px-2 py-1"
-                      onClick={() => setImage(null)}
-                    >
-                      <i className="zmdi zmdi-close-circle-o"></i>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Search Button */}
-              <div className="text-center">
-                <button
-                  onClick={handleSearch}
-                  className="btn btn-primary w-100 shadow-sm mb-3"
-                  disabled={loading || !image}
+                <label
+                  htmlFor="hiddenImageInput"
+                  className="d-inline-block w-100 p-5 border border-dashed rounded-3 text-muted text-center cursor-pointer shadow-sm"
+                  style={{
+                    borderColor: "#6c757d",
+                    backgroundColor: "#f8f9fa",
+                  }}
                 >
-                  {loading ? "Đang tìm kiếm..." : "Tìm kiếm"}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary w-100 shadow-sm"
-                  onClick={closeModal}
-                >
-                  Đóng
-                </button>
+                  {image ? (
+                    <div>
+                      <img
+                        src={URL.createObjectURL(image)}
+                        alt="Selected"
+                        className="w-100 h-auto mb-3"
+                        style={{ maxHeight: "200px", objectFit: "cover" }}
+                      />
+                      <div className="fw-semibold text-primary">
+                        Thay đổi ảnh
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <i
+                        className="zmdi zmdi-camera"
+                        style={{ fontSize: "3rem" }}
+                      ></i>
+                      <p className="mt-2">Nhấp để chọn ảnh</p>
+                    </div>
+                  )}
+                </label>
               </div>
             </div>
           </div>

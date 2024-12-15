@@ -25,6 +25,7 @@ const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
         // Gọi hàm speechText từ props để cập nhật state bên ngoài
         if (speechText) {
           speechText(recognizedText);
+          handleCloseModal();
         }
       };
 
@@ -108,7 +109,7 @@ const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
               </div>
               <div className="modal-body">
                 <div className="w-100 text-center">
-                  <strong className="fs-24 ">Tìm Kiếm Bằng Giọng Nói</strong>
+                  <strong className="fs-24 ">Hãy nói gì đó !</strong>
                 </div>
                 <div
                   className="mb-3 d-flex justify-content-center"
@@ -146,13 +147,13 @@ const SpeechToText = ({ speechText, isModalOpen, onCloseModal }) => {
                   >
                     {isRecording ? "Dừng ghi âm" : "Bắt đầu ghi âm"}
                   </button>
-                  <button
+                  {/* <button
                     type="button"
                     className="btn btn-secondary w-100 shadow-sm"
                     onClick={handleCloseModal}
                   >
                     Đóng
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>

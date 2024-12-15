@@ -1173,7 +1173,7 @@ const ShopingCart = () => {
                       value={Coupon}
                     >
                       <option value="-1" selected>
-                        Select a coupon
+                     Chọn một mã giảm giá
                       </option>
 
                       {coupons &&
@@ -1200,7 +1200,7 @@ const ShopingCart = () => {
                     onClick={handleApplyCoupon}
                     className="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10"
                   >
-                    Apply coupon
+                 Áp dụng
                   </div>
                 </div>
               </div>
@@ -1239,7 +1239,7 @@ const ShopingCart = () => {
                               to="/account"
                               className="text-decoration-none"
                             >
-                              Add new address
+                           Thêm một địa chỉ mới
                             </Link>
                           </option>
                           {addresses &&

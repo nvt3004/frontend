@@ -112,7 +112,7 @@ const Navbar = () => {
       backgroundColor: isScrolled ? "#fff" : "transparent",
       width: "100%",
       height: "70px",
-      top: isScrolled ? "0px" : "40px",
+      top: isScrolled ? "0px" : "0px",
       left: "0",
       borderBottom: isScrolled
         ? "1px solid rgba(0,0,0,0.2)"
@@ -168,7 +168,7 @@ const Navbar = () => {
   return (
     <header>
       <div className="container-menu-desktop">
-        <div className="top-bar">
+        {/* <div className="top-bar">
           <div className="content-topbar flex-sb-m h-full container">
             <div className="left-top-bar">
               Free shipping for standard order over $100
@@ -202,7 +202,7 @@ const Navbar = () => {
               </Link>
             </div>
           </div>
-        </div>
+        </div> */}
         <div className="wrap-menu-desktop" style={styles.wrapMenuDesktop}>
           <nav
             className="limiter-menu-desktop container"
@@ -264,7 +264,7 @@ const Navbar = () => {
                   }}
                 >
                   <Link to="/blog" className="text-decoration-none">
-                    Blog
+             Bài viết
                   </Link>
                 </li>
 
@@ -275,7 +275,7 @@ const Navbar = () => {
                   }}
                 >
                   <Link to="/about" className="text-decoration-none">
-                    About
+      Về chúng tôi
                   </Link>
                 </li>
 
@@ -354,7 +354,7 @@ const Navbar = () => {
                         className="dropdown-item stext-111"
                         onClick={handleLogout1}
                       >
-                        Logout
+   Đăng xuất
                       </button>
                     </li>
                   ) : (
@@ -363,7 +363,7 @@ const Navbar = () => {
                         className="dropdown-item stext-111"
                         to="/auth/login"
                       >
-                        Login
+         Đăng nhập
                       </Link>
                     </li>
                   )}
@@ -373,7 +373,7 @@ const Navbar = () => {
                         className="dropdown-item stext-111"
                         to="/auth/register"
                       >
-                        Register
+               Đăng ký
                       </Link>
                     </li>
                   )}
@@ -394,12 +394,12 @@ const Navbar = () => {
 
         {/* <!-- Icon header --> */}
         <div className="wrap-icon-header flex-w flex-r-m m-r-15 ">
-          <button
+          {/* <button
             type="button"
             className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 "
           >
             <i className="zmdi zmdi-search"></i>
-          </button>
+          </button> */}
 
           <button
             className="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart"
@@ -440,7 +440,7 @@ const Navbar = () => {
       {isSmallScreen ? (
         <div className="collapse" id="collapseExample">
           <div>
-            <ul className="topbar-mobile m-0 p-0">
+            {/* <ul className="topbar-mobile m-0 p-0">
               <li>
                 <div className="left-top-bar">
                   Free shipping for standard order over $100
@@ -480,7 +480,7 @@ const Navbar = () => {
                   </Link>
                 </div>
               </li>
-            </ul>
+            </ul> */}
             <nav>
               <div className="nav nav-tabs" id="nav-tab" role="tablist">
                 <button
@@ -493,7 +493,7 @@ const Navbar = () => {
                   aria-controls="nav-home"
                   aria-selected="true"
                 >
-                  Menu
+                 Bảng chọn
                 </button>
                 <button
                   className="nav-link"
@@ -522,13 +522,13 @@ const Navbar = () => {
                 <ul className="main-menu-m m-0">
                   <li>
                     <Link to="/home" className="text-decoration-none">
-                      Home
+             Trang chủ
                     </Link>
                   </li>
 
                   <li>
                     <Link to="/product" className="text-decoration-none">
-                      Shop
+     Sản phẩm
                     </Link>
                   </li>
 
@@ -538,25 +538,25 @@ const Navbar = () => {
                       className="text-decoration-none label1 rs1"
                       data-label1="hot"
                     >
-                      Features
+           Đặt hàng
                     </Link>
                   </li>
 
                   <li>
                     <Link to="/blog" className="text-decoration-none">
-                      Blog
+                     Bài viết
                     </Link>
                   </li>
 
                   <li>
                     <Link to="/about" className="text-decoration-none">
-                      About
+           Về chúng tôi
                     </Link>
                   </li>
 
                   <li>
                     <Link to="/contact" className="text-decoration-none">
-                      Contact
+  Liên hệ
                     </Link>
                   </li>
                 </ul>
@@ -571,18 +571,18 @@ const Navbar = () => {
                 <ul className="main-menu-m m-0">
                   <li>
                     <Link to="/account" className="text-decoration-none">
-                      Account
+                   Tài khoản
                     </Link>
                   </li>
 
                   <li>
                     <Link to="/auth/login" className="text-decoration-none">
-                      Login
+           Đăng nhập
                     </Link>
                   </li>
                   <li>
                     <Link to="/auth/register" className="text-decoration-none">
-                      Register
+                 Đăng ký
                     </Link>
                   </li>
                 </ul>
@@ -600,7 +600,7 @@ const Navbar = () => {
         aria-labelledby="offcanvasRightLabel"
       >
         <div className="offcanvas-header p-5 pb-4">
-          <span className="mtext-103 cl2">Your Cart</span>
+          <span className="mtext-103 cl2">Giỏ hàng</span>
           <button
             type="button"
             className="btn-close"
@@ -634,20 +634,15 @@ const Navbar = () => {
 
           <div className="container">
             <div className="header-cart-total w-full p-tb-40">
-              Total: {` ${formatCurrencyVND(total ?? "N/A")}`}
+              Tổng tiền: {` ${formatCurrencyVND(total ?? "N/A")}`}
             </div>
             <div className="header-cart-buttons">
+    
               <Link
                 to="shoping-cart"
-                className="text-decoration-none flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10"
+                className="text-decoration-none flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04"
               >
-                View Cart
-              </Link>
-              <Link
-                to="shoping-cart"
-                className="text-decoration-none flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10"
-              >
-                Check Out
+               Đặt hàng
               </Link>
             </div>
           </div>
