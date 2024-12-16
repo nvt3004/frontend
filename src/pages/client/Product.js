@@ -521,7 +521,7 @@ const Product = () => {
         }
       }
     } else {
-      setErr("Please select full attributes!");
+      setErr("Vui lòng chọn hết các thuộc tính!");
     }
   };
 
@@ -549,7 +549,8 @@ const Product = () => {
     }
 
     SuccessAlert({
-      text: "Add product to cart success!",
+      title: "Thành công!",
+      text: "Thêm sản phẩm vào giỏ hàng thành công!",
     });
   };
 

@@ -396,7 +396,7 @@ const ProductDetail = () => {
         }
       }
     } else {
-      setErr("Please select full attributes!");
+      setErr("Vui lòng chọn hết các thuộc tính!");
     }
   };
 
@@ -424,7 +424,8 @@ const ProductDetail = () => {
     }
 
     SuccessAlert({
-      text: "Add product to cart success!",
+      title: "Thành công!",
+      text: "Thêm sản phẩm vào giỏ hàng thành công!",
     });
   };
 

@@ -321,7 +321,7 @@ const Home = () => {
         }
       }
     } else {
-      setErr("Please select full attributes!");
+      setErr("Vui lòng chọn hết các thuộc tính!");
     }
   };
 
@@ -349,6 +349,7 @@ const Home = () => {
     }
 
     SuccessAlert({
+      title: "Thành công!",
       text: "Thêm sản phẩm vào giỏ hàng thành công!",
     });
   };
