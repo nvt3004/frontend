@@ -18,6 +18,13 @@ import { Bar } from "react-chartjs-2";
 import { stfExecAPI } from "../../stf/common";
 import { toast } from "react-toastify";
 
+function formatNumberWithCommas(number) {
+  if (typeof number !== "number") {
+    throw new Error("Input must be a number");
+  }
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -81,7 +88,7 @@ function formatDate(dateString, format) {
 function Dashboard() {
   const [reportQuantityProduct, setReportQuantityProduct] = useState(0);
   const [reportRevenue, setReportRevenue] = useState(0);
-  const [reportProfit, setReportProfit] = useState(0);
+  const [reportProfit, setReportProfit] = useState(0); // Là tổng số đơn hàng
   const startDatePickerRef = useRef();
   const endDatePickerRef = useRef();
   const [startDate, setStartDate] = useState(
@@ -91,13 +98,16 @@ function Dashboard() {
     formatDateString(new Date(), "YYYY/MM/DD")
   );
   const [productStock, setProductStock] = useState([]);
+  const [productBetSaler, setProductBetSaler] = useState([]);
 
   //Tính doanh thu
   useEffect(() => {
     const fetchUsers = async () => {
       // setLoading(true);
       const [error, data] = await stfExecAPI({
-        url: `api/admin/report/revenue?startDate=${startDate}&endDate=${endDate}`,
+        url: `api/admin/report/revenue?startDate=${moment(startDate).format(
+          "YYYY/MM/DD"
+        )}&endDate=${moment(endDate).format("YYYY/MM/DD")}`,
       });
 
       if (data) {
@@ -123,43 +133,16 @@ function Dashboard() {
     fetchUsers();
   }, [startDate, endDate]);
 
-  //Tính lợi nhuận
-  useEffect(() => {
-    const fetchUsers = async () => {
-      // setLoading(true);
-      const [error, data] = await stfExecAPI({
-        url: `api/admin/report/profit?startDate=${startDate}&endDate=${endDate}`,
-      });
-
-      if (data) {
-        // setLoading(false);
-        setReportProfit(data.data);
-        return;
-      }
-
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-
-      // setLoading(false);
-    };
-
-    fetchUsers();
-  }, [startDate, endDate]);
-
   //Tính sản phẩm đã bán
   useEffect(() => {
     const fetchUsers = async () => {
       // setLoading(true);
       const [error, data] = await stfExecAPI({
-        url: `api/admin/report/total-product-buy?startDate=${startDate}&endDate=${endDate}`,
+        url: `api/admin/report/total-product-buy?startDate=${moment(
+          startDate
+        ).format("YYYY/MM/DD")}&endDate=${moment(endDate).format(
+          "YYYY/MM/DD"
+        )}`,
       });
 
       if (data) {
@@ -185,6 +168,79 @@ function Dashboard() {
     fetchUsers();
   }, [startDate, endDate]);
 
+  //Tính tổng số đơn hàng
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/report/total-order?startDate=${moment(startDate).format(
+          "YYYY/MM/DD"
+        )}&endDate=${moment(endDate).format("YYYY/MM/DD")}&statusId=${-1}`,
+      });
+
+      if (data) {
+        setReportProfit(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchUsers();
+  }, [startDate, endDate]);
+
+  //Tính top 5 sản phẩm bán chạy nhất
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/report/product-betsaler?startDate=${moment(
+          startDate
+        ).format("YYYY/MM/DD")}&endDate=${moment(endDate).format(
+          "YYYY/MM/DD"
+        )}`,
+      });
+
+      if (data) {
+
+        const dat = {
+          labels: data?.data?.map((i) => i.versionName) || [],
+          datasets: [
+            {
+              label: "Số lượng sản phẩm",
+              data: data?.data?.map((i) => i.quantity),
+              backgroundColor: "#233446",
+            },
+          ],
+        };
+        setProductBetSaler(dat);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+    };
+
+    fetchUsers();
+  }, [startDate,endDate]);
+
   //Tính top 5 sản phẩm tồn kho
   useEffect(() => {
     const fetchUsers = async () => {
@@ -200,7 +256,7 @@ function Dashboard() {
           labels: data?.data?.map((i) => i.versionName) || [],
           datasets: [
             {
-              label: "Sản phẩm",
+              label: "Số lượng sản phẩm",
               data: data?.data?.map((i) => i.quantity),
               backgroundColor: "#233446",
             },
@@ -239,7 +295,7 @@ function Dashboard() {
                 <div className="">
                   <h5 class="card-title">Sản phẩm đã bán</h5>
                   <h6 class="card-title text-primary">
-                    {reportQuantityProduct}
+                    {formatNumberWithCommas(reportQuantityProduct)}
                   </h6>
                 </div>
               </div>
@@ -269,9 +325,9 @@ function Dashboard() {
               <div className="d-flex align-items-center">
                 <CreditCard weight="fill" size={50} className="me-4" />
                 <div className="">
-                  <h5 class="card-title">Lợi nhuận</h5>
+                  <h5 class="card-title">Tổng số đơn hàng</h5>
                   <h6 class="card-title text-primary">
-                    {formatCurrencyVND(reportProfit)}
+                    {formatNumberWithCommas(reportProfit)}
                   </h6>
                 </div>
               </div>
@@ -280,9 +336,34 @@ function Dashboard() {
         </div>
       </div>
 
-      <div className="d-flex mt-4 bg-white p-4 rounded-2">
+      <div className="d-flex mt-4 bg-white p-4 rounded-2 align-items-center">
         <div className="me-3">
-          <label className="form-label" htmlFor="basic-default-birthday">
+          <label className="mb-2" htmlFor="basic-default-birthday">
+            Lọc theo
+          </label>
+
+          <select
+            className="form-select"
+            id="exampleFormControlSelect1"
+            onChange={(e) => {
+              // handleChangeSelectFilterActive(e.target.value);
+              // setStatus(e.target.value);
+            }}
+          >
+            <option value="0">Hôm nay</option>
+            <option value="1">Hôm qua</option>
+            <option value="2">Tuần này</option>
+            <option value="3">Tuần trước</option>
+            <option value="4">Tháng này</option>
+            <option value="5">Tháng trước</option>
+            <option value="6">Năm nay</option>
+            <option value="7">Năm trước</option>
+            <option value="7">Tùy chọn</option>
+          </select>
+        </div>
+
+        <div className="me-3">
+          <label className="mb-2" htmlFor="basic-default-birthday">
             Từ ngày
           </label>
 
@@ -316,7 +397,7 @@ function Dashboard() {
         </div>
 
         <div>
-          <label className="form-label" htmlFor="basic-default-birthday">
+          <label className="mb-2" htmlFor="basic-default-birthday">
             Đến ngày
           </label>
 
@@ -348,6 +429,11 @@ function Dashboard() {
             />
           </div>
         </div>
+      </div>
+
+      <div className="card mt-4 p-4" style={{ height: "400px", width: "100%" }}>
+        <h5 className="card-title mb-3">Top 5 sản phẩm bán chạy</h5>
+        {productBetSaler.labels && <Bar options={options} data={productBetSaler} />}
       </div>
 
       <div className="card mt-4 p-4" style={{ height: "400px", width: "100%" }}>

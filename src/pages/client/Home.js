@@ -337,12 +337,7 @@ const Home = () => {
     });
 
     if (error) {
-      DangerAlert({
-        text:
-          `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Lỗi máy chủ",
-      });
-      // window.location.href = "/auth/login";
+      window.location.href = "/auth/login";
       return;
     } else {
       dispatch(incrementCart());
@@ -659,7 +654,7 @@ const Home = () => {
                             data-bs-target="#exampleModal"
                             onClick={() => handleProductClick(product?.id)}
                           >
-                         Xem
+                            Xem
                           </button>
                         </div>
 
@@ -715,8 +710,8 @@ const Home = () => {
                 to="/product"
                 className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04"
               >
-    Xem sản phẩm&nbsp;&nbsp;<i className="zmdi zmdi-arrow-right"></i>
-
+                Xem sản phẩm&nbsp;&nbsp;
+                <i className="zmdi zmdi-arrow-right"></i>
               </Link>
             </div>
           </div>

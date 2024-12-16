@@ -23,32 +23,35 @@ const Register = () => {
     try {
       const response = await registerUser({ fullName, username, password });
       if (response.statusCode === 200) {
-        setSuccess("Registration successful. Please enter the OTP sent to your email/phone.");
+        setSuccess(
+          "Đăng ký thành công. Vui lòng nhập mã OTP được gửi đến email/điện thoại của bạn."
+        );
         setIsOtpStage(true);
       } else {
-        setError(response.error || "Registration failed");
+        setError(response.error || "Đăng ký thất bại.");
       }
     } catch (error) {
-      setError("An error occurred during registration");
+      setError("Đã xảy ra lỗi trong quá trình đăng ký.");
     }
   };
 
   const handleVerifyOtp = async (event) => {
     event.preventDefault();
-  
+
     try {
       const response = await verifyOtp({ username, otp });
       if (response.statusCode === 200) {
-        setSuccess("OTP verified successfully. You can now login.");
+        setSuccess(
+          "Xác thực OTP thành công. Bạn có thể đăng nhập ngay bây giờ."
+        );
         setError("");
       } else {
-        setError(response.error || "OTP verification failed");
+        setError(response.error || "Xác thực OTP thất bại.");
       }
     } catch (error) {
-      setError("An error occurred during OTP verification");
+      setError("Đã xảy ra lỗi trong quá trình xác thực OTP.");
     }
   };
-
 
   return (
     <div className="container mt-5">
@@ -57,7 +60,7 @@ const Register = () => {
           <div className="card shadow-sm">
             <div className="card-body">
               <h3 className="card-title text-center mb-4">
-                {isOtpStage ? "Verify OTP" : "Register"}
+                {isOtpStage ? "Kiểm tra OTP" : "Đăng ký"}
               </h3>
               {error && <div className="alert alert-danger">{error}</div>}
               {success && <div className="alert alert-success">{success}</div>}
@@ -65,77 +68,77 @@ const Register = () => {
                 <form onSubmit={handleRegister}>
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">
-                      Full Name
+                      Họ tên
                     </label>
                     <input
                       type="text"
                       className="form-control"
                       id="name"
-                      placeholder="Enter your full name"
+                      placeholder="Nhập họ tên"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                     />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="email" className="form-label">
-                      Email/Phone Number
+                      Email/Điện thoại
                     </label>
                     <input
                       type="text"
                       className="form-control"
                       id="email"
-                      placeholder="Enter your email or phone number"
+                      placeholder="Nhập email hoặc điện thoại"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                     />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="password" className="form-label">
-                      Password
+                      Mật khẩu
                     </label>
                     <input
                       type="password"
                       className="form-control"
                       id="password"
-                      placeholder="Enter your password"
+                      placeholder="Nhập mật khẩu"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="confirmPassword" className="form-label">
-                      Confirm Password
+                      Xác nhận mật khẩu
                     </label>
                     <input
                       type="password"
                       className="form-control"
                       id="confirmPassword"
-                      placeholder="Confirm your password"
+                      placeholder="Nhập mật khẩu xác nhận"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                   </div>
                   <button type="submit" className="btn btn-primary w-100">
-                    Register
+                    Đăng ký
                   </button>
                 </form>
               ) : (
                 <form onSubmit={handleVerifyOtp}>
                   <div className="mb-3">
                     <label htmlFor="otp" className="form-label">
-                      Enter OTP
+                      Nhập OTP
                     </label>
                     <input
                       type="text"
                       className="form-control"
                       id="otp"
-                      placeholder="Enter the OTP"
+                      placeholder="Nhập OPT"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
                     />
                   </div>
                   <button type="submit" className="btn btn-primary w-100">
-                    Verify OTP
+                    Kiểm tra OTP
                   </button>
                 </form>
               )}
@@ -145,7 +148,7 @@ const Register = () => {
                   className="btn btn-link"
                   style={{ textDecoration: "none" }}
                 >
-                  Already have an account? Login
+                  Bạn đã có tài khoản? Đăng nhập
                 </Link>
               </div>
             </div>
