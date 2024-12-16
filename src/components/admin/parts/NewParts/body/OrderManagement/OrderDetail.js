@@ -40,6 +40,14 @@ const OrderDetail = () => {
         const numericValue = parseFloat(discount.replace(/[^\d.-]/g, ''));
         return `${numericValue.toLocaleString('vi-VN')} VND`;
     }
+    const statusMapping = {
+        Pending: "Chờ xử lý",
+        Processed: "Đã xử lý",
+        Shipped: "Đã giao",
+        Waitingforconfirmation: "Chờ xác nhận",
+        Delivered: "Đã nhận",
+        Cancelled: "Đã hủy",
+    };
 
     return (
         <div className="container-fluid invoice-container" style={{ fontFamily: 'Times New Roman, serif !important' }}>
@@ -79,7 +87,7 @@ const OrderDetail = () => {
                                 <p>Ngày giao hàng dự kiến: {moment(order?.deliveryDate).format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
                                 <p>Phương thức thanh toán: {order?.paymentMethod || 'N/A'}</p>
                                 <p>Tổng tiền: {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}</p>
-                                <p>Trạng thái: {order?.statusName || 'N/A'}</p>
+                                <p>Trạng thái: {statusMapping[order?.statusName] || "N/A"}</p>
                             </div>
                         </div>
                     </div>
