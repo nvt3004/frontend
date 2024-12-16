@@ -11,7 +11,7 @@ function App() {
     <Provider store={store}>
       <AuthProvider>
         <AppRoutes />
-        <ChatBot />
+        {/* <ChatBot /> */}
       </AuthProvider>
       <ToastContainer />
     </Provider>

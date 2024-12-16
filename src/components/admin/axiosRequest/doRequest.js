@@ -7,7 +7,8 @@ const DoRequest = () => {
     const axiosInstance = axios.create({
         baseURL: baseURL,
         headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
             'Authorization': `Bearer ${token}`,
         },
     })

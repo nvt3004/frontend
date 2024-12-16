@@ -14,9 +14,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ConversationList, Conversation } from "@chatscope/chat-ui-kit-react";
 
 const adminAvatar = require('../assets/images/logo.png');
-const genAI = new GoogleGenerativeAI("AIzaSyCGK2SBPyN04ROSjH7vZ0OxvwCVseyH4Zc");
+const genAI = new GoogleGenerativeAI("AIzaSyBeU6gKpx_SsLcB-qlePRphctFGq2UbIgA");
 const model = genAI.getGenerativeModel({
-  model: "tunedModels/your-Models",
+  model: "tunedModels/sanphamimg-obomyetdmknf",
 });
 
 const ChatBot = () => {
