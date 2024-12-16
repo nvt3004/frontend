@@ -360,10 +360,10 @@ const Account = () => {
   //Xóa địa chỉ
   const handleDeleteAddress = async (addressId) => {
     const isDelete = await ConfirmAlert({
-      title: "Delete address",
-      text: "Are you sure you want to delete?",
-      cancelText: "Cancel",
-      confirmText: "Delete",
+      title: "Xóa địa chỉ",
+      text: "Bạn có chắc muốn xóa không?",
+      confirmText: "Xóa",
+      cancelText: "Hủy",
     });
 
     if (!isDelete) return;

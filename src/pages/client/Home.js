@@ -615,7 +615,7 @@ const Home = () => {
               return (
                 <div key={item.code} className="col">
                   <CouponCard
-                    code={item.code}
+                    code={item.quantity}
                     discount={
                       item.disPercent
                         ? item.disPercent + " %"
