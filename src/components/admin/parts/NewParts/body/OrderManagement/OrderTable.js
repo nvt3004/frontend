@@ -377,9 +377,9 @@ const OrderTable = () => {
 
     const toggleOrderDetails = (order) => { setOrderID(prevState => ({ value: prevState.value === order?.orderId ? null : order?.orderId, isOpen: prevState.value !== order?.orderId })); };
 
-    const handleChangeStatus = (option, orderID) => {
-        if (option?.value < 4 || option?.value === 5 || option?.value !== 7) {
+    const handleChangeStatus = (option, order) => {
             if (option?.value === 5) {
+                if(order?.statusName === 'Chờ xử lý'){
                 Swal.fire({
                     title: 'Nhập lý do hủy đơn hàng',
                     input: 'textarea',
@@ -395,25 +395,28 @@ const OrderTable = () => {
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const cancelReason = result.value;
-                        axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`, { reason: cancelReason })
+                        axiosInstance.put(`/staff/orders/update-status?orderId=${order?.orderId}&statusId=${option?.value}`, { reason: cancelReason })
                             .then((response) => {
                                 if (response.data?.errorCode === 200) {
                                     toast.success('Đơn hàng đã được hủy thành công!');
                                     handleGetOrderAPI();
                                 } else {
-                                    toast.error(response.data?.message || 'Không thể hủy đơn hàng. Vui lòng thử lại!');
+                                    toast.warning(response.data?.message || 'Không thể hủy đơn hàng. Vui lòng thử lại!');
                                 }
                             })
                             .catch((error) => {
                                 if (error?.response?.status === 403) {
-                                    toast.error("Phiên làm việc đã hết hạn. Đang chuyển đến trang đăng nhập...");
+                                    toast.warning("Phiên làm việc đã hết hạn. Đang chuyển đến trang đăng nhập...");
                                     navigate('/auth/login');
                                 } else {
-                                    toast.error(error.response?.data?.message || error.message || 'Không thể hủy đơn hàng. Vui lòng thử lại!');
+                                    toast.warning(error.response?.data?.message || error.message || 'Không thể hủy đơn hàng. Vui lòng thử lại!');
                                 }
                             });
                     }
                 });
+            }else{
+                toast.warning(`Bạn không thể thay đổi trạng thái thành ${option?.label.toLowerCase()}`);
+            }
             } else {
                 Swal.fire({
                     title: 'Xác nhận thay đổi trạng thái',
@@ -425,13 +428,13 @@ const OrderTable = () => {
                     cancelButtonText: 'Hủy'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        axiosInstance.put(`/staff/orders/update-status?orderId=${orderID}&statusId=${option?.value}`)
+                        axiosInstance.put(`/staff/orders/update-status?orderId=${order?.orderId}&statusId=${option?.value}`)
                             .then((response) => {
                                 if (response.data?.errorCode === 200) {
                                     toast.success('Cập nhật trạng thái đơn hàng thành công!');
                                     handleGetOrderAPI();
                                 } else {
-                                    toast.error(response.data?.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại!');
+                                    toast.warning(response.data?.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại!');
                                 }
                             })
                             .catch((error) => {
@@ -439,18 +442,13 @@ const OrderTable = () => {
                                     toast.error("Phiên làm việc đã hết hạn. Đang chuyển đến trang đăng nhập...");
                                     navigate('/auth/login');
                                 } else {
-                                    toast.error(error.response?.data?.message || error.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại!');
+                                    toast.warning(error.response?.data?.message || error.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại!');
                                 }
                             });
                     }
                 });
             }
-        } else {
-            toast.warning(`Bạn không thể thay đổi trạng thái thành ${option?.label.toLowerCase()}`);
-        }
     };
-
-
 
     useEffect(
         () => {
@@ -1095,7 +1093,7 @@ const OrderTable = () => {
 
                     if (response.status === 200) {
 
-                        toast.success(`${response?.data?.message || 'Hoàn tiền thành công cho đơn hàng'}#${order.orderId}`);
+                        toast.success(response?.data?.message || `Hoàn tiền thành công cho đơn hàng #${order.orderId}`);
 
                         // setSelectedStatus(selectedOption);
                         handleGetOrderAPI();
@@ -1278,7 +1276,7 @@ const OrderTable = () => {
                                                                     }),
                                                                 }}
                                                                 menuPortalTarget={document.body}
-                                                                onChange={(option) => handleChangeStatus(option, order?.orderId)} /> </td>
+                                                                onChange={(option) => handleChangeStatus(option, order)} /> </td>
                                                         <td className='p-2'>
                                                             {order.amount === 0 ? (
                                                                 <div style={{ minWidth: '150px' }}>Không chuyển tiền</div>
