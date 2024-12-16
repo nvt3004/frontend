@@ -145,7 +145,7 @@ const OrderTable = () => {
         Delivered: "#33FF33",
         Cancelled: "#FF3333",
     };
-    
+
     const statusMapping = {
         Pending: "Chờ xử lý",
         Processed: "Đã xử lý",
@@ -154,7 +154,7 @@ const OrderTable = () => {
         Delivered: "Đã nhận",
         Cancelled: "Đã hủy",
     };
-    
+
     useEffect(() => {
         axiosInstance.get('/staff/orders/statuses')
             .then((response) => {
@@ -163,10 +163,10 @@ const OrderTable = () => {
                         let color;
                         const statusNameEnglish = item.statusName.trim().toLowerCase();
                         console.log(statusNameEnglish + " statusNameEnglish");
-                        
+
                         // Ánh xạ tiếng Anh sang tiếng Việt
                         const statusNameVietnamese = statusMapping[item.statusName.trim()] || item.statusName;
-                    
+
                         switch (statusNameEnglish) {
                             case "pending":
                                 color = "#FFFF33"; // Vàng
@@ -189,14 +189,14 @@ const OrderTable = () => {
                             default:
                                 color = "#E0E0E0"; // Xám cho trạng thái không xác định
                         }
-                    
+
                         return {
                             value: item.statusId,
                             label: statusNameVietnamese, // Hiển thị trạng thái tiếng Việt
                             color: color
                         };
                     });
-                    
+
                     setOrderStatus(status);
                 } else if (response.data?.errorCode === 998) {
                     toast.error(response.data?.message || 'You do not have permission to access statuses.');
@@ -513,20 +513,20 @@ const OrderTable = () => {
     const handleSaveVersionChanges = async (orderDetail) => {
         const { orderDetailId, product } = orderDetail;
         const { productID, orderVersionAttribute } = product[0];
-    
+
         const currentQuantity = initialQuantitiesRef.current[`${orderDetailId}-${productID}`];
         const updatedQuantity = quantities[`${orderDetailId}-${productID}`];
         const quantityChanged = currentQuantity !== updatedQuantity;
-    
+
         if (!quantityChanged) {
             // toast.info("Không có thay đổi nào cần lưu.");
             setEditVersion({ isEdit: false, orderDetailsID: null });
             return;
         }
-    
+
         try {
             await updateQuantity(orderDetailId, productID, updatedQuantity);
-    
+
             toast.success("Cập nhật số lượng thành công!");
             handleGetOrderDetail();
             handleGetOrderAPI();
@@ -537,7 +537,7 @@ const OrderTable = () => {
             setEditVersion({ isEdit: false, orderDetailsID: null });
         }
     };
-    
+
     const updateQuantity = (orderDetailId, productID, quantity) => {
         return axiosInstance.put(
             `/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${quantity}`
@@ -1094,7 +1094,7 @@ const OrderTable = () => {
                     );
 
                     if (response.status === 200) {
-                      
+
                         toast.success(`${response?.data?.message || 'Hoàn tiền thành công cho đơn hàng'}#${order.orderId}`);
 
                         // setSelectedStatus(selectedOption);
@@ -1187,188 +1187,190 @@ const OrderTable = () => {
                 </div>
 
                 <div>
-                    <Table responsive variant="light">
-                        <thead>
-                            <tr>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '3%' }} className='p-0 ps-3 pt-3 pb-3' >
-                                    {showSelectAll ? (
-                                        <OverlayTrigger placement="top" overlay={<Tooltip id="select-all-tooltip">Chọn tất cả để xuất hóa đơn</Tooltip>}>
-                                            <div>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={allChecked}
-                                                    onChange={handleSelectAllChange}
-                                                />
-                                            </div>
-                                        </OverlayTrigger>
+                    <div className="table-responsive-wrapper">
+                        <div className="table-responsive-container" style={{ overflowX: 'auto' }}>
+                            <Table responsive variant="light" style={{ overflowX: 'auto' }}>
+                                <thead>
+                                    <tr>
+                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '3%' }} className='p-0 ps-3 pt-3 pb-3' >
+                                            {showSelectAll ? (
+                                                <OverlayTrigger placement="top" overlay={<Tooltip id="select-all-tooltip">Chọn tất cả để xuất hóa đơn</Tooltip>}>
+                                                    <div>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={allChecked}
+                                                            onChange={handleSelectAllChange}
+                                                        />
+                                                    </div>
+                                                </OverlayTrigger>
+                                            ) : (
+                                                <span> </span>
+                                            )}
+                                        </th>
+                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '5%' }}>ID</th>
+                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '20%' }}>Khách hàng</th>
+                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '34%' }}>Địa chỉ</th>
+                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '15%' }}>Điện thoại</th>
+                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '18%' }}>Ngày đặt hàng</th>
+                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '3%' }}>TT Đơn hàng</th>
+                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '12%' }}>TT Thanh toán</th>
+                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '5%' }}></th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {orders.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={8} className="text-center" style={{ height: '100px' }}>
+                                                Không tìm thấy đơn hàng nào.
+                                            </td>
+                                        </tr>
+
                                     ) : (
-                                        <span> </span>
-                                    )}
-                                </th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '5%' }}>ID</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '20%' }}>Khách hàng</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '34%' }}>Địa chỉ</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '15%' }}>Điện thoại</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '18%' }}>Ngày đặt hàng</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '3%' }}>TT Đơn hàng</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '12%' }}>TT Thanh toán</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '5%' }}></th>
-                            </tr>
-                        </thead>
+                                        orders?.map(
+                                            (order) => (
 
-                        <tbody>
+                                                <React.Fragment key={order?.orderId}>
+                                                    <tr className='custom-table' >
+                                                        <td className='p-0 ps-3 pt-3 pb-3'>
+                                                            {order?.statusName === 'Đã xử lý' && (
+                                                                <OverlayTrigger placement="top" overlay={<Tooltip id={`order-${order.orderId}-tooltip`}>Chọn đơn hàng để xuất hóa đơn</Tooltip>}>
+                                                                    <div>
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            checked={selectedOrders.includes(order.orderId)}
+                                                                            onChange={() => handleCheckboxChange(order.orderId)}
+                                                                        />
+                                                                    </div>
+                                                                </OverlayTrigger>
+                                                            )}
+                                                        </td>
+                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }} className='p-2'>
+                                                            {order?.orderId}
+                                                        </td>
+                                                        <td style={{ verticalAlign: 'middle' }} className='p-2'>
+                                                            {order?.fullname}
+                                                        </td>
+                                                        <td style={{ verticalAlign: 'middle' }} className='p-2'>
+                                                            {order?.address}
+                                                        </td>
+                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }} className='p-2'>
+                                                            {order?.phone ? (
+                                                                order.phone
+                                                            ) : (
+                                                                <p className='px-2 py-1 bg-danger-subtle text-center rounded-3 me-1'>Chưa có</p>
+                                                            )}
+                                                        </td>
 
-                            {orders.length === 0 ? (
-                                <tr>
-                                    <td colSpan={8} className="text-center" style={{ height: '100px' }}>
-                                        Không tìm thấy đơn hàng nào.
-                                    </td>
-                                </tr>
+                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }} className='p-2'> {moment(order?.orderDate).format('DD/MM/YYYY HH:mm')} </td>
+                                                        <td style={{ width: '150px', verticalAlign: 'middle' }} className='p-2'>
+                                                            <Select options={orderStatus} value={orderStatus.find(option => option.label === order?.statusName)}
+                                                                styles={{
+                                                                    ...customReactSelectOrderStatusOptionsStyles,
+                                                                    container: (provided) => ({
+                                                                        ...provided,
+                                                                        minWidth: '150px',
+                                                                    }),
+                                                                    menuPortal: (provided) => ({
+                                                                        ...provided,
+                                                                        zIndex: 9999,
+                                                                    }),
+                                                                }}
+                                                                menuPortalTarget={document.body}
+                                                                onChange={(option) => handleChangeStatus(option, order?.orderId)} /> </td>
+                                                        <td className='p-2'>
+                                                            {order.amount === 0 ? (
+                                                                <div style={{ minWidth: '150px' }}>Không chuyển tiền</div>
+                                                            ) : order.amount === -2 ? (
+                                                                <div style={{ minWidth: '150px' }}>Đã hoàn tiền</div>
+                                                            ) :
+                                                                order.amount > 0 ? (
+                                                                    <div style={{ minWidth: '150px' }}>Đã chuyển tiền</div>
+                                                                ) : (
+                                                                    <div>
+                                                                        <Select
+                                                                            options={paymentStatuses}
+                                                                            value={order.amount === -1
+                                                                                ? paymentStatuses[0]
+                                                                                : null
+                                                                            }
+                                                                            onChange={(paymentStatuses) => handleStatusChange(paymentStatuses, order)}
+                                                                            styles={{
+                                                                                container: (provided) => ({
+                                                                                    ...provided,
+                                                                                    minWidth: '170px',
+                                                                                }),
+                                                                                menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
+                                                                            }}
+                                                                            menuPortalTarget={document.body}
+                                                                            placeholder="Chọn trạng thái..."
+                                                                        />
+                                                                    </div>
+                                                                )}
+                                                        </td>
 
-                            ) : (
-                                orders?.map(
-                                    (order) => (
+                                                        <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                                                            <CustomButton
+                                                                btnBG={'secondary'}
+                                                                btnName={
+                                                                    <>
+                                                                        {orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail ? <FaChevronDown /> : <FaChevronRight />}
+                                                                    </>
+                                                                }
+                                                                textColor={'white'}
+                                                                handleClick={() => toggleOrderDetails(order)}
+                                                                tooltip="Xem chi tiết đơn hàng"
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                    {(orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail) &&
+                                                        (
+                                                            <tr className='border-bottom-2'>
+                                                                <td colSpan={8} className='border' style={{ background: '#F2F8FF' }}>
+                                                                    <Table responsive style={{ background: '#F2F8FF' }}>
+                                                                        <thead style={{ background: '#F2F8FF', height: '30px' }}>
+                                                                            <tr>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>STT</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '270px' }}>Sản phẩm</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '150px' }}></th>
+                                                                                {/* <th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print">Thuộc tính</th> */}
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>Đơn giá</th>
+                                                                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '130px' }} colSpan={2}>Số lượng</th>
+                                                                                <th style={{ textAlign: 'end', verticalAlign: 'middle' }} colSpan={2}>Thành tiền</th>
+                                                                                {order?.statusName === 'Chờ xử lý' && (<th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print"></th>)}
+                                                                            </tr>
+                                                                        </thead>
 
-                                        <React.Fragment key={order?.orderId}>
-                                            <tr className='custom-table' >
-                                                <td className='p-0 ps-3 pt-3 pb-3'>
-                                                    {order?.statusName === 'Đã xử lý' && (
-                                                        <OverlayTrigger placement="top" overlay={<Tooltip id={`order-${order.orderId}-tooltip`}>Chọn đơn hàng để xuất hóa đơn</Tooltip>}>
-                                                            <div>
-                                                                <input
-                                                                    type="checkbox"
-                                                                    checked={selectedOrders.includes(order.orderId)}
-                                                                    onChange={() => handleCheckboxChange(order.orderId)}
-                                                                />
-                                                            </div>
-                                                        </OverlayTrigger>
-                                                    )}
-                                                </td>
-                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }} className='p-2'>
-                                                    {order?.orderId}
-                                                </td>
-                                                <td style={{ verticalAlign: 'middle' }} className='p-2'>
-                                                    {order?.fullname}
-                                                </td>
-                                                <td style={{ verticalAlign: 'middle' }} className='p-2'>
-                                                    {order?.address}
-                                                </td>
-                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }} className='p-2'>
-                                                    {order?.phone ? (
-                                                        order.phone
-                                                    ) : (
-                                                        <p className='px-2 py-1 bg-danger-subtle text-center rounded-3 me-1'>Chưa có</p>
-                                                    )}
-                                                </td>
+                                                                        <tbody>
+                                                                            {orderDetails?.orderDetail?.map((orderDetail) => (
+                                                                                orderDetail?.product.map((item) => (
+                                                                                    <tr key={item.productID} className='custom-table'>
+                                                                                        <td >{orderDetails?.orderDetail.indexOf(orderDetail) + 1}</td>
+                                                                                        <td style={{
+                                                                                            maxWidth: '150px',
+                                                                                            overflow: 'hidden',
+                                                                                            textOverflow: 'ellipsis',
+                                                                                            whiteSpace: 'nowrap'
+                                                                                        }} className="print-text-wrap p-1">
+                                                                                            {item?.productName}
+                                                                                            {/* <span> - [{item?.orderVersionAttribute?.color?.label} - {item?.orderVersionAttribute?.size?.label}]</span> */}
+                                                                                        </td>
 
-                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }} className='p-2'> {moment(order?.orderDate).format('DD/MM/YYYY HH:mm')} </td>
-                                                <td style={{ width: '150px', verticalAlign: 'middle' }} className='p-2'>
-                                                    <Select options={orderStatus} value={orderStatus.find(option => option.label === order?.statusName)}
-                                                        styles={{
-                                                            ...customReactSelectOrderStatusOptionsStyles,
-                                                            container: (provided) => ({
-                                                                ...provided,
-                                                                minWidth: '150px',
-                                                            }),
-                                                            menuPortal: (provided) => ({
-                                                                ...provided,
-                                                                zIndex: 9999,
-                                                            }),
-                                                        }}
-                                                        menuPortalTarget={document.body}
-                                                        onChange={(option) => handleChangeStatus(option, order?.orderId)} /> </td>
-                                                <td className='p-2'>
-                                                    {order.amount === 0 ? (
-                                                        <div style={{ minWidth: '150px' }}>Không chuyển tiền</div>
-                                                    ) : order.amount === -2 ? (
-                                                        <div style={{ minWidth: '150px' }}>Đã hoàn tiền</div>
-                                                    ) :
-                                                        order.amount > 0 ? (
-                                                            <div style={{ minWidth: '150px' }}>Đã chuyển tiền</div>
-                                                        ) : (
-                                                            <div>
-                                                                <Select
-                                                                    options={paymentStatuses}
-                                                                    value={order.amount === -1
-                                                                        ? paymentStatuses[0]
-                                                                        : null
-                                                                    }
-                                                                    onChange={(paymentStatuses) => handleStatusChange(paymentStatuses, order)}
-                                                                    styles={{
-                                                                        container: (provided) => ({
-                                                                            ...provided,
-                                                                            minWidth: '170px',
-                                                                        }),
-                                                                        menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
-                                                                    }}
-                                                                    menuPortalTarget={document.body}
-                                                                    placeholder="Chọn trạng thái..."
-                                                                />
-                                                            </div>
-                                                        )}
-                                                </td>
-
-                                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
-                                                    <CustomButton
-                                                        btnBG={'secondary'}
-                                                        btnName={
-                                                            <>
-                                                                {orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail ? <FaChevronDown /> : <FaChevronRight />}
-                                                            </>
-                                                        }
-                                                        textColor={'white'}
-                                                        handleClick={() => toggleOrderDetails(order)}
-                                                        tooltip="Xem chi tiết đơn hàng"
-                                                    />
-                                                </td>
-                                            </tr>
-                                            {(orderID?.value === order?.orderId && orderID.isOpen && orderDetails && order?.isOpenOrderDetail) &&
-                                                (
-                                                    <tr className='border-bottom-2'>
-                                                        <td colSpan={8} className='border' style={{ background: '#F2F8FF' }}>
-                                                            <Table responsive style={{ background: '#F2F8FF' }}>
-                                                                <thead style={{ background: '#F2F8FF', height: '30px' }}>
-                                                                    <tr>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>STT</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '270px' }}>Sản phẩm</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '150px' }}></th>
-                                                                        {/* <th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print">Thuộc tính</th> */}
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle' }}>Đơn giá</th>
-                                                                        <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '130px' }} colSpan={2}>Số lượng</th>
-                                                                        <th style={{ textAlign: 'end', verticalAlign: 'middle' }} colSpan={2}>Thành tiền</th>
-                                                                        {order?.statusName === 'Chờ xử lý' && (<th colSpan={2} style={{ textAlign: 'center', verticalAlign: 'middle' }} className="no-print"></th>)}
-                                                                    </tr>
-                                                                </thead>
-
-                                                                <tbody>
-                                                                    {orderDetails?.orderDetail?.map((orderDetail) => (
-                                                                        orderDetail?.product.map((item) => (
-                                                                            <tr key={item.productID} className='custom-table'>
-                                                                                <td >{orderDetails?.orderDetail.indexOf(orderDetail) + 1}</td>
-                                                                                <td style={{
-                                                                                    maxWidth: '150px',
-                                                                                    overflow: 'hidden',
-                                                                                    textOverflow: 'ellipsis',
-                                                                                    whiteSpace: 'nowrap'
-                                                                                }} className="print-text-wrap p-1">
-                                                                                    {item?.productName}
-                                                                                    {/* <span> - [{item?.orderVersionAttribute?.color?.label} - {item?.orderVersionAttribute?.size?.label}]</span> */}
-                                                                                </td>
-
-                                                                                <td className='d-flex justify-content-center text-center p-1'>
-                                                                                    <img
-                                                                                        src={item?.imageUrl || '/images/default-image.png'}
-                                                                                        alt={item?.productName}
-                                                                                        style={{
-                                                                                            maxWidth: '120px',
-                                                                                            maxHeight: '80px',
-                                                                                            width: 'auto',
-                                                                                            height: 'auto',
-                                                                                            objectFit: 'contain'
-                                                                                        }}
-                                                                                    />
-                                                                                </td>
-                                                                                {/* {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                        <td className='d-flex justify-content-center text-center p-1'>
+                                                                                            <img
+                                                                                                src={item?.imageUrl || '/images/default-image.png'}
+                                                                                                alt={item?.productName}
+                                                                                                style={{
+                                                                                                    maxWidth: '120px',
+                                                                                                    maxHeight: '80px',
+                                                                                                    width: 'auto',
+                                                                                                    height: 'auto',
+                                                                                                    objectFit: 'contain'
+                                                                                                }}
+                                                                                            />
+                                                                                        </td>
+                                                                                        {/* {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
                                                                                     <React.Fragment>
                                                                                         <td className="no-print text-center p-1">
                                                                                             <Select
@@ -1393,218 +1395,220 @@ const OrderTable = () => {
                                                                                     </React.Fragment>
                                                                                 )} */}
 
-                                                                                <td className='text-center p-1'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
+                                                                                        <td className='text-center p-1'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
 
-                                                                                <td className='text-center p-1' colSpan={2}>
-                                                                                    {order?.statusName === 'Chờ xử lý' ? (
-                                                                                        <div className='d-flex justify-content-center'>
-                                                                                            {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId && (
-                                                                                                <CustomButton
-                                                                                                    btnName="-"
-                                                                                                    btnBG="secondary"
-                                                                                                    handleClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}
-                                                                                                    textColor="bg-black bg-gradient"
-                                                                                                    textSize="sm"
-                                                                                                    tooltip="Giảm số lượng"
-                                                                                                    btnSize="sm"
-                                                                                                />
-                                                                                            )}
-
-                                                                                            {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
-                                                                                                <OverlayTrigger
-                                                                                                    placement="top"
-                                                                                                    overlay={
-                                                                                                        <Tooltip id={`quantity-input-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>
-                                                                                                            Nhập số lượng
-                                                                                                        </Tooltip>
-                                                                                                    }
-                                                                                                >
-                                                                                                    <div>
-                                                                                                        <input
-                                                                                                            type="text"
-                                                                                                            className="mx-2 text-center quantity-custom form-control form-control-sm"
-                                                                                                            value={
-                                                                                                                quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined
-                                                                                                                    ? quantities[`${orderDetail.orderDetailId}-${item.productID}`]
-                                                                                                                    : item.quantity
-                                                                                                            }
-                                                                                                            onChange={(e) =>
-                                                                                                                handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)
-                                                                                                            }
-                                                                                                            style={{
-                                                                                                                width: "50px",
-                                                                                                                textAlign: "center",
-                                                                                                            }}
+                                                                                        <td className='text-center p-1' colSpan={2}>
+                                                                                            {order?.statusName === 'Chờ xử lý' ? (
+                                                                                                <div className='d-flex justify-content-center'>
+                                                                                                    {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId && (
+                                                                                                        <CustomButton
+                                                                                                            btnName="-"
+                                                                                                            btnBG="secondary"
+                                                                                                            handleClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, -1)}
+                                                                                                            textColor="bg-black bg-gradient"
+                                                                                                            textSize="sm"
+                                                                                                            tooltip="Giảm số lượng"
+                                                                                                            btnSize="sm"
                                                                                                         />
-                                                                                                    </div>
-                                                                                                </OverlayTrigger>
+                                                                                                    )}
+
+                                                                                                    {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                                        <OverlayTrigger
+                                                                                                            placement="top"
+                                                                                                            overlay={
+                                                                                                                <Tooltip id={`quantity-input-tooltip-${orderDetail.orderDetailId}-${item.productID}`}>
+                                                                                                                    Nhập số lượng
+                                                                                                                </Tooltip>
+                                                                                                            }
+                                                                                                        >
+                                                                                                            <div>
+                                                                                                                <input
+                                                                                                                    type="text"
+                                                                                                                    className="mx-2 text-center quantity-custom form-control form-control-sm"
+                                                                                                                    value={
+                                                                                                                        quantities[`${orderDetail.orderDetailId}-${item.productID}`] !== undefined
+                                                                                                                            ? quantities[`${orderDetail.orderDetailId}-${item.productID}`]
+                                                                                                                            : item.quantity
+                                                                                                                    }
+                                                                                                                    onChange={(e) =>
+                                                                                                                        handleQuantityInputChange(orderDetail.orderDetailId, item.productID, e.target.value)
+                                                                                                                    }
+                                                                                                                    style={{
+                                                                                                                        width: "50px",
+                                                                                                                        textAlign: "center",
+                                                                                                                    }}
+                                                                                                                />
+                                                                                                            </div>
+                                                                                                        </OverlayTrigger>
+                                                                                                    ) : (
+                                                                                                        <span>{item.quantity}</span>
+                                                                                                    )}
+
+                                                                                                    {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId && (
+                                                                                                        <CustomButton
+                                                                                                            btnName="+"
+                                                                                                            btnBG="secondary"
+                                                                                                            handleClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}
+                                                                                                            textColor="bg-black bg-gradient"
+                                                                                                            textSize="sm"
+                                                                                                            tooltip="Tăng số lượng"
+                                                                                                            btnSize="sm"
+                                                                                                        />
+                                                                                                    )}
+                                                                                                </div>
                                                                                             ) : (
-                                                                                                <span>{item.quantity}</span>
+                                                                                                item?.quantity
                                                                                             )}
+                                                                                        </td>
 
-                                                                                            {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId && (
-                                                                                                <CustomButton
-                                                                                                    btnName="+"
-                                                                                                    btnBG="secondary"
-                                                                                                    handleClick={() => handleQuantityChange(orderDetail.orderDetailId, item.productID, item.quantity, 1)}
-                                                                                                    textColor="bg-black bg-gradient"
-                                                                                                    textSize="sm"
-                                                                                                    tooltip="Tăng số lượng"
-                                                                                                    btnSize="sm"
-                                                                                                />
-                                                                                            )}
+                                                                                        <td className='text-end text-right' colSpan={2}>{`${(item?.total || 0).toLocaleString('vi-VN')} VND`}</td>
+
+                                                                                        {order?.statusName === 'Chờ xử lý' &&
+                                                                                            (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
+                                                                                                <React.Fragment style={{ width: '50px !important' }}>
+                                                                                                    <td className='no-print p-1 text-center'>
+                                                                                                        <CustomButton
+                                                                                                            btnBG={'success'}
+                                                                                                            btnType={'button'}
+                                                                                                            textColor={'text-white'}
+                                                                                                            btnName={<HiCheck />}
+                                                                                                            handleClick={() => handleSaveVersionChanges(orderDetail)}
+                                                                                                            tooltip="Lưu thay đổi"
+                                                                                                            btnSize={'sm'}
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                    <td className='no-print p-1 text-center'>
+                                                                                                        <CustomButton
+                                                                                                            btnBG={'danger'}
+                                                                                                            btnType={'button'}
+                                                                                                            textColor={'text-white'}
+                                                                                                            btnName={<ImCancelCircle />}
+                                                                                                            handleClick={() => setEditVersion({ isEdit: false, orderDetailsID: null })}
+                                                                                                            tooltip="Hủy bỏ"
+                                                                                                            btnSize={'sm'}
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                </React.Fragment>
+                                                                                            ) : (
+                                                                                                <React.Fragment style={{ width: '50px !important' }}>
+                                                                                                    <td className='no-print p-1 text-center'>
+                                                                                                        <CustomButton
+                                                                                                            btnBG={'danger'}
+                                                                                                            btnType={'button'}
+                                                                                                            textColor={'text-white'}
+                                                                                                            btnName={<FaTrash />}
+                                                                                                            handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
+                                                                                                            tooltip="Xóa"
+                                                                                                            btnSize={'sm'}
+                                                                                                        />
+                                                                                                    </td>
+
+                                                                                                    <td className='no-print p-1 text-center'>
+                                                                                                        <CustomButton
+                                                                                                            btnBG={'warning'}
+                                                                                                            btnType={'button'}
+                                                                                                            textColor={'text-white'}
+                                                                                                            btnName={<MdModeEdit />}
+                                                                                                            handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
+                                                                                                            tooltip="Sửa"
+                                                                                                            btnSize={'sm'}
+                                                                                                        />
+                                                                                                    </td>
+                                                                                                </React.Fragment>
+                                                                                            ))}
+                                                                                    </tr>
+                                                                                ))
+                                                                            ))}
+
+                                                                            <tr className="no-print" >
+                                                                                <td rowSpan="7" colSpan="5" className='border-end' style={{ background: '#F2F8FF' }}>
+                                                                                    <div className="p-3 d-flex flex-column align-items-start">
+                                                                                        <div className="d-flex align-items-center mb-2">
+                                                                                            <strong className="text-info me-2">Phương thức thanh toán:</strong>
+                                                                                            <span>{order?.paymentMethod}</span>
                                                                                         </div>
-                                                                                    ) : (
-                                                                                        item?.quantity
-                                                                                    )}
-                                                                                </td>
 
-                                                                                <td className='text-end text-right' colSpan={2}>{`${(item?.total || 0).toLocaleString('vi-VN')} VND`}</td>
+                                                                                        {order?.lastUpdatedById && order?.lastUpdatedByFullname && (
+                                                                                            <div className="d-flex align-items-center"> {/* Last Updated Row */}
+                                                                                                <strong className="text-info me-2">Cập nhật lần cuối:</strong>
+                                                                                                <span>{moment(order?.lastUpdatedDate).format('DD/MM/YYYY HH:mm:ss')}</span>
+                                                                                                <span className="mx-2">|</span> {/* Separator */}
+                                                                                                <strong className="text-info me-2">Bởi:</strong>
+                                                                                                <Link
+                                                                                                    to={`/admin/users/manage`}
+                                                                                                    state={{
+                                                                                                        id: order?.lastUpdatedById,
+                                                                                                        fullname: order?.lastUpdatedByFullname
+                                                                                                    }}
+                                                                                                    style={{ textDecoration: 'none', color: 'inherit', fontWeight: 'bold' }}
+                                                                                                >
+                                                                                                    {order?.lastUpdatedByFullname}
+                                                                                                </Link>
 
-                                                                                {order?.statusName === 'Chờ xử lý' &&
-                                                                                    (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
-                                                                                        <React.Fragment style={{ width: '50px !important' }}>
-                                                                                            <td className='no-print p-1 text-center'>
-                                                                                                <CustomButton
-                                                                                                    btnBG={'success'}
-                                                                                                    btnType={'button'}
-                                                                                                    textColor={'text-white'}
-                                                                                                    btnName={<HiCheck />}
-                                                                                                    handleClick={() => handleSaveVersionChanges(orderDetail)}
-                                                                                                    tooltip="Lưu thay đổi"
-                                                                                                    btnSize={'sm'}
-                                                                                                />
-                                                                                            </td>
-                                                                                            <td className='no-print p-1 text-center'>
-                                                                                                <CustomButton
-                                                                                                    btnBG={'danger'}
-                                                                                                    btnType={'button'}
-                                                                                                    textColor={'text-white'}
-                                                                                                    btnName={<ImCancelCircle />}
-                                                                                                    handleClick={() => setEditVersion({ isEdit: false, orderDetailsID: null })}
-                                                                                                    tooltip="Hủy bỏ"
-                                                                                                    btnSize={'sm'}
-                                                                                                />
-                                                                                            </td>
-                                                                                        </React.Fragment>
-                                                                                    ) : (
-                                                                                        <React.Fragment style={{ width: '50px !important' }}>
-                                                                                            <td className='no-print p-1 text-center'>
-                                                                                                <CustomButton
-                                                                                                    btnBG={'danger'}
-                                                                                                    btnType={'button'}
-                                                                                                    textColor={'text-white'}
-                                                                                                    btnName={<FaTrash />}
-                                                                                                    handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
-                                                                                                    tooltip="Xóa"
-                                                                                                    btnSize={'sm'}
-                                                                                                />
-                                                                                            </td>
-
-                                                                                            <td className='no-print p-1 text-center'>
-                                                                                                <CustomButton
-                                                                                                    btnBG={'warning'}
-                                                                                                    btnType={'button'}
-                                                                                                    textColor={'text-white'}
-                                                                                                    btnName={<MdModeEdit />}
-                                                                                                    handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
-                                                                                                    tooltip="Sửa"
-                                                                                                    btnSize={'sm'}
-                                                                                                />
-                                                                                            </td>
-                                                                                        </React.Fragment>
-                                                                                    ))}
-                                                                            </tr>
-                                                                        ))
-                                                                    ))}
-
-                                                                    <tr className="no-print" >
-                                                                        <td rowSpan="7" colSpan="5" className='border-end' style={{ background: '#F2F8FF' }}>
-                                                                            <div className="p-3 d-flex flex-column align-items-start">
-                                                                                <div className="d-flex align-items-center mb-2">
-                                                                                    <strong className="text-info me-2">Phương thức thanh toán:</strong>
-                                                                                    <span>{order?.paymentMethod}</span>
-                                                                                </div>
-
-                                                                                {order?.lastUpdatedById && order?.lastUpdatedByFullname && (
-                                                                                    <div className="d-flex align-items-center"> {/* Last Updated Row */}
-                                                                                        <strong className="text-info me-2">Cập nhật lần cuối:</strong>
-                                                                                        <span>{moment(order?.lastUpdatedDate).format('DD/MM/YYYY HH:mm:ss')}</span>
-                                                                                        <span className="mx-2">|</span> {/* Separator */}
-                                                                                        <strong className="text-info me-2">Bởi:</strong>
-                                                                                        <Link
-                                                                                            to={`/admin/users/manage`}
-                                                                                            state={{
-                                                                                                id: order?.lastUpdatedById,
-                                                                                                fullname: order?.lastUpdatedByFullname
-                                                                                            }}
-                                                                                            style={{ textDecoration: 'none', color: 'inherit', fontWeight: 'bold' }}
-                                                                                        >
-                                                                                            {order?.lastUpdatedByFullname}
-                                                                                        </Link>
-
+                                                                                            </div>
+                                                                                        )}
                                                                                     </div>
-                                                                                )}
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
+                                                                                </td>
+                                                                            </tr>
 
-                                                                    <tr>
+                                                                            <tr>
 
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
-                                                                        <td className='text-end'>
-                                                                            {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
-                                                                        <td className='text-end'>
-                                                                            {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    <tr>
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                                                                            Giảm giá: ({formatDiscount(order?.disCount)})
-                                                                        </td>
-                                                                        <td className='text-end'>
-                                                                            {`${(order?.discountValue || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
+                                                                                <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
+                                                                                <td className='text-end'>
+                                                                                    {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
+                                                                                </td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
+                                                                                <td className='text-end'>
+                                                                                    {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
+                                                                                </td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                                                                                    Giảm giá: ({formatDiscount(order?.disCount)})
+                                                                                </td>
+                                                                                <td className='text-end'>
+                                                                                    {`${(order?.discountValue || 0).toLocaleString('vi-VN')} VND`}
+                                                                                </td>
+                                                                            </tr>
 
-                                                                    <tr>
-                                                                        <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
-                                                                        <td className='text-end'>
-                                                                            {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
-                                                                        </td>
-                                                                    </tr>
-                                                                    {order?.statusName === 'Đã xử lý' && (
-                                                                        <tr className='no-print'>
-                                                                            <td colSpan={3} style={{ textAlign: 'right' }}>
-                                                                                <CustomButton
-                                                                                    className='bg-black bg-gradient'
-                                                                                    textColor="white"
-                                                                                    handleClick={() => printInvoice(order?.orderId)}
-                                                                                    btnName="Xuất hóa đơn"
-                                                                                    tooltip="Nhấn để xuất hóa đơn"
-                                                                                    icon={<FaFileInvoice />}
-                                                                                />
-                                                                            </td>
-                                                                        </tr>
-                                                                    )}
-                                                                </tbody>
-                                                            </Table>
-                                                        </td>
-                                                    </tr>
+                                                                            <tr>
+                                                                                <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
+                                                                                <td className='text-end'>
+                                                                                    {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
+                                                                                </td>
+                                                                            </tr>
+                                                                            {order?.statusName === 'Đã xử lý' && (
+                                                                                <tr className='no-print'>
+                                                                                    <td colSpan={3} style={{ textAlign: 'right' }}>
+                                                                                        <CustomButton
+                                                                                            className='bg-black bg-gradient'
+                                                                                            textColor="white"
+                                                                                            handleClick={() => printInvoice(order?.orderId)}
+                                                                                            btnName="Xuất hóa đơn"
+                                                                                            tooltip="Nhấn để xuất hóa đơn"
+                                                                                            icon={<FaFileInvoice />}
+                                                                                        />
+                                                                                    </td>
+                                                                                </tr>
+                                                                            )}
+                                                                        </tbody>
+                                                                    </Table>
+                                                                </td>
+                                                            </tr>
 
-                                                )
-                                            }
-                                        </React.Fragment>
+                                                        )
+                                                    }
+                                                </React.Fragment>
+                                            )
+                                        )
                                     )
-                                )
-                            )
-                            }
-                        </tbody>
-                    </Table>
+                                    }
+                                </tbody>
+                            </Table>
+                        </div>
+                    </div>
                     <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
                         <p className='font-13'>
                             Hiển thị <span className="text-primary">{numberOfElements || 0}</span> trong tổng số <span className="text-primary">{totalElements || 0}</span> kết quả
