@@ -311,10 +311,10 @@ const ShopingCart = () => {
   //Xóa cart item
   const handleDeleteCartItem = async (id) => {
     const isDelete = await ConfirmAlert({
-      title: "Delete cart item",
-      text: "Are you sure you want to delete?",
-      cancelText: "Cancel",
-      confirmText: "Delete",
+      title: "Xóa sản phẩm",
+      text: "Bạn có chắc chắn muốn xóa?",
+      cancelText: "Hủy",
+      confirmText: "Xóa",
     });
 
     if (!isDelete) return;
@@ -864,7 +864,7 @@ const ShopingCart = () => {
     });
 
     if (length !== numberReduce) {
-      setErr("Please select full attributes!");
+      setErr("Vui lòng chọn hết các thuộc tính!");
     } else {
       setErr("");
       console.log(4234, itemCartUpdate);
@@ -1173,7 +1173,7 @@ const ShopingCart = () => {
                       value={Coupon}
                     >
                       <option value="-1" selected>
-                        Select a coupon
+                     Chọn một mã giảm giá
                       </option>
 
                       {coupons &&
@@ -1200,7 +1200,7 @@ const ShopingCart = () => {
                     onClick={handleApplyCoupon}
                     className="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10"
                   >
-                    Apply coupon
+                 Áp dụng
                   </div>
                 </div>
               </div>
@@ -1239,7 +1239,7 @@ const ShopingCart = () => {
                               to="/account"
                               className="text-decoration-none"
                             >
-                              Add new address
+                           Thêm một địa chỉ mới
                             </Link>
                           </option>
                           {addresses &&
@@ -1290,7 +1290,7 @@ const ShopingCart = () => {
                     {/* Coupon Section */}
                     <div className="mb-3">
                       <span className="stext-110 cl2">
-                        Mã giảm giá (Chỉ đọc):
+                        Mã giảm giá:
                       </span>
                       <div className="bor8 bg0 mt-2">
                         <input

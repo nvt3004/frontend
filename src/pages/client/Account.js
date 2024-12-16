@@ -323,12 +323,14 @@ const Account = () => {
 
     if (error) {
       DangerAlert({
-        text: `${error?.code}: ${error?.message}` || "Server error",
+        title: "Lỗi!",
+        text: `${error?.code}: ${error?.message}` || "Lỗi máy chủ",
       });
       return;
     }
     SuccessAlert({
-      text: "Add address success!",
+      title: "Thành công!",
+      text: "Thêm địa chỉ thành công!",
     });
   };
 
@@ -348,22 +350,24 @@ const Account = () => {
 
     if (error) {
       DangerAlert({
-        text: `${error?.code}: ${error?.message}` || "Server error",
+        title: "Lỗi!",
+        text: `${error?.code}: ${error?.message}` || "Lỗi máy chủ",
       });
       return;
     }
     SuccessAlert({
-      text: "Update address success!",
+      title: "Thành công!",
+      text: "Cập nhật địa chỉ thành công!",
     });
   };
 
   //Xóa địa chỉ
   const handleDeleteAddress = async (addressId) => {
     const isDelete = await ConfirmAlert({
-      title: "Delete address",
-      text: "Are you sure you want to delete?",
-      cancelText: "Cancel",
-      confirmText: "Delete",
+      title: "Xóa địa chỉ",
+      text: "Bạn có chắc chắn muốn xóa?",
+      cancelText: "Hủy",
+      confirmText: "Xóa",
     });
 
     if (!isDelete) return;
@@ -375,9 +379,10 @@ const Account = () => {
 
     if (error) {
       DangerAlert({
+        title: "Lỗi!",
         text:
           `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
-          "Server error",
+          "Lỗi máy chủ",
       });
       return;
     }
@@ -395,7 +400,8 @@ const Account = () => {
     fetchDataAddress();
 
     SuccessAlert({
-      text: "Delete address success!",
+      title: "Thành công!",
+      text: "Xóa địa chỉ thành công!",
     });
   };
 

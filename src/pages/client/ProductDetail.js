@@ -396,7 +396,7 @@ const ProductDetail = () => {
         }
       }
     } else {
-      setErr("Please select full attributes!");
+      setErr("Vui lòng chọn hết các thuộc tính!");
     }
   };
 
@@ -424,7 +424,8 @@ const ProductDetail = () => {
     }
 
     SuccessAlert({
-      text: "Add product to cart success!",
+      title: "Thành công!",
+      text: "Thêm sản phẩm vào giỏ hàng thành công!",
     });
   };
 
@@ -479,7 +480,7 @@ const ProductDetail = () => {
     wh: { width: "100px", height: "126px" },
   };
   return (
-    <div className="container" style={style.m}>
+    <div className="container bg-white" style={style.m}>
       {/* <!-- Product Detail --> */}
       <SizeGuide isOpen={isOffcanvasOpen} onClose={toggleOffcanvas} />
       <section className="sec-product-detail bg0 p-t-65 p-b-60">
@@ -566,7 +567,7 @@ const ProductDetail = () => {
             </div>
 
             <div className="col-md-6 col-lg-5 p-b-30">
-              <div className="p-r-50 p-t-5 p-lr-0-lg">
+              <div className="p-r-50 p-t-5 p-lr-0-lg mt-5">
                 <h4 className="mtext-105 cl2 js-name-detail p-b-14">
                   {ProductDetail?.product?.productName || ""}
                 </h4>
@@ -579,9 +580,11 @@ const ProductDetail = () => {
                       )} - ${formatCurrencyVND(
                         ProductDetail?.product?.maxPrice ?? "N/A"
                       )}`}{" "}
-                  {verName && <span className="fs-17"> - {verName}</span>}
+  
                 </span>
-
+                <div className="mt-3">
+                      {verName && <span className="fs-17">{verName}</span>}
+                    </div>
                 <div className="stext-102 cl3 p-t-23">
                   Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn sản
                   phẩm phụ hợp với bạn nhất{" "}
@@ -604,9 +607,9 @@ const ProductDetail = () => {
                     />
                   }
                 </div>
-
+{/* 
                 <div className="d-flex justify-content-center">
-                  {/* <!--  --> */}
+               
                   <div className="flex-w flex-m  p-t-40 respon7">
                     <div className="flex-m bor9 p-r-10 m-r-11">
                       <Link
@@ -638,7 +641,7 @@ const ProductDetail = () => {
                       <i className="fa fa-google-plus"></i>
                     </Link>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -840,11 +843,11 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        <div className="bg6 flex-c-m flex-w size-302 m-t-73 p-tb-15">
+        {/* <div className="bg6 flex-c-m flex-w size-302 m-t-73 p-tb-15">
           <span className="stext-107 cl6 p-lr-25">SKU: JAK-01</span>
 
           <span className="stext-107 cl6 p-lr-25">Categories: Jacket, Men</span>
-        </div>
+        </div> */}
       </section>
 
       {/* <!-- Related Products --> */}
@@ -854,7 +857,7 @@ const ProductDetail = () => {
             <h3 className="ltext-106 cl5 txt-center">Related Products</h3>
           </div>
 
-          <section className="sec-relate-product bg0 p-t-45 p-b-64">
+          <section className="sec-relate-product bg0 p-t-45">
             <div className="p-3 pt-0 pb-0">
               {/* <!-- Slide2 --> */}
               <div className="wrap-slick2">
@@ -927,14 +930,14 @@ const ProductDetail = () => {
             </div>
           </section>
           {/* <!-- Load more --> */}
-          <div className="flex-c-m flex-w w-full">
+          {/* <div className="flex-c-m flex-w w-full">
             <span
               href="#"
               className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 p-lr-15 trans-04"
             >
               END
             </span>
-          </div>
+          </div> */}
         </div>
       </section>
     </div>

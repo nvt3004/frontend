@@ -49,7 +49,7 @@ function formatCurrencyVND(amount) {
 const getEndDate = (end) => {
   const now = moment(); // Lấy thời gian hiện tại
   const endDate = moment(end, "DD/MM/YYYY HH:mm"); // Chuyển đổi chuỗi thành moment
-  
+
   if (!endDate.isValid()) {
     return "Ngày giờ không hợp lệ"; // Kiểm tra nếu thời gian không hợp lệ
   }
@@ -94,7 +94,7 @@ const Home = () => {
   const [Products, setProducts] = useState([]);
   const [ProductDetail, setProductDetail] = useState();
   const [ErrorCode] = useState("204");
-  const [ErrorMessage] = useState("No products found");
+  const [ErrorMessage] = useState("Không có sản phẩm nào");
 
   //Minh ty làm *************************************
   const [product, setProduct] = useState([]);
@@ -321,7 +321,7 @@ const Home = () => {
         }
       }
     } else {
-      setErr("Please select full attributes!");
+      setErr("Vui lòng chọn hết các thuộc tính!");
     }
   };
 
@@ -342,14 +342,15 @@ const Home = () => {
           `${error?.response?.data?.code}: ${error?.response?.data?.message}` ||
           "Lỗi máy chủ",
       });
-     // window.location.href = "/auth/login";
+      // window.location.href = "/auth/login";
       return;
     } else {
       dispatch(incrementCart());
     }
 
     SuccessAlert({
-      text: "Add product to cart success!",
+      title: "Thành công!",
+      text: "Thêm sản phẩm vào giỏ hàng thành công!",
     });
   };
 
@@ -481,7 +482,6 @@ const Home = () => {
     }
   };
 
-
   const saveCoupon = async ({ couponId, code }) => {
     const [error, data] = await stfExecAPI({
       method: "post",
@@ -492,7 +492,7 @@ const Home = () => {
     if (error) {
       const err =
         error.status === 403
-          ? "Account does not have permission to perform this function"
+          ? "Tài khoản không có quyền thực hiện chức năng này!"
           : error?.response?.data?.message;
 
       toast.error(`${err}`, {
@@ -608,7 +608,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="container mt-5 px-5">
+      <div className="container mt-5">
         <div className="row row-cols-md-3 row-cols-1">
           {discounts &&
             discounts.map((item) => {
@@ -634,7 +634,7 @@ const Home = () => {
 
       <div className="container mt-5">
         <div className="p-b-10 w-100 ">
-          <h3 className="ltext-103 cl5">Product Overview</h3>
+          <h3 className="ltext-103 cl5">Sản phẩm mới</h3>
         </div>
         {/* <!-- Related Products --> */}
         <section className="sec-relate-product bg0 p-t-45 p-b-64">
@@ -659,7 +659,7 @@ const Home = () => {
                             data-bs-target="#exampleModal"
                             onClick={() => handleProductClick(product?.id)}
                           >
-                            Quick View
+                         Xem
                           </button>
                         </div>
 
@@ -715,7 +715,8 @@ const Home = () => {
                 to="/product"
                 className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04"
               >
-                Get Products
+    Xem sản phẩm&nbsp;&nbsp;<i className="zmdi zmdi-arrow-right"></i>
+
               </Link>
             </div>
           </div>
@@ -729,13 +730,13 @@ const Home = () => {
         aria-labelledby="exampleModalLabel"
       >
         <div className="modal-dialog modal-xl">
-        <div className="modal-content shadow-lg rounded-4">
+          <div className="modal-content shadow-lg rounded-4">
             <div className="modal-header pb-1 pt-2">
               <h1
                 className="modal-title flex-c-m stext-101 cl5 size-103  p-lr-15"
                 id="exampleModalLabel"
               >
-   Thông tin sản phẩm
+                Thông tin sản phẩm
               </h1>
               <button
                 type="button"
@@ -752,7 +753,7 @@ const Home = () => {
                     className="carousel slide carousel-fade"
                   >
                     <div className="row m-0">
-                      <div className="col-md-2 me-2">
+                      <div className="col-md-2">
                         {/* Thumbnail Images as Indicators */}
                         <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
                           {ProductDetail?.versions?.length > 0 &&
@@ -829,13 +830,12 @@ const Home = () => {
                 </div>
 
                 <div className="col-md-6 col-lg-5 p-b-30">
-                  <div className="p-r-50 p-t-5 p-lr-0-lg">
+                  <div className="p-r-50 p-t-5 p-lr-0-lg mt-5">
                     <h4 className="mtext-105 cl2 js-name-detail p-b-14">
                       {ProductDetail ? ProductDetail?.product?.productName : ""}
                     </h4>
 
                     <span className="mtext-106 cl2">
-                      {" "}
                       {Products?.map((product1, index) =>
                         product1?.id == ProductDetail?.product?.id ? (
                           <span className="mtext-106 cl2">
@@ -846,14 +846,13 @@ const Home = () => {
                                 )} - ${formatCurrencyVND(
                                   ProductDetail?.product?.maxPrice ?? "N/A"
                                 )}`}{" "}
-                            {verName && (
-                              <span className="fs-17"> - {verName}</span>
-                            )}
                           </span>
                         ) : null
                       )}
                     </span>
-
+                    <div className="mt-3">
+                      {verName && <span className="fs-17">{verName}</span>}
+                    </div>
                     <div className="stext-102 cl3 p-t-23">
                       Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
                       sản phẩm phụ hợp với bạn nhất{" "}
@@ -906,8 +905,8 @@ const Home = () => {
                     </div>
 
                     {/* <!--  --> */}
-                    <div className="d-flex justify-content-center">
-                      {/* <!--  --> */}
+                    {/* <div className="d-flex justify-content-center">
+           
                       <div className="flex-w flex-m  p-t-40 respon7">
                         <div className="flex-m bor9 p-r-10 m-r-11">
                           <Link
@@ -939,7 +938,7 @@ const Home = () => {
                           <i className="fa fa-google-plus"></i>
                         </Link>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
