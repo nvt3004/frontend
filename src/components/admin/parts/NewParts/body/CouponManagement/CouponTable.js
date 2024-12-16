@@ -28,7 +28,6 @@ const CouponTable = () => {
     } = useForm();
 
     const [selectedCoupon, setSelectedCoupon] = useState(null);
-
     const collumn = [
         { title: "Mã", dataIndex: "code", key: "code" },
         { title: "Mô tả", dataIndex: "desc", key: "description" },
@@ -64,8 +63,10 @@ const CouponTable = () => {
                 "value",
                 selectedCoupon.kind === 'perc'
                     ? parseInt(selectedCoupon.value)
-                    : parseInt(selectedCoupon.value.replace(' VND', ''))
+                    : parseInt(selectedCoupon.value.replace(' ₫', ''))
             );
+            setStartDate(moment(selectedCoupon.start, 'dd/MM/yyyy HH:mm').toDate());
+            setEndDate(moment(selectedCoupon.end, 'dd/MM/yyyy HH:mm').toDate());
             setValue("quantity", selectedCoupon.quantity);
             setCouponType(selectedCoupon.kind === 'perc' ? 'percent' : 'price');
             setOpenModal(true); // Mở modal khi có selectedCoupon
@@ -105,7 +106,7 @@ const CouponTable = () => {
                         start: coupon.startDate,
                         end: coupon.endDate,
                         kind: coupon.disPercent !== null ? 'perc' : 'price',
-                        value: coupon.disPercent !== null ? `${coupon.disPercent}%` : `${formatCurrency(coupon.disPrice)} VND`, // Sửa cú pháp ở đây
+                        value: coupon.disPercent !== null ? `${coupon.disPercent}%` : `${formatCurrency(coupon.disPrice)} ₫`, // Sửa cú pháp ở đây
                         quantity: coupon.quantity || 'N/A'
                     }));
 
@@ -166,19 +167,17 @@ const CouponTable = () => {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
-    const [startDate, setStartDate] = useState(
-        selectedCoupon ? moment(selectedCoupon?.start, 'dd/MM/yyyy HH:mm').toDate : () => {
-            const today = new Date();
-            today.setMinutes(today.getMinutes() + 5);
-            return today;
-        }
+    const [startDate, setStartDate] = useState(() => {
+        const today = new Date();
+        today.setMinutes(today.getMinutes() + 5);
+        return today;
+    }
     );
-    const [endDate, setEndDate] = useState(
-        selectedCoupon ? moment(selectedCoupon?.end, 'dd/MM/yyyy HH:mm').toDate : () => {
-            const today = new Date();
-            today.setDate(today.getDate() + 90);
-            return today;
-        }
+    const [endDate, setEndDate] = useState(() => {
+        const today = new Date();
+        today.setDate(today.getDate() + 90);
+        return today;
+    }
     );
     const resetDate = () => {
         setStartDate(
@@ -198,7 +197,6 @@ const CouponTable = () => {
     }
 
     const onSubmit = async (data) => {
-        // alert('start: ' + startDate + '- end: ' + endDate);
         const maxDate = new Date(startDate);
         maxDate.setMonth(startDate.getMonth() + 3);
 
@@ -233,6 +231,7 @@ const CouponTable = () => {
                             setOpenModal(false);
                             setLoading(false);
                             handleGetCouponAPI();
+                            setCouponType('percent')
                             resetDate();
                         } else {
                             resetDate();
@@ -304,6 +303,7 @@ const CouponTable = () => {
 
     const onSubmitUpdate = async (data) => {
         if (selectedCoupon) {
+            alert(1);
             const maxDate = new Date(startDate);
             maxDate.setMonth(startDate.getMonth() + 3);
 
@@ -328,6 +328,7 @@ const CouponTable = () => {
                         reset();
                         handleGetCouponAPI();
                         setSelectedCoupon(null);
+                        setCouponType('percent')
                         setOpenModal(false);
                         toast.success('Chỉnh sửa thành công !');
                     } else {
@@ -408,8 +409,8 @@ const CouponTable = () => {
                     <Form.Group className="mb-2">
                         <label>Ngày bắt đầu <span className='text-danger'>*</span></label>
                         <DatePicker
-                            selected={selectedCoupon ? moment(selectedCoupon?.start, 'dd/MM/yyyy HH:mm').toDate() : startDate}
-                            onChange={setStartDate}
+                            selected={startDate}
+                            onChange={date => setStartDate(date)}
                             // dateFormat="dd/MM/yyyy"
                             dateFormat="yyyy/MM/dd HH:mm"
                             locale={vi}
@@ -423,8 +424,8 @@ const CouponTable = () => {
                     <Form.Group className="mb-2">
                         <label>Ngày kết thúc <span className='text-danger'>*</span></label>
                         <DatePicker
-                            selected={selectedCoupon ? moment(selectedCoupon?.end, 'dd/MM/yyyy HH:mm').toDate() : endDate}
-                            onChange={setEndDate}
+                            selected={endDate}
+                            onChange={date => setEndDate(date)}
                             // dateFormat="dd/MM/yyyy"
                             dateFormat="yyyy/MM/dd HH:mm"
                             locale={vi}
@@ -469,7 +470,7 @@ const CouponTable = () => {
                             />
 
                             <InputGroup.Text>
-                                {couponType === "percent" ? "%" : "VND"}
+                                {couponType === "percent" ? "%" : "₫"}
                             </InputGroup.Text>
                         </InputGroup>
                         {errors.value && (

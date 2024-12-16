@@ -979,14 +979,14 @@ const OrderTable = () => {
     }, []);
 
     function formatDiscount(discount) {
-        if (!discount) return '0 VND';
+        if (!discount) return '0 ₫';
 
         if (typeof discount === 'string' && discount.includes('%')) {
             return discount;
         }
 
         const numericValue = parseFloat(discount.replace(/[^\d.-]/g, ''));
-        return `${numericValue.toLocaleString('vi-VN')} VND`;
+        return `${numericValue.toLocaleString('vi-VN')} ₫`;
     }
 
     const handleSelectAllChange = () => {
@@ -1359,7 +1359,7 @@ const OrderTable = () => {
                                                                                     </React.Fragment>
                                                                                 )} */}
 
-                                                                                <td className='text-center p-1'>{`${(item?.price || 0).toLocaleString('vi-VN')} VND`}</td>
+                                                                                <td className='text-center p-1'>{`${(item?.price || 0).toLocaleString('vi-VN')} ₫`}</td>
 
                                                                                 <td className='text-center p-1' colSpan={2}>
                                                                                     {order?.statusName === 'Chờ xử lý' ? (
@@ -1426,7 +1426,7 @@ const OrderTable = () => {
                                                                                     )}
                                                                                 </td>
 
-                                                                                <td className='text-end text-right' colSpan={2}>{`${(item?.total || 0).toLocaleString('vi-VN')} VND`}</td>
+                                                                                <td className='text-end text-right' colSpan={2}>{`${(item?.total || 0).toLocaleString('vi-VN')} ₫`}</td>
 
                                                                                 {order?.statusName === 'Chờ xử lý' &&
                                                                                     (isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId ? (
@@ -1520,13 +1520,13 @@ const OrderTable = () => {
 
                                                                         <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng đơn hàng:</td>
                                                                         <td className='text-end'>
-                                                                            {`${(order?.subTotal || 0).toLocaleString('vi-VN')} VND`}
+                                                                            {`${(order?.subTotal || 0).toLocaleString('vi-VN')} ₫`}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
                                                                         <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Phí vận chuyển:</td>
                                                                         <td className='text-end'>
-                                                                            {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} VND`}
+                                                                            {`${(order?.shippingFee || 0).toLocaleString('vi-VN')} ₫`}
                                                                         </td>
                                                                     </tr>
                                                                     <tr>
@@ -1534,14 +1534,14 @@ const OrderTable = () => {
                                                                             Giảm giá: ({formatDiscount(order?.disCount)})
                                                                         </td>
                                                                         <td className='text-end'>
-                                                                            {`${(order?.discountValue || 0).toLocaleString('vi-VN')} VND`}
+                                                                            {`${(order?.discountValue || 0).toLocaleString('vi-VN')} ₫`}
                                                                         </td>
                                                                     </tr>
 
                                                                     <tr>
                                                                         <td colSpan={2} className='reduce-colspan' style={{ textAlign: 'right', fontWeight: 'bold' }}>Tổng cộng:</td>
                                                                         <td className='text-end'>
-                                                                            {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}
+                                                                            {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} ₫`}
                                                                         </td>
                                                                     </tr>
                                                                     {order?.statusName === 'Đã xử lý' && (
@@ -1583,9 +1583,6 @@ const OrderTable = () => {
                         </Pagination>
                     </div>
                 </div>
-            </div>
-            <div>
-                <ToastContainer />
             </div>
         </div>
     );

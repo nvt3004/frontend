@@ -52,12 +52,12 @@ const PaymentCancel = () => {
         <i style={styles.checkmark}>✓</i>
           {/* Thay đổi biểu tượng thành cảnh báo */}
         </div>
-        <h1 style={styles.title}>Success</h1>
-        <p style={styles.paragraph}>Transaction cancelled successfully!</p>
+        <h1 style={styles.title}>Hủy đơn thành công</h1>
+        <p style={styles.paragraph}>Đơn hàng đã được hủy !</p>
 
-        <Link to={"/"}>
+        <Link to={"/account"}>
           <button type="button" className="btn btn-warning mt-3">
-            Back to home
+            Xem đơn hàng
           </button>
         </Link>
       </div>
