@@ -725,27 +725,27 @@ const Product = () => {
                             {[
                               { label: "Tất cả", min: null, max: null },
                               {
-                                label: "0.000 đ - 200.000 đ",
+                                label: "0.000 ₫ - 200.000 ₫",
                                 min: 0,
                                 max: 200000,
                               },
                               {
-                                label: "200.000 đ - 400.000 đ",
+                                label: "200.000 ₫ - 400.000 ₫",
                                 min: 200000,
                                 max: 400000,
                               },
                               {
-                                label: "400.000 đ - 600.000 đ",
+                                label: "400.000 ₫ - 600.000 ₫",
                                 min: 400000,
                                 max: 600000,
                               },
                               {
-                                label: "600.000 đ - 800.000 đ",
+                                label: "600.000 ₫ - 800.000 ₫",
                                 min: 600000,
                                 max: 800000,
                               },
                               {
-                                label: "1.000.000 đ +",
+                                label: "1.000.000 ₫ +",
                                 min: 1000000,
                                 max: null,
                               },
@@ -911,7 +911,8 @@ const Product = () => {
               )}
               {/* Clear Filters Button */}
               <div className="clear-filters p-t-10 p-b-15 ms-auto d-flex flex-wrap">
-                {(selectedCategory ||
+                {(debouncedSearchTerm ||
+                  selectedCategory ||
                   selectedMinPrice ||
                   selectedMaxPrice ||
                   (filterAttributes?.attribute &&
@@ -925,7 +926,18 @@ const Product = () => {
                     Xóa bộ lọc
                   </button>
                 )}
+                {debouncedSearchTerm && (
+                  <div className="filter-item d-flex align-items-center">
+                    <i
+                      class="zmdi zmdi-close close-icon"
+                      title="Loại bỏ giá trị lọc"
+                      onClick={() => setSearchTerm("")}
+                    ></i>
 
+                    <strong>TÌm kiếm:&nbsp;</strong>
+                    {debouncedSearchTerm}
+                  </div>
+                )}
                 {selectedCategory && (
                   <div className="filter-item d-flex align-items-center">
                     <i
@@ -957,7 +969,7 @@ const Product = () => {
                     <strong>Giá:&nbsp;</strong>
                     {`${formatCurrency(
                       selectedMinPrice || 0
-                    )} đ - ${formatCurrency(selectedMaxPrice || Infinity)} đ`}
+                    )} ₫ - ${formatCurrency(selectedMaxPrice || Infinity)} ₫`}
                   </div>
                 )}
 
@@ -978,9 +990,12 @@ const Product = () => {
                                 className="zmdi zmdi-close close-icon"
                                 title="Loại bỏ giá trị lọc"
                                 onClick={() =>
-                                  handleSelectChange("attribute",  filterAttributes.attribute.ids[
-                                    attributeIndex
-                                  ])
+                                  handleSelectChange(
+                                    "attribute",
+                                    filterAttributes.attribute.ids[
+                                      attributeIndex
+                                    ]
+                                  )
                                 }
                               ></i>
                               <strong>Thuộc tính:&nbsp;</strong>
@@ -1018,15 +1033,20 @@ const Product = () => {
                   products.map((product, index) => (
                     <div
                       key={index} // Đảm bảo rằng mỗi sản phẩm có một key duy nhất
-                      className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
+                      className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women position-relative"
                     >
+                       {product?.discountPercent > 0 && (
+                            <span className="position-absolute right-0 zindex-5 bg-body-secondary p-2 rounded-3">
+                              {`${product?.discountPercent}%`}
+                            </span>
+                          )}
                       <div className="block2">
                         <div className="block2-pic hov-img0">
                           <img src={product.imgName} alt="IMG-PRODUCT" />
                           {/* Quick View */}
                           <button
                             type="button"
-                            className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none"
+                            className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 text-decoration-none"
                             data-bs-toggle="modal"
                             data-bs-target="#exampleModal"
                             onClick={() => handleProductClick(product?.id)}
@@ -1045,14 +1065,47 @@ const Product = () => {
                             </Link>
 
                             <span className="stext-105 cl3">
-                              {`
-  ${
-    product?.minPrice !== product?.maxPrice
-      ? `${formatCurrencyVND(product?.minPrice ?? "N/A")} ~ `
-      : ""
-  }
-  ${formatCurrencyVND(product?.maxPrice ?? "N/A")}
-`}
+                              {product?.minPriceSale &&
+                              product?.maxPriceSale ? (
+                                <>
+                                  <span className="text-decoration-line-through text-muted">
+                                    {/* Giá gốc */}
+                                    {product?.minPrice !== product?.maxPrice &&
+                                      `${formatCurrencyVND(
+                                        product?.minPrice ?? "N/A"
+                                      )} ~ `}
+                                    {formatCurrencyVND(
+                                      product?.maxPrice ?? "N/A"
+                                    )}
+                                  </span>
+                                  <br />
+                                  <span className="text-danger fw-bold">
+                                    {/* Giá khuyến mãi */}
+                                    {product?.minPriceSale !==
+                                      product?.maxPriceSale &&
+                                      `${formatCurrencyVND(
+                                        product?.minPriceSale ?? "N/A"
+                                      )} ~ `}
+                                    {formatCurrencyVND(
+                                      product?.maxPriceSale ?? "N/A"
+                                    )}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  {" "}
+                                  <span className="stext-105 cl3">
+                                    {/* Giá gốc */}
+                                    {product?.minPrice !== product?.maxPrice &&
+                                      `${formatCurrencyVND(
+                                        product?.minPrice ?? "N/A"
+                                      )} ~ `}
+                                    {formatCurrencyVND(
+                                      product?.maxPrice ?? "N/A"
+                                    )}
+                                  </span>
+                                </>
+                              )}
                             </span>
                           </div>
 
