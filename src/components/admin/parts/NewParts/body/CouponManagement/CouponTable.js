@@ -11,7 +11,7 @@ import { FaTrashAlt, FaEye } from 'react-icons/fa';
 import { formatCurrency } from '../../../../../../services/formatCurrency';
 import Swal from 'sweetalert2';
 import DatePicker from 'react-datepicker';
-import { el, vi } from "date-fns/locale";
+import { vi } from 'date-fns/locale';
 
 const CouponTable = () => {
     const [loading, setLoading] = useState(false);
@@ -369,7 +369,7 @@ const CouponTable = () => {
                             selected={startDate}
                             onChange={setStartDate}
                             dateFormat="dd/MM/yyyy"
-                            locale={'vi'}
+                            locale={vi}
                             placeholderText="dd/mm/yyyy"
                             className="form-control"
                         />
@@ -396,7 +396,7 @@ const CouponTable = () => {
                             selected={endDate}
                             onChange={setEndDate}
                             dateFormat="dd/MM/yyyy"
-                            locale={'vi'}
+                            locale={vi}
                             placeholderText="dd/mm/yyyy"
                             className="form-control"
                         />
