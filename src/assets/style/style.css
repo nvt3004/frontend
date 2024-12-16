@@ -105,3 +105,50 @@
 }
 
 
+
+
+
+
+.filter-item {
+  margin-right: 15px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.close-icon {
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.attribute-button-container {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.attribute-button {
+  background-color: #f1f1f1;
+  padding: 5px 10px;
+  border-radius: 3px;
+  margin-left: 5px;
+}
+
+strong {
+  font-weight: bold;
+}
+
+
+/* Định dạng icon mặc định */
+.close-icon {
+  font-size: 24px;  /* Điều chỉnh kích thước của icon */
+  color: #000;      /* Màu sắc mặc định */
+  transition: all 0.3s ease; /* Thêm hiệu ứng chuyển động */
+}
+
+/* Hiệu ứng khi hover */
+.close-icon:hover {
+  color: #ff0000;  /* Màu đỏ khi hover */
+  transform: scale(1.2);  /* Tăng kích thước khi hover */
+}

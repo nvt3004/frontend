@@ -519,11 +519,11 @@ const Home = () => {
       <SizeGuide isOpen={isOffcanvasOpen} onClose={toggleOffcanvas} />
       {/* <!-- Banner --> */}
 
-      <div className="sec-banner bg0 p-t-80">
+      {/* <div className="sec-banner bg0 p-t-80">
         <div className="container">
           <div className="row">
             <div className="col-md-6 col-xl-4 p-b-30 m-lr-auto">
-              {/* <!-- Block1 --> */}
+        
               <div className="block1 wrap-pic-w">
                 <img src={banner1} alt="IMG-BANNER" />
 
@@ -550,7 +550,7 @@ const Home = () => {
               </div>
             </div>
             <div className="col-md-6 col-xl-4 p-b-30 m-lr-auto">
-              {/* <!-- Block1 --> */}
+           
               <div className="block1 wrap-pic-w">
                 <img src={banner2} alt="IMG-BANNER" />
 
@@ -578,7 +578,7 @@ const Home = () => {
             </div>
 
             <div className="col-md-6 col-xl-4 p-b-30 m-lr-auto">
-              {/* <!-- Block1 --> */}
+        
               <div className="block1 wrap-pic-w">
                 <img src={banner3} alt="IMG-BANNER" />
 
@@ -606,7 +606,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       <div className="container mt-5">
         <div className="row row-cols-md-3 row-cols-1">

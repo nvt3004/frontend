@@ -603,6 +603,11 @@ const Product = () => {
     const attribute = attributes.find((attr) => attr.key === key);
     return attribute && attribute.values ? attribute.values.indexOf(value) : -1;
   };
+  const formatCurrency = (amount) => {
+    if (amount === Infinity) return "∞"; // Xử lý trường hợp giá trị vô hạn
+    return new Intl.NumberFormat("vi-VN").format(amount);
+  };
+
   const style = {
     m: { marginTop: "40px" },
     h: { height: "60vh" },
@@ -822,8 +827,6 @@ const Product = () => {
                             ))}
                           </ul>
                         </div>
-
-                
                       </div>
                     </div>
                   </div>
@@ -906,15 +909,109 @@ const Product = () => {
                   </div>
                 </div>
               )}
-        {/* Clear Filters Button */}
-        <div className="clear-filters p-t-10 p-b-15 ms-auto">
-                          <button
-                            onClick={handleClearFilter}
-                            className="btn-clear-filters"
-                          >
-                            Xóa bộ lọc
-                          </button>
-                        </div>
+              {/* Clear Filters Button */}
+              <div className="clear-filters p-t-10 p-b-15 ms-auto d-flex flex-wrap">
+                {(selectedCategory ||
+                  selectedMinPrice ||
+                  selectedMaxPrice ||
+                  (filterAttributes?.attribute &&
+                    selectedAttribute?.length > 0) ||
+                  sortOrder === "DESC") && (
+                  <button
+                    className="d-flex text-danger me-3"
+                    onClick={handleClearFilter}
+                    style={{ textDecoration: "underline" }}
+                  >
+                    Xóa bộ lọc
+                  </button>
+                )}
+
+                {selectedCategory && (
+                  <div className="filter-item d-flex align-items-center">
+                    <i
+                      class="zmdi zmdi-close close-icon"
+                      title="Loại bỏ giá trị lọc"
+                      onClick={() => handleSelectChange("category", null)}
+                    ></i>
+
+                    <strong>Danh mục:&nbsp;</strong>
+                    {filterAttributes?.categories
+                      ?.filter(
+                        (category) => category.categoryId === selectedCategory
+                      )
+                      .map((category) => category.categoryName)
+                      .join(", ")}
+                  </div>
+                )}
+
+                {(selectedMinPrice || selectedMaxPrice) && (
+                  <div className="filter-item d-flex align-items-center">
+                    <i
+                      className="zmdi zmdi-close close-icon"
+                      title="Loại bỏ giá trị lọc"
+                      onClick={() => {
+                        handleSelectChange("minPrice", null);
+                        handleSelectChange("maxPrice", null);
+                      }}
+                    ></i>
+                    <strong>Giá:&nbsp;</strong>
+                    {`${formatCurrency(
+                      selectedMinPrice || 0
+                    )} đ - ${formatCurrency(selectedMaxPrice || Infinity)} đ`}
+                  </div>
+                )}
+
+                {filterAttributes?.attribute &&
+                  selectedAttribute &&
+                  selectedAttribute.length > 0 && (
+                    <div className="filter-item d-flex flex-wrap">
+                      {selectedAttribute.map((id) => {
+                        const attributeIndex =
+                          filterAttributes.attribute.ids.indexOf(id);
+                        if (attributeIndex !== -1) {
+                          return (
+                            <div
+                              className="attribute-button-container d-flex align-items-center"
+                              key={id}
+                            >
+                              <i
+                                className="zmdi zmdi-close close-icon"
+                                title="Loại bỏ giá trị lọc"
+                                onClick={() =>
+                                  handleSelectChange("attribute",  filterAttributes.attribute.ids[
+                                    attributeIndex
+                                  ])
+                                }
+                              ></i>
+                              <strong>Thuộc tính:&nbsp;</strong>
+                              <div className="attribute-button">
+                                {
+                                  filterAttributes.attribute.names[
+                                    attributeIndex
+                                  ]
+                                }
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  )}
+
+                {sortOrder === "DESC" && (
+                  <div className="filter-item d-flex align-items-center">
+                    <i
+                      className="zmdi zmdi-close close-icon"
+                      title="Loại bỏ giá trị lọc"
+                      onClick={() => handleSelectChange("sortOrder", "ASC")}
+                    ></i>
+                    <strong>Sắp xếp:&nbsp;</strong>
+                    <div>{sortOrder === "DESC" ? "Giá giảm dần" : ""}</div>
+                  </div>
+                )}
+              </div>
+
               {/* Danh sách sản phẩm */}
               <div className="row isotope-grid ">
                 {products && products.length > 0 ? (
