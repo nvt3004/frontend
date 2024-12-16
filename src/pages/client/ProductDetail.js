@@ -580,11 +580,10 @@ const ProductDetail = () => {
                       )} - ${formatCurrencyVND(
                         ProductDetail?.product?.maxPrice ?? "N/A"
                       )}`}{" "}
-  
                 </span>
                 <div className="mt-3">
-                      {verName && <span className="fs-17">{verName}</span>}
-                    </div>
+                  {verName && <span className="fs-17">{verName}</span>}
+                </div>
                 <div className="stext-102 cl3 p-t-23">
                   Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn sản
                   phẩm phụ hợp với bạn nhất{" "}
@@ -607,7 +606,7 @@ const ProductDetail = () => {
                     />
                   }
                 </div>
-{/* 
+                {/* 
                 <div className="d-flex justify-content-center">
                
                   <div className="flex-w flex-m  p-t-40 respon7">
@@ -658,7 +657,7 @@ const ProductDetail = () => {
                     href="#description"
                     role="tab"
                   >
-                    Description
+                    Mô tả
                   </a>
                 </li>
 
@@ -669,7 +668,7 @@ const ProductDetail = () => {
                     href="#information"
                     role="tab"
                   >
-                    Additional information
+                    Thông tin sản phẩm
                   </a>
                 </li>
 
@@ -680,7 +679,7 @@ const ProductDetail = () => {
                     href="#reviews"
                     role="tab"
                   >
-                    Reviews ({feedBack?.totalElements ?? 0})
+                    Đánh giá ({feedBack?.totalElements ?? 0})
                   </a>
                 </li>
               </ul>
@@ -816,10 +815,10 @@ const ProductDetail = () => {
                                 }
                                 disabled={feedBackPage === 1}
                               >
-                                Previous
+                                Trở lại
                               </button>
                               <span className="stext-106 cl6 bor3 trans-04 m-r-32 m-tb-5">
-                                Page {feedBackPage} of{" "}
+                                Trang {feedBackPage} trên{" "}
                                 {feedBack?.totalPage || 1}
                               </span>
                               <button
@@ -829,7 +828,7 @@ const ProductDetail = () => {
                                 }
                                 disabled={feedBackPage === feedBack?.totalPage}
                               >
-                                Next
+                                Tiếp theo
                               </button>
                             </div>
                           </div>
@@ -854,7 +853,7 @@ const ProductDetail = () => {
       <section className="sec-relate-product bg0 p-t-45 p-b-105">
         <div className="p-3">
           <div className="p-b-45">
-            <h3 className="ltext-106 cl5 txt-center">Related Products</h3>
+            <h3 className="ltext-106 cl5 txt-center">Có thể bạn sẽ thích</h3>
           </div>
 
           <section className="sec-relate-product bg0 p-t-45">
@@ -866,8 +865,13 @@ const ProductDetail = () => {
                     Products?.map((product, index) => (
                       <div
                         key={index}
-                        className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
+                        className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women position-relative"
                       >
+                        {product?.discountPercent > 0 && (
+                          <span className="position-absolute right-0 zindex-5 bg-body-secondary p-2 rounded-3">
+                            {`${product?.discountPercent}%`}
+                          </span>
+                        )}
                         <div className="block2">
                           <div className="block2-pic hov-img0">
                             <img src={product?.imgName} alt="IMG-PRODUCT" />
@@ -891,14 +895,49 @@ const ProductDetail = () => {
                               </Link>
 
                               <span className="stext-105 cl3">
-                                {`
-  ${
-    product?.minPrice !== product?.maxPrice
-      ? `${formatCurrencyVND(product?.minPrice ?? "N/A")} ~ `
-      : ""
-  }
-  ${formatCurrencyVND(product?.maxPrice ?? "N/A")}
-`}
+                                {product?.minPriceSale &&
+                                product?.maxPriceSale ? (
+                                  <>
+                                    <span className="text-decoration-line-through text-muted">
+                                      {/* Giá gốc */}
+                                      {product?.minPrice !==
+                                        product?.maxPrice &&
+                                        `${formatCurrencyVND(
+                                          product?.minPrice ?? "N/A"
+                                        )} ~ `}
+                                      {formatCurrencyVND(
+                                        product?.maxPrice ?? "N/A"
+                                      )}
+                                    </span>
+                                    <br />
+                                    <span className="text-danger fw-bold">
+                                      {/* Giá khuyến mãi */}
+                                      {product?.minPriceSale !==
+                                        product?.maxPriceSale &&
+                                        `${formatCurrencyVND(
+                                          product?.minPriceSale ?? "N/A"
+                                        )} ~ `}
+                                      {formatCurrencyVND(
+                                        product?.maxPriceSale ?? "N/A"
+                                      )}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    {" "}
+                                    <span className="stext-105 cl3">
+                                      {/* Giá gốc */}
+                                      {product?.minPrice !==
+                                        product?.maxPrice &&
+                                        `${formatCurrencyVND(
+                                          product?.minPrice ?? "N/A"
+                                        )} ~ `}
+                                      {formatCurrencyVND(
+                                        product?.maxPrice ?? "N/A"
+                                      )}
+                                    </span>
+                                  </>
+                                )}
                               </span>
                             </div>
 

@@ -642,24 +642,30 @@ const Home = () => {
             {/* <!-- Slide2 --> */}
             <div className="wrap-slick2">
               <div className="row isotope-grid">
-                {!Products || Products?.length ? (
+                {Products || Products?.length ? (
                   Products?.map((product, index) => (
                     <div
                       key={index}
-                      className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
+                      className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women position-relative"
                     >
                       <div className="block2">
                         <div className="block2-pic hov-img0">
+                          {product?.discountPercent > 0 && (
+                            <span className="position-absolute right-0 zindex-5 bg-body-secondary p-2 rounded-3">
+                              {`${product?.discountPercent}%`}
+                            </span>
+                          )}
+
                           <img src={product?.imgName} alt="IMG-PRODUCT" />
                           {/* Quick View */}
                           <button
                             type="button"
-                            className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none "
+                            className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15  text-decoration-none "
                             data-bs-toggle="modal"
                             data-bs-target="#exampleModal"
                             onClick={() => handleProductClick(product?.id)}
                           >
-                         Xem
+                            Xem
                           </button>
                         </div>
 
@@ -673,14 +679,47 @@ const Home = () => {
                             </Link>
 
                             <span className="stext-105 cl3">
-                              {`
-  ${
-    product?.minPrice !== product?.maxPrice
-      ? `${formatCurrencyVND(product?.minPrice ?? "N/A")} ~ `
-      : ""
-  }
-  ${formatCurrencyVND(product?.maxPrice ?? "N/A")}
-`}
+                              {product?.minPriceSale &&
+                              product?.maxPriceSale ? (
+                                <>
+                                  <span className="text-decoration-line-through text-muted">
+                                    {/* Giá gốc */}
+                                    {product?.minPrice !== product?.maxPrice &&
+                                      `${formatCurrencyVND(
+                                        product?.minPrice ?? "N/A"
+                                      )} ~ `}
+                                    {formatCurrencyVND(
+                                      product?.maxPrice ?? "N/A"
+                                    )}
+                                  </span>
+                                  <br />
+                                  <span className="text-danger fw-bold">
+                                    {/* Giá khuyến mãi */}
+                                    {product?.minPriceSale !==
+                                      product?.maxPriceSale &&
+                                      `${formatCurrencyVND(
+                                        product?.minPriceSale ?? "N/A"
+                                      )} ~ `}
+                                    {formatCurrencyVND(
+                                      product?.maxPriceSale ?? "N/A"
+                                    )}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  {" "}
+                                  <span className="stext-105 cl3">
+                                    {/* Giá gốc */}
+                                    {product?.minPrice !== product?.maxPrice &&
+                                      `${formatCurrencyVND(
+                                        product?.minPrice ?? "N/A"
+                                      )} ~ `}
+                                    {formatCurrencyVND(
+                                      product?.maxPrice ?? "N/A"
+                                    )}
+                                  </span>
+                                </>
+                              )}
                             </span>
                           </div>
 
@@ -703,7 +742,9 @@ const Home = () => {
                 ) : (
                   <div className="d-flex justify-content-center mt-5 mb-5">
                     <div className=" pt-5 pb-5 opacity-50">
-                      <p className="fs-4 text-muted mt-3">{ErrorMessage}</p>
+                      <p className="fs-4 text-muted mt-3">
+                        Không có sản phẩm nào
+                      </p>
                     </div>
                   </div>
                 )}
@@ -715,8 +756,8 @@ const Home = () => {
                 to="/product"
                 className="text-decoration-none flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04"
               >
-    Xem sản phẩm&nbsp;&nbsp;<i className="zmdi zmdi-arrow-right"></i>
-
+                Xem sản phẩm&nbsp;&nbsp;
+                <i className="zmdi zmdi-arrow-right"></i>
               </Link>
             </div>
           </div>
