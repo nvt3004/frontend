@@ -1,7 +1,24 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const PaymentSuccess = () => {
+  const [countdown, setCountdown] = useState(5); // Bắt đầu từ 5 giây
+  const navigate = useNavigate();
+
+  // Tự động chuyển hướng và đếm ngược
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1); // Giảm số giây còn lại mỗi 1 giây
+    }, 1000);
+
+    // Khi countdown về 0, chuyển hướng
+    if (countdown === 0) {
+      navigate("/account");
+    }
+
+    return () => clearInterval(timer); // Xóa timer khi component bị unmount
+  }, [countdown, navigate]);
+
   const styles = {
     body: {
       textAlign: "center",
@@ -50,15 +67,17 @@ const PaymentSuccess = () => {
         <div style={styles.iconContainer}>
           <i style={styles.checkmark}>✓</i>
         </div>
-        <h1 style={styles.title}>Success</h1>
-        <p style={styles.paragraph}>Payment success!</p>
+        <h1 style={styles.title}>Thành công</h1>
+        <p style={styles.paragraph}>Đơn hàng đã được tạo thành công !</p>
+        <p style={styles.paragraph} className="text-secondary">
+          Bạn sẽ được chuyển về trang "Đơn hàng" sau {countdown} giây...
+        </p>
 
-        <Link to={"/"}>
+        <Link to={"/account"}>
           <button type="button" className="btn btn-success mt-3">
-            Back to home
+            Xem đơn hàng
           </button>
         </Link>
-        
       </div>
     </div>
   );
