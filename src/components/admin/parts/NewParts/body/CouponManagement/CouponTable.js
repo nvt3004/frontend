@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import FullScreenSpinner from '../../../FullScreenSpinner';
 import DataTableSft from '../../../../DataTableSft';
 import axiosInstance from '../../../../../../services/axiosConfig';
 import { Button, Form, InputGroup, Pagination } from 'react-bootstrap';
 import ModalSft from '../../../../ModalSft';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { toast, ToastContainer } from 'react-toastify';
 import CustomButton from "../../component/CustomButton";
 import { FaTrashAlt, FaEye } from 'react-icons/fa';
 import { formatCurrency } from '../../../../../../services/formatCurrency';
 import Swal from 'sweetalert2';
+import DatePicker from 'react-datepicker';
+import { el, vi } from "date-fns/locale";
 
 const CouponTable = () => {
     const [loading, setLoading] = useState(false);
@@ -81,7 +83,7 @@ const CouponTable = () => {
     const triggers = () => {
         return (
             <div className='d-flex'>
-                <Button variant='dark' onClick={() => { setOpenModal(true) }}>New coupon</Button>
+                <Button variant='dark' onClick={() => { setOpenModal(true) }}>Phiếu mới</Button>
             </div>
         )
     }
@@ -138,20 +140,23 @@ const CouponTable = () => {
 
     const formatDateToPattern = (dateString) => {
         const date = new Date(dateString);
+        date.toLocaleString('vi-VN', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+        });
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, "0"); // Tháng bắt đầu từ 0
         const day = String(date.getDate()).padStart(2, "0");
         const hours = String(date.getHours()).padStart(2, "0");
         const minutes = String(date.getMinutes()).padStart(2, "0");
         const seconds = String(date.getSeconds()).padStart(2, "0");
-
+    
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    };
+    };    
 
     const formatToDateTimeLocal = (dateString) => {
         const date = new Date(dateString);
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+        const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
@@ -159,22 +164,32 @@ const CouponTable = () => {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
-
+    const [startDate, setStartDate] = useState(() => {
+        const today = new Date();
+        today.setMinutes(today.getMinutes() + 5);
+        return today;
+    });
+    const [endDate, setEndDate] = useState(() => {
+        const today = new Date();
+        today.setDate(today.getDate() + 90);
+        return today;
+    });
     const onSubmit = async (data) => {
+        // alert('start: ' + startDate + '- end: ' + endDate);
+
         const formattedData = {
-            // code: data.code,
             description: data.description,
             disPercent: couponType === "percent" ? data.value : null,
             disPrice: couponType === "price" ? data.value : null,
-            startDate: formatDateToPattern(data.startDate),
-            endDate: formatDateToPattern(data.endDate),
+            startDate: formatDateToPattern(startDate),
+            endDate: formatDateToPattern(endDate),
             quantity: data.quantity,
         };
 
         console.log(formattedData);
 
         try {
-            axiosInstance.post("/staff/coupons", formattedData).then(
+            await axiosInstance.post("/staff/coupons", formattedData).then(
                 (response) => {
                     if (response.status === 403) {
                         toast.error('Bạn không có quyền thực hiện công việc này !')
@@ -186,7 +201,7 @@ const CouponTable = () => {
                             setLoading(false);
                             handleGetCouponAPI();
                         } else {
-                            toast.error(response?.data?.message || "Không thể thực hiện công việc !");
+                            toast.error(response?.data?.message || "Không thể thực hiện công việc !", { autoClose: 3000 });
                         }
                     }
                 }
@@ -194,7 +209,13 @@ const CouponTable = () => {
 
         } catch (error) {
             console.error("Error adding coupon:", error);
-            toast.error("An error occurred while adding the coupon.");
+            if (error) {
+                if (error.response?.status === 998) {
+                    toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
+                } else {
+                    toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
+                }
+            }
         }
     };
 
@@ -241,13 +262,12 @@ const CouponTable = () => {
 
     const onSubmitUpdate = async (data) => {
         if (selectedCoupon) {
-
             const formattedData = {
                 description: data.description,
                 disPercent: couponType === "percent" ? data.value : null,
                 disPrice: couponType === "price" ? data.value : null,
-                startDate: formatDateToPattern(data.startDate),
-                endDate: formatDateToPattern(data.endDate),
+                startDate: formatDateToPattern(startDate),
+                endDate: formatDateToPattern(endDate),
                 quantity: data.quantity,
             };
             axiosInstance.put(`/staff/coupons?id=${selectedCoupon?.id}`, formattedData).then(
@@ -277,7 +297,7 @@ const CouponTable = () => {
             <FullScreenSpinner isLoading={loading} />
             <DataTableSft
                 columns={collumn}
-                title={"Coupon list"}
+                title={"Danh sách phiếu giảm giá"}
                 dataSource={coupons}
                 buttonTable={triggers()}
             />
@@ -302,8 +322,8 @@ const CouponTable = () => {
             </div>
             <ModalSft
                 open={isOpenModal}
-                title={selectedCoupon ? 'Update coupon' : 'Create new coupon'}
-                titleOk={selectedCoupon ? 'Save' : 'Create'}
+                title={selectedCoupon ? 'Cập nhật phiếu' : 'Tạo phiếu mới'}
+                titleOk={selectedCoupon ? 'Lưu' : 'Tạo'}
                 onCancel={() => {
                     setOpenModal(false);
                     setCouponType("percent");
@@ -314,14 +334,10 @@ const CouponTable = () => {
             >
                 <Form>
                     <Form.Group className="mb-2">
-                        <Form.Label>Descriptions</Form.Label>
+                        <Form.Label>Mô tả <span className='text-danger'>*</span></Form.Label>
                         <Form.Control
                             {...register("description", {
-                                required: "Description is required.",
-                                maxLength: {
-                                    value: 255,
-                                    message: "Description cannot exceed 255 characters.",
-                                },
+                                required: "Không được bỏ trống.",
                             })}
                             placeholder="Coupon's description"
                         />
@@ -330,30 +346,39 @@ const CouponTable = () => {
                         )}
                     </Form.Group>
                     <Form.Group className="mb-2">
-                        <Form.Label>Start date</Form.Label>
+                        {/* <Form.Label>Ngày bắt đầu <span className='text-danger'>*</span></Form.Label>
                         <Form.Control
                             type="datetime-local"
+                            className='mt-1'
                             {...register("startDate", {
-                                required: "Start date is required.",
+                                required: "Không được bỏ trống",
                                 validate: (value) => {
                                     const selectedDate = new Date(value);
-                                    const today = new Date();
-                                    today.setHours(0, 0, 0, 0); // Đặt hôm nay về đầu ngày (00:00:00)
-                                    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000); // Tính ngày mai
+                                    const now = new Date(); // Lấy thời gian hiện tại
+                                    const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000); // Cộng thêm 5 phút
 
-                                    if (selectedDate < tomorrow) {
-                                        return "Start date must be tomorrow or later.";
+                                    if (selectedDate < fiveMinutesLater) {
+                                        return "Thời gian bắt đầu phải sau ít nhất 5 phút";
                                     }
                                     return true;
                                 },
                             })}
+                        /> */}
+                        <label>Ngày bắt đầu <span className='text-danger'>*</span></label>
+                        <DatePicker
+                            selected={startDate}
+                            onChange={setStartDate}
+                            dateFormat="dd/MM/yyyy"
+                            locale={'vi'}
+                            placeholderText="dd/mm/yyyy"
+                            className="form-control"
                         />
                         {errors.startDate && (
                             <span className="text-danger">{errors.startDate.message}</span>
                         )}
                     </Form.Group>
                     <Form.Group className="mb-2">
-                        <Form.Label>End date</Form.Label>
+                        {/* <Form.Label>Ngày kết thúc <span className='text-danger'>*</span></Form.Label>
                         <Form.Control
                             type="datetime-local"
                             {...register("endDate", {
@@ -365,75 +390,79 @@ const CouponTable = () => {
                                     return true;
                                 },
                             })}
+                        /> */}
+                        <label>Ngày kết thúc <span className='text-danger'>*</span></label>
+                        <DatePicker
+                            selected={endDate}
+                            onChange={setEndDate}
+                            dateFormat="dd/MM/yyyy"
+                            locale={'vi'}
+                            placeholderText="dd/mm/yyyy"
+                            className="form-control"
                         />
                         {errors.endDate && (
                             <span className="text-danger">{errors.endDate.message}</span>
                         )}
                     </Form.Group>
                     <Form.Group className="mb-3">
-                        <Form.Label className="fw-bold">Discount Type</Form.Label>
+                        <Form.Label className="fw-bold">Loại giảm giá <span className='text-danger'>*</span></Form.Label>
                         <InputGroup>
                             <Form.Select
                                 defaultValue={selectedCoupon ? selectedCoupon.kind === 'perc' ? 'percent' : 'price' : 'percent'}
                                 onChange={(e) => setCouponType(e.target.value)}
                                 style={{ maxWidth: "150px" }}
                             >
-                                <option value="percent">Percent</option>
-                                <option value="price">Price</option>
+                                <option value="percent">Phần trăm</option>
+                                <option value="price">Giá tiền</option>
                             </Form.Select>
 
-              <Form.Control
-                type="number"
-                step={couponType === "percent" ? 1 : 1000}
-                {...register("value", {
-                  required: "Discount value is required.",
-                  validate: (value) => {
-                    if (couponType === "percent") {
-                      if (value < 5 || value > 50) {
-                        return "Discount percentage must be between 5% and 50%.";
-                      }
-                    } else if (couponType === "price") {
-                      if (value < 5000 || value > 100000) {
-                        return "Discount price must be between 5000 and 100,000.";
-                      }
-                    }
-                    return true;
-                  },
-                })}
-                placeholder={`Enter ${
-                  couponType === "percent" ? "percentage" : "price"
-                } value`}
-              />
+                            <Form.Control
+                                type="number"
+                                step={couponType === "percent" ? 1 : 1000}
+                                {...register("value", {
+                                    required: "Không được bỏ trống.",
+                                    validate: (value) => {
+                                        if (couponType === "percent") {
+                                            if (value < 5 || value > 50) {
+                                                return "Giá trị giảm phải từ 5 - 50%";
+                                            }
+                                        } else if (couponType === "price") {
+                                            if (value < 5000 || value > 100000) {
+                                                return "Giá trị giảm phải từ 5.000 - 100.000";
+                                            }
+                                        }
+                                        return true;
+                                    },
+                                })}
+                                placeholder={`Giá trị giảm`}
+                            />
 
-              <InputGroup.Text>
-                {couponType === "percent" ? "%" : "VND"}
-              </InputGroup.Text>
-            </InputGroup>
-            {errors.value && (
-              <span className="text-danger">{errors.value.message}</span>
-            )}
-          </Form.Group>
-          <Form.Group className="mb-2">
-            <Form.Label>Quantity</Form.Label>
-            <Form.Control
-              type="number"
-              {...register("quantity", {
-                required: "Quantity is required.",
-                min: { value: 1, message: "Quantity must be at least 1." },
-              })}
-              placeholder="Coupon's quantity"
-            />
-            {errors.quantity && (
-              <span className="text-danger">{errors.quantity.message}</span>
-            )}
-          </Form.Group>
-        </Form>
-      </ModalSft>
-      <div>
-        <ToastContainer />
-      </div>
-    </div>
-  );
+                            <InputGroup.Text>
+                                {couponType === "percent" ? "%" : "VND"}
+                            </InputGroup.Text>
+                        </InputGroup>
+                        {errors.value && (
+                            <span className="text-danger">{errors.value.message}</span>
+                        )}
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                        <Form.Label>Số lượng <span className='text-danger'>*</span></Form.Label>
+                        <Form.Control
+                            type="number"
+                            {...register("quantity", {
+                                required: "Không được bỏ trống.",
+                                min: { value: 1, message: "Số lượng phải lớn hơn 1" },
+                            })}
+                            placeholder="Số lượng phiếu giảm giá"
+                        />
+                        {errors.quantity && (
+                            <span className="text-danger">{errors.quantity.message}</span>
+                        )}
+                    </Form.Group>
+                </Form>
+            </ModalSft>
+        </div>
+    );
 };
 
 export default CouponTable;
