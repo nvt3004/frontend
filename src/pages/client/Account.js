@@ -669,10 +669,22 @@ const Account = () => {
                     );
                   }}
                 >
-                  <option value="">All Statuses</option>
+                  <option value="">Tất cả trạng thái</option>
                   {status?.map((item) => (
                     <option key={item.statusId} value={item.statusId}>
-                      {item.statusName}
+                      {item.statusName === "Shipped"
+                        ? "Đã giao"
+                        : item.statusName === "Processed"
+                        ? "Đã xử lý"
+                        : item.statusName === "Pending"
+                        ? "Đang chờ xử lý"
+                        : item.statusName === "Delivered"
+                        ? "Đã nhận"
+                        : item.statusName === "Cancelled"
+                        ? "Đã hủy"
+                        : item.statusName === "Waitingforconfirmation"
+                        ? "Chờ xác nhận"
+                        : ""}
                     </option>
                   ))}
                 </select>
@@ -706,8 +718,9 @@ const Account = () => {
                           </p>
                           <p className="text-muted small mb-0">
                             <i className="zmdi zmdi-calendar-note me-2"></i>
-                            {moment(order?.orderDate)
-                              .format("DD/MM/YYYY HH:mm")}
+                            {moment(order?.orderDate).format(
+                              "DD/MM/YYYY HH:mm"
+                            )}
                           </p>
                           <p className="text-muted small mb-0">
                             <i className="zmdi zmdi-dropbox me-2"></i>
@@ -729,11 +742,24 @@ const Account = () => {
                                 ? "primary"
                                 : order.statusName === "Cancelled"
                                 ? "danger"
-                                : "secondary"
+                                : order.statusName === "Waitingforconfirmation"?"secondary":""
                             } text-white py-2 px-3`}
                             style={{ fontSize: "0.8rem" }}
                           >
-                            {order.statusName}
+                 
+                            {order.statusName === "Shipped"
+                        ? "Đã giao"
+                        : order.statusName === "Processed"
+                        ? "Đã xử lý"
+                        : order.statusName === "Pending"
+                        ? "Đang chờ xử lý"
+                        : order.statusName === "Delivered"
+                        ? "Đã nhận"
+                        : order.statusName === "Cancelled"
+                        ? "Đã hủy"
+                        : order.statusName === "Waitingforconfirmation"
+                        ? "Chờ xác nhận"
+                        : ""}
                           </span>
                         </div>
                       </div>
@@ -831,7 +857,7 @@ const Account = () => {
                             <p className="text-muted mb-1">
                               Giảm giá:{" "}
                               <span className="text-danger">
-                                {order.discountValue? "- ":''}
+                                {order.discountValue ? "- " : ""}
                                 {order.discountValue === 0
                                   ? 0
                                   : formatCurrencyVND(order.discountValue)}

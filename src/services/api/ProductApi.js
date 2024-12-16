@@ -295,7 +295,7 @@ const getOrder = async (keyword, statusId, size, page) => {
 };
 const getOrderStatus = async (size, page) => {
   try {
-    const data = await axiosInstance.get("/staff/orders/statuses");
+    const data = await axiosInstance.get("/user/orders/statuses");
     return data.data;
   } catch (error) {
     if (error.response) {
