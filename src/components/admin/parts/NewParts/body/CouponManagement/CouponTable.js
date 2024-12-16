@@ -12,6 +12,7 @@ import { formatCurrency } from '../../../../../../services/formatCurrency';
 import Swal from 'sweetalert2';
 import DatePicker from 'react-datepicker';
 import { vi } from 'date-fns/locale';
+import moment from 'moment';
 
 const CouponTable = () => {
     const [loading, setLoading] = useState(false);
@@ -22,7 +23,8 @@ const CouponTable = () => {
         formState: { errors },
         reset,
         getValues,
-        setValue
+        setValue,
+        setError
     } = useForm();
 
     const [selectedCoupon, setSelectedCoupon] = useState(null);
@@ -55,9 +57,9 @@ const CouponTable = () => {
 
     useEffect(() => {
         if (selectedCoupon) {
+            console.log(selectedCoupon);
+
             setValue("description", selectedCoupon.desc);
-            setValue("startDate", formatToDateTimeLocal(selectedCoupon.start)); // Định dạng lại start
-            setValue("endDate", formatToDateTimeLocal(selectedCoupon.end)); // Định dạng lại end
             setValue(
                 "value",
                 selectedCoupon.kind === 'perc'
@@ -144,14 +146,14 @@ const CouponTable = () => {
             timeZone: 'Asia/Ho_Chi_Minh',
         });
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0"); // Tháng bắt đầu từ 0
+        const month = String(date.getMonth() + 1).padStart(2, "0");
         const day = String(date.getDate()).padStart(2, "0");
         const hours = String(date.getHours()).padStart(2, "0");
         const minutes = String(date.getMinutes()).padStart(2, "0");
         const seconds = String(date.getSeconds()).padStart(2, "0");
-    
+
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    };    
+    };
 
     const formatToDateTimeLocal = (dateString) => {
         const date = new Date(dateString);
@@ -164,18 +166,49 @@ const CouponTable = () => {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
 
-    const [startDate, setStartDate] = useState(() => {
-        const today = new Date();
-        today.setMinutes(today.getMinutes() + 5);
-        return today;
-    });
-    const [endDate, setEndDate] = useState(() => {
-        const today = new Date();
-        today.setDate(today.getDate() + 90);
-        return today;
-    });
+    const [startDate, setStartDate] = useState(
+        selectedCoupon ? moment(selectedCoupon?.start, 'dd/MM/yyyy HH:mm').toDate : () => {
+            const today = new Date();
+            today.setMinutes(today.getMinutes() + 5);
+            return today;
+        }
+    );
+    const [endDate, setEndDate] = useState(
+        selectedCoupon ? moment(selectedCoupon?.end, 'dd/MM/yyyy HH:mm').toDate : () => {
+            const today = new Date();
+            today.setDate(today.getDate() + 90);
+            return today;
+        }
+    );
+    const resetDate = () => {
+        setStartDate(
+            () => {
+                const today = new Date();
+                today.setMinutes(today.getMinutes() + 5);
+                return today;
+            }
+        );
+        setEndDate(
+            () => {
+                const today = new Date();
+                today.setDate(today.getDate() + 90);
+                return today;
+            }
+        );
+    }
+
     const onSubmit = async (data) => {
         // alert('start: ' + startDate + '- end: ' + endDate);
+        const maxDate = new Date(startDate);
+        maxDate.setMonth(startDate.getMonth() + 3);
+
+        if (startDate > endDate) {
+            setError('startDate', { type: 'manual', message: 'Ngày bắt đầu phải trước ngày hết hạn' });
+            return;
+        } else if (endDate > maxDate) {
+            setError('endDate', { type: 'manual', message: 'Thời hạn sử dụng của phiếu chỉ trong vòng 3 tháng' });
+            return;
+        }
 
         const formattedData = {
             description: data.description,
@@ -200,7 +233,9 @@ const CouponTable = () => {
                             setOpenModal(false);
                             setLoading(false);
                             handleGetCouponAPI();
+                            resetDate();
                         } else {
+                            resetDate();
                             toast.error(response?.data?.message || "Không thể thực hiện công việc !", { autoClose: 3000 });
                         }
                     }
@@ -211,8 +246,10 @@ const CouponTable = () => {
             console.error("Error adding coupon:", error);
             if (error) {
                 if (error.response?.status === 998) {
+                    resetDate();
                     toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
                 } else {
+                    resetDate();
                     toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
                 }
             }
@@ -236,10 +273,12 @@ const CouponTable = () => {
             ).then(
                 (confirm) => {
                     if (confirm.isConfirmed) {
+
                         axiosInstance.delete(`/staff/coupons?id=${selectedCoupon?.id}`).then(
                             (response) => {
                                 if (response.data?.errorCode === 200) {
                                     handleGetCouponAPI();
+                                    resetDate();
                                     toast.success('Xóa thành công !');
                                 } else {
                                     toast.error('Không thể thực thi công việc. Vui lòng thử lại !');
@@ -248,9 +287,12 @@ const CouponTable = () => {
                         ).catch(
                             (error) => {
                                 console.log(error);
-
-                                if (error.status === 403) {
-                                    toast.error('Bạn không có quyền thực hiện công việc này !');
+                                if (error) {
+                                    if (error.response?.status === 998) {
+                                        toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
+                                    } else {
+                                        toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
+                                    }
                                 }
                             }
                         );
@@ -262,6 +304,16 @@ const CouponTable = () => {
 
     const onSubmitUpdate = async (data) => {
         if (selectedCoupon) {
+            const maxDate = new Date(startDate);
+            maxDate.setMonth(startDate.getMonth() + 3);
+
+            if (startDate > endDate) {
+                setError('startDate', { type: 'manual', message: 'Ngày bắt đầu phải trước ngày hết hạn' });
+                return;
+            } else if (endDate > maxDate) {
+                setError('endDate', { type: 'manual', message: 'Thời hạn sử dụng của phiếu chỉ trong vòng 3 tháng' });
+                return;
+            }
             const formattedData = {
                 description: data.description,
                 disPercent: couponType === "percent" ? data.value : null,
@@ -276,6 +328,7 @@ const CouponTable = () => {
                         reset();
                         handleGetCouponAPI();
                         setSelectedCoupon(null);
+                        setOpenModal(false);
                         toast.success('Chỉnh sửa thành công !');
                     } else {
                         toast.error('Không thể thực thi công việc. Vui lòng thử lại !');
@@ -284,8 +337,14 @@ const CouponTable = () => {
             ).catch(
                 (error) => {
                     console.log(error);
-                    if (error.status === 403) {
-                        toast.error('Bạn không có quyền thực hiện công việc này !');
+                    if (error) {
+                        if (error.response?.status === 998) {
+                            resetDate();
+                            toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
+                        } else {
+                            resetDate();
+                            toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
+                        }
                     }
                 }
             );
@@ -328,6 +387,7 @@ const CouponTable = () => {
                     setOpenModal(false);
                     setCouponType("percent");
                     setSelectedCoupon(null);
+                    resetDate();
                     reset();
                 }}
                 onOk={selectedCoupon ? handleSubmit(onSubmitUpdate) : handleSubmit(onSubmit)}
@@ -346,29 +406,12 @@ const CouponTable = () => {
                         )}
                     </Form.Group>
                     <Form.Group className="mb-2">
-                        {/* <Form.Label>Ngày bắt đầu <span className='text-danger'>*</span></Form.Label>
-                        <Form.Control
-                            type="datetime-local"
-                            className='mt-1'
-                            {...register("startDate", {
-                                required: "Không được bỏ trống",
-                                validate: (value) => {
-                                    const selectedDate = new Date(value);
-                                    const now = new Date(); // Lấy thời gian hiện tại
-                                    const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000); // Cộng thêm 5 phút
-
-                                    if (selectedDate < fiveMinutesLater) {
-                                        return "Thời gian bắt đầu phải sau ít nhất 5 phút";
-                                    }
-                                    return true;
-                                },
-                            })}
-                        /> */}
                         <label>Ngày bắt đầu <span className='text-danger'>*</span></label>
                         <DatePicker
-                            selected={startDate}
+                            selected={selectedCoupon ? moment(selectedCoupon?.start, 'dd/MM/yyyy HH:mm').toDate() : startDate}
                             onChange={setStartDate}
-                            dateFormat="dd/MM/yyyy"
+                            // dateFormat="dd/MM/yyyy"
+                            dateFormat="yyyy/MM/dd HH:mm"
                             locale={vi}
                             placeholderText="dd/mm/yyyy"
                             className="form-control"
@@ -378,24 +421,12 @@ const CouponTable = () => {
                         )}
                     </Form.Group>
                     <Form.Group className="mb-2">
-                        {/* <Form.Label>Ngày kết thúc <span className='text-danger'>*</span></Form.Label>
-                        <Form.Control
-                            type="datetime-local"
-                            {...register("endDate", {
-                                required: "End date is required.",
-                                validate: (value) => {
-                                    if (new Date(value) <= new Date(getValues("startDate"))) {
-                                        return "End date must be after start date.";
-                                    }
-                                    return true;
-                                },
-                            })}
-                        /> */}
                         <label>Ngày kết thúc <span className='text-danger'>*</span></label>
                         <DatePicker
-                            selected={endDate}
+                            selected={selectedCoupon ? moment(selectedCoupon?.end, 'dd/MM/yyyy HH:mm').toDate() : endDate}
                             onChange={setEndDate}
-                            dateFormat="dd/MM/yyyy"
+                            // dateFormat="dd/MM/yyyy"
+                            dateFormat="yyyy/MM/dd HH:mm"
                             locale={vi}
                             placeholderText="dd/mm/yyyy"
                             className="form-control"
