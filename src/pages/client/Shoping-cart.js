@@ -56,7 +56,7 @@ function getIdAddress(name) {
 }
 
 function formatCurrencyVND(amount) {
-  return amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+  return amount?.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 }
 
 function getPercentage(number) {

@@ -85,6 +85,7 @@ const Account = () => {
 
   const handleCancelOrder = async (orderId) => {
     await productApi.cancelOrder(orderId);
+    fetchOrders();
   };
 
   const resetForm = () => {

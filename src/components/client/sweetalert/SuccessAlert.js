@@ -2,8 +2,8 @@ import Swal from "sweetalert2";
 
 const SuccessAlert = ({ title, text }) => {
   return Swal.fire({
-    title: title || "Success!",
-    text: text || "Operation completed successfully!",
+    title: title || "Thành công!",
+    text: text || "Thao tác thành công!",
     icon: "success",
     confirmButtonText: "OK",
     customClass: {

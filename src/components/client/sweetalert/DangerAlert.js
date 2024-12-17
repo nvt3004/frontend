@@ -2,8 +2,8 @@ import Swal from "sweetalert2";
 
 const DangerAlert = ({ title, text }) => {
   return Swal.fire({
-    title: title || "Error!",
-    text: text || "Something went wrong!",
+    title: title || "Lỗi!",
+    text: text || "Xảy ra lỗi!",
     icon: "error",
     confirmButtonText: "OK",
     customClass: {
