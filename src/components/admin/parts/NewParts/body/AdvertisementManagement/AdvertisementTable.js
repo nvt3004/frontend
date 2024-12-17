@@ -5,6 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import DataTableSft from "../../../../DataTableSft";
 import FullScreenSpinner from "../../../FullScreenSpinner";
+import { Plus, Pencil, Trash } from "phosphor-react";
 
 const AdvertisementTable = () => {
   const [loading, setLoading] = useState(false);
@@ -19,23 +20,23 @@ const AdvertisementTable = () => {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const columns = [
-    { title: "Advertisement ID", dataIndex: "advId", key: "advId" },
-    { title: "Advertisement Name", dataIndex: "advName", key: "advName" },
+    { title: "Mã", dataIndex: "advId", key: "advId" },
+    { title: "Tên quảng cáo", dataIndex: "advName", key: "advName" },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "advDescription",
       key: "advDescription",
     },
-    { title: "Start Date", dataIndex: "startDate", key: "startDate" },
-    { title: "End Date", dataIndex: "endDate", key: "endDate" },
+    { title: "Thời gian bắt đầu", dataIndex: "startDate", key: "startDate" },
+    { title: "Thời gian kết thúc", dataIndex: "endDate", key: "endDate" },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (value) => (value === 1 ? "Active" : "Inactive"),
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (text, record) => (
         <div>
@@ -43,13 +44,13 @@ const AdvertisementTable = () => {
             variant="info"
             onClick={() => handleEditAdvertisement(record.advId)}
           >
-            Edit
+            <Pencil weight="fill" />
           </Button>
           <Button
             variant="danger"
             onClick={() => handleDeleteClick(record.advId)} // Open the modal when delete button is clicked
           >
-            Delete
+            <Trash weight="fill" />
           </Button>
         </div>
       ),
@@ -144,20 +145,23 @@ const AdvertisementTable = () => {
       <FullScreenSpinner isLoading={loading} />
       <DataTableSft
         columns={columns}
-        title={"Advertisement List"}
+        title={"Danh sách quảng cáo"}
         dataSource={advertisements}
         buttonTable={
           <Button
             variant="dark"
             onClick={() => navigate("/admin/advertisement/new")}
           >
-            New Advertisement
+            Thêm mới <Plus />
           </Button>
         }
       />
       <div className="bg-body-tertiary d-flex justify-content-between align-items-center container pt-2">
         <p className="font-13">
-          {`${Math.min(currentPage * 5 + 5, totalElements)} of ${totalElements}`}
+          {`${Math.min(
+            currentPage * 5 + 5,
+            totalElements
+          )} of ${totalElements}`}
           <span>
             <a href="#" className="text-decoration-none fw-medium">
               View all &gt;
