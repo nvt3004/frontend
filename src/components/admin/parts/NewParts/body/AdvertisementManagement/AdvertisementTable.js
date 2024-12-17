@@ -5,56 +5,8 @@ import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import DataTableSft from "../../../../DataTableSft";
 import FullScreenSpinner from "../../../FullScreenSpinner";
-import { Plus, Pencil, Trash } from "phosphor-react";
-import { getProfile } from "../../../../../../services/api/OAuthApi";
 
 const AdvertisementTable = () => {
-  const [profile, setProfile] = useState(null);
-  const handleGetProfile = async () => {
-    try {
-      const data = await getProfile();
-      if (data) {
-        setProfile(data?.listData);
-      } else {
-        console.log('Không tìm thấy user hoặc không có dữ liệu hợp lệ');
-      }
-    } catch (error) {
-      console.error("Lỗi khi gọi API getProfile:", error);
-    }
-  }
-  useEffect(
-    () => {
-      handleGetProfile();
-    }, []
-  );
-  const [permissions, setPermissions] = useState([]);
-  const handleGetPermission = () => {
-    if (profile) {
-      axiosInstance.get(`/staff/userpermissions/${profile?.userId}`).then(
-        (response) => {
-          if (response) {
-            setPermissions(response.data?.data.find(item => item.title === 'Advertisement'));
-          }
-        }
-      ).catch(
-        (error) => {
-          if (error) {
-            console.log("Error while get permission: ", error);
-          }
-        }
-      );
-    }
-  }
-  useEffect(
-    () => {
-      handleGetPermission();
-    }, [profile]
-  );
-
-  const addPerm = permissions?.permission?.find((item) => item.name === "Add");
-  const updatePerm = permissions?.permission?.find((item) => item.name === "Update");
-  const removePerm = permissions?.permission?.find((item) => item.name === "Delete");
-
   const [loading, setLoading] = useState(false);
   const [advertisements, setAdvertisements] = useState([]);
   const [totalPage, setTotalPage] = useState(0);
@@ -67,50 +19,42 @@ const AdvertisementTable = () => {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const columns = [
-    { title: "Mã", dataIndex: "advId", key: "advId" },
-    { title: "Tên quảng cáo", dataIndex: "advName", key: "advName" },
+    { title: "Advertisement ID", dataIndex: "advId", key: "advId" },
+    { title: "Advertisement Name", dataIndex: "advName", key: "advName" },
     {
-      title: "Mô tả",
+      title: "Description",
       dataIndex: "advDescription",
       key: "advDescription",
     },
-    { title: "Thời gian bắt đầu", dataIndex: "startDate", key: "startDate" },
-    { title: "Thời gian kết thúc", dataIndex: "endDate", key: "endDate" },
+    { title: "Start Date", dataIndex: "startDate", key: "startDate" },
+    { title: "End Date", dataIndex: "endDate", key: "endDate" },
     {
-      title: "Trạng thái",
+      title: "Status",
       dataIndex: "status",
       key: "status",
       render: (value) => (value === 1 ? "Active" : "Inactive"),
     },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (text, record) => (
+        <div>
+          <Button
+            variant="info"
+            onClick={() => handleEditAdvertisement(record.advId)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => handleDeleteClick(record.advId)} // Open the modal when delete button is clicked
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    },
   ];
-  if (updatePerm?.use === true || removePerm?.use === true) {
-    columns.push(
-      {
-        title: "Hành động",
-        key: "actions",
-        render: (text, record) => (
-          <div>
-            {updatePerm?.use === true && (
-              <Button
-                variant="info"
-                onClick={() => handleEditAdvertisement(record.advId)}
-              >
-                <Pencil weight="fill" />
-              </Button>
-            )}
-            {removePerm?.use === true && (
-              <Button
-                variant="danger"
-                onClick={() => handleDeleteClick(record.advId)} // Open the modal when delete button is clicked
-              >
-                <Trash weight="fill" />
-              </Button>
-            )}
-          </div>
-        ),
-      },
-    );
-  }
 
   const handleGetAdvertisementAPI = () => {
     setLoading(true);
@@ -134,7 +78,7 @@ const AdvertisementTable = () => {
         }
       })
       .catch((error) => {
-        toast.error("Có lỗi xảy ra trong quá trình lấy dữ liệu.");
+        toast.error("An error occurred while fetching advertisements.");
       })
       .finally(() => setLoading(false));
   };
@@ -177,14 +121,14 @@ const AdvertisementTable = () => {
       .delete(`/staff/advertisement?id=${advertisementToDelete}`)
       .then((response) => {
         if (response?.data?.code === 1000) {
-          toast.success("Xóa thành công !");
+          toast.success("Advertisement deleted successfully!");
           handleGetAdvertisementAPI();
         } else {
-          toast.error("Có lỗi xảy ra trong lúc xóa.");
+          toast.error("Failed to delete the advertisement.");
         }
       })
       .catch((error) => {
-        toast.error("Có lỗi xảy ra trong lúc xóa.");
+        toast.error("An error occurred while deleting the advertisement.");
       })
       .finally(() => {
         setShowDeleteModal(false); // Close the modal after the delete operation
@@ -200,28 +144,23 @@ const AdvertisementTable = () => {
       <FullScreenSpinner isLoading={loading} />
       <DataTableSft
         columns={columns}
-        title={"Danh sách quảng cáo"}
+        title={"Advertisement List"}
         dataSource={advertisements}
         buttonTable={
-          addPerm?.use === true && (
-            <Button
-              variant="dark"
-              onClick={() => navigate("/admin/advertisement/new")}
-            >
-              Thêm mới <Plus />
-            </Button>
-          )
+          <Button
+            variant="dark"
+            onClick={() => navigate("/admin/advertisement/new")}
+          >
+            New Advertisement
+          </Button>
         }
       />
       <div className="bg-body-tertiary d-flex justify-content-between align-items-center container pt-2">
         <p className="font-13">
-          {`${Math.min(
-            currentPage * 5 + 5,
-            totalElements
-          )} of ${totalElements}`}
+          {`${Math.min(currentPage * 5 + 5, totalElements)} of ${totalElements}`}
           <span>
             <a href="#" className="text-decoration-none fw-medium">
-              Xem tất cả &gt;
+              View all &gt;
             </a>
           </span>
         </p>
@@ -246,17 +185,17 @@ const AdvertisementTable = () => {
       {/* Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Xác nhận xóa</Modal.Title>
+          <Modal.Title>Confirm Deletion</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Bạn thật sự muốn xóa quảng cáo này ?
+          Are you sure you want to delete this advertisement?
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
-            Hủy
+            Cancel
           </Button>
           <Button variant="danger" onClick={handleDeleteAdvertisement}>
-            Xóa
+            Delete
           </Button>
         </Modal.Footer>
       </Modal>
