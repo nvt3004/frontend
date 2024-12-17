@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { Button, Form, InputGroup, Pagination, Table } from 'react-bootstrap';
-import { FaClipboardList, FaSearch, FaFileExport, FaFileInvoice } from 'react-icons/fa';
+import { FaClipboardList, FaSearch, FaTimes, FaFileInvoice, FaTrashAlt } from 'react-icons/fa';
 import { toast, ToastContainer } from 'react-toastify';
 import axiosInstance from '../../../../../../services/axiosConfig';
 import CustomButton from '../../component/CustomButton';
@@ -49,7 +49,6 @@ const OrderTable = () => {
         }).then(
             (response) => {
                 if (response?.data?.errorCode === 200) {
-                    // Ánh xạ trạng thái tiếng Anh sang tiếng Việt
                     const ordersWithVietnameseStatus = response.data.data.content.map(order => {
                         const statusNameVietnamese = statusMapping[order.statusName] || order.statusName;
                         return {
@@ -67,21 +66,22 @@ const OrderTable = () => {
                     setTotalPage(0);
                     setTotalElements(0);
                     setNumberOfElements(0);
-                    toast.error(response?.data?.message || 'No orders found.');
+                    toast.error(response?.data?.message || 'Không tìm thấy đơn hàng nào.');
                 } else if (response?.data?.errorCode === 998) {
-                    toast.error(response?.data?.message || 'You do not have permission to access the order list.');
+                    toast.error(response?.data?.message || 'Bạn không có quyền để xem danh sách đơn hàng.');
                 } else {
-                    toast.error(response?.data?.message || 'Could not get order list. Please try again!');
+                    toast.error(response?.data?.message || 'Không thể lấy danh sách đơn hàng. Vui lòng thử lại!');
                 }
             }
         ).catch(error => {
             if (error.response?.status === 403) {
-                toast.error("Session expired. Redirecting to login...");
+                toast.error("Phiên đăng nhập đã hết hạn. Đang chuyển hướng đến trang đăng nhập...");
                 navigate('/auth/login');
             } else {
-                console.error("Error fetching orders:", error);
-                toast.error(error.response?.data?.message || "An error occurred while fetching order list.");
+                console.error("Lỗi khi lấy danh sách đơn hàng:", error);
+                toast.error(error.response?.data?.message || "Đã xảy ra lỗi trong quá trình lấy danh sách đơn hàng.");
             }
+
         });
     };
 
@@ -95,6 +95,32 @@ const OrderTable = () => {
             setCurrentPage(page);
         }
     }
+    const handleKeywordChange = (e) => {
+        setKeyword(e.target.value);
+    };
+    const clearKeyword = () => {
+        handleKeywordChange({ target: { value: '' } });
+    };
+    const handleClearFilters = () => {
+        setKeyword('');
+        setStatusId(null);
+        setPageSize(null);
+    };
+    const handleChange = (event, type) => {
+
+        const value = event ? event.target ? event.target.value : event.value : null;
+        setCurrentPage(0);
+        switch (type) {
+            case 'status':
+                setStatusId(value);
+                break;
+            case 'pageSize':
+                setPageSize(value);
+                break;
+            default:
+                break;
+        }
+    };
 
     useEffect(() => {
         if (currentPage >= totalPage) {
@@ -199,20 +225,22 @@ const OrderTable = () => {
 
                     setOrderStatus(status);
                 } else if (response.data?.errorCode === 998) {
-                    toast.error(response.data?.message || 'You do not have permission to access statuses.');
+                    toast.error(response.data?.message || 'Bạn không có quyền truy cập các trạng thái.');
                 } else {
-                    toast.error('Could not get the statuses. Please try again!');
+                    toast.error('Không thể lấy được các trạng thái. Vui lòng thử lại!');
                 }
+
             })
             .catch(error => {
                 if (error.response?.status === 403) {
-                    toast.error("Session expired. Redirecting to login...");
+                    toast.error("Phiên làm việc đã hết hạn. Đang chuyển hướng đến trang đăng nhập...");
                     navigate('/auth/login');
                 } else {
-                    console.error("Error fetching statuses:", error);
-                    toast.error(error.response?.data?.message || "An error occurred while fetching statuses.");
+                    console.error("Lỗi khi lấy các trạng thái:", error);
+                    toast.error(error.response?.data?.message || "Đã xảy ra lỗi khi lấy các trạng thái.");
                 }
             });
+
     }, [navigate]);
 
 
@@ -345,28 +373,30 @@ const OrderTable = () => {
                     console.log(orderID.isOpen + " orderID.isOpen");
                     setOrderDetails(null);
                     setOrderID(prev => ({ ...prev, isOpen: false }));
-                    toast.error(response.data?.message || 'Could not get details of order. Please try again!');
+                    toast.error(response.data?.message || 'Không thể lấy chi tiết đơn hàng. Vui lòng thử lại!');
                 } else if (response?.data?.errorCode === 998) {
-                    toast.error(response.data?.message || 'You do not have permission to view this order.');
+                    toast.error(response.data?.message || 'Bạn không có quyền xem đơn hàng này.');
                 } else {
-                    toast.error(response.data?.message || 'Could not get details of order. Please try again!');
+                    toast.error(response.data?.message || 'Không thể lấy chi tiết đơn hàng. Vui lòng thử lại!');
                 }
+
             })
             .catch(error => {
-                console.error("Error fetching order details:", error);
+                console.error("Lỗi khi lấy chi tiết đơn hàng:", error);
                 if (error?.response?.status === 404) {
                     setOrderDetails(null);
                     console.log(orderID.isOpen + " orderID.isOpen");
                     setOrderID({ value: orderID.value, isOpen: false });
 
-                    toast.error(error?.response.data?.message || 'Could not get details of order. Please try again!');
+                    toast.error(error?.response.data?.message || 'Không thể lấy chi tiết đơn hàng. Vui lòng thử lại!');
                 } else if (error?.response?.status === 403) {
-                    toast.error("Session expired. Redirecting to login...");
+                    toast.error("Phiên làm việc đã hết hạn. Đang chuyển hướng đến trang đăng nhập...");
                     navigate('/auth/login');
                 } else {
-                    toast.error(error?.response?.data?.message || "An error occurred while fetching order details.");
+                    toast.error(error?.response?.data?.message || "Đã xảy ra lỗi khi lấy chi tiết đơn hàng.");
                 }
             });
+
     };
 
     useEffect(() => {
@@ -378,8 +408,8 @@ const OrderTable = () => {
     const toggleOrderDetails = (order) => { setOrderID(prevState => ({ value: prevState.value === order?.orderId ? null : order?.orderId, isOpen: prevState.value !== order?.orderId })); };
 
     const handleChangeStatus = (option, order) => {
-            if (option?.value === 5) {
-                if(order?.statusName === 'Chờ xử lý'){
+        if (option?.value === 5) {
+            if (order?.statusName === 'Chờ xử lý') {
                 Swal.fire({
                     title: 'Nhập lý do hủy đơn hàng',
                     input: 'textarea',
@@ -414,40 +444,40 @@ const OrderTable = () => {
                             });
                     }
                 });
-            }else{
+            } else {
                 toast.warning(`Bạn không thể thay đổi trạng thái thành ${option?.label.toLowerCase()}`);
             }
-            } else {
-                Swal.fire({
-                    title: 'Xác nhận thay đổi trạng thái',
-                    text: 'Bạn có muốn thay đổi trạng thái của đơn hàng này không?',
-                    icon: 'question',
-                    showConfirmButton: true,
-                    showCancelButton: true,
-                    confirmButtonText: 'Đồng ý',
-                    cancelButtonText: 'Hủy'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        axiosInstance.put(`/staff/orders/update-status?orderId=${order?.orderId}&statusId=${option?.value}`)
-                            .then((response) => {
-                                if (response.data?.errorCode === 200) {
-                                    toast.success('Cập nhật trạng thái đơn hàng thành công!');
-                                    handleGetOrderAPI();
-                                } else {
-                                    toast.warning(response.data?.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại!');
-                                }
-                            })
-                            .catch((error) => {
-                                if (error?.response?.status === 403) {
-                                    toast.error("Phiên làm việc đã hết hạn. Đang chuyển đến trang đăng nhập...");
-                                    navigate('/auth/login');
-                                } else {
-                                    toast.warning(error.response?.data?.message || error.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại!');
-                                }
-                            });
-                    }
-                });
-            }
+        } else {
+            Swal.fire({
+                title: 'Xác nhận thay đổi trạng thái',
+                text: 'Bạn có muốn thay đổi trạng thái của đơn hàng này không?',
+                icon: 'question',
+                showConfirmButton: true,
+                showCancelButton: true,
+                confirmButtonText: 'Đồng ý',
+                cancelButtonText: 'Hủy'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    axiosInstance.put(`/staff/orders/update-status?orderId=${order?.orderId}&statusId=${option?.value}`)
+                        .then((response) => {
+                            if (response.data?.errorCode === 200) {
+                                toast.success('Cập nhật trạng thái đơn hàng thành công!');
+                                handleGetOrderAPI();
+                            } else {
+                                toast.warning(response.data?.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại!');
+                            }
+                        })
+                        .catch((error) => {
+                            if (error?.response?.status === 403) {
+                                toast.error("Phiên làm việc đã hết hạn. Đang chuyển đến trang đăng nhập...");
+                                navigate('/auth/login');
+                            } else {
+                                toast.warning(error.response?.data?.message || error.message || 'Không thể cập nhật trạng thái đơn hàng. Vui lòng thử lại!');
+                            }
+                        });
+                }
+            });
+        }
     };
 
     useEffect(
@@ -611,21 +641,7 @@ const OrderTable = () => {
         fetchStatuses();
     }, [navigate]);
 
-    const handleChange = (event, type) => {
 
-        const value = event ? event.target ? event.target.value : event.value : null;
-        setCurrentPage(0);
-        switch (type) {
-            case 'status':
-                setStatusId(value);
-                break;
-            case 'pageSize':
-                setPageSize(value);
-                break;
-            default:
-                break;
-        }
-    };
 
     const pageSizeOptions = [
         { value: 5, label: '5' },
@@ -667,7 +683,7 @@ const OrderTable = () => {
             if (errorCode === 998) {
                 toast.error(errorMessage || "Bạn không có quyền thực hiện hành động này.");
             } else if (errorCode === 403) {
-                toast.error("Session expired. Redirecting to login...");
+                toast.error("Phiên làm việc đã hết hạn. Đang chuyển hướng đến trang đăng nhập...");
                 navigate('/auth/login');
             } else {
                 toast.error(errorMessage || 'Có lỗi xảy ra khi xuất đơn hàng.');
@@ -695,34 +711,32 @@ const OrderTable = () => {
                     });
 
                     if (response.status === 200) {
-                        toast.success("Order detail deleted successfully!");
+                        toast.success("Xóa chi tiết đơn hàng thành công!");
                         handleGetOrderAPI();
                         handleGetOrderDetail();
                     } else {
-                        toast.error(`Error: ${response.data.message}`);
+                        toast.error(`Lỗi: ${response.data.message}`);
                     }
                 } catch (error) {
-                    console.error("Error deleting order detail:", error);
+                    console.error("Lỗi khi xóa chi tiết đơn hàng:", error);
 
                     const errorCode = error?.response?.status || error.response?.data?.code;
                     const errorMessage = error?.response?.data?.message || error.message;
 
                     if (errorCode === 998) {
-                        toast.error(errorMessage || "You do not have permission to perform this action.");
+                        toast.error(errorMessage || "Bạn không có quyền thực hiện hành động này.");
                     } else if (errorCode === 403) {
-                        toast.error("Session expired. Redirecting to login...");
+                        toast.error("Phiên làm việc đã hết hạn. Đang chuyển hướng đến trang đăng nhập...");
                         navigate('/auth/login');
                     } else {
-                        toast.error(`An error occurred: ${errorMessage}`);
+                        toast.error(`Đã xảy ra lỗi: ${errorMessage}`);
                     }
                 }
             }
         });
+
     };
 
-    const handleKeywordChange = (e) => {
-        setKeyword(e.target.value);
-    };
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -791,7 +805,7 @@ const OrderTable = () => {
             const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {}, { responseType: 'blob' });
             // const imageUrl = response.data.data; 
             if (!response || !response.data) {
-                throw new Error("No PDF data received from backend.");
+                throw new Error("Không có file PDF được gửi từ máy chủ.");
             }
 
             const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -834,7 +848,7 @@ const OrderTable = () => {
                 }
 
                 if (!qz.websocket.isActive()) {
-                    throw new Error(`Failed to connect to QZ Tray`);
+                    throw new Error(`Không thể kết nối với QZ Tray`);
                 }
 
                 console.log("Connected to QZ Tray");
@@ -873,9 +887,10 @@ const OrderTable = () => {
                 { type: 'raw', format: 'command', data: '\x1B\x64\x01' } // Lệnh ESC/POS để cắt giấy
             ]);
 
-            toast.success('Print successful and paper cut!');
+            toast.success('Xuất hóa đơn thành công!');
+
         } catch (error) {
-            toast.error(`Print error: ${error.message}`);
+            toast.error(`Lỗi xuất hóa đơn: ${error.message}`);
             setQzConnected(false);
         } finally {
             if (qzConnected) {
@@ -900,7 +915,7 @@ const OrderTable = () => {
     const handlePrintSelected = () => {
         console.log(selectedOrders.length + " selectedOrders.length");
         if (selectedOrders.length === 0) {
-            toast.info("No orders selected to print.");
+            toast.info("Không có đơn hàng nào được chọn để xuất hóa đơn.");
             return;
         }
 
@@ -936,7 +951,7 @@ const OrderTable = () => {
                 }
 
                 if (!qz.websocket.isActive()) {
-                    throw new Error(`Failed to connect to QZ Tray`);
+                    throw new Error(`Kết nối thất bại đến QZ Tray`);
                 }
 
                 console.log("Connected to QZ Tray");
@@ -960,9 +975,9 @@ const OrderTable = () => {
                 await printInvoice1(orderId, printConfig);
             }
 
-            toast.success('All invoices printed successfully and paper cut!');
+            toast.success('Đã xuất tất cả hóa đơn thành công!');
         } catch (error) {
-            toast.error(`Print error: ${error.message}`);
+            toast.error(`Lỗi xuất hóa đơn: ${error.message}`);
         } finally {
             if (qzConnected) {
                 try {
@@ -984,7 +999,7 @@ const OrderTable = () => {
             const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {}, { responseType: 'blob' });
 
             if (!response || !response.data) {
-                throw new Error("No image data received from backend.");
+                throw new Error("Không có file PDF được gửi từ máy chủ.");
             }
             const blob = new Blob([response.data], { type: 'application/pdf' });
 
@@ -1009,7 +1024,7 @@ const OrderTable = () => {
             ]);
 
         } catch (error) {
-            throw new Error(`Print error for order ID ${orderId}: ${error.message}`);
+            throw new Error(`Lỗi xuất hóa đơn: ${orderId}: ${error.message}`);
         }
     };
     useEffect(() => {
@@ -1116,22 +1131,26 @@ const OrderTable = () => {
     return (
         <div>
             <div className='font-14'>
-                <div className='bg-body-tertiary py-2'>
+                <div className='bg-body-tertiary py-2' style={{ minHeight: '110px' }}>
                     <div className='container'>
-                        <div className='d-flex align-items-center justify-content-between mb-3'>
+                        <div className='d-flex align-items-center justify-content-between mb-3' style={{ height: 'auto' }}>
+
                             <h4 className='m-0 d-flex align-items-center'>
                                 <FaClipboardList />&ensp;Đơn hàng
                             </h4>
-                            {selectedOrders.length > 0 && (
-                                <CustomButton
-                                    className='bg-black bg-gradient text-white'
-                                    textColor="white"
-                                    handleClick={handlePrintSelected}
-                                    btnName="Xuất hóa đơn"
-                                    tooltip="Nhấn để xuất hóa đơn"
-                                    icon={<FaFileInvoice />}
-                                />
-                            )}
+                            <div style={{ visibility: selectedOrders.length > 0 ? 'visible' : 'hidden' }}>
+                                {selectedOrders.length > 0 ? (
+                                    <CustomButton
+                                        className='bg-black bg-gradient text-white'
+                                        textColor="white"
+                                        handleClick={handlePrintSelected}
+                                        btnName="Xuất hóa đơn"
+                                        tooltip="Nhấn để xuất hóa đơn"
+                                        icon={<FaFileInvoice />}
+                                        style={{ height: '40px' }}
+                                    />
+                                ) : <div style={{ width: '120px', height: '40px' }}> </div>}
+                            </div>
                         </div>
 
                         <div className='d-flex flex-wrap flex-md-nowrap align-items-center justify-content-between gap-3'>
@@ -1141,8 +1160,19 @@ const OrderTable = () => {
                                     className='custom-radius'
                                     placeholder='Tìm kiếm đơn hàng . . .'
                                     value={keyword}
-                                    onChange={(e) => handleKeywordChange(e)}
+                                    onChange={handleKeywordChange}
                                 />
+                                {keyword && (
+                                    <InputGroup.Text
+                                        className='custom-radius'
+                                        style={{
+                                            cursor: 'pointer',
+                                        }}
+                                        onClick={clearKeyword}
+                                    >
+                                        <FaTimes />
+                                    </InputGroup.Text>
+                                )}
                             </InputGroup>
 
                             <div className='d-flex flex-column flex-md-row gap-3 w-100 mt-md-0'>
@@ -1180,11 +1210,20 @@ const OrderTable = () => {
                                 </div>
                             </div>
 
+                            {/* Button to clear all filters
+            <Button
+                className='bg-danger text-white'
+                onClick={handleClearFilters}
+                style={{ marginLeft: '15px' }}
+            >
+                <FaTrashAlt /> Clear All
+            </Button> */}
                         </div>
+
                     </div>
                 </div>
 
-                <div>
+                <div className='mt-2'>
                     <div className="table-responsive-wrapper">
                         <div className="table-responsive-container" style={{ overflowX: 'auto' }}>
                             <Table responsive variant="light" style={{ overflowX: 'auto' }}>
@@ -1220,7 +1259,7 @@ const OrderTable = () => {
 
                                     {orders.length === 0 ? (
                                         <tr>
-                                            <td colSpan={8} className="text-center" style={{ height: '100px' }}>
+                                            <td colSpan={9} className="text-center" style={{ height: '100px' }}>
                                                 Không tìm thấy đơn hàng nào.
                                             </td>
                                         </tr>
