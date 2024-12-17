@@ -28,6 +28,8 @@ const CouponTable = () => {
     } = useForm();
 
     const [selectedCoupon, setSelectedCoupon] = useState(null);
+    const [canUpdate, setCanUpdate] = useState(false);
+    const [isNew, setNew] = useState(false);
     const collumn = [
         { title: "Mã", dataIndex: "code", key: "code" },
         { title: "Mô tả", dataIndex: "desc", key: "description" },
@@ -56,7 +58,17 @@ const CouponTable = () => {
 
     useEffect(() => {
         if (selectedCoupon) {
+            setNew(false)
             console.log(selectedCoupon);
+            const startDate = moment(selectedCoupon.start, 'dd/MM/yyyy HH:mm').toDate();
+            const newDate = new Date();
+            const now = moment(newDate, 'dd/MM/yyyy HH:mm').toDate();
+            if (now >= startDate) {
+                console.log('Phiếu đã có hiệu lực, không thể được sửa !');
+                setCanUpdate(false);
+            } else {
+                setCanUpdate(true);
+            }
 
             setValue("description", selectedCoupon.desc);
             setValue(
@@ -70,6 +82,8 @@ const CouponTable = () => {
             setValue("quantity", selectedCoupon.quantity);
             setCouponType(selectedCoupon.kind === 'perc' ? 'percent' : 'price');
             setOpenModal(true); // Mở modal khi có selectedCoupon
+        } else {
+            setNew(true);
         }
     }, [selectedCoupon, setValue]);
 
@@ -196,16 +210,16 @@ const CouponTable = () => {
         );
     }
 
+    const [isValid, setValid] = useState(false);
     const onSubmit = async (data) => {
         const maxDate = new Date(startDate);
         maxDate.setMonth(startDate.getMonth() + 3);
-
         if (startDate > endDate) {
             setError('startDate', { type: 'manual', message: 'Ngày bắt đầu phải trước ngày hết hạn' });
-            return;
         } else if (endDate > maxDate) {
             setError('endDate', { type: 'manual', message: 'Thời hạn sử dụng của phiếu chỉ trong vòng 3 tháng' });
-            return;
+        } else {
+            setValid(true);
         }
 
         const formattedData = {
@@ -219,40 +233,44 @@ const CouponTable = () => {
 
         console.log(formattedData);
 
-        try {
-            await axiosInstance.post("/staff/coupons", formattedData).then(
-                (response) => {
-                    if (response.status === 403) {
-                        toast.error('Bạn không có quyền thực hiện công việc này !')
-                    } else {
-                        if (response?.data?.errorCode === 200) {
-                            toast.success("Thêm thành công!");
-                            reset();
-                            setOpenModal(false);
-                            setLoading(false);
-                            handleGetCouponAPI();
-                            setCouponType('percent')
-                            resetDate();
+        if (isValid) {
+            try {
+                await axiosInstance.post("/staff/coupons", formattedData).then(
+                    (response) => {
+                        if (response.status === 403) {
+                            toast.error('Bạn không có quyền thực hiện công việc này !')
                         } else {
-                            resetDate();
-                            toast.error(response?.data?.message || "Không thể thực hiện công việc !", { autoClose: 3000 });
+                            if (response?.data?.errorCode === 200) {
+                                toast.success("Thêm thành công!");
+                                reset();
+                                setOpenModal(false);
+                                setLoading(false);
+                                handleGetCouponAPI();
+                                setCouponType('percent');
+                                setValid(false);
+                                resetDate();
+                            } else {
+                                resetDate();
+                                toast.error(response?.data?.message || "Không thể thực hiện công việc !", { autoClose: 3000 });
+                            }
                         }
                     }
-                }
-            );
+                );
 
-        } catch (error) {
-            console.error("Error adding coupon:", error);
-            if (error) {
-                if (error.response?.status === 998) {
-                    resetDate();
-                    toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
-                } else {
-                    resetDate();
-                    toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
+            } catch (error) {
+                console.error("Error adding coupon:", error);
+                if (error) {
+                    if (error.response?.status === 998) {
+                        resetDate();
+                        toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
+                    } else {
+                        resetDate();
+                        toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
+                    }
                 }
             }
         }
+
     };
 
     const onHandleRemoveCoupon = (selectedCoupon) => {
@@ -288,8 +306,10 @@ const CouponTable = () => {
                                 console.log(error);
                                 if (error) {
                                     if (error.response?.status === 998) {
+                                        setValid(false);
                                         toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
                                     } else {
+                                        setValid(false);
                                         toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
                                     }
                                 }
@@ -303,16 +323,15 @@ const CouponTable = () => {
 
     const onSubmitUpdate = async (data) => {
         if (selectedCoupon) {
-            alert(1);
             const maxDate = new Date(startDate);
             maxDate.setMonth(startDate.getMonth() + 3);
 
             if (startDate > endDate) {
                 setError('startDate', { type: 'manual', message: 'Ngày bắt đầu phải trước ngày hết hạn' });
-                return;
             } else if (endDate > maxDate) {
                 setError('endDate', { type: 'manual', message: 'Thời hạn sử dụng của phiếu chỉ trong vòng 3 tháng' });
-                return;
+            } else{
+                setValid(true);
             }
             const formattedData = {
                 description: data.description,
@@ -322,33 +341,40 @@ const CouponTable = () => {
                 endDate: formatDateToPattern(endDate),
                 quantity: data.quantity,
             };
-            axiosInstance.put(`/staff/coupons?id=${selectedCoupon?.id}`, formattedData).then(
-                (response) => {
-                    if (response.data?.errorCode) {
-                        reset();
-                        handleGetCouponAPI();
-                        setSelectedCoupon(null);
-                        setCouponType('percent')
-                        setOpenModal(false);
-                        toast.success('Chỉnh sửa thành công !');
-                    } else {
-                        toast.error('Không thể thực thi công việc. Vui lòng thử lại !');
-                    }
-                }
-            ).catch(
-                (error) => {
-                    console.log(error);
-                    if (error) {
-                        if (error.response?.status === 998) {
-                            resetDate();
-                            toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
+
+            if (isValid) {
+                axiosInstance.put(`/staff/coupons?id=${selectedCoupon?.id}`, formattedData).then(
+                    (response) => {
+                        if (response.data?.errorCode) {
+                            reset();
+                            handleGetCouponAPI();
+                            setSelectedCoupon(null);
+                            setCouponType('percent')
+                            setOpenModal(false);
+                            setValid(false);
+                            toast.success('Chỉnh sửa thành công !');
                         } else {
-                            resetDate();
-                            toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
+                            toast.error('Không thể thực thi công việc. Vui lòng thử lại !');
                         }
                     }
-                }
-            );
+                ).catch(
+                    (error) => {
+                        console.log(error);
+                        if (error) {
+                            if (error.response?.status === 998) {
+                                resetDate();
+                                setValid(false);
+                                toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
+                            } else {
+                                resetDate();
+                                setValid(false);
+                                toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
+                            }
+                        }
+                    }
+                );
+            }
+
         }
     }
 
@@ -392,6 +418,8 @@ const CouponTable = () => {
                     reset();
                 }}
                 onOk={selectedCoupon ? handleSubmit(onSubmitUpdate) : handleSubmit(onSubmit)}
+                isNew={isNew}
+                canUpdate={canUpdate}
             >
                 <Form>
                     <Form.Group className="mb-2">
@@ -413,6 +441,7 @@ const CouponTable = () => {
                             onChange={date => setStartDate(date)}
                             // dateFormat="dd/MM/yyyy"
                             dateFormat="yyyy/MM/dd HH:mm"
+                            showTimeSelect
                             locale={vi}
                             placeholderText="dd/mm/yyyy"
                             className="form-control"
@@ -428,6 +457,7 @@ const CouponTable = () => {
                             onChange={date => setEndDate(date)}
                             // dateFormat="dd/MM/yyyy"
                             dateFormat="yyyy/MM/dd HH:mm"
+                            showTimeSelect
                             locale={vi}
                             placeholderText="dd/mm/yyyy"
                             className="form-control"
