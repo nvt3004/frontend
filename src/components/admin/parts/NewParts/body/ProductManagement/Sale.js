@@ -17,8 +17,11 @@ import { vi } from "date-fns/locale";
 import moment from "moment";
 import { stfExecAPI } from "../../../../../../stf/common";
 import FullScreenSpinner from "../../../FullScreenSpinner";
+import axiosInstance from "../../../../../../services/axiosConfig";
+import { getProfile } from "../../../../../../services/api/OAuthApi";
 
 function formatDateString(dateString, format) {
+
   const date = new Date(dateString);
 
   if (isNaN(date)) {
@@ -34,6 +37,52 @@ function formatDateString(dateString, format) {
 }
 
 function Sale() {
+  const [profile, setProfile] = useState(null);
+  const handleGetProfile = async () => {
+    try {
+      const data = await getProfile();
+      if (data) {
+        setProfile(data?.listData);
+      } else {
+        console.log('Không tìm thấy user hoặc không có dữ liệu hợp lệ');
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API getProfile:", error);
+    }
+  }
+  useEffect(
+    () => {
+      handleGetProfile();
+    }, []
+  );
+  const [permissions, setPermissions] = useState([]);
+  const handleGetPermission = () => {
+    if (profile) {
+      axiosInstance.get(`/admin/userpermissions/${profile?.userId}`).then(
+        (response) => {
+          if (response) {
+            setPermissions(response.data?.data.find(item => item.title === 'Sale'));
+          }
+        }
+      ).catch(
+        (error) => {
+          if (error) {
+            console.log("Error while get permission: ", error);
+          }
+        }
+      );
+    }
+  }
+  useEffect(
+    () => {
+      handleGetPermission();
+    }, [profile]
+  );
+
+  const addPerm = permissions?.permission?.find((item) => item.name === "Add");
+  const updatePerm = permissions?.permission?.find((item) => item.name === "Update");
+  const removePerm = permissions?.permission?.find((item) => item.name === "Delete");
+
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(-1);
   const [sales, setSales] = useState({});
@@ -90,12 +139,11 @@ function Sale() {
     setLoading(true);
 
     const [error, data] = await stfExecAPI({
-      url: `api/admin/sale/all?page=${
-        sales?.number || 1
-      }&size=${8}&keyword=${value}&&startDate=${formatDateString(
-        startDate,
-        "YYYY/MM/DD"
-      )}&endDate=${formatDateString(endDate, "YYYY/MM/DD")}&status=${status}`,
+      url: `api/admin/sale/all?page=${sales?.number || 1
+        }&size=${8}&keyword=${value}&&startDate=${formatDateString(
+          startDate,
+          "YYYY/MM/DD"
+        )}&endDate=${formatDateString(endDate, "YYYY/MM/DD")}&status=${status}`,
     });
     setLoading(false);
     if (data) {
@@ -118,12 +166,11 @@ function Sale() {
     setLoading(true);
 
     const [error, data] = await stfExecAPI({
-      url: `api/admin/sale/all?page=${1}&size=${8}&keyword=${
-        keyword || ""
-      }&startDate=${formatDateString(
-        startDate,
-        "YYYY/MM/DD"
-      )}&endDate=${formatDateString(endDate, "YYYY/MM/DD")}&status=${value}`,
+      url: `api/admin/sale/all?page=${1}&size=${8}&keyword=${keyword || ""
+        }&startDate=${formatDateString(
+          startDate,
+          "YYYY/MM/DD"
+        )}&endDate=${formatDateString(endDate, "YYYY/MM/DD")}&status=${value}`,
     });
     setLoading(false);
     if (data) {
@@ -145,16 +192,18 @@ function Sale() {
   const btnTable = () => {
     return (
       <div className="d-flex">
-        <div className="me-3 d-flex align-items-end">
-          <button
-            className="btn btn-dark me-3"
-            onClick={() => {
-              navigate("/admin/products/sale/add");
-            }}
-          >
-            Thêm mới <Plus weight="fill" />
-          </button>
-        </div>
+        {addPerm?.use === true && (
+          <div className="me-3 d-flex align-items-end">
+            <button
+              className="btn btn-dark me-3"
+              onClick={() => {
+                navigate("/admin/products/sale/add");
+              }}
+            >
+              Thêm mới <Plus weight="fill" />
+            </button>
+          </div>
+        )}
 
         <div className="me-3">
           <label className="mb-2" htmlFor="">
@@ -262,15 +311,14 @@ function Sale() {
     setLoading(true);
 
     const [error, data] = await stfExecAPI({
-      url: `api/admin/sale/all?page=${page}&size=${8}&keyword=${
-        keyword || ""
-      }&startDate=${formatDateString(
-        new Date(),
-        "YYYY/MM/DD"
-      )}&endDate=${formatDateString(
-        new Date("2024-12-26"),
-        "YYYY/MM/DD"
-      )}&status=${status}`,
+      url: `api/admin/sale/all?page=${page}&size=${8}&keyword=${keyword || ""
+        }&startDate=${formatDateString(
+          new Date(),
+          "YYYY/MM/DD"
+        )}&endDate=${formatDateString(
+          new Date("2024-12-26"),
+          "YYYY/MM/DD"
+        )}&status=${status}`,
     });
     setLoading(false);
     if (data) {
@@ -575,9 +623,8 @@ function Sale() {
         onCancel={handleModalUpdateStatusCancel}
         size="modal-lg"
       >
-        <span>{`Bạn có chắc muốn ${
-          sale?.statusId === 1 ? "khóa" : "mở khóa"
-        } chương trình giảm giá lại không ?`}</span>
+        <span>{`Bạn có chắc muốn ${sale?.statusId === 1 ? "khóa" : "mở khóa"
+          } chương trình giảm giá lại không ?`}</span>
       </ModalSft>
     </>
   );

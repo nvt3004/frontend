@@ -12,8 +12,62 @@ import {
 } from "phosphor-react";
 import { stfExecAPI } from "../../../../../../stf/common";
 import FullScreenSpinner from "../../../FullScreenSpinner";
+import { getProfile } from "../../../../../../services/api/OAuthApi";
+import axiosInstance from "../../../../../../services/axiosConfig";
 
 const SuppliersTable = () => {
+
+  const [profile, setProfile] = useState(null);
+  const handleGetProfile = async () => {
+    try {
+      const data = await getProfile();
+      if (data) {
+        setProfile(data?.listData);
+        setLoading(false)
+      } else {
+        console.log('Không tìm thấy user hoặc không có dữ liệu hợp lệ');
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API getProfile:", error);
+    }
+  }
+  useEffect(
+    () => {
+      handleGetProfile();
+    }, []
+  );
+  const [permissions, setPermissions] = useState([]);
+  const handleGetPermission = () => {
+    if (profile) {
+      axiosInstance.get(`/admin/userpermissions/${profile?.userId}`).then(
+        (response) => {
+          if (response) {
+            setPermissions(response.data?.data.find(item => item.title === 'Supplier'));
+            setLoading(false);
+          }
+        }
+      ).catch(
+        (error) => {
+          if (error) {
+            console.log("Error while get permission: ", error);
+            setLoading(false);
+          }
+        }
+      );
+    }
+  }
+  useEffect(
+    () => {
+      handleGetPermission();
+    }, [profile]
+  );
+  // useEffect(
+  //     () => {
+  //         console.log("permissions: ", permissions);
+
+  //     }, [permissions]
+  // );
+
   const [loading, setLoading] = useState(false);
   const [suppliers, setSuppliers] = useState({});
   const [supplier, setSupplier] = useState({});
@@ -45,9 +99,8 @@ const SuppliersTable = () => {
     setKeyword(value);
     setLoading(true);
     const [error, data] = await stfExecAPI({
-      url: `api/staff/suppliers?page=${
-        suppliers.number || 0
-      }&size=${6}&keyword=${value}&status=${true}`,
+      url: `api/staff/suppliers?page=${suppliers.number || 0
+        }&size=${6}&keyword=${value}&status=${true}`,
     });
 
     setLoading(false);
@@ -72,9 +125,8 @@ const SuppliersTable = () => {
     setLoading(true);
 
     const [error, data] = await stfExecAPI({
-      url: `api/staff/suppliers?size=${8}&page=${
-        page === 0 ? 0 : page - 1
-      }&status=true&keyword=${keyword || ""}`,
+      url: `api/staff/suppliers?size=${8}&page=${page === 0 ? 0 : page - 1
+        }&status=true&keyword=${keyword || ""}`,
     });
 
     setLoading(false);
@@ -236,57 +288,71 @@ const SuppliersTable = () => {
     { title: "Email", dataIndex: "email", key: "email" },
     { title: "Điện thoại", dataIndex: "phone", key: "phone" },
     { title: "Điạ chỉ", dataIndex: "address", key: "address" },
-    {
-      title: "Hành Động",
-      key: "actions",
-      render: (text, record) => {
-        return record.status === 0 ? (
-          ""
-        ) : (
-          <div>
-            <button
-              className="btn btn-dark btn-sm me-2"
-              onClick={() => handleEdit(record)}
-            >
-              <Pencil weight="fill" />
-            </button>
-            <button
-              className="btn btn-danger btn-sm"
-              onClick={() => handleDelete(record)}
-            >
-              <Trash weight="fill" />
-            </button>
-          </div>
-        );
-      },
-    },
   ];
 
-  const btnTable = () => {
-    return (
-      <div className="d-flex">
-        <button
-          className="btn btn-dark me-3"
-          onClick={() => {
-            setIsModalOpen(true);
-          }}
-        >
-          Thêm mới <Plus weight="fill" />
-        </button>
-
-        {/* <select
-          className="form-select w-25"
-          id="exampleFormControlSelect1"
-          onChange={(e) => {
-            handleChangeSelectFilterActive(e.target.value);
-            setStatus(e.target.value);
-          }}
-        >
-          <option value="1">Hoạt động</option>
-          <option value="0">Không hoạt động</option>
-        </select> */}
-      </div>
+  const updatePerm = permissions?.permission?.find((item) => item.name === "Update");
+  const removePerm = permissions?.permission?.find((item) => item.name === "Delete");
+  if (updatePerm?.use === true || removePerm?.use === true) {
+    columns.push(
+      {
+        title: "Hành Động",
+        key: "actions",
+        render: (text, record) => {
+          return record.status === 0 ? (
+            ""
+          ) : (
+            <div>
+              {updatePerm?.use === true && (
+                <button
+                  className="btn btn-dark btn-sm me-2"
+                  onClick={() => handleEdit(record)}
+                >
+                  <Pencil weight="fill" />
+                </button>
+              )}
+              {removePerm?.use === true && (
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => handleDelete(record)}
+                >
+                  <Trash weight="fill" />
+                </button>
+              )}
+            </div>
+          );
+        },
+      },
     );
+  }
+
+  const btnTable = () => {
+    const addPerm = permissions?.permission?.find((item) => item.name === "Add");
+    if (addPerm?.use === true) {
+      return (
+        <div className="d-flex">
+          <button
+            className="btn btn-dark me-3"
+            onClick={() => {
+              setIsModalOpen(true);
+            }}
+          >
+            Thêm mới <Plus weight="fill" />
+          </button>
+
+          {/* <select
+            className="form-select w-25"
+            id="exampleFormControlSelect1"
+            onChange={(e) => {
+              handleChangeSelectFilterActive(e.target.value);
+              setStatus(e.target.value);
+            }}
+          >
+            <option value="1">Hoạt động</option>
+            <option value="0">Không hoạt động</option>
+          </select> */}
+        </div>
+      );
+    }
   };
 
   return (
