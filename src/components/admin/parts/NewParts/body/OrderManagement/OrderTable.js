@@ -809,15 +809,15 @@ const OrderTable = () => {
 
             if (!qzConnected) {
                 const options = {
-                    host: '103.72.97.191:433',
+                    host: '103.72.97.191',
                     // host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
                     },
-                    // usingSecure: true, 
+                    usingSecure: true,
                     allowUserInteraction: false,
-                    usingSecure: false,
+                    // usingSecure: false,
                     keepAlive: 60,
                     retries: 3,
                     delay: 5
@@ -913,14 +913,14 @@ const OrderTable = () => {
         try {
             if (!qzConnected) {
                 const options = {
-                    host: '103.72.97.191:433',
+                    host: '103.72.97.191',
                     // host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
                     },
                     allowUserInteraction: false,
-                    usingSecure: false,
+                    usingSecure: true,
                     keepAlive: 60,
                     retries: 3,
                     delay: 5
