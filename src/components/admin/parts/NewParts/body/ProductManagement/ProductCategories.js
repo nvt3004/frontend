@@ -196,14 +196,14 @@ const ProductCategories = () => {
                         <div className='bg-white p-2 border rounded-1' style={{ minHeight: "70px" }}>
                             <Form onSubmit={handleSubmit(onSubmit)}>
                                 <Form.Group>
-                                    <Form.Label>Category name: </Form.Label>
+                                    <Form.Label>Tên phân loại: </Form.Label>
                                     <Form.Control type='text' defaultValue={selectedCategory ? selectedCategory?.categoryName : ''}
                                         {...register("categoryName", { required: true })}
-                                        placeholder={`${(!isNew && !isEdit) ? `Click create button to do create new !` : 'Category name'}`}
+                                        placeholder={`${(!isNew && !isEdit) ? `Nhấn nút bên dưới để tạo mới !` : 'Tên phân loại'}`}
                                         onKeyDown={handleChange} onPaste={handleChange}
                                         disabled={!selectedCategory && !isNew} />
                                     {errors?.categoryName && (
-                                        <p className='fw-bold text-danger'>Category name is required</p>
+                                        <p className='fw-bold text-danger'>Tên phân loại không được bỏ trống</p>
                                     )}
                                 </Form.Group>
 

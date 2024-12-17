@@ -319,8 +319,8 @@ const UserTable = () => {
     const [error, data] = await stfExecAPI({
       method: isAdd ? "post" : "put",
       url: isAdd
-        ? `api/staff/userpermissions/add`
-        : "api/staff/userpermissions/update",
+        ? `api/admin/userpermissions/add`
+        : "api/admin/userpermissions/update",
       data: {
         id: user?.userId || 0,
         fullName: fullName,
@@ -378,7 +378,7 @@ const UserTable = () => {
 
     const [error, data] = await stfExecAPI({
       method: "delete",
-      url: `api/staff/userpermissions/delete/${user.userId}`,
+      url: `api/admin/userpermissions/delete/${user.userId}`,
     });
 
     setLoading(false);
@@ -427,7 +427,7 @@ const UserTable = () => {
     setLoading(true);
     const [error, data] = await stfExecAPI({
       method: "post",
-      url: `api/staff/userpermissions/save-per`,
+      url: `api/admin/userpermissions/save-per`,
       data: {
         userId: user.userId,
         permission: pers,

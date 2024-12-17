@@ -19,37 +19,38 @@ const AdvertisementTable = () => {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const columns = [
-    { title: "Advertisement ID", dataIndex: "advId", key: "advId" },
-    { title: "Advertisement Name", dataIndex: "advName", key: "advName" },
+    { title: "Mã", dataIndex: "advId", key: "advId" },
+    { title: "Tên quảng cáo", dataIndex: "advName", key: "advName" },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "advDescription",
       key: "advDescription",
     },
-    { title: "Start Date", dataIndex: "startDate", key: "startDate" },
-    { title: "End Date", dataIndex: "endDate", key: "endDate" },
+    { title: "Ngày tạo", dataIndex: "startDate", key: "startDate" },
+    { title: "Ngày xóa", dataIndex: "endDate", key: "endDate" },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (value) => (value === 1 ? "Active" : "Inactive"),
+      render: (value) => (value === 1 ? "Hoạt động" : "Không hoạt động"),
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (text, record) => (
         <div>
           <Button
+          className="me-2"
             variant="info"
             onClick={() => handleEditAdvertisement(record.advId)}
           >
-            Edit
+            Sửa
           </Button>
           <Button
             variant="danger"
             onClick={() => handleDeleteClick(record.advId)} // Open the modal when delete button is clicked
           >
-            Delete
+            Xóa
           </Button>
         </div>
       ),
@@ -78,7 +79,7 @@ const AdvertisementTable = () => {
         }
       })
       .catch((error) => {
-        toast.error("An error occurred while fetching advertisements.");
+        toast.error("Xảy ra lỗi");
       })
       .finally(() => setLoading(false));
   };
@@ -121,14 +122,14 @@ const AdvertisementTable = () => {
       .delete(`/staff/advertisement?id=${advertisementToDelete}`)
       .then((response) => {
         if (response?.data?.code === 1000) {
-          toast.success("Advertisement deleted successfully!");
+          toast.success("Xóa thành công!");
           handleGetAdvertisementAPI();
         } else {
-          toast.error("Failed to delete the advertisement.");
+          toast.error("Có lỗi khi xóa.");
         }
       })
       .catch((error) => {
-        toast.error("An error occurred while deleting the advertisement.");
+        toast.error("Có lỗi xảy ra trong quá trình xóa.");
       })
       .finally(() => {
         setShowDeleteModal(false); // Close the modal after the delete operation
@@ -144,25 +145,20 @@ const AdvertisementTable = () => {
       <FullScreenSpinner isLoading={loading} />
       <DataTableSft
         columns={columns}
-        title={"Advertisement List"}
+        title={"Danh sách quảng cáo"}
         dataSource={advertisements}
         buttonTable={
           <Button
             variant="dark"
             onClick={() => navigate("/admin/advertisement/new")}
           >
-            New Advertisement
+            Thêm mới
           </Button>
         }
       />
       <div className="bg-body-tertiary d-flex justify-content-between align-items-center container pt-2">
         <p className="font-13">
           {`${Math.min(currentPage * 5 + 5, totalElements)} of ${totalElements}`}
-          <span>
-            <a href="#" className="text-decoration-none fw-medium">
-              View all &gt;
-            </a>
-          </span>
         </p>
 
         {totalPage > 1 && (
@@ -185,17 +181,17 @@ const AdvertisementTable = () => {
       {/* Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Confirm Deletion</Modal.Title>
+          <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to delete this advertisement?
+          Bạn có chắc muốn xóa quảng cáo này ?
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
-            Cancel
+            Hủy
           </Button>
           <Button variant="danger" onClick={handleDeleteAdvertisement}>
-            Delete
+            Xóa
           </Button>
         </Modal.Footer>
       </Modal>

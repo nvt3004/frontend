@@ -256,6 +256,26 @@ function Dashboard() {
     fetchUsers();
   }, [startDate, endDate]);
 
+  //Tính tổng số đơn hàng
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/report/revenue?startDate=${moment(startDate).format(
+          "YYYY/MM/DD"
+        )}&endDate=${moment(endDate).format("YYYY/MM/DD")}&statusId=${-1}`,
+      });
+
+      if (data) {
+        setReportRevenue(data.data);
+        return;
+      }
+    };
+
+    fetchUsers();
+  }, [startDate, endDate]);
+
+
   //Tính tổng số đơn hàng chờ xử lý
   useEffect(() => {
     const fetchUsers = async () => {
@@ -413,7 +433,9 @@ function Dashboard() {
 
   console.log(productStock);
 
-  return profile?.authorities[0]?.authority !== 'Admin'?<h6>Bạn có thể sử dụng các chức năng ở menu bên trái!</h6>: (
+  return profile?.authorities[0]?.authority !== "Admin" ? (
+    <h6>Bạn có thể sử dụng các chức năng ở menu bên trái!</h6>
+  ) : (
     <>
       <div className="row">
         <div class="col-md-4 col-1">
@@ -670,7 +692,6 @@ function Dashboard() {
                   <div class="avatar flex-shrink-0 me-3">
                     <Package className="text-success" weight="fill" size={34} />
                   </div>
-
                   <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                     <div class="me-2">
                       {/* <small class="text-muted d-block mb-1">Paypal</small> */}

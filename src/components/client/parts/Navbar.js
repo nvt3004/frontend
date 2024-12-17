@@ -260,7 +260,7 @@ const Navbar = () => {
                   </Link>
                 </li>
 
-                <li
+                {/* <li
                   className={
                     window.location.pathname === "/blog" ? "active-menu" : ""
                   }
@@ -288,7 +288,7 @@ const Navbar = () => {
                   <Link to="/contact" className="text-decoration-none">
                     Liên hệ
                   </Link>
-                </li>
+                </li> */}
               </ul>
             </div>
 
