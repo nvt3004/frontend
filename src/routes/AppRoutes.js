@@ -190,36 +190,140 @@ const router = createBrowserRouter([
       {
         path: "warehouse",
         children: [
-          { path: "manage", element: <ReceiptList /> },
-          { path: "stockin", element: <StockIn /> },
-          { path: "detail", element: <ReceiptDetail /> },
+          {
+            path: "manage",
+            element: (
+              <ProtectedRoute
+                element={<ReceiptList />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
+          {
+            path: "stockin",
+            element: (
+              <ProtectedRoute
+                element={<StockIn />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
+          {
+            path: "detail",
+            element: (
+              <ProtectedRoute
+                element={<ReceiptDetail />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
         ],
       },
       {
         path: "coupon",
-        children: [{ path: "manage", element: <CouponTable /> }],
+        children: [
+          {
+            path: "manage",
+            element: (
+              <ProtectedRoute
+                element={<CouponTable />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
+        ],
       },
       {
         path: "advertisement",
         children: [
-          { path: "new", element: <NewAdvertisement /> },
-          { path: "manage", element: <AdvertisementTable /> },
+          {
+            path: "new",
+            element: (
+              <ProtectedRoute
+                element={<NewAdvertisement />}
+                requiredRole="Admin"
+              />
+            ),
+          },
+          {
+            path: "manage",
+            element: (
+              <ProtectedRoute
+                element={<AdvertisementTable />}
+                requiredRole="Admin"
+              />
+            ),
+          },
         ],
       },
       {
         path: "feedback",
-        children: [{ path: "manage", element: <FeedbacksTable /> }],
+        children: [
+          {
+            path: "manage",
+            element: (
+              <ProtectedRoute
+                element={<FeedbacksTable />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
+        ],
       },
       {
         path: "products",
         children: [
-          { path: "manage", element: <ProductTable /> },
-          { path: "new", element: <NewProduct /> },
-          { path: "categories", element: <ProductCategories /> },
-          { path: "update", element: <UpdateProduct /> },
-          { path: "sale", element: <Sale /> },
-          { path: "sale/add", element: <AddSale /> },
-          { path: "sale/update", element: <UpdateSale /> },
+          {
+            path: "manage",
+            element: (
+              <ProtectedRoute
+                element={<ProductTable />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
+          {
+            path: "new",
+            element: (
+              <ProtectedRoute element={<NewProduct />} requiredRole="Admin" />
+            ),
+          },
+          {
+            path: "categories",
+            element: (
+              <ProtectedRoute
+                element={<ProductCategories />}
+                requiredRole="Admin,Staff"
+              />
+            ),
+          },
+          {
+            path: "update",
+            element: (
+              <ProtectedRoute
+                element={<UpdateProduct />}
+                requiredRole="Admin"
+              />
+            ),
+          },
+          {
+            path: "sale",
+            element: (
+              <ProtectedRoute element={<Sale />} requiredRole="Admin,Staff" />
+            ),
+          },
+          {
+            path: "sale/add",
+            element: (
+              <ProtectedRoute element={<AddSale />} requiredRole="Admin" />
+            ),
+          },
+          {
+            path: "sale/update",
+            element: (
+              <ProtectedRoute element={<UpdateSale />} requiredRole="Admin" />
+            ),
+          },
         ],
       },
     ],
