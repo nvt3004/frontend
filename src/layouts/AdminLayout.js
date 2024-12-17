@@ -254,7 +254,7 @@ const AdminLayout = () => {
         </div>
 
         <div className="nav-stf">
-          {filteredMenus.map((menu, index) => (
+          {menus.map((menu, index) => (
             <div className="menu-stf" key={index}>
               <p className="title-stf">{menu.title}</p>
               <ul>
