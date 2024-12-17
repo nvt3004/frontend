@@ -2,12 +2,12 @@ import Swal from "sweetalert2";
 
 const ConfirmAlert = async ({ title, text, confirmText, cancelText }) => {
   const result = await Swal.fire({
-    title: title || "Are you sure?",
-    text: text || "You won't be able to revert this!",
+    title: title || "Bạn có chắc?",
+    text: text || "Bạn có chắn thực hiện hành động này!",
     icon: "warning",
     showCancelButton: true,
-    confirmButtonText: confirmText || "Yes, do it!",
-    cancelButtonText: cancelText || "Cancel",
+    confirmButtonText: confirmText || "Xác nhận",
+    cancelButtonText: cancelText || "Hủy",
     customClass: {
       container: 'swal2-container-custom',
     }
