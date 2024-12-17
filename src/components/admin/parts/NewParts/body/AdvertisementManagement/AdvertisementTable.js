@@ -5,6 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import DataTableSft from "../../../../DataTableSft";
 import FullScreenSpinner from "../../../FullScreenSpinner";
+import { Plus, Pencil, Trash } from "phosphor-react";
 
 const AdvertisementTable = () => {
   const [loading, setLoading] = useState(false);
@@ -19,15 +20,15 @@ const AdvertisementTable = () => {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const columns = [
-    { title: "ID", dataIndex: "advId", key: "advId" },
+    { title: "Mã", dataIndex: "advId", key: "advId" },
     { title: "Tên quảng cáo", dataIndex: "advName", key: "advName" },
     {
       title: "Mô tả",
       dataIndex: "advDescription",
       key: "advDescription",
     },
-    { title: "Ngày bắt đầu", dataIndex: "startDate", key: "startDate" },
-    { title: "Ngày kết thúc", dataIndex: "endDate", key: "endDate" },
+    { title: "Thời gian bắt đầu", dataIndex: "startDate", key: "startDate" },
+    { title: "Thời gian kết thúc", dataIndex: "endDate", key: "endDate" },
     {
       title: "Trạng thái",
       dataIndex: "status",
@@ -43,13 +44,13 @@ const AdvertisementTable = () => {
             variant="info"
             onClick={() => handleEditAdvertisement(record.advId)}
           >
-            Edit
+            <Pencil weight="fill" />
           </Button>
           <Button
             variant="danger"
             onClick={() => handleDeleteClick(record.advId)} // Open the modal when delete button is clicked
           >
-            Delete
+            <Trash weight="fill" />
           </Button>
         </div>
       ),
@@ -151,13 +152,16 @@ const AdvertisementTable = () => {
             variant="dark"
             onClick={() => navigate("/admin/advertisement/new")}
           >
-            Quảng cáo mới
+            Thêm mới <Plus />
           </Button>
         }
       />
       <div className="bg-body-tertiary d-flex justify-content-between align-items-center container pt-2">
         <p className="font-13">
-          {`${Math.min(currentPage * 5 + 5, totalElements)} of ${totalElements}`}
+          {`${Math.min(
+            currentPage * 5 + 5,
+            totalElements
+          )} of ${totalElements}`}
           <span>
             <a href="#" className="text-decoration-none fw-medium">
               Xem tất cả &gt;

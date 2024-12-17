@@ -1,6 +1,17 @@
 import React from "react";
 import { useEffect, useState, useRef } from "react";
-import { ShoppingCart, Money, CreditCard, CalendarBlank } from "phosphor-react";
+import {
+  ShoppingCart,
+  Money,
+  CreditCard,
+  CalendarBlank,
+  Heart,
+  Clock, //Chờ xử lý
+  Prohibit, //Đã xử lý
+  Truck, //Đã giao
+  Package, //Đã nhận,
+  XCircle, //Đã hủy
+} from "phosphor-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { vi } from "date-fns/locale";
@@ -175,6 +186,10 @@ function Dashboard() {
   const [reportQuantityProduct, setReportQuantityProduct] = useState(0);
   const [reportRevenue, setReportRevenue] = useState(0);
   const [reportProfit, setReportProfit] = useState(0); // Là tổng số đơn hàng
+  const [reportDonChoXuLy, setReportDonChoXuLy] = useState(0);
+  const [reportDonDaGiao, setReportDonDaGiao] = useState(0);
+  const [reportDonDaNhan, setReportDaNhan] = useState(0);
+  const [reportDonDaHuy, setReportDaHuy] = useState(0);
   const startDatePickerRef = useRef();
   const endDatePickerRef = useRef();
   const [startDate, setStartDate] = useState(
@@ -185,6 +200,7 @@ function Dashboard() {
   );
   const [productStock, setProductStock] = useState([]);
   const [productBetSaler, setProductBetSaler] = useState([]);
+  const [productFavorites, setProductFavorites] = useState([]);
   const [showDate, setShowDate] = useState(false);
 
   //Tính doanh thu
@@ -284,6 +300,158 @@ function Dashboard() {
 
     fetchUsers();
   }, [startDate, endDate]);
+
+  //Tính tổng số đơn hàng chờ xử lý
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/report/total-order?startDate=${moment(startDate).format(
+          "YYYY/MM/DD"
+        )}&endDate=${moment(endDate).format("YYYY/MM/DD")}&statusId=${1}`,
+      });
+
+      if (data) {
+        setReportDonChoXuLy(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchUsers();
+  }, [startDate, endDate]);
+
+  //Tính tổng số đơn hàng đã giao
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/report/total-order?startDate=${moment(startDate).format(
+          "YYYY/MM/DD"
+        )}&endDate=${moment(endDate).format("YYYY/MM/DD")}&statusId=${3}`,
+      });
+
+      if (data) {
+        setReportDonDaGiao(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchUsers();
+  }, [startDate, endDate]);
+
+  //Tính tổng số đơn hàng đã nhận
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/report/total-order?startDate=${moment(startDate).format(
+          "YYYY/MM/DD"
+        )}&endDate=${moment(endDate).format("YYYY/MM/DD")}&statusId=${4}`,
+      });
+
+      if (data) {
+        setReportDaNhan(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchUsers();
+  }, [startDate, endDate]);
+
+  //Tính tổng số đơn hàng đã hủy
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/report/total-order?startDate=${moment(startDate).format(
+          "YYYY/MM/DD"
+        )}&endDate=${moment(endDate).format("YYYY/MM/DD")}&statusId=${5}`,
+      });
+
+      if (data) {
+        setReportDaHuy(data.data);
+        return;
+      }
+
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+    };
+
+    fetchUsers();
+  }, [startDate, endDate]);
+
+  //Tính top 5 sản phẩm yêu thích nhất
+  useEffect(() => {
+    const fetchUsers = async () => {
+      // setLoading(true);
+      const [error, data] = await stfExecAPI({
+        url: `api/admin/report/product-favorite`,
+      });
+
+      if (data) {
+        // setLoading(false);
+        setProductFavorites(data.data);
+        return;
+      }
+
+      setProductFavorites([]);
+      const err =
+        error.status === 403
+          ? "Bạn không có quyền để thực thi công việc này !"
+          : error?.response?.data?.message;
+
+      toast.error(`${err}`, {
+        className: "toast-message",
+        position: "top-right",
+        autoClose: 5000,
+      });
+
+      // setLoading(false);
+    };
+
+    fetchUsers();
+  }, []);
 
   //Tính top 5 sản phẩm bán chạy nhất
   useEffect(() => {
@@ -526,16 +694,144 @@ function Dashboard() {
           </div>
         )}
       </div>
+      {/* style={{ height: "400px" }} */}
+      <div className="mt-4">
+        <div className="row">
+          <div className="col-6 bg-white p-4 rounded-2 mx-3">
+            <h5 className="card-title mb-3">
+              Sản phẩm được yêu thích nhiều nhất
+            </h5>
+
+            <div className="table-responsive text-nowrap">
+              <table className="table">
+                <tbody className="table-border-bottom-0">
+                  {productFavorites &&
+                    productFavorites.map((pd) => {
+                      return (
+                        <tr key={pd.image}>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <ul className="list-unstyled users-list avatar-group d-flex align-items-center me-3">
+                                <li
+                                  data-bs-toggle="tooltip"
+                                  data-popup="tooltip-custom"
+                                  data-bs-placement="top"
+                                  className="avatar avatar-xs pull-up"
+                                  title="Lilian Fuller"
+                                >
+                                  <img
+                                    src={pd.image}
+                                    alt="Avatar"
+                                    className="rounded-circle"
+                                  />
+                                </li>
+                              </ul>
+                              <span className="mx-4"> {pd.productName}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="d-flex align-items-center">
+                              <span className="me-2">
+                                {formatNumberWithCommas(pd.like || 0)}
+                              </span>
+                              <Heart
+                                className="text-danger"
+                                weight="fill"
+                                size={25}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="col-5 bg-white p-4 rounded-2">
+          <h5 className="card-title mb-3">Đơn hàng</h5>
+
+            <div>
+              <ul class="p-0 m-0">
+                <li class="d-flex mb-4 pb-1">
+                  <div class="avatar flex-shrink-0 me-3">
+                    <Clock className="text-warning" weight="fill" size={34} />
+                  </div>
+
+                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                    <div class="me-2">
+                      {/* <small class="text-muted d-block mb-1">Paypal</small> */}
+                      <h6 class="mb-0">Chờ xử lý</h6>
+                    </div>
+                    <div class="user-progress d-flex align-items-center gap-1">
+                      <h6 class="mb-0">{formatNumberWithCommas(reportDonChoXuLy || 0)}</h6>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="d-flex mb-4 pb-1">
+                  <div class="avatar flex-shrink-0 me-3">
+                    <Truck className="text-primary" weight="fill" size={34} />
+                  </div>
+
+                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                    <div class="me-2">
+                      {/* <small class="text-muted d-block mb-1">Paypal</small> */}
+                      <h6 class="mb-0">Đã giao</h6>
+                    </div>
+                    <div class="user-progress d-flex align-items-center gap-1">
+                      <h6 class="mb-0">{formatNumberWithCommas(reportDonDaGiao ||  0)}</h6>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="d-flex mb-4 pb-1">
+                  <div class="avatar flex-shrink-0 me-3">
+                    <Package className="text-success" weight="fill" size={34} />
+                  </div>
+
+                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                    <div class="me-2">
+                      {/* <small class="text-muted d-block mb-1">Paypal</small> */}
+                      <h6 class="mb-0">Đã nhận</h6>
+                    </div>
+                    <div class="user-progress d-flex align-items-center gap-1">
+                      <h6 class="mb-0">{formatNumberWithCommas(reportDonDaNhan || 0)}</h6>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="d-flex mb-4 pb-1">
+                  <div class="avatar flex-shrink-0 me-3">
+                    <Prohibit className="text-danger" weight="fill" size={34} />
+                  </div>
+
+                  <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                    <div class="me-2">
+                      {/* <small class="text-muted d-block mb-1">Paypal</small> */}
+                      <h6 class="mb-0">Đã hủy</h6>
+                    </div>
+                    <div class="user-progress d-flex align-items-center gap-1">
+                      <h6 class="mb-0">{formatNumberWithCommas(reportDonDaHuy || 0)}</h6>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div className="card mt-4 p-4" style={{ height: "400px", width: "100%" }}>
-        <h5 className="card-title mb-3">Top 5 sản phẩm bán chạy</h5>
+        <h5 className="card-title mb-3">Top sản phẩm bán chạy</h5>
         {productBetSaler.labels && (
           <Bar options={options} data={productBetSaler} />
         )}
       </div>
 
       <div className="card mt-4 p-4" style={{ height: "400px", width: "100%" }}>
-        <h5 className="card-title mb-3">Top 5 sản phẩm tồn kho nhiều nhất</h5>
+        <h5 className="card-title mb-3">Top sản phẩm tồn kho nhiều nhất</h5>
         {productStock.labels && <Bar options={options} data={productStock} />}
       </div>
     </>
