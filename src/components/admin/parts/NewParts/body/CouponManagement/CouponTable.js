@@ -14,6 +14,7 @@ import Swal from "sweetalert2";
 import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale";
 import moment from "moment";
+import { getProfile } from "../../../../../../services/api/OAuthApi";
 
 const CouponTable = () => {
     const [loading, setLoading] = useState(false);
@@ -28,6 +29,59 @@ const CouponTable = () => {
         setError,
         clearErrors
     } = useForm();
+
+    const [profile, setProfile] = useState(null);
+    const handleGetProfile = async () => {
+        try {
+            const data = await getProfile();
+            if (data) {
+                setProfile(data?.listData);
+                setLoading(false)
+            } else {
+                console.log('Không tìm thấy user hoặc không có dữ liệu hợp lệ');
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API getProfile:", error);
+        }
+    }
+    useEffect(
+        () => {
+            handleGetProfile();
+        }, []
+    );
+    const [permissions, setPermissions] = useState([]);
+    const handleGetPermission = () => {
+        if (profile) {
+            axiosInstance.get(`/admin/userpermissions/${profile?.userId}`).then(
+                (response) => {
+                    if (response) {
+                        setPermissions(response.data?.data.find(item => item.title === 'Coupon'));
+                        setLoading(false);
+                    }
+                }
+            ).catch(
+                (error) => {
+                    if (error) {
+                        console.log("Error while get permission: ", error);
+                        setLoading(false);
+                    }
+                }
+            );
+        }
+    }
+    useEffect(
+        () => {
+            handleGetPermission();
+        }, [profile]
+    );
+    // useEffect(
+    //     () => {
+    //         console.log("permissions: ", permissions);
+
+    //     }, [permissions]
+    // );
+
+
 
     const [selectedCoupon, setSelectedCoupon] = useState(null);
     const collumn = [
@@ -45,29 +99,65 @@ const CouponTable = () => {
         },
         { title: "Giá trị", dataIndex: "value", key: "value" },
         { title: "Số lượng", dataIndex: "quantity", key: "quantity" },
-        {
-            title: "Hành động",
-            key: "action",
-            render: (_, record) => {
-                return (
-                    <div>
-                        <button
-                            className="btn btn-dark btn-sm me-2"
-                            onClick={() => setSelectedCoupon(record)}
-                        >
-                            <Pencil weight="fill" />
-                        </button>
-                        <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => onHandleRemoveCoupon(record)}
-                        >
-                            <Trash weight="fill" />
-                        </button>
-                    </div>
-                );
-            },
-        },
+        // {
+        //     title: "Hành động",
+        //     key: "action",
+        //     render: (_, record) => {
+        //         return (
+        //             <div>
+        //                 <button
+        //                     className="btn btn-dark btn-sm me-2"
+        //                     onClick={() => setSelectedCoupon(record)}
+        //                 >
+        //                     <Pencil weight="fill" />
+        //                 </button>
+        //                 <button
+        //                     className="btn btn-danger btn-sm"
+        //                     onClick={() => onHandleRemoveCoupon(record)}
+        //                 >
+        //                     <Trash weight="fill" />
+        //                 </button>
+        //             </div>
+        //         );
+        //     },
+        // },
     ];
+
+    if (permissions) {
+        const editPerm = permissions?.permission?.find((item) => item.name === "Update");
+        const removePerm = permissions?.permission?.find((item) => item.name === "Delete");
+        if (editPerm?.use === true || removePerm?.use === true) {
+            collumn.push(
+                {
+                    title: "Hành động",
+                    key: "action",
+                    render: (_, record) => {
+
+                        return (
+                            <div>
+                                {editPerm?.use === true && (
+                                    <button
+                                        className="btn btn-dark btn-sm me-2"
+                                        onClick={() => setSelectedCoupon(record)}
+                                    >
+                                        <Pencil weight="fill" />
+                                    </button>
+                                )}
+                                {removePerm?.use === true && (
+                                    <button
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() => onHandleRemoveCoupon(record)}
+                                    >
+                                        <Trash weight="fill" />
+                                    </button>
+                                )}
+                            </div>
+                        );
+                    },
+                },
+            );
+        }
+    }
 
     useEffect(() => {
         if (selectedCoupon) {
@@ -101,19 +191,24 @@ const CouponTable = () => {
     ]);
 
     const triggers = () => {
-        return (
-            <div className="d-flex">
-                <Button
-                    variant="dark"
-                    onClick={() => {
-                        setOpenModal(true);
-                    }}
-                >
-                    Thêm mới <Plus />
-                </Button>
-            </div>
-        );
-    
+        if (permissions) {
+            const addPerm = permissions?.permission?.find((item) => item.name === "Add");
+            if (addPerm && addPerm.use === true) {
+                return (
+                    <div className="d-flex">
+                        <Button
+                            variant="dark"
+                            onClick={() => {
+                                setOpenModal(true);
+                            }}
+                        >
+                            Thêm mới <Plus />
+                        </Button>
+                    </div>
+                );
+            }
+        }
+
     };
 
     const [totalPage, setTotalPage] = useState(0);
@@ -229,7 +324,7 @@ const CouponTable = () => {
 
         if (now > moment(startDate, 'dd/MM/yyyy HH:mm').toDate()) {
             console.log('ngày bắt đầu sai');
-            
+
             setError("startDate", {
                 type: "manual",
                 message: "Thời gian bắt đầu phải ngay tại bây giờ hoặc xa hơn",
@@ -424,8 +519,8 @@ const CouponTable = () => {
             <div className="bg-body-tertiary d-flex justify-content-between align-items-center container pt-2">
                 <p className="font-13">
                     {`${(currentPage + 1) * 10 <= totalElements
-                            ? (currentPage + 1) * 10
-                            : totalElements
+                        ? (currentPage + 1) * 10
+                        : totalElements
                         } of ${totalElements} `}
                     {size === totalElements ? (
                         <span
@@ -497,7 +592,7 @@ const CouponTable = () => {
                         </label>
                         <DatePicker
                             selected={startDate}
-                            onChange={(date) => {setStartDate(date); clearErrors('startDate')}}
+                            onChange={(date) => { setStartDate(date); clearErrors('startDate') }}
                             // dateFormat="dd/MM/yyyy"
                             dateFormat="yyyy/MM/dd HH:mm"
                             showTimeSelect
@@ -515,7 +610,7 @@ const CouponTable = () => {
                         </label>
                         <DatePicker
                             selected={endDate}
-                            onChange={(date) => {setEndDate(date); clearErrors('endDate')}}
+                            onChange={(date) => { setEndDate(date); clearErrors('endDate') }}
                             // dateFormat="dd/MM/yyyy"
                             dateFormat="yyyy/MM/dd HH:mm"
                             showTimeSelect

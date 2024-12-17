@@ -23,9 +23,59 @@ import { Link } from 'react-router-dom';
 import JSEncrypt from 'jsencrypt';
 // import fs from 'fs';
 import CryptoJS from 'crypto-js'
+import { getProfile } from '../../../../../../services/api/OAuthApi';
 
 const OrderTable = () => {
     // START GET orders
+    const [profile, setProfile] = useState(null);
+    const handleGetProfile = async () => {
+        try {
+            const data = await getProfile();
+            if (data) {
+                setProfile(data?.listData);
+            } else {
+                console.log('Không tìm thấy user hoặc không có dữ liệu hợp lệ');
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API getProfile:", error);
+        }
+    }
+    useEffect(
+        () => {
+            handleGetProfile();
+        }, []
+    );
+    const [permissions, setPermissions] = useState([]);
+    const handleGetPermission = () => {
+        if (profile) {
+            axiosInstance.get(`/admin/userpermissions/${profile?.userId}`).then(
+                (response) => {
+                    if (response) {
+                        setPermissions(response.data?.data.find(item => item.title === 'Order'));
+                    }
+                }
+            ).catch(
+                (error) => {
+                    if (error) {
+                        console.log("Error while get permission: ", error);
+                    }
+                }
+            );
+        }
+    }
+    useEffect(
+        () => {
+            handleGetPermission();
+        }, [profile]
+    );
+    useEffect(
+        () => {
+            console.log("permissions: ", permissions);
+
+        }, [permissions]
+    );
+
+
     const [orders, setOrders] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPage, setTotalPage] = useState(0);
@@ -1528,29 +1578,34 @@ const OrderTable = () => {
                                                                                                 </React.Fragment>
                                                                                             ) : (
                                                                                                 <React.Fragment style={{ width: '50px !important' }}>
-                                                                                                    <td className='no-print p-1 text-center'>
-                                                                                                        <CustomButton
-                                                                                                            btnBG={'danger'}
-                                                                                                            btnType={'button'}
-                                                                                                            textColor={'text-white'}
-                                                                                                            btnName={<FaTrash />}
-                                                                                                            handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
-                                                                                                            tooltip="Xóa"
-                                                                                                            btnSize={'sm'}
-                                                                                                        />
-                                                                                                    </td>
+                                                                                                    {permissions?.permission?.find((item) => item.name === "Update")?.use && (
+                                                                                                        <td className='no-print p-1 text-center'>
+                                                                                                            <CustomButton
+                                                                                                                btnBG={'danger'}
+                                                                                                                btnType={'button'}
+                                                                                                                textColor={'text-white'}
+                                                                                                                btnName={<FaTrash />}
+                                                                                                                handleClick={() => handleDeleteOrderDetail(order?.orderId, orderDetail?.orderDetailId)}
+                                                                                                                tooltip="Xóa"
+                                                                                                                btnSize={'sm'}
+                                                                                                            />
+                                                                                                        </td>
+                                                                                                    )}
 
-                                                                                                    <td className='no-print p-1 text-center'>
-                                                                                                        <CustomButton
-                                                                                                            btnBG={'warning'}
-                                                                                                            btnType={'button'}
-                                                                                                            textColor={'text-white'}
-                                                                                                            btnName={<MdModeEdit />}
-                                                                                                            handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
-                                                                                                            tooltip="Sửa"
-                                                                                                            btnSize={'sm'}
-                                                                                                        />
-                                                                                                    </td>
+                                                                                                    {/* Kiểm tra quyền Update */}
+                                                                                                    {permissions?.permission?.find((item) => item.name === "Update")?.use && (
+                                                                                                        <td className='no-print p-1 text-center'>
+                                                                                                            <CustomButton
+                                                                                                                btnBG={'warning'}
+                                                                                                                btnType={'button'}
+                                                                                                                textColor={'text-white'}
+                                                                                                                btnName={<MdModeEdit />}
+                                                                                                                handleClick={() => setEditVersion({ isEdit: true, orderDetailsID: orderDetail.orderDetailId })}
+                                                                                                                tooltip="Sửa"
+                                                                                                                btnSize={'sm'}
+                                                                                                            />
+                                                                                                        </td>
+                                                                                                    )}
                                                                                                 </React.Fragment>
                                                                                             ))}
                                                                                     </tr>
