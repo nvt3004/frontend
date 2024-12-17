@@ -197,6 +197,7 @@ const CouponTable = () => {
   const [startDate, setStartDate] = useState(() => {
     const today = new Date();
     today.setMinutes(today.getMinutes() + 1);
+    today.setSeconds(today.getSeconds() + 30);
     return today;
   });
   const [endDate, setEndDate] = useState(() => {
@@ -208,6 +209,7 @@ const CouponTable = () => {
     setStartDate(() => {
       const today = new Date();
       today.setMinutes(today.getMinutes() + 1);
+      today.setSeconds(today.getSeconds() + 30);
       return today;
     });
     setEndDate(() => {
