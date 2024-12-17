@@ -214,14 +214,17 @@ const CouponTable = () => {
     const onSubmit = async (data) => {
         const maxDate = new Date(startDate);
         maxDate.setMonth(startDate.getMonth() + 3);
+
         if (startDate > endDate) {
             setError('startDate', { type: 'manual', message: 'Ngày bắt đầu phải trước ngày hết hạn' });
-        } else if (endDate > maxDate) {
+            return; // Dừng lại ở đây nếu không hợp lệ
+        }
+        if (endDate > maxDate) {
             setError('endDate', { type: 'manual', message: 'Thời hạn sử dụng của phiếu chỉ trong vòng 3 tháng' });
-        } else {
-            setValid(true);
+            return; // Dừng lại ở đây nếu không hợp lệ
         }
 
+        // Chuẩn bị dữ liệu gửi API
         const formattedData = {
             description: data.description,
             disPercent: couponType === "percent" ? data.value : null,
@@ -231,46 +234,21 @@ const CouponTable = () => {
             quantity: data.quantity,
         };
 
-        console.log(formattedData);
-
-        if (isValid) {
-            try {
-                await axiosInstance.post("/staff/coupons", formattedData).then(
-                    (response) => {
-                        if (response.status === 403) {
-                            toast.error('Bạn không có quyền thực hiện công việc này !')
-                        } else {
-                            if (response?.data?.errorCode === 200) {
-                                toast.success("Thêm thành công!");
-                                reset();
-                                setOpenModal(false);
-                                setLoading(false);
-                                handleGetCouponAPI();
-                                setCouponType('percent');
-                                setValid(false);
-                                resetDate();
-                            } else {
-                                resetDate();
-                                toast.error(response?.data?.message || "Không thể thực hiện công việc !", { autoClose: 3000 });
-                            }
-                        }
-                    }
-                );
-
-            } catch (error) {
-                console.error("Error adding coupon:", error);
-                if (error) {
-                    if (error.response?.status === 998) {
-                        resetDate();
-                        toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
-                    } else {
-                        resetDate();
-                        toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
-                    }
-                }
+        try {
+            const response = await axiosInstance.post("/staff/coupons", formattedData);
+            if (response?.data?.errorCode === 200) {
+                toast.success("Thêm thành công!");
+                reset(); // Reset form
+                setOpenModal(false); // Đóng modal
+                handleGetCouponAPI(); // Load lại danh sách
+                resetDate(); // Reset ngày
+            } else {
+                toast.error(response?.data?.message || "Không thể thực hiện công việc!");
             }
+        } catch (error) {
+            console.error("Error adding coupon:", error);
+            toast.error("Đã có lỗi xảy ra. Vui lòng thử lại!");
         }
-
     };
 
     const onHandleRemoveCoupon = (selectedCoupon) => {
@@ -330,8 +308,6 @@ const CouponTable = () => {
                 setError('startDate', { type: 'manual', message: 'Ngày bắt đầu phải trước ngày hết hạn' });
             } else if (endDate > maxDate) {
                 setError('endDate', { type: 'manual', message: 'Thời hạn sử dụng của phiếu chỉ trong vòng 3 tháng' });
-            } else{
-                setValid(true);
             }
             const formattedData = {
                 description: data.description,
@@ -342,39 +318,37 @@ const CouponTable = () => {
                 quantity: data.quantity,
             };
 
-            if (isValid) {
-                axiosInstance.put(`/staff/coupons?id=${selectedCoupon?.id}`, formattedData).then(
-                    (response) => {
-                        if (response.data?.errorCode) {
-                            reset();
-                            handleGetCouponAPI();
-                            setSelectedCoupon(null);
-                            setCouponType('percent')
-                            setOpenModal(false);
-                            setValid(false);
-                            toast.success('Chỉnh sửa thành công !');
-                        } else {
-                            toast.error('Không thể thực thi công việc. Vui lòng thử lại !');
-                        }
-                    }
-                ).catch(
-                    (error) => {
-                        console.log(error);
-                        if (error) {
-                            if (error.response?.status === 998) {
-                                resetDate();
-                                setValid(false);
-                                toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
-                            } else {
-                                resetDate();
-                                setValid(false);
-                                toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
-                            }
-                        }
-                    }
-                );
-            }
 
+            axiosInstance.put(`/staff/coupons?id=${selectedCoupon?.id}`, formattedData).then(
+                (response) => {
+                    if (response.data?.errorCode) {
+                        reset();
+                        handleGetCouponAPI();
+                        setSelectedCoupon(null);
+                        setCouponType('percent')
+                        setOpenModal(false);
+                        setValid(false);
+                        toast.success('Chỉnh sửa thành công !');
+                    } else {
+                        toast.error('Không thể thực thi công việc. Vui lòng thử lại !');
+                    }
+                }
+            ).catch(
+                (error) => {
+                    console.log(error);
+                    if (error) {
+                        if (error.response?.status === 998) {
+                            resetDate();
+                            setValid(false);
+                            toast.error(error?.response?.data?.message || 'Bạn không có quyền thực hiện công việc này');
+                        } else {
+                            resetDate();
+                            setValid(false);
+                            toast.error(error?.response?.data?.message || 'Đã có lỗi xảy ra. Vui lòng liên hệ kỹ thuật !');
+                        }
+                    }
+                }
+            );
         }
     }
 
