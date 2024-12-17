@@ -19,23 +19,23 @@ const AdvertisementTable = () => {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const columns = [
-    { title: "Advertisement ID", dataIndex: "advId", key: "advId" },
-    { title: "Advertisement Name", dataIndex: "advName", key: "advName" },
+    { title: "ID", dataIndex: "advId", key: "advId" },
+    { title: "Tên quảng cáo", dataIndex: "advName", key: "advName" },
     {
-      title: "Description",
+      title: "Mô tả",
       dataIndex: "advDescription",
       key: "advDescription",
     },
-    { title: "Start Date", dataIndex: "startDate", key: "startDate" },
-    { title: "End Date", dataIndex: "endDate", key: "endDate" },
+    { title: "Ngày bắt đầu", dataIndex: "startDate", key: "startDate" },
+    { title: "Ngày kết thúc", dataIndex: "endDate", key: "endDate" },
     {
-      title: "Status",
+      title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       render: (value) => (value === 1 ? "Active" : "Inactive"),
     },
     {
-      title: "Actions",
+      title: "Hành động",
       key: "actions",
       render: (text, record) => (
         <div>
@@ -78,7 +78,7 @@ const AdvertisementTable = () => {
         }
       })
       .catch((error) => {
-        toast.error("An error occurred while fetching advertisements.");
+        toast.error("Có lỗi xảy ra trong quá trình lấy dữ liệu.");
       })
       .finally(() => setLoading(false));
   };
@@ -121,14 +121,14 @@ const AdvertisementTable = () => {
       .delete(`/staff/advertisement?id=${advertisementToDelete}`)
       .then((response) => {
         if (response?.data?.code === 1000) {
-          toast.success("Advertisement deleted successfully!");
+          toast.success("Xóa thành công !");
           handleGetAdvertisementAPI();
         } else {
-          toast.error("Failed to delete the advertisement.");
+          toast.error("Có lỗi xảy ra trong lúc xóa.");
         }
       })
       .catch((error) => {
-        toast.error("An error occurred while deleting the advertisement.");
+        toast.error("Có lỗi xảy ra trong lúc xóa.");
       })
       .finally(() => {
         setShowDeleteModal(false); // Close the modal after the delete operation
@@ -144,14 +144,14 @@ const AdvertisementTable = () => {
       <FullScreenSpinner isLoading={loading} />
       <DataTableSft
         columns={columns}
-        title={"Advertisement List"}
+        title={"Danh sách quảng cáo"}
         dataSource={advertisements}
         buttonTable={
           <Button
             variant="dark"
             onClick={() => navigate("/admin/advertisement/new")}
           >
-            New Advertisement
+            Quảng cáo mới
           </Button>
         }
       />
@@ -160,7 +160,7 @@ const AdvertisementTable = () => {
           {`${Math.min(currentPage * 5 + 5, totalElements)} of ${totalElements}`}
           <span>
             <a href="#" className="text-decoration-none fw-medium">
-              View all &gt;
+              Xem tất cả &gt;
             </a>
           </span>
         </p>
@@ -185,17 +185,17 @@ const AdvertisementTable = () => {
       {/* Confirmation Modal */}
       <Modal show={showDeleteModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Confirm Deletion</Modal.Title>
+          <Modal.Title>Xác nhận xóa</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Are you sure you want to delete this advertisement?
+          Bạn thật sự muốn xóa quảng cáo này ?
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
-            Cancel
+            Hủy
           </Button>
           <Button variant="danger" onClick={handleDeleteAdvertisement}>
-            Delete
+            Xóa
           </Button>
         </Modal.Footer>
       </Modal>

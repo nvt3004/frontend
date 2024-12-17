@@ -121,8 +121,8 @@ const NewAdvertisement = () => {
       if (response?.data?.code === 1000) {
         toast.success(
           advertisement?.advId
-            ? "Advertisement updated successfully!"
-            : "Advertisement added successfully!"
+            ? "Cập nhật thành công !"
+            : "Thêm thành công !"
         );
         reset();
         setImages([]);
@@ -133,11 +133,11 @@ const NewAdvertisement = () => {
       } else if (response?.data?.code === 445) {
         toast.error("Thời gian kết thúc phải lớn hơn thời gian bắt đầu");
       }else {
-        toast.error(response?.data?.message || "Failed to save advertisement.");
+        toast.error(response?.data?.message || "Lỗi xảy ra khi lưu.");
       }
     } catch (error) {
       console.error(error);
-      toast.error("An error occurred while submitting the advertisement.");
+      toast.error("Lỗi xảy ra khi lưu.");
     } finally {
       setLoading(false);
     }
@@ -148,12 +148,12 @@ const NewAdvertisement = () => {
       <FullScreenSpinner isLoading={loading} />
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Form.Group className="mb-2">
-          <Form.Label>Advertisement Name</Form.Label>
+          <Form.Label>Tên quảng cáo</Form.Label>
           <Form.Control
             {...register("advName", {
-              required: "Advertisement name is required.",
+              required: "Không được bỏ trống.",
             })}
-            placeholder="Advertisement's name"
+            placeholder="Tên quảng cáo"
           />
           {errors.advName && (
             <span className="text-danger">{errors.advName.message}</span>
@@ -161,12 +161,12 @@ const NewAdvertisement = () => {
         </Form.Group>
 
         <Form.Group className="mb-2">
-          <Form.Label>Description</Form.Label>
+          <Form.Label>Mô tả</Form.Label>
           <Form.Control
             {...register("advDescription", {
-              required: "Description is required.",
+              required: "Không được bỏ trống.",
             })}
-            placeholder="Advertisement's description"
+            placeholder="Mô tả"
           />
           {errors.advDescription && (
             <span className="text-danger">{errors.advDescription.message}</span>
@@ -174,11 +174,11 @@ const NewAdvertisement = () => {
         </Form.Group>
 
         <Form.Group className="mb-2">
-          <Form.Label>Start Date</Form.Label>
+          <Form.Label>Ngày bắt đầu</Form.Label>
           <Form.Control
             type="datetime-local"
             {...register("startDate", {
-              required: "Start date is required.",
+              required: "Không được bỏ trống.",
             })}
           />
           {errors.startDate && (
@@ -187,10 +187,10 @@ const NewAdvertisement = () => {
         </Form.Group>
 
         <Form.Group className="mb-2">
-          <Form.Label>End Date</Form.Label>
+          <Form.Label>Ngày kết thúc</Form.Label>
           <Form.Control
             type="datetime-local"
-            {...register("endDate", { required: "End date is required." })}
+            {...register("endDate", { required: "Không được bỏ trống." })}
           />
           {errors.endDate && (
             <span className="text-danger">{errors.endDate.message}</span>
@@ -198,12 +198,12 @@ const NewAdvertisement = () => {
         </Form.Group>
 
         <Form.Group className="mb-2">
-          <Form.Label>Status</Form.Label>
+          <Form.Label>Trạng thái</Form.Label>
           <Form.Select
-            {...register("status", { required: "Status is required." })}
+            {...register("status", { required: "Không được bỏ trống." })}
           >
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
+            <option value="1">Hoạt động</option>
+            <option value="0">Không hoạt động</option>
           </Form.Select>
           {errors.status && (
             <span className="text-danger">{errors.status.message}</span>
@@ -212,7 +212,7 @@ const NewAdvertisement = () => {
 
         {/* Image Upload */}
         <Form.Group className="mb-2">
-          <Form.Label>Images</Form.Label>
+          <Form.Label>Hình ảnh</Form.Label>
           <div className="custom-file-input">
             <input
               key={imageInputKey}
@@ -223,7 +223,7 @@ const NewAdvertisement = () => {
               id="image-upload"
             />
             <label htmlFor="image-upload" className="upload-label">
-              Choose Images
+              Chọn hình ảnh
             </label>
           </div>
 
@@ -254,11 +254,9 @@ const NewAdvertisement = () => {
         </Form.Group>
 
         <Button variant="primary" type="submit" disabled={loading}>
-          {advertisement?.advId ? "Update Advertisement" : "Add Advertisement"}
+          {advertisement?.advId ? "Cập nhật" : "Thêm mới"}
         </Button>
       </Form>
-
-      <ToastContainer />
     </div>
   );
 };
