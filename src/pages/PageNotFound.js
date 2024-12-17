@@ -26,17 +26,17 @@ const PageNotFound = () => {
             <h1 className="mt-4 mb-2 text-dark" style={style.fsw}>
               404
             </h1>
-            <h2 className="mb-2 text-dark">UH OH! You're lost.</h2>
+            <h2 className="mb-2 text-dark">UH OH! Bạn đã bị lạc.</h2>
             <p className="mb-4">
-              The page you are looking for does not exist. How you got here is a
-              mystery. But you can click the button below to go back to the
-              homepage.
+              Trang bạn đang tìm kiếm không tồn tại. Làm thế nào bạn đến đây vẫn
+              là một bí ẩn. Nhưng bạn có thể nhấn nút bên dưới để quay lại trang
+              chủ.
             </p>
             <Link
               to="/home"
               className="text-decoration-none flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer"
             >
-              Back to Home
+              Quay lại Trang Chủ
             </Link>
           </div>
         </div>

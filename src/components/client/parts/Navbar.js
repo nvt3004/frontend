@@ -342,7 +342,7 @@ const Navbar = () => {
                     <Link to="/account" className="dropdown-item stext-111">
                       {profile && profile.listData && profile.listData.fullName
                         ? profile.listData.fullName
-                        : "Account"}
+                        : "Tài khoản"}
                     </Link>
                   </li>
                   {token ? (
