@@ -66,7 +66,7 @@ const Slider = () => {
                               to="/product"
                               className="text-decoration-none flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04"
                             >
-                              Shop Now
+                              Xem sản phẩm
                             </Link>
                           </div>
                         </div>

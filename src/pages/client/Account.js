@@ -574,10 +574,10 @@ const Account = () => {
       currency: "VND",
     });
   }
-const confirmReceived = (idOrder)=>{
-  productApi.confirmReceived(idOrder);
-  fetchOrders();
-}
+  const confirmReceived = (idOrder) => {
+    productApi.confirmReceived(idOrder);
+    fetchOrders();
+  };
 
   return (
     <div
@@ -627,7 +627,7 @@ const confirmReceived = (idOrder)=>{
               data-bs-target="#exampleModal"
             >
               <i className="zmdi zmdi-edit me-2"></i>
-              Edit
+              Chỉnh sửa
             </button>
 
             {/* Uncomment if Address button is needed */}
@@ -649,7 +649,7 @@ const confirmReceived = (idOrder)=>{
             {/* Header */}
             <div className="row align-items-center mb-3">
               <div className="col-auto">
-                <h4 className="fw-bold">Orders</h4>
+                <h4 className="fw-bold">Đơn hàng</h4>
               </div>
 
               {/* Input tìm kiếm */}
@@ -748,24 +748,25 @@ const confirmReceived = (idOrder)=>{
                                 ? "primary"
                                 : order.statusName === "Cancelled"
                                 ? "danger"
-                                : order.statusName === "Waitingforconfirmation"?"secondary":""
+                                : order.statusName === "Waitingforconfirmation"
+                                ? "secondary"
+                                : ""
                             } text-white py-2 px-3`}
                             style={{ fontSize: "0.8rem" }}
                           >
-                 
                             {order.statusName === "Shipped"
-                        ? "Đã giao"
-                        : order.statusName === "Processed"
-                        ? "Đã xử lý"
-                        : order.statusName === "Pending"
-                        ? "Đang chờ xử lý"
-                        : order.statusName === "Delivered"
-                        ? "Đã nhận"
-                        : order.statusName === "Cancelled"
-                        ? "Đã hủy"
-                        : order.statusName === "Waitingforconfirmation"
-                        ? "Chờ xác nhận đã nhận"
-                        : ""}
+                              ? "Đã giao"
+                              : order.statusName === "Processed"
+                              ? "Đã xử lý"
+                              : order.statusName === "Pending"
+                              ? "Đang chờ xử lý"
+                              : order.statusName === "Delivered"
+                              ? "Đã nhận"
+                              : order.statusName === "Cancelled"
+                              ? "Đã hủy"
+                              : order.statusName === "Waitingforconfirmation"
+                              ? "Chờ xác nhận đã nhận"
+                              : ""}
                           </span>
                         </div>
                       </div>
@@ -877,9 +878,7 @@ const confirmReceived = (idOrder)=>{
                             <div className="text-end mt-3">
                               <button
                                 className="btn btn-outline-primary btn-sm"
-                                onClick={() =>
-                                  confirmReceived(order?.orderId)
-                                }
+                                onClick={() => confirmReceived(order?.orderId)}
                               >
                                 Xác nhận đã nhận hàng
                               </button>
@@ -914,17 +913,17 @@ const confirmReceived = (idOrder)=>{
                   onClick={() => handlePageChange(page - 1)}
                   disabled={page === 0}
                 >
-                  Previous
+                  Trở lại
                 </button>
                 <span>
-                  Page {page + 1} of {totalPages}
+                  Trang {page + 1} trên {totalPages}
                 </span>
                 <button
                   className="btn btn-outline-secondary"
                   onClick={() => handlePageChange(page + 1)}
                   disabled={page === totalPages - 1}
                 >
-                  Next
+                  Tiếp theo
                 </button>
               </nav>
             )}
@@ -932,7 +931,7 @@ const confirmReceived = (idOrder)=>{
 
           <div className="col-md-4 d-flex flex-column ">
             <div className="w-full pb-3 d-flex align-items-center justify-content-between">
-              <h4 className="fw-bold">Address</h4>
+              <h4 className="fw-bold">Địa chỉ</h4>
               <button
                 type="button"
                 className="btn btn-dark d-flex align-items-center justify-content-center gap-2 p-3 rounded-pill shadow-sm"
@@ -962,7 +961,7 @@ const confirmReceived = (idOrder)=>{
                     fontSize: "20px",
                   }}
                 ></i>
-                <span>Add Address</span>
+                <span>Thêm địa</span>
               </button>
             </div>
 
@@ -1084,7 +1083,7 @@ const confirmReceived = (idOrder)=>{
                 <div>
                   <div className="form-group mb-3">
                     <label className="stext-110" htmlFor="addressInput">
-                      Address
+                      Địa chỉ
                     </label>
                     <div className="row">
                       <div className="col-md-4 mb-2">
@@ -1098,7 +1097,7 @@ const confirmReceived = (idOrder)=>{
                           }
                         >
                           <option className="stext-110" selected value={""}>
-                            Select province
+                            Chọn tỉnh/thành
                           </option>
 
                           {provinces &&
@@ -1125,7 +1124,7 @@ const confirmReceived = (idOrder)=>{
                         </select>
                         {errPro && (
                           <div className="invalid-feedback">
-                            Please select a province
+                            Vui lòng chọn tỉnh/thành
                           </div>
                         )}
                       </div>
@@ -1140,7 +1139,7 @@ const confirmReceived = (idOrder)=>{
                           }
                         >
                           <option className="stext-110" selected value={""}>
-                            Select district
+                            Chọn huận/huyện
                           </option>
 
                           {districts &&
@@ -1167,7 +1166,7 @@ const confirmReceived = (idOrder)=>{
                         </select>
                         {errDis && (
                           <div className="invalid-feedback">
-                            Please select a district
+                            Vui lòng chọn huận/huyện
                           </div>
                         )}
                       </div>
@@ -1182,7 +1181,7 @@ const confirmReceived = (idOrder)=>{
                           }
                         >
                           <option className="stext-110" selected value={""}>
-                            Select ward
+                            Chọn phương/xã
                           </option>
 
                           {wards &&
@@ -1209,7 +1208,7 @@ const confirmReceived = (idOrder)=>{
                         </select>
                         {errWar && (
                           <div className="invalid-feedback">
-                            Please select a ward
+                            Vui lòng chọn phường/xã
                           </div>
                         )}
                       </div>
@@ -1218,7 +1217,7 @@ const confirmReceived = (idOrder)=>{
 
                   <div className="form-group mb-3">
                     <label className="stext-110" htmlFor="detailedAddressInput">
-                      Detailed Address
+                      Địa chị chi tiết
                     </label>
                     <input
                       type="text"
@@ -1234,7 +1233,7 @@ const confirmReceived = (idOrder)=>{
                     />
                     {errDetail && (
                       <div className="invalid-feedback">
-                        Please enter detailed address
+                        Vui lòng nhập địa chỉ chi tiết
                       </div>
                     )}
                   </div>
@@ -1266,7 +1265,7 @@ const confirmReceived = (idOrder)=>{
                   className="modal-title fw-bold text-dark"
                   id="exampleModalLabel"
                 >
-                  Edit Profile
+                  Chỉnh sửa hồ sơ
                 </h2>
                 <button
                   type="button"
@@ -1308,12 +1307,12 @@ const confirmReceived = (idOrder)=>{
                           className="btn btn-outline-primary px-4 py-2"
                           style={{ cursor: "pointer" }}
                         >
-                          Choose Image
+                          Chọn ảnh
                         </label>
                       </div>
                       <div className="text-muted">
                         <p className="mb-1">
-                          Provider:{" "}
+                          Email:{" "}
                           <strong>
                             {profile?.listData?.provider === "Guest"
                               ? profile.listData.username
@@ -1321,7 +1320,7 @@ const confirmReceived = (idOrder)=>{
                           </strong>
                         </p>
                         <p className="mb-0">
-                          Create Date:{" "}
+                          Ngày tạo:{" "}
                           {profile?.listData?.createDate
                             ? format(
                                 new Date(profile.listData.createDate),
@@ -1339,7 +1338,7 @@ const confirmReceived = (idOrder)=>{
                           htmlFor="full_name"
                           className="form-label fw-bold"
                         >
-                          Full Name
+                          Họ và tên
                         </label>
                         <input
                           type="text"
@@ -1372,7 +1371,7 @@ const confirmReceived = (idOrder)=>{
                       </div>
                       <div className="mb-3">
                         <label htmlFor="phone" className="form-label fw-bold">
-                          Phone
+                          Điện thoại
                         </label>
                         <input
                           type="text"
@@ -1387,7 +1386,7 @@ const confirmReceived = (idOrder)=>{
                       </div>
                       <div className="mb-3">
                         <label htmlFor="gender" className="form-label fw-bold">
-                          Gender
+                          Giới tính
                         </label>
                         <div className="d-flex">
                           {["Male", "Female", "Other"].map((value) => (
@@ -1416,7 +1415,7 @@ const confirmReceived = (idOrder)=>{
                           htmlFor="birthday"
                           className="form-label fw-bold"
                         >
-                          Birthday
+                          Ngày sinh
                         </label>
                         <input
                           type="date"
@@ -1431,7 +1430,7 @@ const confirmReceived = (idOrder)=>{
                           type="submit"
                           className="btn btn-success px-4 py-2 rounded-pill"
                         >
-                          Update Profile
+                          Cập nhật hồ sơ
                         </button>
                       </div>
                     </div>

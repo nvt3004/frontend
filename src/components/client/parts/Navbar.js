@@ -225,11 +225,11 @@ const Navbar = () => {
               <ul className="main-menu" style={styles.mainMenu}>
                 <li
                   className={
-                    uri === "/" || uri === "/home" ? "active-menu" : ""
+                    window.location.pathname === "/" ||
+                    window.location.pathname === "/home"
+                      ? "active-menu"
+                      : ""
                   }
-                  onClick={() => {
-                    setUri(window.location.pathname);
-                  }}
                 >
                   <Link to="/" className="text-decoration-none">
                     Trang chủ
@@ -237,10 +237,9 @@ const Navbar = () => {
                 </li>
 
                 <li
-                  className={uri === "/product" ? "active-menu" : ""}
-                  onClick={() => {
-                    setUri(window.location.pathname);
-                  }}
+                  className={
+                    window.location.pathname === "/product" ? "active-menu" : ""
+                  }
                 >
                   <Link to="/product" className="text-decoration-none">
                     Sản phẩm
@@ -249,13 +248,12 @@ const Navbar = () => {
 
                 <li
                   className={`${
-                    uri === "/shoping-cart" ? "active-menu " : ""
+                    window.location.pathname === "/shoping-cart"
+                      ? "active-menu "
+                      : ""
                   } `}
                   //label1
                   //   data-label1="hot"
-                  onClick={() => {
-                    setUri(window.location.pathname);
-                  }}
                 >
                   <Link to="/shoping-cart" className="text-decoration-none">
                     Đặt hàng
@@ -263,10 +261,9 @@ const Navbar = () => {
                 </li>
 
                 <li
-                  className={uri === "/blog" ? "active-menu" : ""}
-                  onClick={() => {
-                    setUri(window.location.pathname);
-                  }}
+                  className={
+                    window.location.pathname === "/blog" ? "active-menu" : ""
+                  }
                 >
                   <Link to="/blog" className="text-decoration-none">
                     Bài viết
@@ -274,10 +271,9 @@ const Navbar = () => {
                 </li>
 
                 <li
-                  className={uri === "/about" ? "active-menu" : ""}
-                  onClick={() => {
-                    setUri(window.location.pathname);
-                  }}
+                  className={
+                    window.location.pathname === "/about" ? "active-menu" : ""
+                  }
                 >
                   <Link to="/about" className="text-decoration-none">
                     Về chúng tôi
@@ -285,10 +281,9 @@ const Navbar = () => {
                 </li>
 
                 <li
-                  className={uri === "/contact" ? "active-menu" : ""}
-                  onClick={() => {
-                    setUri(window.location.pathname);
-                  }}
+                  className={
+                    window.location.pathname === "/contact" ? "active-menu" : ""
+                  }
                 >
                   <Link to="/contact" className="text-decoration-none">
                     Liên hệ
@@ -323,13 +318,10 @@ const Navbar = () => {
                 to="/wishlist"
                 className="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti"
                 data-notify={wishlistCount}
-                onClick={() => {
-                  setUri("/wishlist");
-                }}
               >
                 <i
                   className={`  ${
-                    uri === "/wishlist"
+                    window.location.pathname === "/wishlist"
                       ? "zmdi zmdi-favorite text-717fe0"
                       : "zmdi zmdi-favorite-outline"
                   } `}
