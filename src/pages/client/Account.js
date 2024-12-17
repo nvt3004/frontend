@@ -576,6 +576,7 @@ const Account = () => {
   }
 const confirmReceived = (idOrder)=>{
   productApi.confirmReceived(idOrder);
+  fetchOrders();
 }
 
   return (

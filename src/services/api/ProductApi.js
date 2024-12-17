@@ -509,14 +509,22 @@ const speechToText = async (audioWavFile) => {
 };
 const confirmReceived = async (idOrder) => {
   try {
-    await axiosInstance.put(`/user/orders/confirm-received`, {
-      params: { orderId: idOrder },
+    const check = await ConfirmAlert({
+      title: "Xác nhận",
+      text: "Xác nhận bạn đã nhận được hàng",
+      confirmText: "Xác nhận",
+      cancelText: "Hủy",
     });
+  if(check){
+    await axiosInstance.put(`/user/orders/confirm-received`, null, {
+      params: { orderId: idOrder },
+    });    
 
     SuccessAlert({
-      title: "Hủy đơn thành công!",
-      text: "Đơn hàng của bạn đã được hủy.",
+      title: "Thành công!",
+      text: "Xác nhận đơn hàng thành công.",
     });
+  }
   } catch (error) {
     DangerAlert({
       title: "Lỗi",
