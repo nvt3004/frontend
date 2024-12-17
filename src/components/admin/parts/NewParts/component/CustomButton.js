@@ -1,12 +1,15 @@
 import React from 'react';
 import { Button, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
-const CustomButton = ({ btnName, btnBG, handleClick, textColor, btnType, form, textSize, className, tooltip, disabled, icon, btnSize }) => {
+const CustomButton = ({ btnName, btnBG, handleClick, textColor, btnType, form, textSize, className, tooltip, disabled, icon, btnSize, style = {} }) => {
     const renderTooltip = (props) => (
         <Tooltip id="button-tooltip" {...props}>
             {tooltip}
         </Tooltip>
     );
+
+    // Merge custom style with default style
+    const buttonStyle = { opacity: 0.8, ...style };
 
     if (tooltip) {
         return (
@@ -20,11 +23,10 @@ const CustomButton = ({ btnName, btnBG, handleClick, textColor, btnType, form, t
                     type={btnType}
                     className={`custom-radius custom-hover ${textColor} ${textSize} ${className}`}
                     variant={btnBG}
-                    style={{ opacity: 0.8 }}
+                    style={style}  // Use the merged style here
                     onClick={handleClick}
                     disabled={disabled}
-                    size={btnSize} 
-
+                    size={btnSize}
                 >
                     {icon} {btnName}
                 </Button>
@@ -37,11 +39,11 @@ const CustomButton = ({ btnName, btnBG, handleClick, textColor, btnType, form, t
                 type={btnType}
                 className={`custom-radius custom-hover ${textColor} ${textSize} ${className}`}
                 variant={btnBG}
-                style={{ opacity: 0.8 }}
+                style={buttonStyle}  // Use the merged style here
                 onClick={handleClick}
                 disabled={disabled}
                 icon={icon}
-                size={btnSize} 
+                size={btnSize}
             >
                 {icon} {btnName}
             </Button>
