@@ -183,7 +183,7 @@ const CouponTable = () => {
 
     const [startDate, setStartDate] = useState(() => {
         const today = new Date();
-        today.setMinutes(today.getMinutes() + 5);
+        today.setMinutes(today.getMinutes() + 1);
         return today;
     }
     );
@@ -197,7 +197,7 @@ const CouponTable = () => {
         setStartDate(
             () => {
                 const today = new Date();
-                today.setMinutes(today.getMinutes() + 5);
+                today.setMinutes(today.getMinutes() + 1);
                 return today;
             }
         );
@@ -362,16 +362,7 @@ const CouponTable = () => {
                 buttonTable={triggers()}
             />
             <div className='bg-body-tertiary d-flex justify-content-between align-items-center container pt-2'>
-                <p className='font-13'>{`${(currentPage + 1) * 10 <= totalElements ? (currentPage + 1) * 10 : totalElements} of ${totalElements} `}
-                    {size === totalElements ?
-                        (
-                            <span className='text-primary' onClick={() => { setSize(10) }}>{`Sort >`}</span>
-                        ) :
-                        (
-                            <span className='text-primary' onClick={() => { setSize(totalElements) }}>{`View all >`}</span>
-                        )
-                    }
-                </p>
+                <p className='font-13'>{`${(currentPage + 1) * 10 <= totalElements ? (currentPage + 1) * 10 : totalElements} of ${totalElements} `}</p>
                 {totalPage > 1 && (
                     <Pagination className='border-0'>
                         <Pagination.First onClick={() => { setCurrentPage(0) }}>{`<`}</Pagination.First>
