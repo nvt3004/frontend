@@ -791,7 +791,7 @@ const OrderTable = () => {
     const printInvoice = async (orderId) => {
         try {
             const response = await axiosInstance.post(`/staff/orders/export?orderId=${orderId}`, {}, { responseType: 'blob' });
-            // const imageUrl = response.data.data; 
+            // const imageUrl = response.data.data;
             if (!response || !response.data) {
                 throw new Error("No PDF data received from backend.");
             }
@@ -816,7 +816,7 @@ const OrderTable = () => {
                         insecure: [8182, 8283, 8384, 8485]
                     },
                     usingSecure: true,
-                    allowUserInteraction: false,
+                    // allowUserInteraction: false,
                     // usingSecure: false,
                     keepAlive: 60,
                     retries: 3,
@@ -919,7 +919,7 @@ const OrderTable = () => {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
                     },
-                    allowUserInteraction: false,
+                    // allowUserInteraction: false,
                     usingSecure: true,
                     keepAlive: 60,
                     retries: 3,
