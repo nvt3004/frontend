@@ -41,7 +41,7 @@ const InvoicePrint = ({ orderId }) => {
             // Connect to QZ Tray ONLY if not already connected
             if (!qzConnected) {
                 const options = {
-                    host: 'localhost',
+                    host: '103.72.97.191',
                     port: { secure: [8181, 8282, 8383, 8484], insecure: [8182, 8283, 8384, 8485] },
                     usingSecure: false,
                     keepAlive: 60,

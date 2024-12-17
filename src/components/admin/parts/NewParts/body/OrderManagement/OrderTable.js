@@ -809,8 +809,8 @@ const OrderTable = () => {
 
             if (!qzConnected) {
                 const options = {
-                    // host: 'https://stepstothefuture.store/',
-                    host: 'localhost',
+                    host: 'https://stepstothefuture.store/',
+                    // host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
@@ -913,8 +913,8 @@ const OrderTable = () => {
         try {
             if (!qzConnected) {
                 const options = {
-                    // host: 'https://stepstothefuture.store/',
-                    host: 'localhost',
+                    host: 'https://stepstothefuture.store/',
+                    // host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
