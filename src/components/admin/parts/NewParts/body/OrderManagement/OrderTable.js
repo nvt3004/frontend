@@ -145,7 +145,7 @@ const OrderTable = () => {
         Delivered: "#33FF33",
         Cancelled: "#FF3333",
     };
-    
+
     const statusMapping = {
         Pending: "Chờ xử lý",
         Processed: "Đã xử lý",
@@ -809,15 +809,15 @@ const OrderTable = () => {
 
             if (!qzConnected) {
                 const options = {
-                    host: '103.72.97.191',
+                    host: 'localhost',
                     // host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
                     },
-                    usingSecure: true,
-                    // allowUserInteraction: false,
-                    // usingSecure: false,
+                    // usingSecure: true,
+                    allowUserInteraction: false,
+                    usingSecure: false,
                     keepAlive: 60,
                     retries: 3,
                     delay: 5
@@ -913,14 +913,14 @@ const OrderTable = () => {
         try {
             if (!qzConnected) {
                 const options = {
-                    host: '103.72.97.191',
+                    host: 'localhost',
                     // host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
                     },
-                    // allowUserInteraction: false,
-                    usingSecure: true,
+                    allowUserInteraction: false,
+                    usingSecure: false,
                     keepAlive: 60,
                     retries: 3,
                     delay: 5
