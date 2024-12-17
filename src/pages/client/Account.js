@@ -85,6 +85,7 @@ const Account = () => {
 
   const handleCancelOrder = async (orderId) => {
     await productApi.cancelOrder(orderId);
+    fetchOrders();
   };
 
   const resetForm = () => {
@@ -573,6 +574,11 @@ const Account = () => {
       currency: "VND",
     });
   }
+const confirmReceived = (idOrder)=>{
+  productApi.confirmReceived(idOrder);
+  fetchOrders();
+}
+
   return (
     <div
       className="container mt-5 pt-5 d-flex justify-content-center"
@@ -683,7 +689,7 @@ const Account = () => {
                         : item.statusName === "Cancelled"
                         ? "Đã hủy"
                         : item.statusName === "Waitingforconfirmation"
-                        ? "Chờ xác nhận"
+                        ? "Chờ xác nhận đã nhận"
                         : ""}
                     </option>
                   ))}
@@ -758,7 +764,7 @@ const Account = () => {
                         : order.statusName === "Cancelled"
                         ? "Đã hủy"
                         : order.statusName === "Waitingforconfirmation"
-                        ? "Chờ xác nhận"
+                        ? "Chờ xác nhận đã nhận"
                         : ""}
                           </span>
                         </div>
@@ -867,7 +873,18 @@ const Account = () => {
                               Thành tiền: {formatCurrencyVND(order.finalTotal)}
                             </h6>
                           </div>
-
+                          {order.statusName === "Waitingforconfirmation" && (
+                            <div className="text-end mt-3">
+                              <button
+                                className="btn btn-outline-primary btn-sm"
+                                onClick={() =>
+                                  confirmReceived(order?.orderId)
+                                }
+                              >
+                                Xác nhận đã nhận hàng
+                              </button>
+                            </div>
+                          )}
                           {/* Hủy đơn (nếu Pending) */}
                           {order.statusName === "Pending" && (
                             <div className="text-end mt-3">

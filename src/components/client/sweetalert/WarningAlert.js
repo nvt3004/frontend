@@ -2,8 +2,8 @@ import Swal from "sweetalert2";
 
 const WarningAlert = ({ title, text }) => {
   return Swal.fire({
-    title: title || "Warning!",
-    text: text || "Be careful!",
+    title: title || "Cảnh báo!",
+    text: text || "Hãy cẩn thận!",
     icon: "warning",
     confirmButtonText: "OK",
     customClass: {

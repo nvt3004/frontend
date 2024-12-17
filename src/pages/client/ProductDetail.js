@@ -98,7 +98,8 @@ const ProductDetail = () => {
   const [pd, setPd] = useState();
   const [err, setErr] = useState();
   const [price, setPrice] = useState(0);
-
+  const [salePrice, setSalePrice] = useState(0);
+  const [sale, setSale] = useState(0);
   const [verName, setVername] = useState();
 
   const [verId, setVerId] = useState(null);
@@ -346,6 +347,8 @@ const ProductDetail = () => {
 
         if (checkCount == temp) {
           setPrice(vs.price);
+          setSale(vs.sale);
+          setSalePrice(vs.salePrice);
           setVername(vs.versionName);
           setVerId(vs.id);
           break;
@@ -433,6 +436,9 @@ const ProductDetail = () => {
     try {
       const response = await productApi.getProductDetail(id);
       setProductDetail(response.data.data);
+      setPrice(null);
+      setSale(null);
+      setSalePrice(null);
     } catch (error) {
       console.error("Error fetching product:", error.message);
     }
@@ -461,7 +467,7 @@ const ProductDetail = () => {
 
   const formatCurrencyVND = (amount) => {
     if (amount == null) return "";
-    return amount.toLocaleString("vi-VN", {
+    return amount?.toLocaleString("vi-VN", {
       style: "currency",
       currency: "VND",
     });
@@ -495,6 +501,8 @@ const ProductDetail = () => {
                   <div className="col-md-2">
                     {/* Thumbnail Images as Indicators */}
                     <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
+                      <span style={{ marginTop: "150px" }}></span>
+
                       {ProductDetail?.versions?.length > 0 &&
                         ProductDetail.versions.map((version, index) => (
                           <button
@@ -504,8 +512,8 @@ const ProductDetail = () => {
                             data-bs-slide-to={index}
                             className={`${
                               (index === 0 && !verId) || verId === version.id
-                                ? "active"
-                                : ""
+                                ? "active position-relative"
+                                : "position-relative"
                             }`}
                             aria-label={`Slide ${index + 1}`}
                             style={style.wh}
@@ -529,6 +537,18 @@ const ProductDetail = () => {
                               })
                             }
                           >
+                            {version?.quantity === 0 && (
+                              <div
+                                className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center text-white fw-bold"
+                                style={{
+                                  backgroundColor: "rgba(0, 0, 0, 0.5)", // Nền đen mờ
+                                  zIndex: 1000,
+                                  borderRadius: "0.5rem",
+                                }}
+                              >
+                                HẾT HÀNG
+                              </div>
+                            )}
                             <img
                               src={version.image}
                               className="d-block w-100"
@@ -546,13 +566,25 @@ const ProductDetail = () => {
                         <div
                           className={`carousel-item ${
                             index === 0 && verId == null
-                              ? "active"
+                              ? "active position-relative"
                               : verId === version.id
-                              ? "active"
-                              : ""
+                              ? "active position-relative"
+                              : "position-relative"
                           }`}
                           key={version.id}
                         >
+                          {version?.quantity === 0 && (
+                            <div
+                              className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center text-white fw-bold"
+                              style={{
+                                backgroundColor: "rgba(0, 0, 0, 0.5)", // Nền đen mờ
+                                zIndex: 1000,
+                                borderRadius: "0.5rem",
+                              }}
+                            >
+                              HẾT HÀNG
+                            </div>
+                          )}
                           <img
                             src={version.image}
                             className="d-block w-100"
@@ -571,16 +603,36 @@ const ProductDetail = () => {
                 <h4 className="mtext-105 cl2 js-name-detail p-b-14">
                   {ProductDetail?.product?.productName || ""}
                 </h4>
-
-                <span className="mtext-106 cl2">
-                  {price > 0
-                    ? formatCurrencyVND(price)
-                    : `${formatCurrencyVND(
-                        ProductDetail?.product?.minPrice ?? "N/A"
-                      )} - ${formatCurrencyVND(
-                        ProductDetail?.product?.maxPrice ?? "N/A"
-                      )}`}{" "}
-                </span>
+                <div className="mtext-106 cl2">
+                  {price > 0 ? (
+                    <div>
+                      {salePrice > 0 ? (
+                        <span className="text-decoration-line-through text-muted">
+                          {formatCurrencyVND(price)}
+                        </span>
+                      ) : (
+                        <span>{formatCurrencyVND(price)}</span>
+                      )}
+                      {sale > 0 ? (
+                        <span className="bg-body-secondary p-2 rounded-3 ms-3">
+                          -{sale}%
+                        </span>
+                      ) : (
+                        ""
+                      )}
+                      <br />
+                      <span className="text-danger fw-bold">
+                        {formatCurrencyVND(salePrice)}
+                      </span>
+                    </div>
+                  ) : (
+                    `${formatCurrencyVND(
+                      ProductDetail?.product?.minPrice ?? "N/A"
+                    )} - ${formatCurrencyVND(
+                      ProductDetail?.product?.maxPrice ?? "N/A"
+                    )}`
+                  )}{" "}
+                </div>
                 <div className="mt-3">
                   {verName && <span className="fs-17">{verName}</span>}
                 </div>
@@ -729,10 +781,16 @@ const ProductDetail = () => {
 
                 {/* <!-- Reviews Tab --> */}
                 <div className="tab-pane fade" id="reviews" role="tabpanel">
+                  {feedBack?.contents?.length <= 0 && (
+                    <span className="d-flex justify-content-center">
+                      Chưa có đánh giá nào
+                    </span>
+                  )}
                   <div className="row">
                     <div className="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
                       <div className="p-b-30 m-lr-15-sm">
                         {/* <!-- Review --> */}
+
                         {feedBack?.contents?.map((fb) => (
                           <div className="flex-w flex-t p-b-68">
                             <div className="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
@@ -805,6 +863,7 @@ const ProductDetail = () => {
                             </div>
                           </div>
                         ))}
+
                         {feedBack?.totalElements > 0 && (
                           <div className="w-100 d-flex justify-content-end">
                             <div className="pagination">
@@ -867,13 +926,25 @@ const ProductDetail = () => {
                         key={index}
                         className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women position-relative"
                       >
-                        {product?.discountPercent > 0 && (
-                          <span className="position-absolute right-0 zindex-5 bg-body-secondary p-2 rounded-3">
-                            {`${product?.discountPercent}%`}
-                          </span>
+                        {product?.quantity === 0 && (
+                          <div
+                            className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center text-white fw-bold"
+                            style={{
+                              backgroundColor: "rgba(0, 0, 0, 0.5)",
+                              zIndex: 5,
+                              borderRadius: "0.5rem",
+                            }}
+                          >
+                            HẾT HÀNG
+                          </div>
                         )}
                         <div className="block2">
                           <div className="block2-pic hov-img0">
+                            {product?.discountPercent > 0 && (
+                              <span className="position-absolute right-0 zindex-4 bg-body-secondary p-2 rounded-3">
+                                {`-${product?.discountPercent}%`}
+                              </span>
+                            )}
                             <img src={product?.imgName} alt="IMG-PRODUCT" />
                             {/* Quick View */}
                             <Link
@@ -881,7 +952,7 @@ const ProductDetail = () => {
                               type="button"
                               className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none "
                             >
-                              View
+                              Xem
                             </Link>
                           </div>
 

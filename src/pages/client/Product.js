@@ -306,6 +306,9 @@ const Product = () => {
   const [pd, setPd] = useState();
   const [err, setErr] = useState();
   const [price, setPrice] = useState(0);
+  const [salePrice, setSalePrice] = useState(0);
+  const [sale, setSale] = useState(0);
+
   const [verName, setVername] = useState();
 
   const [verId, setVerId] = useState(null);
@@ -470,6 +473,8 @@ const Product = () => {
 
         if (checkCount == temp) {
           setPrice(vs.price);
+          setSale(vs.sale);
+          setSalePrice(vs.salePrice);
           setVername(vs.versionName);
           setVerId(vs.id);
           break;
@@ -559,6 +564,9 @@ const Product = () => {
     try {
       const response = await productApi.getProductDetail(id);
       setProductDetail(response.data.data);
+      setPrice(null);
+      setSale(null);
+      setSalePrice(null);
     } catch (error) {
       console.error("Error fetching product:", error.message);
     }
@@ -594,7 +602,7 @@ const Product = () => {
     setVerId(null);
   };
   function formatCurrencyVND(amount) {
-    return amount.toLocaleString("vi-VN", {
+    return amount?.toLocaleString("vi-VN", {
       style: "currency",
       currency: "VND",
     });
@@ -1035,13 +1043,26 @@ const Product = () => {
                       key={index} // Đảm bảo rằng mỗi sản phẩm có một key duy nhất
                       className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women position-relative"
                     >
-                       {product?.discountPercent > 0 && (
-                            <span className="position-absolute right-0 zindex-5 bg-body-secondary p-2 rounded-3">
-                              {`${product?.discountPercent}%`}
-                            </span>
-                          )}
+                      {product?.quantity === 0 && (
+                        <div
+                          className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center text-white fw-bold"
+                          style={{
+                            backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            zIndex: 5,
+                            borderRadius: "0.5rem",
+                          }}
+                        >
+                          HẾT HÀNG
+                        </div>
+                      )}
+
                       <div className="block2">
                         <div className="block2-pic hov-img0">
+                          {product?.discountPercent > 0 && (
+                            <span className="position-absolute right-0 zindex-4 bg-body-secondary p-2 rounded-3">
+                              {`-${product?.discountPercent}%`}
+                            </span>
+                          )}
                           <img src={product.imgName} alt="IMG-PRODUCT" />
                           {/* Quick View */}
                           <button
@@ -1201,6 +1222,7 @@ const Product = () => {
                       <div className="col-md-2">
                         {/* Thumbnail Images as Indicators */}
                         <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
+                          <span style={{ marginTop: "150px" }}></span>{" "}
                           {ProductDetail?.versions?.length > 0 &&
                             ProductDetail?.versions?.map((version, index) => (
                               <button
@@ -1212,8 +1234,8 @@ const Product = () => {
                                   (index === 0 &&
                                     (verId == null || verId == undefined)) ||
                                   verId === version.id
-                                    ? "active"
-                                    : ""
+                                    ? "active position-relative"
+                                    : "position-relative"
                                 }`}
                                 aria-label={`Slide ${index + 1}`}
                                 style={style.wh}
@@ -1237,6 +1259,18 @@ const Product = () => {
                                   })
                                 }
                               >
+                                {version?.quantity === 0 && (
+                                  <div
+                                    className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center text-white fw-bold"
+                                    style={{
+                                      backgroundColor: "rgba(0, 0, 0, 0.5)", // Nền đen mờ
+                                      zIndex: 4,
+                                      borderRadius: "0.5rem",
+                                    }}
+                                  >
+                                    HẾT HÀNG
+                                  </div>
+                                )}
                                 <img
                                   src={version.image}
                                   className="d-block w-100"
@@ -1254,13 +1288,25 @@ const Product = () => {
                             <div
                               className={`carousel-item ${
                                 index === 0 && verId == null
-                                  ? "active"
+                                  ? "active position-relative"
                                   : verId === version.id
-                                  ? "active"
-                                  : ""
+                                  ? "active position-relative"
+                                  : "position-relative"
                               }`}
                               key={version.id}
                             >
+                              {version?.quantity === 0 && (
+                                <div
+                                  className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center text-white fw-bold"
+                                  style={{
+                                    backgroundColor: "rgba(0, 0, 0, 0.5)", // Nền đen mờ
+                                    zIndex: 4,
+                                    borderRadius: "0.5rem",
+                                  }}
+                                >
+                                  HẾT HÀNG
+                                </div>
+                              )}
                               <img
                                 src={version.image}
                                 className="d-block w-100"
@@ -1281,18 +1327,38 @@ const Product = () => {
                     </h4>
 
                     <span className="mtext-106 cl2">
-                      {" "}
                       {products?.map((product1, index) =>
                         product1?.id == ProductDetail?.product?.id ? (
-                          <span className="mtext-106 cl2">
-                            {price > 0
-                              ? formatCurrencyVND(price)
-                              : `${formatCurrencyVND(
-                                  ProductDetail?.product?.minPrice ?? "N/A"
-                                )} - ${formatCurrencyVND(
-                                  ProductDetail?.product?.maxPrice ?? "N/A"
-                                )}`}{" "}
-                          </span>
+                          <div className="mtext-106 cl2">
+                            {price > 0 ? (
+                              <div>
+                                {salePrice > 0 ? (
+                                  <span className="text-decoration-line-through text-muted">
+                                    {formatCurrencyVND(price)}
+                                  </span>
+                                ) : (
+                                  <span>{formatCurrencyVND(price)}</span>
+                                )}
+                                {sale > 0 ? (
+                                  <span className="bg-body-secondary p-2 rounded-3 ms-3">
+                                    -{sale}%
+                                  </span>
+                                ) : (
+                                  ""
+                                )}
+                                <br />
+                                <span className="text-danger fw-bold">
+                                  {formatCurrencyVND(salePrice)}
+                                </span>
+                              </div>
+                            ) : (
+                              `${formatCurrencyVND(
+                                ProductDetail?.product?.minPrice ?? "N/A"
+                              )} - ${formatCurrencyVND(
+                                ProductDetail?.product?.maxPrice ?? "N/A"
+                              )}`
+                            )}{" "}
+                          </div>
                         ) : null
                       )}
                     </span>
