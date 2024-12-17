@@ -203,7 +203,17 @@ function Dashboard() {
   const [productBetSaler, setProductBetSaler] = useState([]);
   const [productFavorites, setProductFavorites] = useState([]);
   const [showDate, setShowDate] = useState(false);
- 
+  const [profile, setProfile] = useState();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { listData } = await getProfile();
+
+      setProfile(listData);
+    };
+
+    fetchProfile();
+  }, []);
 
   //Tính sản phẩm đã bán
   useEffect(() => {
@@ -222,19 +232,6 @@ function Dashboard() {
         setReportQuantityProduct(data.data);
         return;
       }
-
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-
-      // setLoading(false);
     };
 
     fetchUsers();
@@ -254,17 +251,6 @@ function Dashboard() {
         setReportProfit(data.data);
         return;
       }
-
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
     };
 
     fetchUsers();
@@ -284,17 +270,6 @@ function Dashboard() {
         setReportDonChoXuLy(data.data);
         return;
       }
-
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
     };
 
     fetchUsers();
@@ -314,17 +289,6 @@ function Dashboard() {
         setReportDonDaGiao(data.data);
         return;
       }
-
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
     };
 
     fetchUsers();
@@ -344,17 +308,6 @@ function Dashboard() {
         setReportDaNhan(data.data);
         return;
       }
-
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
     };
 
     fetchUsers();
@@ -374,17 +327,6 @@ function Dashboard() {
         setReportDaHuy(data.data);
         return;
       }
-
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
     };
 
     fetchUsers();
@@ -405,18 +347,6 @@ function Dashboard() {
       }
 
       setProductFavorites([]);
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-
-      // setLoading(false);
     };
 
     fetchUsers();
@@ -447,17 +377,6 @@ function Dashboard() {
         setProductBetSaler(dat);
         return;
       }
-
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
     };
 
     fetchUsers();
@@ -487,26 +406,14 @@ function Dashboard() {
         setProductStock(dat);
         return;
       }
-
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-
-      // setLoading(false);
     };
 
     fetchUsers();
   }, []);
 
   console.log(productStock);
-  return (
+
+  return profile?.authorities[0]?.authority !== 'Admin'?<h6>Bạn có thể sử dụng các chức năng ở menu bên trái!</h6>: (
     <>
       <div className="row">
         <div class="col-md-4 col-1">

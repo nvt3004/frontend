@@ -187,8 +187,20 @@ const AdminLayout = () => {
                   i.toLowerCase()
                 );
 
-                if (boQua.includes(mn.label.toLowerCase())) {
+                const textAdmin = listData?.authorities[0].authority;
+  
+                if (
+                  boQua.includes(mn.label.toLowerCase()) &&
+                  textAdmin == "Admin"
+                ) {
                   return mn;
+                }
+
+                if (
+                  boQua.includes(mn.label.toLowerCase()) &&
+                  textAdmin !== "Admin"
+                ) {
+                  return null;
                 }
 
                 if (mn.en) {
