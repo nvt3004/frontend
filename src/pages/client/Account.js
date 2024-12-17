@@ -719,16 +719,23 @@ const Account = () => {
                       >
                         {/* Thông tin cơ bản */}
                         <div>
-                          <p className="fw-bold mb-1">
-                            Mã đơn hàng: #{order.orderId}
-                          </p>
-                          <p className="text-muted small mb-0">
+                        <p className="fw-bold mb-1">
+  <span>Mã đơn hàng: #{order?.orderId || "Không xác định"}</span>
+  <span> | </span>
+  <span>Dự kiến nhận hàng: 
+    {order?.expectedDeliveryDate 
+      ? moment(order?.expectedDeliveryDate).format("DD/MM/YYYY") 
+      : "Chưa có thông tin"}
+  </span>
+</p>
+
+                          <p className="text-muted mb-0">
                             <i className="zmdi zmdi-calendar-note me-2"></i>
                             {moment(order?.orderDate).format(
                               "DD/MM/YYYY HH:mm"
                             )}
                           </p>
-                          <p className="text-muted small mb-0">
+                          <p className="text-muted mb-0">
                             <i className="zmdi zmdi-dropbox me-2"></i>
                             {order?.products?.length} sản phẩm
                           </p>
@@ -961,7 +968,7 @@ const Account = () => {
                     fontSize: "20px",
                   }}
                 ></i>
-                <span>Thêm địa</span>
+                <span>Thêm địa chỉ</span>
               </button>
             </div>
 
@@ -1069,7 +1076,7 @@ const Account = () => {
                   className="modal-title  stext-101 cl5 size-103 d-flex align-items-center"
                   id="exampleModalLabel"
                 >
-                  {idEdit === -1 ? "Add address" : "Update address"}
+                  {idEdit === -1 ? "Thêm địa chỉ" : "Cập nhật địa chỉ"}
                 </h1>
                 <button
                   type="button"
@@ -1225,7 +1232,7 @@ const Account = () => {
                         errDetail ? "is-invalid" : ""
                       }`}
                       id="detailedAddressInput"
-                      placeholder="House number, street, etc."
+                      placeholder="Số nhà, đường phố, v.v."
                       value={addressDetal}
                       onChange={(e) => {
                         setAddressDetal(e.target.value);
@@ -1243,7 +1250,7 @@ const Account = () => {
                     type="submit"
                     onClick={handleSaveAddress}
                   >
-                    {idEdit === -1 ? "Add address" : "Update address"}
+                    {idEdit === -1 ? "Thêm địa chỉ" : "Cập nhật địa chỉ"}
                   </button>
                 </div>
               </div>

@@ -10,7 +10,7 @@ const AddReviewModal = ({
   rating,
   setRating,
   handleSubmit,
-  error
+  error,
 }) => {
   const handleRating = (value) => {
     setRating(value);
@@ -31,7 +31,7 @@ const AddReviewModal = ({
       <div className="modal-dialog modal-dialog-centered" role="document">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">Add a Review</h5>
+            <h5 className="modal-title">Thêm bình luận</h5>
             <button
               type="button"
               className="close"
@@ -44,16 +44,11 @@ const AddReviewModal = ({
 
           <div className="modal-body">
             <form onSubmit={handleSubmit}>
-              <p className="stext-102 cl6">
-                Your email address will not be published. Required fields are
-                marked *
-              </p>
-
               {error && <p className="text-danger">{error}</p>}
 
-              <div className="flex-w flex-m p-t-50 p-b-23">
-                <span className="stext-102 cl3 m-r-16">Your Rating</span>
-                <span className="wrap-rating fs-18 cl11 pointer">
+              <div className="flex-w flex-m p-b-23">
+                <span className="stext-102 cl3 m-r-16">Đánh giá</span>
+                <span className="wrap-rating fs-50 cl11 pointer">
                   {[...Array(5)].map((_, index) => (
                     <i
                       key={index}
@@ -63,17 +58,14 @@ const AddReviewModal = ({
                       onClick={() => handleRating(index + 1)}
                     ></i>
                   ))}
-                  <strong className="fs-5">
-                    ({rating})
-                  </strong>
+                  <strong className="fs-5">({rating})</strong>
                 </span>
-
               </div>
 
               <div className="row p-b-25">
                 <div className="col-12 p-b-5">
                   <label className="stext-102 cl3" htmlFor="review">
-                    Your review *
+                    Bình luận
                   </label>
                   <textarea
                     className="size-110 bor8 stext-102 cl2 p-lr-20 p-tb-10"
@@ -87,12 +79,13 @@ const AddReviewModal = ({
 
                 <div className="col-12 p-b-5">
                   <label className="stext-102 cl3" htmlFor="photos">
-                    Upload Photos (optional)
+                    Chọn ảnh
                   </label>
                   <input
                     type="file"
                     id="photos"
                     multiple
+                    accept="image/jpeg, image/png, image/jpg"
                     onChange={handlePhotoUpload}
                     className="form-control"
                   />
@@ -103,7 +96,7 @@ const AddReviewModal = ({
                 type="submit"
                 className="flex-c-m stext-101 cl0 size-112 bg7 bor11 hov-btn3 p-lr-15 trans-04 m-b-10"
               >
-                Submit
+                Gửi
               </button>
             </form>
           </div>
