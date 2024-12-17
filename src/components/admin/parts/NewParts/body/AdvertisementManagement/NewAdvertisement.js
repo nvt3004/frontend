@@ -6,7 +6,6 @@ import axiosInstance from "../../../../../../services/axiosConfig";
 import FullScreenSpinner from "../../../FullScreenSpinner";
 import "./NewAdvertisement.css"; // External CSS for custom styles
 import { useLocation } from "react-router-dom";
-import Cookies from "js-cookie";
 
 const NewAdvertisement = () => {
   const [loading, setLoading] = useState(false);
@@ -17,8 +16,6 @@ const NewAdvertisement = () => {
 
   const location = useLocation();
   const advertisement = location.state?.advertisement;
-
-  const token = Cookies.get("token");
 
   const {
     register,
@@ -102,13 +99,13 @@ const NewAdvertisement = () => {
         response = await axiosInstance.put(
           `/staff/advertisement/update/${advertisement.advId}`,
           formData,
-          { headers: { 'Authorization': `Bearer ${token}`, "Access-Control-Allow-Origin": "*", "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } }
         );
       } else {
         response = await axiosInstance.post(
           "/staff/advertisement/add",
           formData,
-          { headers: { 'Authorization': `Bearer ${token}`, "Access-Control-Allow-Origin": "*", "Content-Type": "multipart/form-data" } }
+          { headers: { "Content-Type": "multipart/form-data" } }
         );
       }
 
