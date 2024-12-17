@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import Cookies from "js-cookie";
 
-import logo4plus from "../../../assets/images/icons/logo4plus.png"
+import logo4plus from "../../../assets/images/icons/logo4plus.png";
 import { setWishlistCount } from "../../../store/actions/wishlistActions";
 
 import { setCartCount } from "../../../store/actions/cartActions";
@@ -55,8 +55,8 @@ const Navbar = () => {
         const calculatedTotal = data.reduce((acc, product) => {
           return acc + Number(product.price) * Number(product.quantity);
         }, 0);
-    
-        setTotal(calculatedTotal); 
+
+        setTotal(calculatedTotal);
       } catch (error) {
         console.log("Failed to fetch wishlist products", error);
       }
@@ -64,7 +64,6 @@ const Navbar = () => {
     fetchCart();
     fetchWishlist();
   }, [cartCount, wishlistCount, dispatch]);
-
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -221,13 +220,15 @@ const Navbar = () => {
             <div className="menu-desktop p-0 " style={styles.menuDesktop}>
               <ul className="main-menu" style={styles.mainMenu}>
                 <li
-                  className={uri === "/" || uri === "/home" ? "active-menu" : ""}
+                  className={
+                    uri === "/" || uri === "/home" ? "active-menu" : ""
+                  }
                   onClick={() => {
                     setUri(window.location.pathname);
                   }}
                 >
                   <Link to="/" className="text-decoration-none">
-             Trang chủ
+                    Trang chủ
                   </Link>
                 </li>
 
@@ -238,7 +239,7 @@ const Navbar = () => {
                   }}
                 >
                   <Link to="/product" className="text-decoration-none">
-             Sản phẩm
+                    Sản phẩm
                   </Link>
                 </li>
 
@@ -247,13 +248,13 @@ const Navbar = () => {
                     uri === "/shoping-cart" ? "active-menu " : ""
                   } `}
                   //label1
-               //   data-label1="hot"
+                  //   data-label1="hot"
                   onClick={() => {
                     setUri(window.location.pathname);
                   }}
                 >
                   <Link to="/shoping-cart" className="text-decoration-none">
-                   Đặt hàng
+                    Đặt hàng
                   </Link>
                 </li>
 
@@ -264,7 +265,7 @@ const Navbar = () => {
                   }}
                 >
                   <Link to="/blog" className="text-decoration-none">
-             Bài viết
+                    Bài viết
                   </Link>
                 </li>
 
@@ -275,7 +276,7 @@ const Navbar = () => {
                   }}
                 >
                   <Link to="/about" className="text-decoration-none">
-      Về chúng tôi
+                    Về chúng tôi
                   </Link>
                 </li>
 
@@ -286,7 +287,7 @@ const Navbar = () => {
                   }}
                 >
                   <Link to="/contact" className="text-decoration-none">
-          Liên hệ
+                    Liên hệ
                   </Link>
                 </li>
               </ul>
@@ -354,7 +355,7 @@ const Navbar = () => {
                         className="dropdown-item stext-111"
                         onClick={handleLogout1}
                       >
-   Đăng xuất
+                        Đăng xuất
                       </button>
                     </li>
                   ) : (
@@ -363,7 +364,7 @@ const Navbar = () => {
                         className="dropdown-item stext-111"
                         to="/auth/login"
                       >
-         Đăng nhập
+                        Đăng nhập
                       </Link>
                     </li>
                   )}
@@ -373,7 +374,7 @@ const Navbar = () => {
                         className="dropdown-item stext-111"
                         to="/auth/register"
                       >
-               Đăng ký
+                        Đăng ký
                       </Link>
                     </li>
                   )}
@@ -493,7 +494,7 @@ const Navbar = () => {
                   aria-controls="nav-home"
                   aria-selected="true"
                 >
-                 Bảng chọn
+                  Bảng chọn
                 </button>
                 <button
                   className="nav-link"
@@ -522,13 +523,13 @@ const Navbar = () => {
                 <ul className="main-menu-m m-0">
                   <li>
                     <Link to="/home" className="text-decoration-none">
-             Trang chủ
+                      Trang chủ
                     </Link>
                   </li>
 
                   <li>
                     <Link to="/product" className="text-decoration-none">
-     Sản phẩm
+                      Sản phẩm
                     </Link>
                   </li>
 
@@ -538,25 +539,25 @@ const Navbar = () => {
                       className="text-decoration-none label1 rs1"
                       data-label1="hot"
                     >
-           Đặt hàng
+                      Đặt hàng
                     </Link>
                   </li>
 
                   <li>
                     <Link to="/blog" className="text-decoration-none">
-                     Bài viết
+                      Bài viết
                     </Link>
                   </li>
 
                   <li>
                     <Link to="/about" className="text-decoration-none">
-           Về chúng tôi
+                      Về chúng tôi
                     </Link>
                   </li>
 
                   <li>
                     <Link to="/contact" className="text-decoration-none">
-  Liên hệ
+                      Liên hệ
                     </Link>
                   </li>
                 </ul>
@@ -571,18 +572,18 @@ const Navbar = () => {
                 <ul className="main-menu-m m-0">
                   <li>
                     <Link to="/account" className="text-decoration-none">
-                   Tài khoản
+                      Tài khoản
                     </Link>
                   </li>
 
                   <li>
                     <Link to="/auth/login" className="text-decoration-none">
-           Đăng nhập
+                      Đăng nhập
                     </Link>
                   </li>
                   <li>
                     <Link to="/auth/register" className="text-decoration-none">
-                 Đăng ký
+                      Đăng ký
                     </Link>
                   </li>
                 </ul>
@@ -619,6 +620,7 @@ const Navbar = () => {
                   <div className="header-cart-item-img">
                     <img src={product.image} alt="IMG" />
                   </div>
+
                   <div className="header-cart-item-txt p-t-8">
                     <Link
                       to="#"
@@ -626,7 +628,39 @@ const Navbar = () => {
                     >
                       {product.productName}
                     </Link>
-                    <span className="header-cart-item-info">{`${product.quantity} x  ${formatCurrencyVND(product.price ?? "N/A")}`}</span>
+                    <span>
+                      Phiên bản:
+                      {product?.attributes
+                        ?.map((at) => `${at.key}: ${at.value}`)
+                        .join(", ")}
+                    </span>
+                    <span className="header-cart-item-info">
+  {`${product.quantity} x `}
+  {(() => {
+    const matchedVersion = product?.productDetail?.versions?.find(
+      (ver) => ver?.id === product?.versionId
+    );
+
+    if (matchedVersion?.salePrice) {
+      return (
+        <>
+          <span className="text-decoration-line-through text-muted">
+            {formatCurrencyVND(product?.price ?? "N/A")}
+          </span>{" "}
+          <span className="text-danger fw-bold">
+            {formatCurrencyVND(matchedVersion?.salePrice ?? "N/A")}
+          </span>
+          <span className="bg-body-secondary p-2 rounded-3 ms-3">
+            -{matchedVersion?.sale}%
+          </span>
+        </>
+      );
+    } else {
+      return formatCurrencyVND(product?.price ?? "N/A");
+    }
+  })()}
+</span>
+
                   </div>
                 </li>
               ))}
@@ -637,12 +671,11 @@ const Navbar = () => {
               Tổng tiền: {` ${formatCurrencyVND(total ?? "N/A")}`}
             </div>
             <div className="header-cart-buttons">
-    
               <Link
                 to="shoping-cart"
                 className="text-decoration-none flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04"
               >
-               Đặt hàng
+                Đặt hàng
               </Link>
             </div>
           </div>
