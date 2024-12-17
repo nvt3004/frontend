@@ -212,7 +212,7 @@ const Account = () => {
       fullName: formData.fullName,
       email: formData.email,
       phone: formData.phone,
-      gender: gender === "Male" ? 1 : gender === "Female" ? 0 : 2,
+      gender: gender === "Male" ? 0 : gender === "Female" ? 1 : 2,
       birthday: birthday
         ? new Date(birthday).toISOString().split("T")[0]
         : null,
