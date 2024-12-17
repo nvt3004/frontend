@@ -767,13 +767,13 @@ const OrderTable = () => {
         });
     };
 
-    const PUBLIC_CERTIFICATE = process.env.REACT_APP_PUBLIC_CERTIFICATE;
-    const PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEY;
+    // const PUBLIC_CERTIFICATE = process.env.REACT_APP_PUBLIC_CERTIFICATE;
+    // const PRIVATE_KEY = process.env.REACT_APP_PRIVATE_KEY;
     const [qzConnected, setQzConnected] = useState(false);
     let qzSocket = null;
 
-    console.log(PUBLIC_CERTIFICATE + " PUBLIC_CERTIFICATE");
-    console.log(PRIVATE_KEY + " PRIVATE_KEY");
+    // console.log(PUBLIC_CERTIFICATE + " PUBLIC_CERTIFICATE");
+    // console.log(PRIVATE_KEY + " PRIVATE_KEY");
 
     const connectToQz = async (options) => {
         try {
@@ -821,8 +821,8 @@ const OrderTable = () => {
 
             if (!qzConnected) {
                 const options = {
-                    // host: 'https://stepstothefuture.store/',
-                    host: 'localhost',
+                    host: 'https://stepstothefuture.store/',
+                    // host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
@@ -853,21 +853,21 @@ const OrderTable = () => {
 
                 console.log("Connected to QZ Tray");
             }
-            qz.security.setCertificatePromise(() => {
-                return Promise.resolve(PUBLIC_CERTIFICATE);
-            });
+            // qz.security.setCertificatePromise(() => {
+            //     return Promise.resolve(PUBLIC_CERTIFICATE);
+            // });
 
-            qz.security.setSignaturePromise((toSign) => {
-                return (resolve, reject) => {
-                    try {
-                        const rsa = new JSEncrypt();
-                        rsa.setPrivateKey(PRIVATE_KEY);
-                        resolve(rsa.sign(toSign, CryptoJS.SHA256, "sha256"));
-                    } catch (err) {
-                        reject(err);
-                    }
-                };
-            });
+            // qz.security.setSignaturePromise((toSign) => {
+            //     return (resolve, reject) => {
+            //         try {
+            //             const rsa = new JSEncrypt();
+            //             rsa.setPrivateKey(PRIVATE_KEY);
+            //             resolve(rsa.sign(toSign, CryptoJS.SHA256, "sha256"));
+            //         } catch (err) {
+            //             reject(err);
+            //         }
+            //     };
+            // });
             // console.log(imageUrl + " imageUrl");
 
             const printerName = 'XP-58';
@@ -926,8 +926,8 @@ const OrderTable = () => {
         try {
             if (!qzConnected) {
                 const options = {
-                    // host: 'https://stepstothefuture.store/',
-                    host: 'localhost',
+                    host: 'https://stepstothefuture.store/',
+                    // host: 'localhost',
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485]
@@ -956,16 +956,16 @@ const OrderTable = () => {
 
                 console.log("Connected to QZ Tray");
             }
-            qz.security.setCertificatePromise(() => Promise.resolve(PUBLIC_CERTIFICATE));
-            qz.security.setSignaturePromise((toSign) => (resolve, reject) => {
-                try {
-                    const rsa = new JSEncrypt();
-                    rsa.setPrivateKey(PRIVATE_KEY);
-                    resolve(rsa.sign(toSign, CryptoJS.SHA256, "sha256"));
-                } catch (err) {
-                    reject(err);
-                }
-            });
+            // qz.security.setCertificatePromise(() => Promise.resolve(PUBLIC_CERTIFICATE));
+            // qz.security.setSignaturePromise((toSign) => (resolve, reject) => {
+            //     try {
+            //         const rsa = new JSEncrypt();
+            //         rsa.setPrivateKey(PRIVATE_KEY);
+            //         resolve(rsa.sign(toSign, CryptoJS.SHA256, "sha256"));
+            //     } catch (err) {
+            //         reject(err);
+            //     }
+            // });
 
             const printerName = 'XP-58';
             // const printerName = 'Microsoft Print to PDF';
