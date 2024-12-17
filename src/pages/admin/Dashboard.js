@@ -14,6 +14,7 @@ import {
 } from "phosphor-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { getProfile } from "../../services/api/OAuthApi";
 import { vi } from "date-fns/locale";
 import moment from "moment";
 import {
@@ -202,39 +203,7 @@ function Dashboard() {
   const [productBetSaler, setProductBetSaler] = useState([]);
   const [productFavorites, setProductFavorites] = useState([]);
   const [showDate, setShowDate] = useState(false);
-
-  //Tính doanh thu
-  useEffect(() => {
-    const fetchUsers = async () => {
-      // setLoading(true);
-      const [error, data] = await stfExecAPI({
-        url: `api/admin/report/revenue?startDate=${moment(startDate).format(
-          "YYYY/MM/DD"
-        )}&endDate=${moment(endDate).format("YYYY/MM/DD")}`,
-      });
-
-      if (data) {
-        // setLoading(false);
-        setReportRevenue(data.data);
-        return;
-      }
-
-      const err =
-        error.status === 403
-          ? "Bạn không có quyền để thực thi công việc này !"
-          : error?.response?.data?.message;
-
-      toast.error(`${err}`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
-
-      // setLoading(false);
-    };
-
-    fetchUsers();
-  }, [startDate, endDate]);
+ 
 
   //Tính sản phẩm đã bán
   useEffect(() => {
@@ -750,7 +719,7 @@ function Dashboard() {
           </div>
 
           <div className="col-5 bg-white p-4 rounded-2">
-          <h5 className="card-title mb-3">Đơn hàng</h5>
+            <h5 className="card-title mb-3">Đơn hàng</h5>
 
             <div>
               <ul class="p-0 m-0">
@@ -765,7 +734,9 @@ function Dashboard() {
                       <h6 class="mb-0">Chờ xử lý</h6>
                     </div>
                     <div class="user-progress d-flex align-items-center gap-1">
-                      <h6 class="mb-0">{formatNumberWithCommas(reportDonChoXuLy || 0)}</h6>
+                      <h6 class="mb-0">
+                        {formatNumberWithCommas(reportDonChoXuLy || 0)}
+                      </h6>
                     </div>
                   </div>
                 </li>
@@ -781,7 +752,9 @@ function Dashboard() {
                       <h6 class="mb-0">Đã giao</h6>
                     </div>
                     <div class="user-progress d-flex align-items-center gap-1">
-                      <h6 class="mb-0">{formatNumberWithCommas(reportDonDaGiao ||  0)}</h6>
+                      <h6 class="mb-0">
+                        {formatNumberWithCommas(reportDonDaGiao || 0)}
+                      </h6>
                     </div>
                   </div>
                 </li>
@@ -797,7 +770,9 @@ function Dashboard() {
                       <h6 class="mb-0">Đã nhận</h6>
                     </div>
                     <div class="user-progress d-flex align-items-center gap-1">
-                      <h6 class="mb-0">{formatNumberWithCommas(reportDonDaNhan || 0)}</h6>
+                      <h6 class="mb-0">
+                        {formatNumberWithCommas(reportDonDaNhan || 0)}
+                      </h6>
                     </div>
                   </div>
                 </li>
@@ -813,7 +788,9 @@ function Dashboard() {
                       <h6 class="mb-0">Đã hủy</h6>
                     </div>
                     <div class="user-progress d-flex align-items-center gap-1">
-                      <h6 class="mb-0">{formatNumberWithCommas(reportDonDaHuy || 0)}</h6>
+                      <h6 class="mb-0">
+                        {formatNumberWithCommas(reportDonDaHuy || 0)}
+                      </h6>
                     </div>
                   </div>
                 </li>

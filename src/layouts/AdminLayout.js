@@ -5,6 +5,7 @@ import { Outlet, Link, Navigate } from "react-router-dom";
 import { getProfile } from "../services/api/OAuthApi";
 import { FaAdversal } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { stfExecAPI } from "../stf/common";
 import Cookies from "js-cookie";
 import {
   CaretDown,
@@ -18,16 +19,16 @@ import {
   Info,
   SignOut,
   Archive,
-  Storefront ,
+  Storefront,
   Package,
   UserGear,
-  Ticket 
+  Ticket,
 } from "phosphor-react";
 import "./style.css";
 
-const menus = [
+let menus = [
   {
-    title: "Main",
+    title: "",
     items: [
       {
         id: "dashboard",
@@ -50,21 +51,37 @@ const menus = [
         label: "Sản phẩm",
         icon: <Archive />,
         subItems: [
-          { id: "3", label: "Phân loại", link: "/admin/products/categories" },
-          { id: "4", label: "Thêm mới", link: "/admin/products/new" },
-          { id: "5", label: "Danh sách", link: "/admin/products/manage" },
-          { id: "20", label: "Giảm giá", link: "/admin/products/sale" },
+          {
+            id: "3",
+            label: "Phân loại",
+            en: "Category",
+            link: "/admin/products/categories",
+          },
+          {
+            id: "5",
+            label: "Danh sách",
+            en: "Product",
+            link: "/admin/products/manage",
+          },
+          {
+            id: "20",
+            label: "Giảm giá",
+            en: "Sale",
+            link: "/admin/products/sale",
+          },
         ],
       },
       {
         id: "feedback",
         label: "Phản hồi",
+        en: "Feedback",
         icon: <CalendarBlank />,
         link: "/admin/feedback/manage",
       },
       {
         id: "6",
         label: "Đơn hàng",
+        en: "Order",
         icon: <FileText />,
         link: "/admin/orders/manage",
         subItems: null,
@@ -72,6 +89,7 @@ const menus = [
       {
         id: "7",
         label: "Nhà cung cấp",
+        en: "Supplier",
         icon: <Storefront />,
         link: "/admin/suppliers/manage",
         subItems: null,
@@ -82,55 +100,130 @@ const menus = [
         icon: <Package />,
         // link: "/admin/warehouse/stock-in",
         subItems: [
-          {id: '12', label: 'Nhập hàng', link: "/admin/warehouse/stockin"},
-          {id: '13', label: 'Phiếu nhập', link: "/admin/warehouse/manage"}
+          {
+            id: "12",
+            label: "Nhập hàng",
+            en: "Receipt",
+            role: "Add",
+            link: "/admin/warehouse/stockin",
+          },
+          {
+            id: "13",
+            label: "Phiếu nhập",
+            en: "Receipt",
+            role: "View",
+            link: "/admin/warehouse/manage",
+          },
         ],
       },
       {
         id: "9",
         label: "Phiếu giảm giá",
-        icon: <Ticket  />,
+        en: "Coupon",
+        icon: <Ticket />,
         link: "/admin/coupon/manage",
       },
       {
         id: "14",
         label: "Quảng cáo",
-        icon: <FaAdversal  />,
+        en: "Advertisement",
+        icon: <FaAdversal />,
         // link: "/admin/advertisement/manage",
         subItems: [
-          {id: '15', label: 'Thêm mới', link: "/admin/advertisement/new"},
-          {id: '16', label: 'Danh sách', link: "/admin/advertisement/manage"}
+          { id: "16", label: "Danh sách", link: "/admin/advertisement/manage" },
         ],
-      }
+      },
     ],
   },
-  // {
-  //   title: "Settings",
-  //   items: [
-  //     { id: "settings", label: "Settings", icon: <Gear />, link: "/admin/settings", subItems: null },
-  //   ],
-  // },
-  // {
-  //   title: "Account",
-  //   items: [
-  //     { id: "help", label: "Help", icon: <Info />, link: "/admin/help", subItems: null },
-  //     { id: "logout", label: "Logout", icon: <SignOut />, link: "/logout", subItems: null },
-  //   ],
-  // },
 ];
+
+const isQuyenSubMenu = (quyens, tenQuyen, role = "") => {
+  const quyen = quyens.find((i) => i.title.toLowerCase() == tenQuyen);
+
+  if (quyen) {
+    let isCoQuyen;
+
+    if (role) {
+      isCoQuyen =
+        quyen.permission.find(
+          (i) => i.use && i.name.toLowerCase() == role.toLowerCase()
+        ) !== undefined;
+    } else {
+      isCoQuyen = quyen.permission.some((i) => i.use);
+    }
+
+    return isCoQuyen;
+  }
+
+  return false;
+};
 
 const AdminLayout = () => {
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [activeSubMenuId, setActiveSubMenuId] = useState(null);
   const [sidebarActive, setSidebarActive] = useState(false);
   const [profile, setProfile] = useState();
+  const [permissions, setPermissions] = useState({});
+  const [menusSft, setMenuSft] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const {listData} = await getProfile();
+        const { listData } = await getProfile();
         setProfile(listData);
+
+        const fetchPermissions = async () => {
+          const [error, data] = await stfExecAPI({
+            url: `api/staff/userpermissions/${listData?.userId}`,
+          });
+
+          if (data) {
+            setPermissions(data.data);
+
+            const quyenDungDuoc = menus[0].items
+              .map((mn) => {
+                const boQua = ["Người dùng", "Dashboard"].map((i) =>
+                  i.toLowerCase()
+                );
+
+                if (boQua.includes(mn.label.toLowerCase())) {
+                  return mn;
+                }
+
+                if (mn.en) {
+                  if (isQuyenSubMenu(data.data, mn?.en?.toLowerCase())) {
+                    return mn;
+                  }
+
+                  return null;
+                }
+
+                if (mn.subItems) {
+                  const itemCoQuyens = mn.subItems.filter((it) => {
+                    return isQuyenSubMenu(
+                      data.data,
+                      it?.en?.toLowerCase(),
+                      it.role ? it.role : ""
+                    );
+                  });
+
+                  return itemCoQuyens.length <= 0
+                    ? null
+                    : { ...mn, subItems: itemCoQuyens };
+                }
+
+                return mn;
+              })
+              .filter((i) => i);
+
+            menus = [{ ...menus[0], items: quyenDungDuoc }];
+            setMenuSft([...menus]);
+            return;
+          }
+        };
+
+        fetchPermissions();
       } catch (error) {
         console.error("Error fetching profile:", error.message);
       }
@@ -138,6 +231,8 @@ const AdminLayout = () => {
 
     fetchProfile();
   }, []);
+
+  console.log("Ty ", permissions);
 
   const handleLogout = () => {
     Cookies.remove("token"); // Remove the token
@@ -171,7 +266,10 @@ const AdminLayout = () => {
   return (
     <div className={`container-stf`}>
       <div className={`sidebar-stf ${sidebarActive ? "active" : ""}`}>
-        <div className="menu-btn-stf bg-secondary text-white" onClick={toggleSidebar}>
+        <div
+          className="menu-btn-stf bg-secondary text-white"
+          onClick={toggleSidebar}
+        >
           <CaretLeft className={`ph-bold ${sidebarActive ? "active" : ""}`} />
         </div>
         <div className="head-stf">
@@ -187,17 +285,27 @@ const AdminLayout = () => {
         </div>
 
         <div className="nav-stf">
-          {menus.map((menu, index) => (
+          {menusSft.map((menu, index) => (
             <div className="menu-stf" key={index}>
               <p className="title-stf">{menu.title}</p>
               <ul>
                 {menu.items.map((item) => (
-                  <li key={item.id} className={activeMenuId === item.id ? "active" : ""}>
-                    <Link to={item.link || "#"} onClick={() => handleMenuClick(item.id)}>
+                  <li
+                    key={item.id}
+                    className={activeMenuId === item.id ? "active" : ""}
+                  >
+                    <Link
+                      to={item.link || "#"}
+                      onClick={() => handleMenuClick(item.id)}
+                    >
                       {item.icon}
                       <span className="text-stf">{item.label}</span>
                       {item.subItems && (
-                        <i className={`arrow-stf ${activeMenuId === item.id ? "active" : ""}`}>
+                        <i
+                          className={`arrow-stf ${
+                            activeMenuId === item.id ? "active" : ""
+                          }`}
+                        >
                           <CaretDown />
                         </i>
                       )}
@@ -207,11 +315,15 @@ const AdminLayout = () => {
                         {item.subItems.map((subItem) => (
                           <li
                             key={subItem.id}
-                            className={activeSubMenuId === subItem.id ? "active" : ""}
+                            className={
+                              activeSubMenuId === subItem.id ? "active" : ""
+                            }
                           >
                             <Link
                               to={subItem.link || "#"}
-                              onClick={() => handleSubMenuClick(item.id, subItem.id)}
+                              onClick={() =>
+                                handleSubMenuClick(item.id, subItem.id)
+                              }
                             >
                               {subItem.label}
                             </Link>
@@ -230,10 +342,16 @@ const AdminLayout = () => {
       <div className="w-100">
         <div className="header-stf">
           <div className="account px-4">
-            <HiUserCircle style={{ fontSize: "2.5rem", marginRight: "1px", color: "#000" }} />
+            <HiUserCircle
+              style={{ fontSize: "2.5rem", marginRight: "1px", color: "#000" }}
+            />
             <Dropdown>
               <Dropdown.Toggle
-                style={{ border: "none", color: "#000", backgroundColor: "#fafafa" }}
+                style={{
+                  border: "none",
+                  color: "#000",
+                  backgroundColor: "#fafafa",
+                }}
                 id="dropdown-basic"
               >
                 {profile?.fullName}
