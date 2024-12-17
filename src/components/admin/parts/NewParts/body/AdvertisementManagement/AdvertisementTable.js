@@ -6,8 +6,55 @@ import { useNavigate } from "react-router-dom";
 import DataTableSft from "../../../../DataTableSft";
 import FullScreenSpinner from "../../../FullScreenSpinner";
 import { Plus, Pencil, Trash } from "phosphor-react";
+import { getProfile } from "../../../../../../services/api/OAuthApi";
 
 const AdvertisementTable = () => {
+  const [profile, setProfile] = useState(null);
+  const handleGetProfile = async () => {
+    try {
+      const data = await getProfile();
+      if (data) {
+        setProfile(data?.listData);
+      } else {
+        console.log('Không tìm thấy user hoặc không có dữ liệu hợp lệ');
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API getProfile:", error);
+    }
+  }
+  useEffect(
+    () => {
+      handleGetProfile();
+    }, []
+  );
+  const [permissions, setPermissions] = useState([]);
+  const handleGetPermission = () => {
+    if (profile) {
+      axiosInstance.get(`/admin/userpermissions/${profile?.userId}`).then(
+        (response) => {
+          if (response) {
+            setPermissions(response.data?.data.find(item => item.title === 'Advertisement'));
+          }
+        }
+      ).catch(
+        (error) => {
+          if (error) {
+            console.log("Error while get permission: ", error);
+          }
+        }
+      );
+    }
+  }
+  useEffect(
+    () => {
+      handleGetPermission();
+    }, [profile]
+  );
+
+  const addPerm = permissions?.permission?.find((item) => item.name === "Add");
+  const updatePerm = permissions?.permission?.find((item) => item.name === "Update");
+  const removePerm = permissions?.permission?.find((item) => item.name === "Delete");
+
   const [loading, setLoading] = useState(false);
   const [advertisements, setAdvertisements] = useState([]);
   const [totalPage, setTotalPage] = useState(0);
@@ -35,27 +82,35 @@ const AdvertisementTable = () => {
       key: "status",
       render: (value) => (value === 1 ? "Active" : "Inactive"),
     },
-    {
-      title: "Hành động",
-      key: "actions",
-      render: (text, record) => (
-        <div>
-          <Button
-            variant="info"
-            onClick={() => handleEditAdvertisement(record.advId)}
-          >
-            <Pencil weight="fill" />
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => handleDeleteClick(record.advId)} // Open the modal when delete button is clicked
-          >
-            <Trash weight="fill" />
-          </Button>
-        </div>
-      ),
-    },
   ];
+  if (updatePerm?.use === true || removePerm?.use === true) {
+    columns.push(
+      {
+        title: "Hành động",
+        key: "actions",
+        render: (text, record) => (
+          <div>
+            {updatePerm?.use === true && (
+              <Button
+                variant="info"
+                onClick={() => handleEditAdvertisement(record.advId)}
+              >
+                <Pencil weight="fill" />
+              </Button>
+            )}
+            {removePerm?.use === true && (
+              <Button
+                variant="danger"
+                onClick={() => handleDeleteClick(record.advId)} // Open the modal when delete button is clicked
+              >
+                <Trash weight="fill" />
+              </Button>
+            )}
+          </div>
+        ),
+      },
+    );
+  }
 
   const handleGetAdvertisementAPI = () => {
     setLoading(true);
@@ -148,12 +203,14 @@ const AdvertisementTable = () => {
         title={"Danh sách quảng cáo"}
         dataSource={advertisements}
         buttonTable={
-          <Button
-            variant="dark"
-            onClick={() => navigate("/admin/advertisement/new")}
-          >
-            Thêm mới <Plus />
-          </Button>
+          addPerm?.use === true && (
+            <Button
+              variant="dark"
+              onClick={() => navigate("/admin/advertisement/new")}
+            >
+              Thêm mới <Plus />
+            </Button>
+          )
         }
       />
       <div className="bg-body-tertiary d-flex justify-content-between align-items-center container pt-2">
