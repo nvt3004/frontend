@@ -1,15 +1,14 @@
 import { memo } from "react";
 import { GoAlert } from "react-icons/go";
-
+import { Link } from "react-router-dom";
 const style = {
   pointer_events: "none",
   opacity: 0.7,
 };
 
 const AddCartItem = ({ pd, onClick, clickSave = () => {}, message }) => {
-  
-console.log(15,pd)
-  const temppd = {...pd};
+  console.log(15, pd);
+  const temppd = { ...pd };
 
   return (
     <>
@@ -38,7 +37,7 @@ console.log(15,pd)
                             key: a?.key,
                             value: v?.val,
                             rowCel: [index, j],
-                            pdu: temppd
+                            pdu: temppd,
                           });
                         }}
                         style={{
@@ -49,7 +48,7 @@ console.log(15,pd)
                         }}
                         className={`${v?.active ? "bg-dark text-white" : ""} ${
                           !v?.disible ? "" : `bg-secondary opacity-25`
-                        } btn btn-outline-dark col d-flex p-2 justify-content-center align-items-center border me-3 rounded-0`}
+                        } btn btn-outline-dark col d-flex p-2 justify-content-center align-items-center border me-3 rounded-4`}
                       >
                         {v?.val}
                       </div>
@@ -65,9 +64,9 @@ console.log(15,pd)
             onClick={() => {
               clickSave(pd);
             }}
-            className="flex-c-m w-75 stext-101 cl0 py-3 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail rounded-0"
+            className="flex-c-m w-75 stext-101 cl0 py-3 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail rounded-5"
           >
-            Add to cart
+      Thêm vào giỏ hàng
           </button>
         </div>
 

@@ -141,17 +141,20 @@ const OrderTable = () => {
         Pending: "#FFFF33",
         Processed: "#FF9933",
         Shipped: "#3399FF",
+        Waitingforconfirmation: "#FFCC33",
         Delivered: "#33FF33",
         Cancelled: "#FF3333",
     };
+    
     const statusMapping = {
         Pending: "Chờ xử lý",
         Processed: "Đã xử lý",
         Shipped: "Đã giao",
+        Waitingforconfirmation: "Chờ xác nhận",
         Delivered: "Đã nhận",
-        Cancelled: "Đã hủy"
+        Cancelled: "Đã hủy",
     };
-
+    
     useEffect(() => {
         axiosInstance.get('/staff/orders/statuses')
             .then((response) => {
@@ -159,10 +162,11 @@ const OrderTable = () => {
                     let status = response?.data?.data.map(item => {
                         let color;
                         const statusNameEnglish = item.statusName.trim().toLowerCase();
-
+                        console.log(statusNameEnglish + " statusNameEnglish");
+                        
                         // Ánh xạ tiếng Anh sang tiếng Việt
                         const statusNameVietnamese = statusMapping[item.statusName.trim()] || item.statusName;
-
+                    
                         switch (statusNameEnglish) {
                             case "pending":
                                 color = "#FFFF33"; // Vàng
@@ -173,6 +177,9 @@ const OrderTable = () => {
                             case "shipped":
                                 color = "#3399FF"; // Xanh dương nhạt
                                 break;
+                            case "waitingforconfirmation":
+                                color = "#FFCC33"; // Màu cam vàng
+                                break;
                             case "delivered":
                                 color = "#33FF33"; // Xanh lá
                                 break;
@@ -180,15 +187,16 @@ const OrderTable = () => {
                                 color = "#FF3333"; // Đỏ
                                 break;
                             default:
-                                color = "#E0E0E0"; // Xám cho Temp hoặc trạng thái không xác định
+                                color = "#E0E0E0"; // Xám cho trạng thái không xác định
                         }
-
+                    
                         return {
                             value: item.statusId,
                             label: statusNameVietnamese, // Hiển thị trạng thái tiếng Việt
                             color: color
                         };
                     });
+                    
                     setOrderStatus(status);
                 } else if (response.data?.errorCode === 998) {
                     toast.error(response.data?.message || 'You do not have permission to access statuses.');
@@ -370,7 +378,7 @@ const OrderTable = () => {
     const toggleOrderDetails = (order) => { setOrderID(prevState => ({ value: prevState.value === order?.orderId ? null : order?.orderId, isOpen: prevState.value !== order?.orderId })); };
 
     const handleChangeStatus = (option, orderID) => {
-        if (option?.value < 4 || option?.value === 5) {
+        if (option?.value < 4 || option?.value === 5 || option?.value !== 7) {
             if (option?.value === 5) {
                 Swal.fire({
                     title: 'Nhập lý do hủy đơn hàng',
@@ -454,52 +462,86 @@ const OrderTable = () => {
 
     const [isEditVersion, setEditVersion] = useState({ isEdit: '', orderDetailsID: '' });
 
-    const handleSaveVersionChanges = (orderDetail) => {
+    // const handleSaveVersionChanges = (orderDetail) => {
+    //     const { orderDetailId, product } = orderDetail;
+    //     const { productID, orderVersionAttribute } = product[0];
+    //     const colorId = orderVersionAttribute.color?.value;
+    //     const sizeId = orderVersionAttribute.size?.value;
+
+    //     // if (!colorId || !sizeId) {
+    //     //     toast.error("Vui lòng chọn cả màu sắc và kích thước.");
+    //     //     return;
+    //     // }
+
+    //     const currentQuantity = initialQuantitiesRef.current[`${orderDetailId}-${productID}`];
+    //     const updatedQuantity = quantities[`${orderDetailId}-${productID}`];
+    //     const quantityChanged = currentQuantity !== updatedQuantity;
+
+    //     const versionHasChanged =
+    //         colorId !== initialVersionRef.current[`${orderDetailId}-${productID}`]?.colorId ||
+    //         sizeId !== initialVersionRef.current[`${orderDetailId}-${productID}`]?.sizeId;
+    //     let updatePromise;
+
+    //     if (quantityChanged && versionHasChanged) {
+    //         updatePromise = Promise.all([
+    //             axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${updatedQuantity}`),
+    //             axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`)
+    //         ]);
+    //     } else if (quantityChanged) {
+    //         updatePromise = axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${updatedQuantity}`);
+    //     } else if (versionHasChanged) {
+    //         updatePromise = axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`);
+    //     } else {
+    //         toast.info("Không có thay đổi nào cần lưu.");
+    //         setEditVersion({ isEdit: false, orderDetailsID: null });
+    //         return;
+    //     }
+
+    //     updatePromise
+    //         .then(() => {
+    //             toast.success("Cập nhật chi tiết đơn hàng thành công!");
+    //             handleGetOrderDetail();
+    //             handleGetOrderAPI();
+    //             setEditVersion({ isEdit: false, orderDetailsID: null });
+    //         })
+    //         .catch((error) => {
+    //             const message = error.response?.data?.message || "Có lỗi xảy ra khi cập nhật chi tiết đơn hàng.";
+    //             toast.error(message);
+    //         });
+    // };
+
+    const handleSaveVersionChanges = async (orderDetail) => {
         const { orderDetailId, product } = orderDetail;
         const { productID, orderVersionAttribute } = product[0];
-        const colorId = orderVersionAttribute.color?.value;
-        const sizeId = orderVersionAttribute.size?.value;
-
-        // if (!colorId || !sizeId) {
-        //     toast.error("Vui lòng chọn cả màu sắc và kích thước.");
-        //     return;
-        // }
-
+    
         const currentQuantity = initialQuantitiesRef.current[`${orderDetailId}-${productID}`];
         const updatedQuantity = quantities[`${orderDetailId}-${productID}`];
         const quantityChanged = currentQuantity !== updatedQuantity;
-
-        const versionHasChanged =
-            colorId !== initialVersionRef.current[`${orderDetailId}-${productID}`]?.colorId ||
-            sizeId !== initialVersionRef.current[`${orderDetailId}-${productID}`]?.sizeId;
-        let updatePromise;
-
-        if (quantityChanged && versionHasChanged) {
-            updatePromise = Promise.all([
-                axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${updatedQuantity}`),
-                axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`)
-            ]);
-        } else if (quantityChanged) {
-            updatePromise = axiosInstance.put(`/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${updatedQuantity}`);
-        } else if (versionHasChanged) {
-            updatePromise = axiosInstance.put(`/staff/orders/update-order-detail?orderDetailId=${orderDetailId}&productId=${productID}&colorId=${colorId}&sizeId=${sizeId}`);
-        } else {
-            toast.info("Không có thay đổi nào cần lưu.");
+    
+        if (!quantityChanged) {
+            // toast.info("Không có thay đổi nào cần lưu.");
             setEditVersion({ isEdit: false, orderDetailsID: null });
             return;
         }
-
-        updatePromise
-            .then(() => {
-                toast.success("Cập nhật chi tiết đơn hàng thành công!");
-                handleGetOrderDetail();
-                handleGetOrderAPI();
-                setEditVersion({ isEdit: false, orderDetailsID: null });
-            })
-            .catch((error) => {
-                const message = error.response?.data?.message || "Có lỗi xảy ra khi cập nhật chi tiết đơn hàng.";
-                toast.error(message);
-            });
+    
+        try {
+            await updateQuantity(orderDetailId, productID, updatedQuantity);
+    
+            toast.success("Cập nhật số lượng thành công!");
+            handleGetOrderDetail();
+            handleGetOrderAPI();
+        } catch (error) {
+            const message = error.response?.data?.message || "Có lỗi xảy ra khi cập nhật chi tiết đơn hàng.";
+            toast.error(message);
+        } finally {
+            setEditVersion({ isEdit: false, orderDetailsID: null });
+        }
+    };
+    
+    const updateQuantity = (orderDetailId, productID, quantity) => {
+        return axiosInstance.put(
+            `/staff/orders/update-order-detail-quantity?orderDetailId=${orderDetailId}&productID=${productID}&quantity=${quantity}`
+        );
     };
 
     const handleQuantityChange = (orderDetailId, productID, currentQuantity, change) => {
@@ -1033,20 +1075,8 @@ const OrderTable = () => {
         { value: -2, label: 'Đã hoàn tiền' },
     ];
 
-    const [selectedStatus, setSelectedStatus] = useState(paymentStatuses[0]);
-    const toggleStatusChange = (order) => {
-        setOrderID(prevState => {
-            // Nếu chưa mở chi tiết, mới mở, nếu đã mở thì giữ nguyên trạng thái
-            if (prevState.value !== order?.orderId) {
-                return {
-                    value: order?.orderId,   // Mở chi tiết đơn hàng
-                    isOpen: true              // Đặt trạng thái mở
-                };
-            }
-            return prevState;  // Giữ nguyên trạng thái nếu đơn hàng đã mở
-        });
-    };
-    
+    // const [selectedStatus, setSelectedStatus] = useState(paymentStatuses[0]);
+
     const handleStatusChange = (selectedOption, order) => {
         Swal.fire({
             title: 'Xác nhận thay đổi trạng thái',
@@ -1067,7 +1097,7 @@ const OrderTable = () => {
                       
                         toast.success(`${response?.data?.message || 'Hoàn tiền thành công cho đơn hàng'}#${order.orderId}`);
 
-                        setSelectedStatus(selectedOption);
+                        // setSelectedStatus(selectedOption);
                         handleGetOrderAPI();
                     } else {
                         toast.error(`Lỗi: ${response.data.message}`);
@@ -1179,9 +1209,9 @@ const OrderTable = () => {
                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '20%' }}>Khách hàng</th>
                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '34%' }}>Địa chỉ</th>
                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '15%' }}>Điện thoại</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '20%' }}>Ngày đặt hàng</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '18%' }}>Ngày đặt hàng</th>
                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '3%' }}>TT Đơn hàng</th>
-                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '10%' }}>TT Thanh toán</th>
+                                <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '12%' }}>TT Thanh toán</th>
                                 <th style={{ textAlign: 'center', verticalAlign: 'middle', width: '5%' }}></th>
                             </tr>
                         </thead>
@@ -1240,6 +1270,10 @@ const OrderTable = () => {
                                                                 ...provided,
                                                                 minWidth: '150px',
                                                             }),
+                                                            menuPortal: (provided) => ({
+                                                                ...provided,
+                                                                zIndex: 9999,
+                                                            }),
                                                         }}
                                                         menuPortalTarget={document.body}
                                                         onChange={(option) => handleChangeStatus(option, order?.orderId)} /> </td>
@@ -1263,7 +1297,7 @@ const OrderTable = () => {
                                                                     styles={{
                                                                         container: (provided) => ({
                                                                             ...provided,
-                                                                            minWidth: '150px',
+                                                                            minWidth: '170px',
                                                                         }),
                                                                         menuPortal: (provided) => ({ ...provided, zIndex: 9999 }),
                                                                     }}
@@ -1407,7 +1441,6 @@ const OrderTable = () => {
                                                                                             ) : (
                                                                                                 <span>{item.quantity}</span>
                                                                                             )}
-
 
                                                                                             {isEditVersion.isEdit && isEditVersion.orderDetailsID === orderDetail.orderDetailId && (
                                                                                                 <CustomButton

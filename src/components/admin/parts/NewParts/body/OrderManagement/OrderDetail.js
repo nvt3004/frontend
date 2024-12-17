@@ -11,21 +11,25 @@ import { FaHome } from 'react-icons/fa';
 const OrderDetail = () => {
     const { orderId } = useParams();
     const [order, setOrder] = useState(null);
-
+    
     useEffect(() => {
         axiosInstance.get(`/orders/${orderId}`)
             .then(response => {
                 setOrder(response.data.data.orderDetail[0]);
             })
             .catch(error => {
-                toast.error(error.response?.message || 'An error occurred');
+                if (error.response?.status === 404) {
+                    toast.error('Không tìm thấy đơn hàng.');
+                } else {
+                    toast.error(error.response?.data?.message || 'Có lỗi xảy ra');
+                }
             });
     }, [orderId]);
-
+    
     if (!order) {
         return <div>Loading...</div>;
     }
-
+    
     function formatDiscount(discount) {
         if (!discount) return '0 VND';
 
@@ -36,6 +40,14 @@ const OrderDetail = () => {
         const numericValue = parseFloat(discount.replace(/[^\d.-]/g, ''));
         return `${numericValue.toLocaleString('vi-VN')} VND`;
     }
+    const statusMapping = {
+        Pending: "Chờ xử lý",
+        Processed: "Đã xử lý",
+        Shipped: "Đã giao",
+        Waitingforconfirmation: "Chờ xác nhận",
+        Delivered: "Đã nhận",
+        Cancelled: "Đã hủy",
+    };
 
     return (
         <div className="container-fluid invoice-container" style={{ fontFamily: 'Times New Roman, serif !important' }}>
@@ -71,11 +83,11 @@ const OrderDetail = () => {
                         <div className="col-md-6">
                             <div className="border p-3 rounded">
                                 <p className="fw-bold">Thông tin đơn hàng</p>
-                                <p>Ngày đặt hàng: {moment(order?.orderDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
-                                <p>Ngày giao hàng dự kiến: {moment(order?.deliveryDate).subtract(7, 'hours').format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
+                                <p>Ngày đặt hàng: {moment(order?.orderDate).format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
+                                <p>Ngày giao hàng dự kiến: {moment(order?.deliveryDate).format('DD/MM/YYYY HH:mm') || 'N/A'}</p>
                                 <p>Phương thức thanh toán: {order?.paymentMethod || 'N/A'}</p>
                                 <p>Tổng tiền: {`${(order?.finalTotal || 0).toLocaleString('vi-VN')} VND`}</p>
-                                <p>Trạng thái: {order?.statusName || 'N/A'}</p>
+                                <p>Trạng thái: {statusMapping[order?.statusName] || "N/A"}</p>
                             </div>
                         </div>
                     </div>

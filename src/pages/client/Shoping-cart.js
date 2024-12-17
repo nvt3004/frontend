@@ -82,6 +82,15 @@ function getRowCelCick(attributes = [], item) {
   }
 }
 
+function getLeadtime(timeNumber) {
+  const leadtime = new Date(timeNumber * 1000);
+
+  // Chuyển đối tượng Date thành định dạng ISO 8601 mà bạn yêu cầu (yyyy-MM-ddTHH:mm:ss)
+  const formattedLeadtime = leadtime.toISOString().slice(0, 19);
+
+  return formattedLeadtime;
+}
+
 const ShopingCart = () => {
   const navigate = useNavigate();
   const [carts, setCarts] = useState([]);
@@ -312,7 +321,7 @@ const ShopingCart = () => {
   const handleDeleteCartItem = async (id) => {
     const isDelete = await ConfirmAlert({
       title: "Delete cart item",
-      text: "Are you sure you want to delete?",
+      text: "Bạn có chắc muốn xóa?",
       cancelText: "Cancel",
       confirmText: "Delete",
     });
@@ -340,7 +349,7 @@ const ShopingCart = () => {
 
     setCarts(carts.filter((c) => c.catrItemId !== id));
 
-    toast.success("Delete cart item success!", {
+    toast.success("Xóa sản phẩm thành khỏi giỏ hàng thành công!", {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
@@ -349,8 +358,14 @@ const ShopingCart = () => {
 
   //Thanh toán
   const handleProceedToCheckout = async () => {
+    const a = addresses.find((o) => o?.addressId == address);
+    const ngayGiaoDuKien = await getNgayGiaoHangDuKien(
+      getIdAddress(a?.district),
+      getIdAddress(a?.ward + "")
+    );
+
     if (selectedItems.length <= 0) {
-      toast.info("Please select product before checkout!", {
+      toast.info("Vui lòng chọn sản phẩm trước khi thanh toán!", {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -359,7 +374,7 @@ const ShopingCart = () => {
     }
 
     if (!address) {
-      toast.info("Please select address before checkout!", {
+      toast.info("Vui lòng chọn địa chỉ trước khi thanh toán!", {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -378,20 +393,20 @@ const ShopingCart = () => {
       }
     };
 
-    if (couponRead.trim() !== "") {
-      const [error, data] = await stfExecAPI({
-        url: `api/user/coupon?code=${iputEnter}`,
-      });
+    // if (couponRead.trim() !== "") {
+    //   const [error, data] = await stfExecAPI({
+    //     url: `api/user/coupon?code=${iputEnter}`,
+    //   });
 
-      if (error) {
-        toast.info("Coupon not found!", {
-          className: "toast-message",
-          position: "top-right",
-          autoClose: 5000,
-        });
-        return;
-      }
-    }
+    //   if (error) {
+    //     toast.info("Coupon not found!", {
+    //       className: "toast-message",
+    //       position: "top-right",
+    //       autoClose: 5000,
+    //     });
+    //     return;
+    //   }
+    // }
 
     //Pay == true thanh toán khi nhận hàng , ngược lại VNPay
     const detail = [...selectedItems].map((i) => {
@@ -403,7 +418,7 @@ const ShopingCart = () => {
 
     console.log("@ty", {
       address: addressTitle,
-      couponCode: iputEnter || null,
+      couponCode: iputEnter.trim() || null,
       creatorIsAdmin: false,
       ["fee"]: feeShip,
       statusId: 1,
@@ -416,12 +431,13 @@ const ShopingCart = () => {
         url: `api/user/cart/checkout`,
         data: {
           address: addressTitle,
-          couponCode: iputEnter || null,
+          couponCode: iputEnter.trim() ? iputEnter : null,
           creatorIsAdmin: false,
           fee,
           statusId: 1,
           paymentMethodId: 2,
           orderDetails: detail,
+          leadTime: ngayGiaoDuKien,
         },
       });
 
@@ -473,7 +489,7 @@ const ShopingCart = () => {
         url: `api/vnp/create-payment`,
         data: {
           address: addressTitle,
-          couponCode: iputEnter || null,
+          couponCode: iputEnter.trim() ? iputEnter : null,
           creatorIsAdmin: false,
           fee,
           statusId: 1,
@@ -483,6 +499,7 @@ const ShopingCart = () => {
             orderInfo: "Thanh toán đơn hàng chuyển khoản",
             bankCode: "NCB",
           },
+          leadTime: ngayGiaoDuKien,
         },
       });
 
@@ -536,7 +553,7 @@ const ShopingCart = () => {
     });
 
     if (error) {
-      toast.info(`${error?.response?.data?.message}` || "Server error", {
+      toast.info(`${error?.response?.data?.message}` || "Lỗi máy chủ", {
         className: "toast-message",
         position: "top-right",
         autoClose: 5000,
@@ -563,7 +580,7 @@ const ShopingCart = () => {
 
     fetchCarts();
 
-    toast.success("Update cart item success!", {
+    toast.success("Cập nhật giỏ hàng thành công!", {
       className: "toast-message",
       position: "top-right",
       autoClose: 5000,
@@ -621,6 +638,26 @@ const ShopingCart = () => {
 
     if (resp) {
       return resp.data.data.total;
+    }
+
+    return null;
+  }, []);
+
+  //Tính ngày giao hàng dự kiến
+  const getNgayGiaoHangDuKien = useCallback(async (districtId, wardCode) => {
+    const [err, resp] = await ghnExecAPI({
+      url: "shiip/public-api/v2/shipping-order/leadtime",
+      data: {
+        from_district_id: 3317, // địa chỉ của shop
+        from_ward_code: "550710",
+        to_district_id: districtId,
+        to_ward_code: wardCode,
+        service_id: 53320,
+      },
+    });
+
+    if (resp) {
+      return getLeadtime(resp.data.data.leadtime);
     }
 
     return null;
@@ -864,7 +901,7 @@ const ShopingCart = () => {
     });
 
     if (length !== numberReduce) {
-      setErr("Please select full attributes!");
+      setErr("Vui lòng chọn hết các thuộc tính!");
     } else {
       setErr("");
       console.log(4234, itemCartUpdate);
@@ -1173,7 +1210,7 @@ const ShopingCart = () => {
                       value={Coupon}
                     >
                       <option value="-1" selected>
-                        Select a coupon
+                     Chọn một mã giảm giá
                       </option>
 
                       {coupons &&
@@ -1200,7 +1237,7 @@ const ShopingCart = () => {
                     onClick={handleApplyCoupon}
                     className="flex-c-m stext-101 cl2 size-119 bg8 bor13 hov-btn3 p-lr-15 trans-04 pointer m-tb-10"
                   >
-                    Apply coupon
+                 Áp dụng
                   </div>
                 </div>
               </div>
@@ -1239,7 +1276,7 @@ const ShopingCart = () => {
                               to="/account"
                               className="text-decoration-none"
                             >
-                              Add new address
+                           Thêm một địa chỉ mới
                             </Link>
                           </option>
                           {addresses &&
@@ -1290,7 +1327,7 @@ const ShopingCart = () => {
                     {/* Coupon Section */}
                     <div className="mb-3">
                       <span className="stext-110 cl2">
-                        Mã giảm giá (Chỉ đọc):
+                        Mã giảm giá:
                       </span>
                       <div className="bor8 bg0 mt-2">
                         <input

@@ -357,7 +357,7 @@ function Sale() {
       dataIndex: "saleName",
       key: "saleName",
       render: (text, record) => {
-        return record.active === 2 ? (
+        return (
           <span
             style={{
               color: "#6610f2",
@@ -372,8 +372,6 @@ function Sale() {
           >
             {text}
           </span>
-        ) : (
-          <span>{text}</span>
         );
       },
     },

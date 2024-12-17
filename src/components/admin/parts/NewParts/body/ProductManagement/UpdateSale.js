@@ -68,9 +68,9 @@ const UpdateSale = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/staff/product/all`,
+        url: `api/staff/product/all-sale-update?saleId=${saleUpdate.id}`,
       });
-
+      
       if (data) {
         setProducts(data.data);
         return;
@@ -156,7 +156,9 @@ const UpdateSale = () => {
       title: "Hành động",
       key: "actions",
       render: (text, record) => {
-        return (
+        return saleUpdate.active !== 2 ? (
+          ""
+        ) : (
           <div>
             <button
               type="button"
@@ -183,7 +185,7 @@ const UpdateSale = () => {
 
     products.forEach((pd) => {
       pd?.versions?.forEach((vs) => {
-        if (vs.check) {
+        if (vs.check && !vs.sale) {
           const versionTempTable = versions.find((i) => i.id === vs.id);
           let item = {};
 
@@ -336,7 +338,10 @@ const UpdateSale = () => {
           <div className="col-md-6">
             <div className="col-md-12">
               <label className="mb-2" htmlFor="basic-default-fullname">
-                Tên chương trình <span className="text-danger">*</span>
+                Tên chương trình{" "}
+                <span className="text-danger">
+                  {saleUpdate.active === 2 ? "*" : ""}
+                </span>
               </label>
               <input
                 type="text"
@@ -344,6 +349,7 @@ const UpdateSale = () => {
                 id="basic-default-fullname"
                 placeholder="Nhập tên chương trình"
                 value={saleName}
+                disabled={saleUpdate.active !== 2}
                 onChange={(e) => setSaleName(e.target.value)}
               />
             </div>
@@ -352,7 +358,10 @@ const UpdateSale = () => {
           <div className="col-md-6">
             <div className="col-md-12">
               <label className="mb-2" htmlFor="basic-default-fullname">
-                Phần trăm giảm giá <span className="text-danger">*</span>
+                Phần trăm giảm giá{" "}
+                <span className="text-danger">
+                  {saleUpdate.active === 2 ? "*" : ""}
+                </span>
               </label>
               <input
                 type="text"
@@ -360,6 +369,7 @@ const UpdateSale = () => {
                 id="basic-default-fullname"
                 placeholder="Nhập phần trăm giảm giá giá trị từ 1 - 70 (%)"
                 value={percent}
+                disabled={saleUpdate.active !== 2}
                 onChange={(e) => {
                   const input = e.target.value;
                   if (/^\d*$/.test(input)) {
@@ -409,35 +419,39 @@ const UpdateSale = () => {
 
       <form className="card p-4 mt-3">
         <div className="d-flex mb-3">
-          <button
-            type="button"
-            className="btn btn-dark me-3"
-            onClick={() => {
-              if (versions.length > 0) {
-                const vsIds = versions.map((i) => i.id);
+          {saleUpdate.active !== 2 ? (
+            ""
+          ) : (
+            <button
+              type="button"
+              className="btn btn-dark me-3"
+              onClick={() => {
+                if (versions.length > 0) {
+                  const vsIds = versions.map((i) => i.id);
 
-                setProducts(
-                  products.map((pd) => {
-                    const vsTemp = pd.versions.map((vs) => {
+                  setProducts(
+                    products.map((pd) => {
+                      const vsTemp = pd.versions.map((vs) => {
+                        return {
+                          ...vs,
+                          check: vsIds.find((id) => id === vs.id),
+                        };
+                      });
+
                       return {
-                        ...vs,
-                        check: vsIds.find((id) => id === vs.id),
+                        ...pd,
+                        versions: vsTemp,
+                        check: vsTemp.every((v) => v.check),
                       };
-                    });
-
-                    return {
-                      ...pd,
-                      versions: vsTemp,
-                      check: vsTemp.every((v) => v.check),
-                    };
-                  })
-                );
-              }
-              setIsModalOpen(true);
-            }}
-          >
-            Chọn sản phẩm <Plus weight="fill" />
-          </button>
+                    })
+                  );
+                }
+                setIsModalOpen(true);
+              }}
+            >
+              Chọn sản phẩm <Plus weight="fill" />
+            </button>
+          )}
         </div>
 
         <div className="row mb-4">
@@ -454,13 +468,17 @@ const UpdateSale = () => {
         </div>
 
         <div className="d-flex justify-content-end">
-          <button
-            type="button"
-            className="btn btn-dark me-3"
-            onClick={handleSaveSale}
-          >
-            <FloppyDiskBack /> Lưu
-          </button>
+          {saleUpdate.active !== 2 ? (
+            ""
+          ) : (
+            <button
+              type="button"
+              className="btn btn-dark me-3"
+              onClick={handleSaveSale}
+            >
+              <FloppyDiskBack /> Lưu
+            </button>
+          )}
         </div>
       </form>
 
@@ -535,6 +553,7 @@ const UpdateSale = () => {
                     const allVersionsChecked =
                       pd.versions.length > 0 &&
                       pd.versions.every((vs) => vs.check);
+                    const isDisibleProduct = pd.versions.every((vs) => vs.sale);
 
                     return (
                       <React.Fragment key={pd.id}>
@@ -543,6 +562,10 @@ const UpdateSale = () => {
                           style={{ cursor: "pointer" }}
                           onClick={() => {
                             const newCheckState = !pd.check;
+
+                            if (isDisibleProduct) {
+                              return;
+                            }
 
                             setProducts(
                               products.map((i) =>
@@ -561,31 +584,35 @@ const UpdateSale = () => {
                           }}
                         >
                           <td className="col-1">
-                            <input
-                              style={{ cursor: "pointer" }}
-                              className="form-check-input"
-                              type="checkbox"
-                              checked={allVersionsChecked || false}
-                              onClick={(e) => e.stopPropagation()} // Ngăn chặn sự kiện onClick của <tr>
-                              onChange={(e) => {
-                                const newCheckState = e.target.checked;
+                            {isDisibleProduct ? (
+                              ""
+                            ) : (
+                              <input
+                                style={{ cursor: "pointer" }}
+                                className="form-check-input"
+                                type="checkbox"
+                                checked={allVersionsChecked || false}
+                                onClick={(e) => e.stopPropagation()} // Ngăn chặn sự kiện onClick của <tr>
+                                onChange={(e) => {
+                                  const newCheckState = e.target.checked;
 
-                                setProducts(
-                                  products.map((i) =>
-                                    i.id === pd.id
-                                      ? {
-                                          ...i,
-                                          check: newCheckState,
-                                          versions: i.versions.map((vs) => ({
-                                            ...vs,
+                                  setProducts(
+                                    products.map((i) =>
+                                      i.id === pd.id
+                                        ? {
+                                            ...i,
                                             check: newCheckState,
-                                          })),
-                                        }
-                                      : i
-                                  )
-                                );
-                              }}
-                            />
+                                            versions: i.versions.map((vs) => ({
+                                              ...vs,
+                                              check: newCheckState,
+                                            })),
+                                          }
+                                        : i
+                                    )
+                                  );
+                                }}
+                              />
+                            )}
                           </td>
                           <td className="col-1">
                             <img
@@ -609,6 +636,10 @@ const UpdateSale = () => {
                                     style={{ cursor: "pointer" }}
                                     onClick={(e) => {
                                       e.stopPropagation(); // Ngăn xung đột
+                                      if (vs.sale) {
+                                        return;
+                                      }
+
                                       const versionUpdate = pd.versions.map(
                                         (i) => {
                                           return i.id === vs.id
@@ -637,48 +668,62 @@ const UpdateSale = () => {
                                     }}
                                   >
                                     <td className="col-1">
-                                      <input
-                                        style={{ cursor: "pointer" }}
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        checked={vs.check || false}
-                                        onClick={(e) => e.stopPropagation()} // Ngăn chặn xung đột với thẻ <tr>
-                                        onChange={(e) => {
-                                          const versionUpdate = pd.versions.map(
-                                            (i) => {
-                                              return i.id === vs.id
-                                                ? {
-                                                    ...i,
-                                                    check: e.target.checked,
-                                                  }
-                                                : i;
-                                            }
-                                          );
+                                      {vs.sale ? (
+                                        ""
+                                      ) : (
+                                        <input
+                                          style={{ cursor: "pointer" }}
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          checked={vs.check || false}
+                                          onClick={(e) => e.stopPropagation()} // Ngăn chặn xung đột với thẻ <tr>
+                                          onChange={(e) => {
+                                            const versionUpdate =
+                                              pd.versions.map((i) => {
+                                                return i.id === vs.id
+                                                  ? {
+                                                      ...i,
+                                                      check: e.target.checked,
+                                                    }
+                                                  : i;
+                                              });
 
-                                          const allVersionsNowChecked =
-                                            versionUpdate.every((v) => v.check);
+                                            const allVersionsNowChecked =
+                                              versionUpdate.every(
+                                                (v) => v.check
+                                              );
 
-                                          setProducts(
-                                            products.map((i) =>
-                                              i.id === pd.id
-                                                ? {
-                                                    ...i,
-                                                    versions: [
-                                                      ...versionUpdate,
-                                                    ],
-                                                    check:
-                                                      allVersionsNowChecked,
-                                                  }
-                                                : i
-                                            )
-                                          );
-                                        }}
-                                      />
+                                            setProducts(
+                                              products.map((i) =>
+                                                i.id === pd.id
+                                                  ? {
+                                                      ...i,
+                                                      versions: [
+                                                        ...versionUpdate,
+                                                      ],
+                                                      check:
+                                                        allVersionsNowChecked,
+                                                    }
+                                                  : i
+                                              )
+                                            );
+                                          }}
+                                        />
+                                      )}
                                     </td>
                                     <td className="col-9">
                                       {vs?.attributes
                                         .map((i) => i.value)
                                         .join(" - ")}
+
+                                      {vs.sale ? (
+                                        <span className="badge bg-label-primary mx-2">
+                                          Chương trình{" "}
+                                          {vs.saleName + " (Đang áp dụng)"}
+                                        </span>
+                                      ) : (
+                                        ""
+                                      )}
                                     </td>
                                   </tr>
                                 </td>

@@ -17,7 +17,7 @@ const CouponCard = ({ discount = "", code = "", name = "", onSave }) => {
         </div>
         <div className="coupon-content">
           <h2 className="coupon-discount">Giảm {discount}</h2>
-          <p className="coupon-code">Mã: {code}</p>
+          <p className="coupon-code">Số lượng: {code}</p>
           <p className="coupon-name text-danger">
             {" "}
             {name === "Đã hết hạn" ? "Đã hết hạn" : `Còn: ${name}`}
