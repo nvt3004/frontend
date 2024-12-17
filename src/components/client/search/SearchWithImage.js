@@ -67,7 +67,7 @@ const SearchWithImage = ({
                   type="file"
                   id="hiddenImageInput"
                   style={{ display: "none" }}
-                  accept="image/*"
+                  accept="image/jpeg, image/png, image/jpg"
                   onChange={handleImageChange}
                 />
                 <label
