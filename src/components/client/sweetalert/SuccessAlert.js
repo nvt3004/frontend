@@ -1,16 +1,15 @@
-import Swal from "sweetalert2";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SuccessAlert = ({ title, text }) => {
-  return Swal.fire({
-    title: title || "Thành công!",
-    text: text || "Thao tác thành công!",
-    icon: "success",
-    confirmButtonText: "OK",
-    customClass: {
-      container: 'swal2-container-custom',
-    }
+  
+  toast.success(text || "Thao tác thành công!", {
+    position: "top-right",
+    autoClose: 3000,       
+    closeOnClick: true,    
+    pauseOnHover: true,  
   });
+  return null;
 };
 
 export default SuccessAlert;
- 

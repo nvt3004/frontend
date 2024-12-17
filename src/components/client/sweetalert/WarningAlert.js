@@ -1,15 +1,14 @@
-import Swal from "sweetalert2";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const WarningAlert = ({ title, text }) => {
-  return Swal.fire({
-    title: title || "Cảnh báo!",
-    text: text || "Hãy cẩn thận!",
-    icon: "warning",
-    confirmButtonText: "OK",
-    customClass: {
-      container: 'swal2-container-custom',
-    }
+  toast.warn(text || "Hãy cẩn thận!", {
+    position: "top-right",
+    autoClose: 3000,
+    closeOnClick: true,
+    pauseOnHover: true,
   });
+  return null;
 };
 
 export default WarningAlert;
