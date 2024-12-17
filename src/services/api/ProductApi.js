@@ -507,7 +507,23 @@ const speechToText = async (audioWavFile) => {
     throw error;
   }
 };
+const confirmReceived = async (idOrder) => {
+  try {
+    await axiosInstance.put(`/user/orders/confirm-received`, {
+      params: { orderId: idOrder },
+    });
 
+    SuccessAlert({
+      title: "Hủy đơn thành công!",
+      text: "Đơn hàng của bạn đã được hủy.",
+    });
+  } catch (error) {
+    DangerAlert({
+      title: "Lỗi",
+      text: "Xảy ra lỗi trong quá trình xử lý.",
+    });
+  }
+};
 const productApi = {
   getProds: search,
   getFilterAttribute,
@@ -525,5 +541,6 @@ const productApi = {
   cancelOrder,
   searchProductByImage,
   speechToText,
+  confirmReceived
 };
 export default productApi;

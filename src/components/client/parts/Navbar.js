@@ -53,7 +53,11 @@ const Navbar = () => {
         dispatch(setCartCount(data?.length == null ? 0 : data.length));
         setTotal(0);
         const calculatedTotal = data.reduce((acc, product) => {
-          return acc + Number(product.price) * Number(product.quantity);
+          const price =
+            product.salePrice !== null
+              ? Number(product.salePrice)
+              : Number(product.price);
+          return acc + price * Number(product.quantity);
         }, 0);
 
         setTotal(calculatedTotal);
@@ -635,32 +639,34 @@ const Navbar = () => {
                         .join(", ")}
                     </span>
                     <span className="header-cart-item-info">
-  {`${product.quantity} x `}
-  {(() => {
-    const matchedVersion = product?.productDetail?.versions?.find(
-      (ver) => ver?.id === product?.versionId
-    );
+                      {`${product.quantity} x `}
+                      {(() => {
+                        const matchedVersion =
+                          product?.productDetail?.versions?.find(
+                            (ver) => ver?.id === product?.versionId
+                          );
 
-    if (matchedVersion?.salePrice) {
-      return (
-        <>
-          <span className="text-decoration-line-through text-muted">
-            {formatCurrencyVND(product?.price ?? "N/A")}
-          </span>{" "}
-          <span className="text-danger fw-bold">
-            {formatCurrencyVND(matchedVersion?.salePrice ?? "N/A")}
-          </span>
-          <span className="bg-body-secondary p-2 rounded-3 ms-3">
-            -{matchedVersion?.sale}%
-          </span>
-        </>
-      );
-    } else {
-      return formatCurrencyVND(product?.price ?? "N/A");
-    }
-  })()}
-</span>
-
+                        if (matchedVersion?.salePrice) {
+                          return (
+                            <>
+                              <span className="text-decoration-line-through text-muted">
+                                {formatCurrencyVND(product?.price ?? "N/A")}
+                              </span>{" "}
+                              <span className="text-danger fw-bold">
+                                {formatCurrencyVND(
+                                  matchedVersion?.salePrice ?? "N/A"
+                                )}
+                              </span>
+                              <span className="bg-body-secondary p-2 rounded-3 ms-3">
+                                -{matchedVersion?.sale}%
+                              </span>
+                            </>
+                          );
+                        } else {
+                          return formatCurrencyVND(product?.price ?? "N/A");
+                        }
+                      })()}
+                    </span>
                   </div>
                 </li>
               ))}
