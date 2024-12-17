@@ -487,6 +487,7 @@ const CouponTable = () => {
               onChange={(date) => setStartDate(date)}
               // dateFormat="dd/MM/yyyy"
               dateFormat="yyyy/MM/dd HH:mm"
+              showTimeSelect
               locale={vi}
               placeholderText="dd/mm/yyyy"
               className="form-control"
@@ -504,6 +505,7 @@ const CouponTable = () => {
               onChange={(date) => setEndDate(date)}
               // dateFormat="dd/MM/yyyy"
               dateFormat="yyyy/MM/dd HH:mm"
+              showTimeSelect
               locale={vi}
               placeholderText="dd/mm/yyyy"
               className="form-control"
