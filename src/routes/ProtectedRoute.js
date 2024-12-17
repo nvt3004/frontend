@@ -46,7 +46,7 @@ const ProtectedRoute = ({ element, requiredRole }) => {
       }
 
       // Kiểm tra quyền admin
-      if (quyenAdmin.includes(pathNow) && role.toLowerCase() !== "admin") {
+      if (quyenAdmin.includes(pathNow) && role?.toLowerCase() !== "admin") {
         setIsAllowed(false);
         setLoading(false);
         return;

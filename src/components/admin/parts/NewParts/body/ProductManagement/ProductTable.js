@@ -32,7 +32,7 @@ const ProductTable = () => {
   const [permissions, setPermissions] = useState([]);
   const handleGetPermission = () => {
     if (profile) {
-      axiosInstance.get(`/admin/userpermissions/${profile?.userId}`).then(
+      axiosInstance.get(`/staff/userpermissions/${profile?.userId}`).then(
         (response) => {
           if (response) {
             setPermissions(response.data?.data.find(item => item.title === 'Product'));
