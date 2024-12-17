@@ -163,7 +163,7 @@ const AddSale = () => {
 
     products.forEach((pd) => {
       pd?.versions?.forEach((vs) => {
-        if (vs.check) {
+        if (vs.check && !vs.sale) {
           versionsTemp.push({
             id: vs.id,
             name: vs.versionName,
@@ -249,12 +249,15 @@ const AddSale = () => {
       return;
     }
 
-    if(versions.length === 0){
-      toast.error(`Vui lòng chọn sản phẩm để áp dụng cho chương trình giảm giá`, {
-        className: "toast-message",
-        position: "top-right",
-        autoClose: 5000,
-      });
+    if (versions.length === 0) {
+      toast.error(
+        `Vui lòng chọn sản phẩm để áp dụng cho chương trình giảm giá`,
+        {
+          className: "toast-message",
+          position: "top-right",
+          autoClose: 5000,
+        }
+      );
 
       return;
     }
@@ -589,6 +592,7 @@ const AddSale = () => {
                     const allVersionsChecked =
                       pd.versions.length > 0 &&
                       pd.versions.every((vs) => vs.check);
+                    const isDisibleProduct = pd.versions.every((vs) => vs.sale);
 
                     return (
                       <React.Fragment key={pd.id}>
@@ -598,6 +602,9 @@ const AddSale = () => {
                           onClick={() => {
                             const newCheckState = !pd.check;
 
+                            if(isDisibleProduct){
+                              return;
+                            }
                             setProducts(
                               products.map((i) =>
                                 i.id === pd.id
@@ -615,7 +622,7 @@ const AddSale = () => {
                           }}
                         >
                           <td className="col-1">
-                            <input
+                           {isDisibleProduct?'': <input
                               style={{ cursor: "pointer" }}
                               className="form-check-input"
                               type="checkbox"
@@ -623,7 +630,7 @@ const AddSale = () => {
                               onClick={(e) => e.stopPropagation()} // Ngăn chặn sự kiện onClick của <tr>
                               onChange={(e) => {
                                 const newCheckState = e.target.checked;
-
+          
                                 setProducts(
                                   products.map((i) =>
                                     i.id === pd.id
@@ -639,7 +646,7 @@ const AddSale = () => {
                                   )
                                 );
                               }}
-                            />
+                            />}
                           </td>
                           <td className="col-1">
                             <img
@@ -656,13 +663,19 @@ const AddSale = () => {
                         {pd.versions.length > 0 &&
                           pd.versions.map((vs, index) => {
                             return (
-                              <tr className="row" key={index}>
+                              <tr
+                                className="row"
+                                key={index}
+                              >
                                 <td className="col-11 offset-1">
                                   <tr
                                     className="row"
                                     style={{ cursor: "pointer" }}
                                     onClick={(e) => {
                                       e.stopPropagation(); // Ngăn xung đột
+                                      if (vs.sale) {
+                                        return;
+                                      }
                                       const versionUpdate = pd.versions.map(
                                         (i) => {
                                           return i.id === vs.id
@@ -691,48 +704,62 @@ const AddSale = () => {
                                     }}
                                   >
                                     <td className="col-1">
-                                      <input
-                                        style={{ cursor: "pointer" }}
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        checked={vs.check || false}
-                                        onClick={(e) => e.stopPropagation()} // Ngăn chặn xung đột với thẻ <tr>
-                                        onChange={(e) => {
-                                          const versionUpdate = pd.versions.map(
-                                            (i) => {
-                                              return i.id === vs.id
-                                                ? {
-                                                    ...i,
-                                                    check: e.target.checked,
-                                                  }
-                                                : i;
-                                            }
-                                          );
+                                      {vs.sale ? (
+                                        ""
+                                      ) : (
+                                        <input
+                                          style={{ cursor: "pointer" }}
+                                          className="form-check-input"
+                                          type="checkbox"
+                                          checked={vs.check || false}
+                                          onClick={(e) => e.stopPropagation()} // Ngăn chặn xung đột với thẻ <tr>
+                                          onChange={(e) => {
+                                            const versionUpdate =
+                                              pd.versions.map((i) => {
+                                                return i.id === vs.id
+                                                  ? {
+                                                      ...i,
+                                                      check: e.target.checked,
+                                                    }
+                                                  : i;
+                                              });
 
-                                          const allVersionsNowChecked =
-                                            versionUpdate.every((v) => v.check);
+                                            const allVersionsNowChecked =
+                                              versionUpdate.every(
+                                                (v) => v.check
+                                              );
 
-                                          setProducts(
-                                            products.map((i) =>
-                                              i.id === pd.id
-                                                ? {
-                                                    ...i,
-                                                    versions: [
-                                                      ...versionUpdate,
-                                                    ],
-                                                    check:
-                                                      allVersionsNowChecked,
-                                                  }
-                                                : i
-                                            )
-                                          );
-                                        }}
-                                      />
+                                            setProducts(
+                                              products.map((i) =>
+                                                i.id === pd.id
+                                                  ? {
+                                                      ...i,
+                                                      versions: [
+                                                        ...versionUpdate,
+                                                      ],
+                                                      check:
+                                                        allVersionsNowChecked,
+                                                    }
+                                                  : i
+                                              )
+                                            );
+                                          }}
+                                        />
+                                      )}
                                     </td>
                                     <td className="col-9">
                                       {vs?.attributes
                                         .map((i) => i.value)
                                         .join(" - ")}
+
+                                      {vs.sale ? (
+                                        <span className="badge bg-label-primary mx-2">
+                                          Chương trình{" "}
+                                          {vs.saleName + " (Đang áp dụng)"}
+                                        </span>
+                                      ) : (
+                                        ""
+                                      )}
                                     </td>
                                   </tr>
                                 </td>
@@ -752,7 +779,3 @@ const AddSale = () => {
 };
 
 export default AddSale;
-
-
-// Nếu sản phẩm đó trùng với sản phẩm trong một trương trình đang diễn ra
-// 

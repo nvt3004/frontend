@@ -132,13 +132,13 @@ const Login = () => {
 
     try {
       const response = await loginWithEmail(username, password);
-    
+
       if (response.status === 200) {
         const token = Cookies.get("token");
         if (token) {
           const profileData = await getProfile();
           setProfile(profileData);
-    
+
           const role = profileData?.listData?.authorities[0]?.authority;
           if (role === "Admin") {
             navigate("/admin");
@@ -152,14 +152,13 @@ const Login = () => {
       }
     } catch (error) {
       if (error?.response?.data?.statusCode === 401) {
-        setError("Invalid username or password.");
+        setError("Tên đăng nhập hoặc mật khẩu không chính xác.");
       } else {
         console.log("Trạng thái: " + error?.response?.data?.statusCode);
-        setError("An unexpected error occurred. Please try again.");
+        setError("Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.");
       }
-      console.error("Error during username login:", error.message);
+      console.error("Lỗi trong quá trình đăng nhập:", error.message);
     }
-    
   };
 
   useEffect(() => {
@@ -176,37 +175,37 @@ const Login = () => {
           <div className="col-md-4">
             <div className="card shadow-lg border-0 rounded-lg">
               <div className="card-body p-5">
-                <h3 className="card-title text-center mb-4">Login</h3>
+                <h3 className="card-title text-center mb-4">Đăng nhập</h3>
                 <form onSubmit={handleEmailLogin}>
                   {error && <div className="alert alert-danger">{error}</div>}
                   <div className="mb-3">
                     <label htmlFor="emailInput" className="form-label">
-                      Email/Number Phone
+                      Email/Điện thoại
                     </label>
                     <input
                       type="text"
                       className="form-control"
                       id="emailInput"
-                      placeholder="Enter your username"
+                      placeholder="Nhập email hoặc số điện thoại"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                     />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="passwordInput" className="form-label">
-                      Password
+                      Mật khẩu
                     </label>
                     <input
                       type="password"
                       className="form-control"
                       id="passwordInput"
-                      placeholder="Enter your password"
+                      placeholder="Nhập mật khẩu"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
                   <button type="submit" className="btn btn-primary w-100 mb-3">
-                    Login
+                    Đăng nhập
                   </button>
                 </form>
                 <div className="d-flex flex-column gap-3">
@@ -230,13 +229,13 @@ const Login = () => {
                     to="/auth/forgot-password"
                     className="btn btn-link no-underline"
                   >
-                    Forgot password?
+                    Quên mật khẩu?
                   </Link>
                   <Link
                     to="/auth/register"
                     className="btn btn-link no-underline"
                   >
-                    Create an account
+                    Tạo tài khoản
                   </Link>
                 </div>
               </div>

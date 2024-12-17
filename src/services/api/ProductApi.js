@@ -141,8 +141,8 @@ const addWishlist = async (productId, dispatch) => {
     if (!error) {
       dispatch(incrementWishlist());
       SuccessAlert({
-        title: "Product Added!",
-        text: "The product has been successfully added to your wishlist.",
+        title: "Thành công!",
+        text: "Thêm sản phẩm vào mục yêu thích thành công.",
       });
     } else {
       window.location.href = "/auth/login";
@@ -152,41 +152,10 @@ const addWishlist = async (productId, dispatch) => {
   } catch (error) {
     // Kiểm tra các mã trạng thái khác nhau để xử lý lỗi cụ thể
 
-    if (error.response) {
-      const { status, data } = error.response;
-      console.log("abc", error);
-      switch (status) {
-        case 400:
-          DangerAlert({ title: "Invalid Token", text: data.message });
-          break;
-        case 401:
-          WarningAlert({ title: "Token Expired", text: data.message });
-          break;
-        case 403:
-          WarningAlert({ title: "Account Locked", text: data.message });
-          break;
-        case 404:
-          DangerAlert({ title: "Not Found", text: data.message });
-          break;
-        case 409:
-          InfoAlert({ title: "Already Liked", text: data.message });
-          break;
-        case 422:
-          DangerAlert({ title: "Invalid Input", text: data.message });
-          break;
-        default:
-          DangerAlert({
-            title: "Unknown Error",
-            text: "An unexpected error occurred",
-          });
-          break;
-      }
-    } else {
-      DangerAlert({
-        title: "Connection Error",
-        text: "Failed to connect to the server",
-      });
-    }
+    DangerAlert({
+      title: "Lỗi",
+      text: "Xảy ra lỗi trong quá trình xử lý.",
+    });
   }
 };
 const removeWishlist = async (productId, dispatch) => {
@@ -199,8 +168,8 @@ const removeWishlist = async (productId, dispatch) => {
     if (!error) {
       dispatch(decrementWishlist());
       SuccessAlert({
-        title: "Deleted!",
-        text: "The wishlist item has been successfully removed.",
+        title: "Thành công!",
+        text: "Xóa sản phẩm khỏi mục yêu thích thành công.",
       });
     } else {
       window.location.href = "/auth/login";
@@ -208,37 +177,10 @@ const removeWishlist = async (productId, dispatch) => {
 
     return data;
   } catch (error) {
-    console.error("Error while removing wishlist item:", error);
-
-    // Kiểm tra lỗi với `error.response`
-    if (error.response) {
-      const { status, data } = error.response;
-      switch (status) {
-        case 400:
-          DangerAlert({ title: "Invalid Token", text: data.message });
-          break;
-        case 401:
-          WarningAlert({ title: "Token Expired", text: data.message });
-          break;
-        case 403:
-          WarningAlert({ title: "Account Locked", text: data.message });
-          break;
-        case 404:
-          DangerAlert({ title: "Not Found", text: data.message });
-          break;
-        default:
-          DangerAlert({
-            title: "Unknown Error",
-            text: "An unexpected error occurred.",
-          });
-          break;
-      }
-    } else {
-      DangerAlert({
-        title: "Connection Error",
-        text: "Failed to connect to the server.",
-      });
-    }
+    DangerAlert({
+      title: "Lỗi",
+      text: "Xảy ra lỗi trong quá trình xử lý.",
+    });
   }
 };
 
@@ -353,7 +295,7 @@ const getOrder = async (keyword, statusId, size, page) => {
 };
 const getOrderStatus = async (size, page) => {
   try {
-    const data = await axiosInstance.get("/staff/orders/statuses");
+    const data = await axiosInstance.get("/user/orders/statuses");
     return data.data;
   } catch (error) {
     if (error.response) {
@@ -473,74 +415,14 @@ const addFeedback = async ({
 
     // Thông báo thành công
     SuccessAlert({
-      title: "Success!",
-      text: "Your feedback has been successfully submitted.",
+      title: "Thành công!",
+      text: "Đánh giá của bạn đã được gửi đi.",
     });
   } catch (error) {
-    if (error.response) {
-      const { status, data } = error.response;
-      // Xử lý các lỗi dựa trên mã trạng thái và thông báo API trả về
-      switch (status) {
-        case 400:
-          DangerAlert({
-            title: "Invalid Input",
-            text:
-              data?.message ||
-              "Invalid input or file format. Please check your data.",
-          });
-          break;
-        case 401:
-          DangerAlert({
-            title: "Unauthorized",
-            text: data?.message || "You need to log in to submit feedback.",
-          });
-          break;
-        case 403:
-          DangerAlert({
-            title: "Forbidden",
-            text:
-              data?.message ||
-              "Your account is restricted or action is forbidden.",
-          });
-          break;
-        case 404:
-          DangerAlert({
-            title: "Not Found",
-            text: data?.message || "Product or order not found.",
-          });
-          break;
-        case 422:
-          DangerAlert({
-            title: "Invalid Data",
-            text:
-              data?.message ||
-              "Unable to process your feedback due to invalid data.",
-          });
-          break;
-        case 500:
-          DangerAlert({
-            title: "Server Error",
-            text:
-              data?.message ||
-              "An unexpected server error occurred. Please try again later.",
-          });
-          break;
-        default:
-          DangerAlert({
-            title: "Error",
-            text:
-              data?.message ||
-              "An unknown error occurred. Please contact support.",
-          });
-          break;
-      }
-    } else {
-      // Lỗi kết nối hoặc lỗi không có phản hồi từ server
-      DangerAlert({
-        title: "Connection Error",
-        text: `Failed to connect to the server. Error: ${error.message}`,
-      });
-    }
+    DangerAlert({
+      title: "Lỗi",
+      text: "Xảy ra lỗi trong quá trình xử lý.",
+    });
   }
 };
 
@@ -551,7 +433,7 @@ const cancelOrder = async (idOrder) => {
       title: "Xác nhận hủy đơn hàng",
       text: "Bạn có chắc chắn muốn hủy đơn hàng này không?",
       confirmText: "Xác nhận",
-      cancelText: "Hủy bỏ",
+      cancelText: "Hủy",
     });
 
     if (check) {
@@ -562,65 +444,15 @@ const cancelOrder = async (idOrder) => {
 
       // Thông báo thành công
       SuccessAlert({
-        title: "Thành công!",
+        title: "Hủy đơn thành công!",
         text: "Đơn hàng của bạn đã được hủy.",
       });
     }
   } catch (error) {
-    if (error.response) {
-      const { status, data } = error.response;
-      // Xử lý các lỗi dựa trên mã trạng thái và thông báo API trả về
-      switch (status) {
-        case 400:
-          DangerAlert({
-            title: "Lỗi dữ liệu",
-            text:
-              data?.message || "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.",
-          });
-          break;
-        case 401:
-          DangerAlert({
-            title: "Chưa xác thực",
-            text:
-              data?.message || "Bạn cần đăng nhập để thực hiện thao tác này.",
-          });
-          break;
-        case 403:
-          DangerAlert({
-            title: "Không có quyền",
-            text: data?.message || "Bạn không có quyền hủy đơn hàng này.",
-          });
-          break;
-        case 404:
-          DangerAlert({
-            title: "Không tìm thấy",
-            text: data?.message || "Đơn hàng không tồn tại hoặc đã bị xóa.",
-          });
-          break;
-        case 500:
-          DangerAlert({
-            title: "Lỗi hệ thống",
-            text:
-              data?.message ||
-              "Có lỗi xảy ra trên hệ thống. Vui lòng thử lại sau.",
-          });
-          break;
-        default:
-          DangerAlert({
-            title: "Lỗi",
-            text:
-              data?.message ||
-              "Đã xảy ra lỗi không xác định. Vui lòng liên hệ hỗ trợ.",
-          });
-          break;
-      }
-    } else {
-      // Lỗi kết nối hoặc lỗi không có phản hồi từ server
-      DangerAlert({
-        title: "Lỗi kết nối",
-        text: `Không thể kết nối đến máy chủ. Chi tiết lỗi: ${error.message}`,
-      });
-    }
+    DangerAlert({
+      title: "Lỗi",
+      text: "Xảy ra lỗi trong quá trình xử lý.",
+    });
   }
 };
 
@@ -649,7 +481,6 @@ const searchProductByImage = async (imageFile) => {
     throw error;
   }
 };
-
 
 const speechToText = async (audioWavFile) => {
   try {
@@ -693,6 +524,6 @@ const productApi = {
   addFeedback,
   cancelOrder,
   searchProductByImage,
-  speechToText
+  speechToText,
 };
 export default productApi;

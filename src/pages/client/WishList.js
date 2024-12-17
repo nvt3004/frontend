@@ -272,7 +272,7 @@ const WishList = () => {
         }
       }
     } else {
-      setErr("Please select full attributes!");
+      setErr("Vui lòng chọn hết các thuộc tính!");
     }
   };
 
@@ -300,7 +300,8 @@ const WishList = () => {
     }
 
     SuccessAlert({
-      text: "Add product to cart success!",
+      title: "Thành công!",
+      text: "Thêm sản phẩm vào giỏ hàng thành công!",
     });
   };
 
@@ -415,27 +416,32 @@ const WishList = () => {
       <section className="bg0 p-t-23 p-b-140">
         <div className="container">
           <div className="p-b-10 mb-4">
-            <h3 className="ltext-103 cl5">Wish Lists</h3>
+            <h3 className="ltext-103 cl5">Danh sách yêu thích</h3>
           </div>
           <div className="row isotope-grid" style={style.h}>
             {!Products || Products?.length ? (
               Products?.map((product, index) => (
                 <div
                   key={index}
-                  className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women"
+                  className="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item women position-relative"
                 >
+                  {product?.discountPercent > 0 && (
+                    <span className="position-absolute right-0 zindex-5 bg-body-secondary p-2 rounded-3">
+                      {`${product?.discountPercent}%`}
+                    </span>
+                  )}
                   <div className="block2">
                     <div className="block2-pic hov-img0">
                       <img src={product?.imgName} alt="IMG-PRODUCT" />
                       {/* Quick View */}
                       <button
                         type="button"
-                        className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 text-decoration-none "
+                        className="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 text-decoration-none "
                         data-bs-toggle="modal"
                         data-bs-target="#exampleModal"
                         onClick={() => handleProductClick(product?.id)}
                       >
-                        Quick View
+                        Xem
                       </button>
                     </div>
 
@@ -449,14 +455,42 @@ const WishList = () => {
                         </Link>
 
                         <span className="stext-105 cl3">
-                          {`
-  ${
-    product?.minPrice !== product?.maxPrice
-      ? `${formatCurrencyVND(product?.minPrice ?? "N/A")} ~ `
-      : ""
-  }
-  ${formatCurrencyVND(product?.maxPrice ?? "N/A")}
-`}
+                          {product?.minPriceSale && product?.maxPriceSale ? (
+                            <>
+                              <span className="text-decoration-line-through text-muted">
+                                {/* Giá gốc */}
+                                {product?.minPrice !== product?.maxPrice &&
+                                  `${formatCurrencyVND(
+                                    product?.minPrice ?? "N/A"
+                                  )} ~ `}
+                                {formatCurrencyVND(product?.maxPrice ?? "N/A")}
+                              </span>
+                              <br />
+                              <span className="text-danger fw-bold">
+                                {/* Giá khuyến mãi */}
+                                {product?.minPriceSale !==
+                                  product?.maxPriceSale &&
+                                  `${formatCurrencyVND(
+                                    product?.minPriceSale ?? "N/A"
+                                  )} ~ `}
+                                {formatCurrencyVND(
+                                  product?.maxPriceSale ?? "N/A"
+                                )}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              {" "}
+                              <span className="stext-105 cl3">
+                                {/* Giá gốc */}
+                                {product?.minPrice !== product?.maxPrice &&
+                                  `${formatCurrencyVND(
+                                    product?.minPrice ?? "N/A"
+                                  )} ~ `}
+                                {formatCurrencyVND(product?.maxPrice ?? "N/A")}
+                              </span>
+                            </>
+                          )}
                         </span>
                       </div>
 
@@ -494,7 +528,7 @@ const WishList = () => {
         aria-labelledby="exampleModalLabel"
       >
         <div className="modal-dialog modal-xl">
-          <div className="modal-content rounded-0">
+          <div className="modal-content rounded-4">
             <div className="modal-header pb-1 pt-2">
               <h1
                 className="modal-title flex-c-m stext-101 cl5 size-103  p-lr-15"
@@ -517,7 +551,7 @@ const WishList = () => {
                     className="carousel slide carousel-fade"
                   >
                     <div className="row m-0">
-                      <div className="col-md-2 me-2">
+                      <div className="col-md-2">
                         {/* Thumbnail Images as Indicators */}
                         <div className="carousel-indicators flex-column h-100 m-0 overflow-auto custom-scrollbar">
                           {ProductDetail?.versions?.length > 0 &&
@@ -535,6 +569,7 @@ const WishList = () => {
                                     : ""
                                 }`}
                                 aria-label={`Slide ${index + 1}`}
+                                style={style.wh}
                                 onClick={() =>
                                   version?.attributes.forEach((f, index2) => {
                                     handleClickItemAttribute({
@@ -593,13 +628,12 @@ const WishList = () => {
                 </div>
 
                 <div className="col-md-6 col-lg-5 p-b-30">
-                  <div className="p-r-50 p-t-5 p-lr-0-lg">
+                  <div className="p-r-50 p-t-5 p-lr-0-lg mt-5">
                     <h4 className="mtext-105 cl2 js-name-detail p-b-14">
                       {ProductDetail ? ProductDetail?.product?.productName : ""}
                     </h4>
 
                     <span className="mtext-106 cl2">
-                      {" "}
                       {Products?.map((product1, index) =>
                         product1?.id == ProductDetail?.product?.id ? (
                           <span className="mtext-106 cl2">
@@ -610,14 +644,13 @@ const WishList = () => {
                                 )} - ${formatCurrencyVND(
                                   ProductDetail?.product?.maxPrice ?? "N/A"
                                 )}`}{" "}
-                            {verName && (
-                              <span className="fs-17"> - {verName}</span>
-                            )}
                           </span>
                         ) : null
                       )}
                     </span>
-
+                    <div className="mt-3">
+                      {verName && <span className="fs-17">{verName}</span>}
+                    </div>
                     <div className="stext-102 cl3 p-t-23">
                       Xem bảng <strong>hướng dẫn chọn size</strong> để lựa chọn
                       sản phẩm phụ hợp với bạn nhất{" "}
@@ -670,8 +703,8 @@ const WishList = () => {
                     </div>
 
                     {/* <!--  --> */}
-                    <div className="d-flex justify-content-center">
-                      {/* <!--  --> */}
+                    {/* <div className="d-flex justify-content-center">
+                
                       <div className="flex-w flex-m  p-t-40 respon7">
                         <div className="flex-m bor9 p-r-10 m-r-11">
                           <Link
@@ -703,7 +736,7 @@ const WishList = () => {
                           <i className="fa fa-google-plus"></i>
                         </Link>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

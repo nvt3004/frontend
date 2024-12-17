@@ -192,7 +192,8 @@ const Footer = () => {
             </div> */}
 
             <p className="stext-107 cl6 txt-center">
-              &copy; {year} All rights reserved | Proudly crafted by Step to
+    
+&copy; {year} Mọi quyền được bảo lưu | Tự hào được tạo ra bởi Step to
               Future
             </p>
           </div>

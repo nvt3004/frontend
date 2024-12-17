@@ -187,8 +187,8 @@ export const updateUser = async (userId, updatedUser) => {
       }
     );
     SuccessAlert({
-      title: "Product Added!",
-      text: "The product has been successfully added to your wishlist.",
+      title: "Thành công!",
+      text: "Cập nhật tài khoản thành công!",
     });
     return response.data;
   } catch (error) {
