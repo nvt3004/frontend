@@ -263,7 +263,7 @@ const UserTable = () => {
 
     const fetchPermissions = async () => {
       const [error, data] = await stfExecAPI({
-        url: `api/admin/userpermissions/${record.userId}`,
+        url: `api/staff/userpermissions/${record.userId}`,
       });
 
       if (data) {
