@@ -18,6 +18,92 @@ import { Bar } from "react-chartjs-2";
 import { stfExecAPI } from "../../stf/common";
 import { toast } from "react-toastify";
 
+function getStartAndEndDate(value) {
+  const today = new Date();
+  let startDate, endDate;
+
+  switch (value) {
+    case "0": // Hôm nay
+      startDate = endDate = formatDateVn(today);
+      break;
+
+    case "1": // Hôm qua
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      startDate = endDate = formatDateVn(yesterday);
+      break;
+
+    case "2": // Tuần này
+      const startOfWeek = new Date(today);
+      const endOfWeek = new Date(today);
+
+      // Tìm Thứ Hai đầu tuần
+      startOfWeek.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+      // Tìm Chủ Nhật cuối tuần
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+      startDate = formatDateVn(startOfWeek);
+      endDate = formatDateVn(endOfWeek);
+      break;
+
+    case "3": // Tuần trước
+      const startOfLastWeek = new Date(today);
+      const endOfLastWeek = new Date(today);
+
+      // Tìm Thứ Hai tuần trước
+      startOfLastWeek.setDate(today.getDate() - ((today.getDay() + 6) % 7) - 7);
+      // Tìm Chủ Nhật tuần trước
+      endOfLastWeek.setDate(startOfLastWeek.getDate() + 6);
+
+      startDate = formatDateVn(startOfLastWeek);
+      endDate = formatDateVn(endOfLastWeek);
+      break;
+
+    case "4": // Tháng này
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      startDate = formatDateVn(startOfMonth);
+      endDate = formatDateVn(today);
+      break;
+
+    case "5": // Tháng trước
+      const startOfLastMonth = new Date(
+        today.getFullYear(),
+        today.getMonth() - 1,
+        1
+      );
+      const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0); // Ngày cuối tháng trước
+      startDate = formatDateVn(startOfLastMonth);
+      endDate = formatDateVn(endOfLastMonth);
+      break;
+
+    case "6": // Năm nay
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
+      startDate = formatDateVn(startOfYear);
+      endDate = formatDateVn(today);
+      break;
+
+    case "7": // Năm trước
+      const startOfLastYear = new Date(today.getFullYear() - 1, 0, 1);
+      const endOfLastYear = new Date(today.getFullYear() - 1, 11, 31);
+      startDate = formatDateVn(startOfLastYear);
+      endDate = formatDateVn(endOfLastYear);
+      break;
+
+    default: // Tùy chọn (hoặc giá trị không xác định)
+      startDate = endDate = null;
+  }
+
+  return { startDate, endDate };
+}
+
+// Hàm định dạng ngày thành chuỗi yyyy/mm/dd
+function formatDateVn(date) {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0"); // Tháng (0-based)
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}/${mm}/${dd}`;
+}
+
 function formatNumberWithCommas(number) {
   if (typeof number !== "number") {
     throw new Error("Input must be a number");
@@ -99,6 +185,7 @@ function Dashboard() {
   );
   const [productStock, setProductStock] = useState([]);
   const [productBetSaler, setProductBetSaler] = useState([]);
+  const [showDate, setShowDate] = useState(false);
 
   //Tính doanh thu
   useEffect(() => {
@@ -210,7 +297,6 @@ function Dashboard() {
       });
 
       if (data) {
-
         const dat = {
           labels: data?.data?.map((i) => i.versionName) || [],
           datasets: [
@@ -235,11 +321,10 @@ function Dashboard() {
         position: "top-right",
         autoClose: 5000,
       });
-
     };
 
     fetchUsers();
-  }, [startDate,endDate]);
+  }, [startDate, endDate]);
 
   //Tính top 5 sản phẩm tồn kho
   useEffect(() => {
@@ -346,8 +431,15 @@ function Dashboard() {
             className="form-select"
             id="exampleFormControlSelect1"
             onChange={(e) => {
-              // handleChangeSelectFilterActive(e.target.value);
-              // setStatus(e.target.value);
+              const { startDate, endDate } = getStartAndEndDate(e.target.value);
+
+              if (startDate && endDate) {
+                setStartDate(new Date(startDate));
+                setEndDate(new Date(endDate));
+                setShowDate(false);
+              } else {
+                setShowDate(true);
+              }
             }}
           >
             <option value="0">Hôm nay</option>
@@ -358,82 +450,88 @@ function Dashboard() {
             <option value="5">Tháng trước</option>
             <option value="6">Năm nay</option>
             <option value="7">Năm trước</option>
-            <option value="7">Tùy chọn</option>
+            <option value="8">Tùy chọn</option>
           </select>
         </div>
 
-        <div className="me-3">
-          <label className="mb-2" htmlFor="basic-default-birthday">
-            Từ ngày
-          </label>
+        {showDate && (
+          <div className="me-3">
+            <label className="mb-2" htmlFor="basic-default-birthday">
+              Từ ngày
+            </label>
 
-          <div style={{ position: "relative", display: "inline-block" }}>
-            <DatePicker
-              ref={startDatePickerRef}
-              selected={startDate}
-              onChange={setStartDate}
-              dateFormat="dd/MM/yyyy"
-              locale={vi} // Sử dụng locale tiếng Việt
-              placeholderText="dd/mm/yyyy"
-              className="form-control"
-            />
+            <div style={{ position: "relative", display: "inline-block" }}>
+              <DatePicker
+                ref={startDatePickerRef}
+                selected={startDate}
+                onChange={setStartDate}
+                dateFormat="dd/MM/yyyy"
+                locale={vi} // Sử dụng locale tiếng Việt
+                placeholderText="dd/mm/yyyy"
+                className="form-control"
+              />
 
-            <CalendarBlank
-              onClick={() => {
-                startDatePickerRef.current.setFocus();
-              }}
-              style={{
-                position: "absolute",
-                right: "10px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                cursor: "pointer",
-                color: "#666",
-              }}
-              size={19}
-              weight="fill"
-            />
+              <CalendarBlank
+                onClick={() => {
+                  startDatePickerRef.current.setFocus();
+                }}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  color: "#666",
+                }}
+                size={19}
+                weight="fill"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
-        <div>
-          <label className="mb-2" htmlFor="basic-default-birthday">
-            Đến ngày
-          </label>
+        {showDate && (
+          <div>
+            <label className="mb-2" htmlFor="basic-default-birthday">
+              Đến ngày
+            </label>
 
-          <div style={{ position: "relative", display: "inline-block" }}>
-            <DatePicker
-              ref={endDatePickerRef}
-              selected={endDate}
-              onChange={setEndDate}
-              dateFormat="dd/MM/yyyy"
-              locale={vi} // Sử dụng locale tiếng Việt
-              placeholderText="dd/mm/yyyy"
-              className="form-control"
-            />
+            <div style={{ position: "relative", display: "inline-block" }}>
+              <DatePicker
+                ref={endDatePickerRef}
+                selected={endDate}
+                onChange={setEndDate}
+                dateFormat="dd/MM/yyyy"
+                locale={vi} // Sử dụng locale tiếng Việt
+                placeholderText="dd/mm/yyyy"
+                className="form-control"
+              />
 
-            <CalendarBlank
-              onClick={() => {
-                endDatePickerRef.current.setFocus();
-              }}
-              style={{
-                position: "absolute",
-                right: "10px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                cursor: "pointer",
-                color: "#666",
-              }}
-              size={19}
-              weight="fill"
-            />
+              <CalendarBlank
+                onClick={() => {
+                  endDatePickerRef.current.setFocus();
+                }}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  color: "#666",
+                }}
+                size={19}
+                weight="fill"
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="card mt-4 p-4" style={{ height: "400px", width: "100%" }}>
         <h5 className="card-title mb-3">Top 5 sản phẩm bán chạy</h5>
-        {productBetSaler.labels && <Bar options={options} data={productBetSaler} />}
+        {productBetSaler.labels && (
+          <Bar options={options} data={productBetSaler} />
+        )}
       </div>
 
       <div className="card mt-4 p-4" style={{ height: "400px", width: "100%" }}>
