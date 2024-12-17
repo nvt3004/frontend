@@ -111,6 +111,7 @@ export const getProfile = async () => {
 
     const response = await axiosInstance.get("/adminuser/get-profile", {
       headers: {
+        "Access-Control-Allow-Origin": "*",
         Authorization: `Bearer ${token.trim()}`,
       },
     });
@@ -182,6 +183,7 @@ export const updateUser = async (userId, updatedUser) => {
       updatedUser,
       {
         headers: {
+          "Access-Control-Allow-Origin": "*",
           Authorization: `Bearer ${token.trim()}`,
         },
       }

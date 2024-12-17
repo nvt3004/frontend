@@ -409,6 +409,7 @@ const addFeedback = async ({
     // Gửi request
     await axiosInstance.post("user/feedback/add", formData, {
       headers: {
+        "Access-Control-Allow-Origin": "*",
         "Content-Type": "multipart/form-data",
       },
     });
@@ -466,6 +467,7 @@ const searchProductByImage = async (imageFile) => {
       formData,
       {
         headers: {
+          "Access-Control-Allow-Origin": "*",
           "Content-Type": "multipart/form-data",
         },
       }
@@ -492,6 +494,7 @@ const speechToText = async (audioWavFile) => {
       formData,
       {
         headers: {
+          "Access-Control-Allow-Origin": "*",
           "Content-Type": "multipart/form-data",
         },
       }

@@ -1,7 +1,7 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_STF_URL = "https://api.stepstothefuture.store";
+const API_STF_URL = "https://api.stepstothefuture.store/";
 const API_GHN_URL = "https://online-gateway.ghn.vn/";
 const TOKEN_GHN = "f86da177-6445-11ef-abe2-7eb77a66607c";
 
